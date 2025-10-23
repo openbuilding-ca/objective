@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Number Formatting</title>
+    <style>
+      .test-field {
+        border: 2px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        background: #f9f9f9;
+        min-height: 40px;
+      }
+      .numeric-field {
+        background-color: #e8f4fd;
+      }
+      .user-modified {
+        background-color: #d1ecf1;
+        font-weight: bold;
+      }
+      .debug-log {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Number Formatting Debug Test</h1>
+
+    <div>
+      <h3>Test Field (should format "1000" to "1,000.00" on blur):</h3>
+      <div
+        class="test-field editable user-input numeric-field"
+        contenteditable="true"
+        data-field-id="test_field"
+        data-type="numeric"
+      >
+        1000
+      </div>
+      <p><em>Type a number and click away to test formatting</em></p>
+    </div>
+
+    <div>
+      <h3>Debug Log:</h3>
+      <div id="debug-log" class="debug-log">
+        Click in the field above and then click away to see debug info...
+      </div>
+    </div>
+
+    <!-- Load the OBC Matrix scripts -->
+    <script src="OBC-StateManager.js"></script>
+
+    <script>
+      let debugLog = document.getElementById("debug-log");
+
+      function log(message) {
+        console.log(message);
+        debugLog.innerHTML +=
+          new Date().toISOString().substr(11, 8) + ": " + message + "\n";
+        debugLog.scrollTop = debugLog.scrollHeight;
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        log("🚀 Page loaded, initializing...");
+
+        // Check if TEUI modules are available
+        log("✅ TEUI available: " + !!window.TEUI);
+        log("✅ OBCStateManager available: " + !!window.TEUI?.OBCStateManager);
+        log("✅ formatNumber available: " + !!window.TEUI?.formatNumber);
+        log("✅ parseNumeric available: " + !!window.TEUI?.parseNumeric);
+
+        // Initialize the OBC StateManager
+        if (window.TEUI?.OBCStateManager?.initialize) {
+          window.TEUI.OBCStateManager.initialize();
+          log("✅ OBCStateManager initialized");
+        }
+
+        // Initialize global input handlers
+        if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
+          window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+          log("✅ Global input handlers initialized");
+        }
+
+        // Test formatNumber function directly
+        if (window.TEUI?.formatNumber) {
+          const testNumber = 1000;
+          const formatted = window.TEUI.formatNumber(
+            testNumber,
+            "number-2dp-comma",
+          );
+          log(
+            "🧪 Direct formatNumber test: " +
+              testNumber +
+              ' -> "' +
+              formatted +
+              '"',
+          );
+        }
+
+        // Add manual test button
+        const testField = document.querySelector(
+          '[data-field-id="test_field"]',
+        );
+        testField.addEventListener("focus", function () {
+          log("👆 Field focused");
+        });
+
+        // Use setTimeout to let OBC handler run first
+        testField.addEventListener("blur", function () {
+          setTimeout(() => {
+            log("👋 Field blurred (after formatting)");
+            log('📄 Field content: "' + this.textContent + '"');
+            log(
+              '🏷️ data-type attribute: "' +
+                this.getAttribute("data-type") +
+                '"',
+            );
+            log("🎨 CSS classes: " + Array.from(this.classList).join(", "));
+          }, 10); // Small delay to let formatting happen first
+        });
+      });
+    </script>
+  </body>
+</html>

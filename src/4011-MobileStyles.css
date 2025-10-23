@@ -1,0 +1,296 @@
+/**
+ * 4011-MobileStyles.css
+ * Mobile-specific styles for TEUI 4.011 Calculator
+ * Loaded only when mobile devices are detected
+ * 
+ * This CSS file overrides desktop styles to optimize the application for mobile devices.
+ * It focuses on:
+ * 1. Making Section 01 (Key Values) scrollable instead of sticky
+ * 2. Adjusting table layouts for vertical scrolling
+ * 3. Optimizing touch targets and form controls
+ * 4. Hiding or disabling features not suitable for mobile
+ */
+
+/* =============== Mobile Root Variables =============== */
+body.mobile {
+  /* Override root variables for mobile */
+  --base-font-size: 14px;
+  --header-font-size: 16px;
+  --key-values-font-size: 18px;
+  --small-font-size: 12px;
+  --cell-padding: 8px 6px;
+  --header-cell-padding: 10px 8px;
+
+  /* Ensure minimum touch target size */
+  --min-touch-size: 44px;
+}
+
+/* =============== Mobile Layout Adjustments =============== */
+
+/* Make Section 01 (Key Values) scrollable instead of sticky */
+body.mobile #keyValues {
+  position: relative !important;
+  top: auto !important;
+  z-index: 10 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hide tab spacer in mobile view */
+body.mobile .tab-spacer {
+  display: none !important;
+  height: 0 !important;
+}
+
+/* Ensure app wrapper takes full width */
+body.mobile #app-wrapper {
+  width: 100% !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+}
+
+/* Adjust calculator container for mobile */
+body.mobile #calculator-container {
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Force vertical layout on mobile */
+body.mobile.horizontal-layout {
+  /* Override any horizontal layout settings */
+}
+
+body.mobile .layout-toggle-btn {
+  display: none !important; /* Hide layout toggle button on mobile */
+}
+
+/* Enhance section headers for touch */
+body.mobile .section-header {
+  min-height: var(--min-touch-size) !important;
+  padding: 10px 12px !important;
+  font-size: 16px !important;
+}
+
+/* =============== Table Adjustments for Mobile =============== */
+
+/* Make tables scrollable horizontally when needed */
+body.mobile .data-table {
+  font-size: var(--base-font-size) !important;
+  display: block !important;
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* Allow cell contents to wrap on mobile for better readability */
+body.mobile .data-table td {
+  white-space: normal !important;
+  padding: var(--cell-padding) !important;
+  font-size: var(--base-font-size) !important;
+}
+
+/* Adjust description cells (typically column C) */
+body.mobile .data-table .description-cell,
+body.mobile .data-table .col-c,
+body.mobile .data-table td:nth-child(3) {
+  min-width: 120px !important;
+  max-width: 150px !important;
+}
+
+/* Ensure number cells maintain right alignment */
+body.mobile .data-table td.col-d,
+body.mobile .data-table td.col-f,
+body.mobile .data-table td.col-h,
+body.mobile .data-table td.col-j,
+body.mobile .data-table td.col-k,
+body.mobile .data-table td.col-l {
+  text-align: right !important;
+}
+
+/* Make unit columns (typically E, G, I) narrower */
+body.mobile .data-table col.col-e,
+body.mobile .data-table col.col-g,
+body.mobile .data-table col.col-i {
+  width: 45px !important;
+}
+
+/* Center column content for better mobile layout */
+body.mobile .section-content {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+}
+
+/* Key Values section adjustments */
+body.mobile #keyValues .key-values-table {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+}
+
+body.mobile #keyValues .key-values-table tr {
+  width: 50% !important;
+  box-sizing: border-box !important;
+  padding: 5px !important;
+}
+
+body.mobile .key-value {
+  font-size: 18px !important;
+}
+
+body.mobile .key-title {
+  font-size: 13px !important;
+}
+
+body.mobile .key-explanation {
+  font-size: 11px !important;
+}
+
+/* =============== Form Controls for Mobile =============== */
+
+/* Enhance dropdown sizing for touch */
+body.mobile .data-table td select.form-select {
+  min-height: var(--min-touch-size) !important;
+  font-size: var(--base-font-size) !important;
+  margin: 2px 0 !important;
+  width: 100% !important;
+}
+
+/* Improve text input sizing */
+body.mobile .data-table td input[type="text"],
+body.mobile .data-table td input[type="number"] {
+  min-height: var(--min-touch-size) !important;
+  font-size: var(--base-font-size) !important;
+  padding: 6px 8px !important;
+}
+
+/* Make contenteditable fields easier to tap */
+body.mobile .data-table td[contenteditable="true"] {
+  min-height: var(--min-touch-size) !important;
+  padding: 10px 8px !important;
+}
+
+/* Increase size of buttons */
+body.mobile .btn {
+  min-height: var(--min-touch-size) !important;
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+/* Adjust user input colors for better contrast on mobile */
+body.mobile .user-input {
+  color: #0d6efd !important;
+  font-weight: 500 !important;
+}
+
+/* =============== Section Specific Adjustments =============== */
+
+/* Section 01 - Key Values layout for mobile */
+body.mobile #keyValues .section-content {
+  padding: 10px !important;
+}
+
+/* Section 02 - Building Information */
+body.mobile #buildingInfo .data-table col.col-c {
+  width: 120px !important;
+}
+
+/* Section 16 - Sankey Diagram responsive sizing */
+body.mobile #sankeyDiagram svg {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 400px !important;
+}
+
+/* Section 17 - Dependency Graph simplified for mobile */
+body.mobile #dependencyDiagram .dependency-graph-container {
+  height: 400px !important;
+}
+
+/* =============== Feature Adjustments for Mobile =============== */
+
+/* Hide complex features not suitable for mobile */
+body.mobile .excel-loader,
+body.mobile #selectExcelBtn,
+body.mobile #debugExcelBtn {
+  display: none !important;
+}
+
+/* Make dropdowns easier to use on mobile */
+body.mobile .dropdown-menu {
+  min-width: 200px !important;
+}
+
+body.mobile .dropdown-item {
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+}
+
+/* =============== Media Queries for Various Mobile Sizes =============== */
+
+/* Small phones (portrait) */
+@media (max-width: 375px) {
+  body.mobile .key-values-table tr {
+    width: 100% !important; /* Stack key values on very small screens */
+  }
+
+  body.mobile .section-header {
+    font-size: 14px !important;
+  }
+
+  body.mobile .tab {
+    min-width: 60px !important;
+    padding: 8px 6px !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 450px) and (orientation: landscape) {
+  body.mobile .key-values-table tr {
+    width: 33.33% !important; /* More columns in landscape */
+  }
+
+  body.mobile #keyValues .section-content {
+    padding: 5px !important;
+  }
+}
+
+/* iPad and larger tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+  body.mobile .key-values-table tr {
+    width: 33.33% !important; /* 3 columns for tablets */
+  }
+
+  body.mobile .key-value {
+    font-size: 20px !important;
+  }
+}
+
+/* =============== Touch-Friendly Enhancements =============== */
+
+/* Larger click/tap targets */
+body.mobile .section-header,
+body.mobile .btn,
+body.mobile select,
+body.mobile input,
+body.mobile [contenteditable="true"] {
+  touch-action: manipulation !important; /* Disable double-tap to zoom */
+}
+
+/* Enhance focus states for touch */
+body.mobile .form-select:focus,
+body.mobile input:focus,
+body.mobile [contenteditable="true"]:focus {
+  outline: 2px solid #0d6efd !important;
+  box-shadow: none !important;
+}
+
+/* Disable hover effects that don't work well on touch */
+body.mobile .data-table tr:hover,
+body.mobile .data-table td:hover {
+  background-color: transparent !important;
+}
+
+/* Add active state for touch feedback */
+body.mobile .data-table td:active,
+body.mobile .btn:active,
+body.mobile select:active {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}

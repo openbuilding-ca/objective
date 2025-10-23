@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2024 OBC Matrix Framework | Part 3</title>
+    <meta
+      name="description"
+      content="Calculate Total Energy Use Intensity & Thermal Energy Demand Intensity for buildings"
+    />
+
+    <!-- CSS Resources -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Direct style override for select elements -->
+    <style>
+      select,
+      option,
+      .form-select,
+      select.form-select {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif !important;
+        /* Force sans-serif as fallback */
+        font-family: sans-serif !important;
+      }
+
+      /* Notes Column Toggle Styles */
+      .notes-column {
+        transition:
+          opacity 0.3s ease,
+          width 0.3s ease;
+      }
+
+      /* Hide notes column when body has notes-hidden class */
+      body.notes-hidden .notes-column {
+        display: none;
+      }
+
+      /* Notes toggle button active state */
+      #notes-toggle-btn.active {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Hide the separate notes panel - we're using column toggle instead */
+      #global-notes-panel {
+        display: none !important;
+      }
+    </style>
+
+    <link href="OBC-styles.css" rel="stylesheet" />
+
+    <!-- Core Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre-d3/0.6.4/dagre-d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+    <!-- Core Logic & Managers FIRST -->
+    <!-- <script src="OBC-ReferenceValues.js"></script> -->
+    <!-- <script src="OBC-ReferenceManager.js"></script> -->
+    <!-- <script src="OBC-ReferenceToggle.js"></script> -->
+    <!-- Core State Management FIRST -->
+    <script src="OBC-StateManager.js"></script>
+
+    <!-- Universal Expandable Rows Utility -->
+    <script src="OBC-ExpandableRows.js"></script>
+
+    <script src="OBC-FieldManager.js"></script>
+    <!-- FieldManager depends on StateManager -->
+    <script src="OBC-ExcelMapper.js"></script>
+    <script src="OBC-FileHandler.js"></script>
+
+    <!-- Initialize everything AFTER core scripts are loaded -->
+    <script src="OBC-Navigation.js"></script>
+
+    <!-- Section modules LAST (they depend on core managers/utils) -->
+    <script src="sections/OBC-Section01.js"></script>
+    <script src="sections/OBC-Section02.js"></script>
+    <script src="sections/OBC-Section03.js"></script>
+    <script src="sections/OBC-Section04.js"></script>
+    <script src="sections/OBC-Section05.js"></script>
+    <script src="sections/OBC-Section06.js"></script>
+    <script src="sections/OBC-Section07.js"></script>
+    <script src="sections/OBC-Section08.js"></script>
+    <script src="sections/OBC-Section09.js"></script>
+    <script src="sections/OBC-Section10.js"></script>
+  </head>
+  <body>
+    <!-- Main container -->
+    <div class="col-lg-12 mx-auto p-4 py-md-5">
+      <!-- Header -->
+      <header class="d-flex align-items-center pb-3 mb-4 border-bottom">
+        <a
+          href="https://openbuilding.ca"
+          class="text-dark text-decoration-none"
+        >
+          <img
+            src="assets/image041.png"
+            class="logo"
+            title="OBJECTIVE Logo"
+            alt="OBJECTIVE 4.011 TEUI Calculator"
+          />
+        </a>
+        <div class="ms-auto text-end">
+          <h1 class="mb-0 fs-4">
+            2024 Ontario Building Code Data Matrix <br />
+            Interactive Edition | v2025.06.05
+          </h1>
+        </div>
+      </header>
+
+      <!-- Action buttons row -->
+      <div class="row button-row mb-2">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+          <!-- Left side: OBC Part Selector -->
+          <div class="d-flex align-items-center">
+            <div class="btn-group">
+              <button
+                id="obcPartBtn"
+                type="button"
+                class="btn btn-sm btn-dark"
+                title="Select OBC Part"
+              >
+                <i class="bi bi-building me-1"></i> PART 3
+              </button>
+              <!-- Dropdown Toggle -->
+              <button
+                class="btn btn-sm btn-dark dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="visually-hidden">Toggle Dropdown</span>
+              </button>
+              <!-- Dropdown Menu -->
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="#" data-part="2"
+                    ><i class="bi bi-house-door me-2"></i>Part 2 - Farm
+                    Buildings</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" data-part="3"
+                    ><i class="bi bi-building me-2"></i>Part 3 - Large
+                    Buildings</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" data-part="9"
+                    ><i class="bi bi-house me-2"></i>Part 9 - Housing & Small
+                    Buildings</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" data-part="10"
+                    ><i class="bi bi-arrow-repeat me-2"></i>Part 10 - Change of
+                    Use</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" data-part="11"
+                    ><i class="bi bi-clock-history me-2"></i>Part 11 - Heritage
+                    & Renovation</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right side: Existing controls -->
+          <div class="controls-container d-flex align-items-center">
+            <button
+              id="disclaimerBtn"
+              class="btn btn-sm btn-warning me-2"
+              data-bs-toggle="modal"
+              data-bs-target="#disclaimerModal"
+            >
+              ⓘ Disclaimer
+            </button>
+            <button
+              id="reset-imported-btn"
+              type="button"
+              class="btn btn-sm btn-success me-2"
+              onclick="resetAllData()"
+              title="Reset all data and clear saved state"
+            >
+              <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+            <div class="btn-group">
+              <button
+                id="downloadBtn"
+                type="button"
+                class="btn btn-sm btn-primary"
+              >
+                ↓ Import/Export
+              </button>
+              <!-- Dropdown Toggle -->
+              <button
+                class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="visually-hidden">Toggle Dropdown</span>
+              </button>
+              <!-- Dropdown Menu -->
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="#" id="import-data-btn"
+                    ><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="export-data-btn"
+                    ><i class="bi bi-save me-2"></i>Export User Data (CSV)</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="downloadReport"
+                    >Download Report (PDF)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="teui-factsheet"
+                    >TEUI Factsheet (PDF)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="tedi-factsheet"
+                    >TEDI Factsheet (PDF)</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="export-excel"
+                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export
+                    All Data (Excel)</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <!-- Cross-Navigation to OBJECTIVE Calculator -->
+            <button
+              class="btn btn-sm btn-dark ms-2"
+              onclick="saveStateAndNavigate('../index.html')"
+              title="Switch to OBJECTIVE TEUI Calculator (saves current work)"
+              style="transition: background-color 0.2s ease"
+              onmouseover="this.style.backgroundColor='#6c757d'"
+              onmouseout="this.style.backgroundColor=''"
+            >
+              <i class="bi bi-building"></i> OBJECTIVE
+            </button>
+          </div>
+          <!-- Hidden File Input for Import -->
+          <input
+            type="file"
+            id="excel-file-input"
+            accept=".xlsx, .xls, .csv"
+            style="display: none"
+          />
+        </div>
+      </div>
+
+      <!-- Matrix wrapper - needed for scrolling functionality in horizontal layout -->
+      <div id="matrix-container">
+        <!-- Calculator container -->
+        <div id="calculator-container">
+          <!-- Section 1: Building Information -->
+          <div id="buildingInfo" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-info-circle"></i
+              ></span>
+              <span id="section-01-title"
+                >OBC PART 3 | SECTION 01. Building Information</span
+              >
+              <div class="ms-auto d-flex align-items-center">
+                <button
+                  id="notes-toggle-btn"
+                  class="btn btn-sm btn-link text-white me-2"
+                  title="Toggle Notes Column"
+                >
+                  <i class="bi bi-card-text"></i>
+                </button>
+                <button
+                  id="expand-collapse-all"
+                  class="btn btn-sm btn-link text-white me-2"
+                  title="Expand/Collapse All Sections"
+                >
+                  <i class="bi bi-plus-circle"></i>
+                </button>
+                <button class="layout-toggle-btn" title="Toggle Layout Mode">
+                  <i class="bi bi-arrow-right-circle"></i>
+                </button>
+              </div>
+            </div>
+            <div class="section-content">
+              <!-- Building Information content will be generated by FieldManager using Section01.js -->
+              <div data-render-section="buildingInfo"></div>
+            </div>
+          </div>
+
+          <!-- Spacer to maintain consistent gap - this prevents scrolling under Building Info -->
+          <div class="tab-spacer"></div>
+
+          <!-- Tab container for horizontal layout - positioned immediately after buildingInfo -->
+          <div class="tab-container">
+            <!-- Tabs will be generated by JavaScript -->
+          </div>
+
+          <!-- Section spacer to maintain proper distance between Building Info and active section -->
+          <div id="section-spacer" class="section-spacer"></div>
+
+          <!-- Section 2: Building Occupancy -->
+          <div id="buildingOccupancy" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-building"></i></span>
+              <span id="section-02-title"
+                >OBC PART 3 | SECTION 02. Building Occupancy</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Building Occupancy content will be generated by FieldManager using Section02.js -->
+              <div data-render-section="buildingOccupancy"></div>
+            </div>
+          </div>
+
+          <!-- Section 3: Building Areas -->
+          <div id="buildingAreas" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-bounding-box"></i
+              ></span>
+              <span id="section-03-title"
+                >OBC PART 3 | SECTION 03. Building Areas</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Building Areas content will be generated by FieldManager using Section03.js -->
+              <div data-render-section="buildingAreas"></div>
+            </div>
+          </div>
+
+          <!-- Section 4: Firefighting & Life Safety Systems -->
+          <div id="firefightingSystems" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-fire"></i></span>
+              <span id="section-04-title"
+                >OBC PART 3 | SECTION 04. Firefighting & Life Safety
+                Systems</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Firefighting Systems content will be generated by FieldManager using Section04.js -->
+              <div data-render-section="firefightingSystems"></div>
+            </div>
+          </div>
+
+          <!-- Section 5: Structural Requirements -->
+          <div id="structuralRequirements" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-building"></i></span>
+              <span id="section-05-title"
+                >OBC PART 3 | SECTION 05. Structural Requirements</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Structural Requirements content will be generated by FieldManager using Section05.js -->
+              <div data-render-section="structuralRequirements"></div>
+            </div>
+          </div>
+
+          <!-- Section 6: Occupant Safety & Accessibility -->
+          <div id="occupantSafety" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-people"></i></span>
+              <span id="section-06-title"
+                >OBC PART 3 | SECTION 06. Occupant Safety & Accessibility</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Occupant Safety content will be generated by FieldManager using Section06.js -->
+              <div data-render-section="occupantSafety"></div>
+            </div>
+          </div>
+
+          <!-- Section 7: Fire Resistance & Spatial Separation -->
+          <div id="fireResistance" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-shield"></i></span>
+              <span id="section-07-title"
+                >OBC PART 3 | SECTION 07. Fire Resistance & Spatial
+                Separation</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Fire Resistance content will be generated by FieldManager using Section07.js -->
+              <div data-render-section="fireResistance"></div>
+            </div>
+          </div>
+
+          <!-- Section 8: Plumbing Fixture Requirements -->
+          <div id="plumbingFixtures" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-droplet"></i></span>
+              <span id="section-08-title"
+                >OBC PART 3 | SECTION 08. Plumbing Fixture Requirements</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Plumbing Fixtures content will be generated by FieldManager using Section08.js -->
+              <div data-render-section="plumbingFixtures"></div>
+            </div>
+          </div>
+
+          <!-- Section 9: Energy, Sound and Alternative Solutions -->
+          <div id="energySoundComply" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-check-circle"></i
+              ></span>
+              <span id="section-09-title"
+                >OBC PART 3 | SECTION 09. Energy, Sound and Alternative
+                Solutions</span
+              >
+            </div>
+            <div class="section-content">
+              <!-- Energy, Sound and Alternative Solutions content will be generated by FieldManager using Section09.js -->
+              <div data-render-section="energySoundComply"></div>
+            </div>
+          </div>
+
+          <!-- Section 10: Notes -->
+          <div id="notes" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-card-text"></i></span>
+              <span id="section-10-title">OBC PART 3 | SECTION 10. Notes</span>
+            </div>
+            <div class="section-content">
+              <!-- Notes content will be generated by FieldManager using Section10.js -->
+              <div data-render-section="notes"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Notes Panel -->
+      <div id="global-notes-panel" class="notes-panel" style="display: none">
+        <div class="notes-panel-header">
+          <h5><i class="bi bi-card-text"></i> Project Notes</h5>
+          <button
+            id="close-notes-panel"
+            class="btn btn-sm btn-outline-secondary"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="notes-panel-content">
+          <textarea
+            id="global-notes-textarea"
+            class="form-control"
+            rows="15"
+            placeholder="Enter project notes here..."
+          >
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="pt-5 mt-5 text-muted border-top">
+        <div class="row">
+          <div class="col-md-6">
+            <p>
+              Interactive edition by
+              <a href="https://OpenBuilding.ca">OpenBuilding.ca</a>
+            </p>
+          </div>
+          <div class="col-md-6 text-end">
+            <p>© Ontario Association of Architects - 2024 OBC Matrix</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Modal for disclaimer -->
+    <div
+      class="modal fade"
+      id="disclaimerModal"
+      tabindex="-1"
+      aria-labelledby="disclaimerModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-warning bg-opacity-25">
+            <h5 class="modal-title" id="disclaimerModalLabel">
+              Using the OBC Matrix
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Demo Warning - Moved from banner -->
+            <div class="alert alert-warning border-warning mb-4" role="alert">
+              <div class="flex-grow-1">
+                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE OBC Matrix is under
+                active development.
+                <strong>DO NOT USE for real permit applications.</strong>
+                For official OBC compliance documentation, consult with
+                qualified professionals.
+              </div>
+            </div>
+
+            <p>
+              This tool helps you complete the Ontario Building Code Data Matrix
+              for building permit applications.
+            </p>
+            <p>
+              Simply enter your information in the blue input fields. You can
+              toggle between Part 3 (large buildings) and Part 9 (housing and
+              small buildings) forms using the toggle switch at the top.
+            </p>
+            <p>
+              When you're finished, you can export your data as a CSV file or
+              download a completed PDF form. You can also port data entered here
+              to partially furnish the Energy Model by switching to OBJECTIVE
+              (Button top right) and then 'Import from OBC Matrix', or
+              vice-versa. This maintains a strict separation of data between
+              systems but allows a quick start populating either the Matrix or
+              OBJECTIVE apps with information from each independent but linked
+              apps.
+            </p>
+            <hr />
+            <p>
+              <strong>Disclaimer:</strong> This interactive OBC Matrix is
+              provided as a convenience tool. While every effort has been made
+              to ensure accuracy, the official Ontario Building Code and related
+              regulations should always be consulted for definitive
+              requirements. This form is not a substitute for professional
+              engineering or architectural advice.
+            </p>
+            <p>
+              © Ontario Association of Architects - Interactive version by
+              OpenBuilding.ca
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather Data Modal -->
+    <div
+      class="modal fade"
+      id="weatherDataModal"
+      tabindex="-1"
+      aria-labelledby="weatherDataModalLabel"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="weatherDataModalLabel">Weather Data</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <pre
+              id="weatherDataContent"
+              class="bg-light p-3"
+              style="max-height: 400px; overflow-y: auto"
+            >
+Select a province and city to view weather data.</pre
+            >
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global modal fix script -->
+    <script>
+      // Simplified fix for lingering modal backdrops
+      document.addEventListener("DOMContentLoaded", function () {
+        // This single event listener handles all modals, but only cleans up when needed
+        document.body.addEventListener("hidden.bs.modal", function () {
+          // Use a short timeout to ensure Bootstrap has completed its operations
+          setTimeout(function () {
+            // Only clean up if there are backdrops but no visible modals
+            if (
+              document.querySelectorAll(".modal-backdrop").length > 0 &&
+              !document.querySelector(".modal.show")
+            ) {
+              document
+                .querySelectorAll(".modal-backdrop")
+                .forEach((el) => el.remove());
+              document.body.classList.remove("modal-open");
+              document.body.style.overflow = "";
+              document.body.style.paddingRight = "";
+            }
+          }, 150);
+        });
+      });
+    </script>
+
+    <!-- JavaScript resources -->
+    <!-- Bootstrap already loaded in head -->
+
+    <!-- Initialize components on page load -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize FieldManager (core requirement for OBC Matrix)
+        if (OBC && OBC.FieldManager) {
+          OBC.FieldManager.renderAllSections();
+        }
+
+        // StateManager auto-initializes via its own DOMContentLoaded listener
+
+        // Initialize Global Notes Panel
+        initializeNotesPanel();
+
+        // Initialize OBC Part Selector
+        initializePartSelector();
+      });
+
+      // Cross-system navigation with state preservation
+      function saveStateAndNavigate(url) {
+        if (OBC && OBC.StateManager) {
+          // Force immediate save before navigation
+          OBC.StateManager.saveState();
+        }
+
+        // Navigate immediately
+        window.location.href = url;
+      }
+
+      // Reset all data including localStorage
+      function resetAllData() {
+        if (OBC && OBC.StateManager) {
+          // Clear all state including localStorage
+          OBC.StateManager.clear();
+
+          // Reload the page to show clean state
+          window.location.reload();
+        }
+      }
+
+      // Global Notes Panel functionality
+      function initializeNotesPanel() {
+        const notesToggleBtn = document.getElementById("notes-toggle-btn");
+        const notesPanel = document.getElementById("global-notes-panel");
+
+        if (!notesToggleBtn || !notesPanel) {
+          return;
+        }
+
+        // Toggle notes column
+        function toggleNotesPanel() {
+          const isHidden = document.body.classList.contains("notes-hidden");
+
+          if (isHidden) {
+            document.body.classList.remove("notes-hidden");
+            notesToggleBtn.classList.add("active");
+          } else {
+            document.body.classList.add("notes-hidden");
+            notesToggleBtn.classList.remove("active");
+          }
+        }
+
+        // Event listeners
+        notesToggleBtn.addEventListener("click", toggleNotesPanel);
+
+        // Set initial state - notes visible by default
+        notesToggleBtn.classList.add("active");
+      }
+
+      // OBC Part Selector functionality
+      const OBC_PARTS = {
+        2: {
+          name: "Part 2 - Farm Buildings",
+          shortName: "PART 2",
+          icon: "bi-house-door",
+          description: "Farm Buildings",
+        },
+        3: {
+          name: "Part 3 - Large Buildings",
+          shortName: "PART 3",
+          icon: "bi-building",
+          description: "Large Buildings",
+        },
+        9: {
+          name: "Part 9 - Housing & Small Buildings",
+          shortName: "PART 9",
+          icon: "bi-house",
+          description: "Housing & Small Buildings",
+        },
+        10: {
+          name: "Part 10 - Change of Use",
+          shortName: "PART 10",
+          icon: "bi-arrow-repeat",
+          description: "Change of Use",
+        },
+        11: {
+          name: "Part 11 - Heritage & Renovation",
+          shortName: "PART 11",
+          icon: "bi-clock-history",
+          description: "Heritage & Renovation",
+        },
+      };
+
+      // Current selected part (default to Part 3)
+      let currentOBCPart = 3;
+
+      // Load saved part from localStorage
+      function loadSavedOBCPart() {
+        const saved = localStorage.getItem("OBC_Current_Part");
+        if (saved && OBC_PARTS[saved]) {
+          currentOBCPart = parseInt(saved);
+          updateOBCPartDisplay();
+        }
+      }
+
+      // Save current part to localStorage
+      function saveOBCPart() {
+        localStorage.setItem("OBC_Current_Part", currentOBCPart.toString());
+      }
+
+      // Update the part selector button and all section headers
+      function updateOBCPartDisplay() {
+        const part = OBC_PARTS[currentOBCPart];
+        if (!part) return;
+
+        // Update the main button
+        const btn = document.getElementById("obcPartBtn");
+        if (btn) {
+          btn.innerHTML = `<i class="${part.icon} me-1"></i> ${part.shortName}`;
+        }
+
+        // Update page title
+        document.title = `2024 OBC Matrix Framework | ${part.shortName}`;
+
+        // Update all section headers
+        for (let i = 1; i <= 10; i++) {
+          const sectionTitle = document.getElementById(
+            `section-${i.toString().padStart(2, "0")}-title`,
+          );
+          if (sectionTitle) {
+            const sectionNumber = i.toString().padStart(2, "0");
+            const currentText = sectionTitle.textContent;
+            // Extract the section name (everything after the |)
+            const sectionName = currentText.includes("|")
+              ? currentText.split("|")[1].trim()
+              : currentText
+                  .replace(/OBC PART \d+/, "")
+                  .replace(/^\s*\|\s*/, "")
+                  .trim();
+
+            sectionTitle.textContent = `OBC ${part.shortName} | ${sectionName}`;
+          }
+        }
+      }
+
+      // Handle part selection from dropdown
+      function selectOBCPart(partNumber) {
+        if (OBC_PARTS[partNumber]) {
+          currentOBCPart = partNumber;
+          updateOBCPartDisplay();
+          saveOBCPart();
+
+          // Show brief success feedback
+          const btn = document.getElementById("obcPartBtn");
+          if (btn) {
+            btn.style.backgroundColor = "#28a745";
+            // Reset color after animation
+            requestAnimationFrame(() => {
+              btn.style.backgroundColor = "";
+            });
+          }
+        }
+      }
+
+      // Initialize part selector
+      function initializePartSelector() {
+        // Load saved part
+        loadSavedOBCPart();
+
+        // Add click handlers to dropdown items
+        document.querySelectorAll("[data-part]").forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            const part = parseInt(this.getAttribute("data-part"));
+            selectOBCPart(part);
+          });
+        });
+      }
+
+      // Export for global access
+      window.OBCPartSelector = {
+        getCurrentPart: () => currentOBCPart,
+        selectPart: selectOBCPart,
+        getPartInfo: (partNum) => OBC_PARTS[partNum] || null,
+      };
+    </script>
+  </body>
+</html>

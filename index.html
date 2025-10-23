@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TEUI 4.012RF Calculator</title>
+    <meta
+      name="description"
+      content="Calculate Total Energy Use Intensity & Thermal Energy Demand Intensity for buildings"
+    />
+
+    <!-- CSS Resources -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Direct style override for select elements -->
+    <style>
+      select,
+      option,
+      .form-select,
+      select.form-select {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif !important;
+        /* Force sans-serif as fallback */
+        font-family: sans-serif !important;
+      }
+    </style>
+
+    <link href="src/styles.css" rel="stylesheet" />
+
+    <!-- Mobile Detection Script (Must load before other scripts) -->
+    <script src="src/core/MobileDetect.js"></script>
+
+    <!-- Core Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre-d3/0.6.4/dagre-d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+    <!-- Core Logic & Managers FIRST -->
+    <script src="src/core/AppendixE.js"></script>
+    <script src="src/core/StateManager.js"></script>
+    <script src="src/core/QCMonitor.js"></script>
+    <!-- QC Monitor instruments StateManager for debugging -->
+    <script src="src/core/ReferenceValues.js"></script>
+    <script src="src/core/ReferenceManager.js"></script>
+    <script src="src/core/ReferenceToggle.js"></script>
+    <script src="src/core/FieldManager.js"></script>
+    <!-- FieldManager depends on StateManager -->
+    <script src="src/core/SectionIntegrator.js"></script>
+    <!-- Integrator might depend on managers -->
+    <script src="src/core/Calculator.js"></script>
+    <!-- Calculator logic -->
+    <!-- <script src="src/core/ComponentBridge.js"></script> -->
+    <!-- ExcelLocationHandler.js RETIRED - Weather data now handled by ClimateValues.js -->
+    <script src="src/core/ExcelMapper.js"></script>
+    <script src="src/core/FileHandler.js"></script>
+    <script src="src/core/TooltipManager.js"></script>
+    <!-- TooltipManager loads validation tooltips from Excel -->
+    <script src="src/core/Dependency.js"></script>
+
+    <!-- Performance Monitoring -->
+    <script src="src/core/Clock.js"></script>
+
+    <!-- Climate Data for S03 DualState Architecture -->
+    <script src="src/core/ClimateValues.js"></script>
+
+    <!-- Cooling Calculations - Restored ARCHIVE chassis for S13 simplification -->
+    <script src="src/core/Cooling.js"></script>
+
+    <!-- Initialize everything AFTER core scripts are loaded -->
+    <script src="src/core/init.js"></script>
+
+    <!-- Section modules LAST (they depend on core managers/utils) -->
+    <script src="src/sections/Section01.js"></script>
+    <script src="src/sections/Section02.js"></script>
+    <script src="src/sections/Section03.js"></script>
+    <script src="src/sections/Section04.js"></script>
+    <script src="src/sections/Section05.js"></script>
+    <script src="src/sections/Section06.js"></script>
+    <script src="src/sections/Section07.js"></script>
+    <script src="src/sections/Section08.js"></script>
+    <script src="src/sections/Section09.js"></script>
+    <script src="src/sections/Section10.js"></script>
+    <script src="src/sections/Section11.js"></script>
+    <script src="src/sections/Section12.js"></script>
+    <script src="src/sections/Section13.js"></script>
+    <!-- <script src="src/sections/Section13.js"></script> -->
+    <!-- BACKUP: S13 for testing -->
+    <script src="src/sections/Section14.js"></script>
+    <script src="src/sections/Section15.js"></script>
+    <script src="src/sections/Section16.js"></script>
+    <script src="src/sections/Section16C.js"></script>
+    <!-- Cooling Sankey Module -->
+    <script src="src/sections/Section17.js"></script>
+    <script src="src/sections/Section18.js"></script>
+  </head>
+  <body>
+    <!-- Main container -->
+    <div class="col-lg-12 mx-auto p-4 py-md-5">
+      <!-- Header -->
+      <header class="d-flex align-items-center pb-3 mb-4 border-bottom">
+        <a
+          href="https://openbuilding.ca"
+          class="text-dark text-decoration-none"
+        >
+          <img
+            src="src/assets/image041.png"
+            class="logo"
+            title="OBJECTIVE Logo"
+            alt="OBJECTIVE 4.012 (Beta) TEUI Calculator"
+          />
+        </a>
+        <div class="ms-auto text-end">
+          <h1 class="mb-0 fs-4">
+            Simple Energy and Carbon Modelling <br />
+            TEUI v.4.012 (Beta) | for Canadian Projects
+          </h1>
+        </div>
+      </header>
+
+      <!-- Action buttons row -->
+      <div class="row button-row mb-2">
+        <div class="col-12 text-end">
+          <div
+            class="col text-end controls-container d-flex align-items-center justify-content-end"
+          >
+            <!-- Weather Location Buttons RETIRED - Now using ClimateValues.js -->
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm me-2"
+              id="toggleHelpBtn"
+              title="Toggle context help tooltips on/off"
+            >
+              <i class="bi bi-question-circle"></i> Help
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm me-2"
+              id="debugExcelBtn"
+              title="Reload page with QC monitoring enabled"
+            >
+              <i class="bi bi-bug"></i> Debug QC
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-info btn-sm me-2"
+              id="showWeatherDataBtn"
+              data-bs-toggle="modal"
+              data-bs-target="#weatherDataModal"
+            >
+              <i class="bi bi-cloud-sun"></i> More Weather Data
+            </button>
+
+            <div class="btn-group me-2">
+              <button type="button" class="btn btn-sm btn-danger">
+                Reference
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="visually-hidden">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">Reference Setup</h6></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="mirrorTargetBtn"
+                    >Mirror Target</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    id="mirrorTargetReferenceBtn"
+                    >Mirror Target + Reference</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    id="referenceIndependenceBtn"
+                    >Reference Independence</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><h6 class="dropdown-header">Display Toggle</h6></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="showReferenceBtn"
+                    >Show Reference</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="showTargetBtn"
+                    >Show Target</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="viewReferenceInputsBtn"
+                    >View Cached Inputs</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <button
+              id="disclaimerBtn"
+              class="btn btn-sm btn-warning me-2"
+              data-bs-toggle="modal"
+              data-bs-target="#disclaimerModal"
+            >
+              ⓘ Disclaimer
+            </button>
+            <button
+              id="reset-imported-btn"
+              type="button"
+              class="btn btn-sm btn-success me-2"
+              onclick="resetAllData()"
+              title="Reset all data and clear saved state"
+            >
+              <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+            <div class="btn-group">
+              <button
+                id="downloadBtn"
+                type="button"
+                class="btn btn-sm btn-primary"
+              >
+                ↓ Import/Export
+              </button>
+              <!-- Dropdown Toggle -->
+              <button
+                class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="visually-hidden">Toggle Dropdown</span>
+              </button>
+              <!-- Dropdown Menu -->
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="#" id="import-data-btn"
+                    ><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="export-data-btn"
+                    ><i class="bi bi-save me-2"></i>Export User Data (CSV)</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="downloadReport"
+                    >Download Report (PDF)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="teui-factsheet"
+                    >TEUI Factsheet (PDF)</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" id="tedi-factsheet"
+                    >TEDI Factsheet (PDF)</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="export-excel"
+                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export
+                    All Data (Excel)</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <!-- Cross-Navigation to OBC Matrix -->
+            <a
+              href="src/obc/indexobc.html"
+              class="btn btn-sm btn-dark ms-2"
+              title="View OBC Matrix tool"
+            >
+              <i class="bi bi-building"></i> OBC Matrix
+            </a>
+          </div>
+          <!-- Hidden File Input for Import -->
+          <input
+            type="file"
+            id="excel-file-input"
+            accept=".xlsx, .xls, .csv"
+            style="display: none"
+          />
+          <!-- Location/Weather Excel Import RETIRED - Now using ClimateValues.js -->
+        </div>
+      </div>
+
+      <!-- App wrapper - this is the new wrapper div -->
+      <div id="app-wrapper">
+        <!-- Calculator container -->
+        <div id="calculator-container">
+          <!-- The HTML for the Key Values section should be: -->
+          <div id="keyValues" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-key-fill"></i></span>
+              SECTION 1. Key Values
+              <div class="ms-auto d-flex align-items-center">
+                <div class="section-controls me-2">
+                  <!-- Buttons moved out, only feedback-area and potentially applyExcelBtn remain here -->
+                  <div class="excel-loader">
+                    <button
+                      type="button"
+                      class="btn btn-outline-success btn-sm d-none"
+                      id="applyExcelBtn"
+                    >
+                      <i class="bi bi-check-lg"></i> Apply Data
+                    </button>
+                    <span
+                      id="feedback-area"
+                      style="
+                        color: #0dcaf0;
+                        font-size: 0.9rem;
+                        margin-left: 10px;
+                      "
+                    ></span>
+                  </div>
+                </div>
+                <button
+                  id="expand-collapse-all"
+                  class="btn btn-sm btn-link text-white me-2"
+                >
+                  <i class="bi bi-plus-circle"></i>
+                </button>
+                <button class="layout-toggle-btn">
+                  <i class="bi bi-arrow-right-circle"></i>
+                </button>
+              </div>
+            </div>
+            <div class="section-content">
+              <!-- Key Values content will be generated by FieldManager using Section01.js -->
+              <div data-render-section="keyValues"></div>
+            </div>
+          </div>
+
+          <!-- Spacer to maintain consistent gap - this prevents scrolling under Key Values -->
+          <div class="tab-spacer"></div>
+
+          <!-- Tab container for horizontal layout - positioned immediately after keyValues -->
+          <div class="tab-container">
+            <!-- Tabs will be generated by JavaScript -->
+          </div>
+
+          <!-- Section spacer to maintain proper distance between Key Values and active section -->
+          <div id="section-spacer" class="section-spacer"></div>
+
+          <!-- Section 2: Building Information -->
+          <div id="buildingInfo" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-info-circle"></i
+              ></span>
+              SECTION 2. Building Information
+            </div>
+            <div class="section-content">
+              <div data-render-section="buildingInfo"></div>
+            </div>
+          </div>
+
+          <!-- Section 3: Climate Calculations -->
+          <div id="climateCalculations" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-thermometer-half"></i
+              ></span>
+              SECTION 3. Climate Calculations
+            </div>
+            <div class="section-content">
+              <!-- Rendered section content will be inserted here -->
+              <div data-render-section="climateCalculations"></div>
+            </div>
+          </div>
+
+          <!-- Section 4: Actual vs. Target Energy & Carbon -->
+          <div id="actualTargetEnergy" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-bullseye"></i></span>
+              SECTION 4. Actual vs. Target Energy & Carbon
+            </div>
+            <div class="section-content">
+              <div data-render-section="actualTargetEnergy"></div>
+            </div>
+          </div>
+
+          <!-- Section 5: CO2e Emissions -->
+          <div id="emissions" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-cloud-upload"></i
+              ></span>
+              SECTION 5. CO2e Emissions
+            </div>
+            <div class="section-content">
+              <div data-render-section="emissions"></div>
+            </div>
+          </div>
+
+          <!-- Section 6: Renewable Energy -->
+          <div id="onSiteEnergy" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-sun"></i></span>
+              SECTION 6. Renewable Energy
+            </div>
+            <div class="section-content">
+              <div data-render-section="onSiteEnergy"></div>
+            </div>
+          </div>
+
+          <!-- Section 7: Water Use -->
+          <div id="waterUse" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-droplet"></i></span>
+              SECTION 7. Water Use
+            </div>
+            <div class="section-content">
+              <div data-render-section="waterUse"></div>
+            </div>
+          </div>
+
+          <!-- Section 8: Indoor Air Quality -->
+          <div id="indoorAirQuality" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-lungs"></i></span>
+              SECTION 8. Indoor Air Quality
+            </div>
+            <div class="section-content">
+              <div data-render-section="indoorAirQuality"></div>
+            </div>
+          </div>
+
+          <!-- Section 9: Occupant + Internal Gains -->
+          <div id="occupantInternalGains" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-cup-hot"></i></span>
+              SECTION 9. Occupant + Internal Gains
+            </div>
+            <div class="section-content">
+              <div data-render-section="occupantInternalGains"></div>
+            </div>
+          </div>
+
+          <!-- Section 10: Radiant Gains -->
+          <div id="envelopeRadiantGains" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-box-arrow-in-down-right"></i
+              ></span>
+              SECTION 10. Radiant Gains
+            </div>
+            <div class="section-content">
+              <div data-render-section="envelopeRadiantGains"></div>
+            </div>
+          </div>
+
+          <!-- Section 11: Transmission Losses -->
+          <div id="envelopeTransmissionLosses" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-box-arrow-up-right"></i
+              ></span>
+              SECTION 11. Transmission Losses
+            </div>
+            <div class="section-content">
+              <div data-render-section="envelopeTransmissionLosses"></div>
+            </div>
+          </div>
+
+          <!-- Section 12: Volume and Surface Metrics -->
+          <div id="volumeSurfaceMetrics" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-box"></i></span>
+              SECTION 12. Volume and Surface Metrics
+            </div>
+            <div class="section-content">
+              <div data-render-section="volumeSurfaceMetrics"></div>
+            </div>
+          </div>
+
+          <!-- Section 13: Mechanical Loads -->
+          <div id="mechanicalLoads" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-house-gear"></i></span>
+              SECTION 13. Mechanical Loads
+            </div>
+            <div class="section-content">
+              <div data-render-section="mechanicalLoads"></div>
+            </div>
+          </div>
+
+          <!-- Section 14: TEDI & TELI -->
+          <div id="tediSummary" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-fire"></i></span>
+              SECTION 14. TEDI & TELI
+            </div>
+            <div class="section-content">
+              <div data-render-section="tediSummary"></div>
+            </div>
+          </div>
+
+          <!-- Section 15: TEUI -->
+          <div id="teuiSummary" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-outlet"></i></span>
+              SECTION 15. TEUI
+            </div>
+            <div class="section-content">
+              <div data-render-section="teuiSummary"></div>
+            </div>
+          </div>
+
+          <!-- Section 16: Sankey Diagram -->
+          <div id="sankeyDiagram" class="section" data-section-id="section16">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-sliders2"></i></span>
+              SECTION 16. Sankey Diagram
+            </div>
+            <div class="section-content">
+              <!-- This is the target for Section16.js to inject its dynamic content -->
+              <div id="section16ContentTarget" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Section 17: Dependency Graph -->
+          <div id="dependencyDiagram" class="section">
+            <div class="section-header">
+              <span class="section-icon"><i class="bi bi-link-45deg"></i></span>
+              SECTION 17. Dependency Graph
+            </div>
+            <div class="section-content">
+              <!-- Containers for Dependency Graph Components -->
+              <div class="dependency-graph-controls-wrapper mb-3"></div>
+              <!-- Wrapper for filters/controls -->
+              <div class="dependency-graph-info-wrapper mb-3"></div>
+              <!-- Wrapper for info panel -->
+              <div
+                class="dependency-graph-container"
+                style="height: 600px; width: 100%; border: 1px solid #eee"
+              >
+                <!-- SVG will be injected here by 4011-Dependency.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 18: Notes -->
+          <div id="notes" class="section">
+            <div class="section-header">
+              <span class="section-icon"
+                ><i class="bi bi-info-square"></i
+              ></span>
+              SECTION 18. Notes
+            </div>
+            <div class="section-content">
+              <div data-render-section="notes"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="pt-5 mt-5 text-muted border-top">
+        <div class="row">
+          <div class="col-md-6">
+            <p>
+              Based on the framework by
+              <a href="https://OpenBuilding.ca">OpenBuilding.ca</a> - Version
+              4.011
+            </p>
+          </div>
+          <div class="col-md-6 text-end">
+            <p>TEUI 4.011 Calculator</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Modal for disclaimer -->
+    <div
+      class="modal fade"
+      id="disclaimerModal"
+      tabindex="-1"
+      aria-labelledby="disclaimerModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-warning bg-opacity-25">
+            <h5 class="modal-title" id="disclaimerModalLabel">
+              Using this calculator
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Demo Warning - Moved from banner -->
+            <div class="alert alert-warning border-warning mb-4" role="alert">
+              <div class="flex-grow-1">
+                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE 4.012 is under active
+                development.
+                <strong>DO NOT USE for real projects.</strong>
+                For production work, download:
+                <a
+                  href="https://openbuilding.ca/product/objective-v3/"
+                  target="_blank"
+                  class="alert-link"
+                >
+                  https://openbuilding.ca/product/objective-v3/
+                </a>
+              </div>
+            </div>
+
+            <p>
+              This tool helps you calculate the Total Energy Use Intensity
+              (TEUI) & Thermal Energy Demand Intensity (TEDI) of a building or
+              home.
+            </p>
+            <p>
+              Simply enter your information (Blue inputs). Press the tab key on
+              your keyboard to jump to the next input field and enter values for
+              your building or project.
+            </p>
+            <p>
+              Default values exist to speed up the process, but you must
+              over-write them with relevant values from your own project.
+              Results will be calculated automatically (Black text).
+            </p>
+            <hr />
+            <p>
+              <strong>Disclaimer:</strong> OBJECTIVE 4.011 is software IN
+              DEVELOPMENT. IT IS NOT YET COMPLETE! As such it is not fit for any
+              purpose, and is meant for demonstration only. Our team has made
+              every effort to have OBJECTIVE's Targeted Energy Use match
+              real-world values by reviewing a wide range of building types and
+              utility bills, but no energy model can accurately predict energy
+              use due to hundreds of influences beyond our ability to model,
+              from exact weather in a given year, to user behaviours, to actual
+              commissioned equipment efficiencies. This static modelling tool
+              aims to set Targets in a consistent way to compare against
+              Reference cases, but our experience has shown that with correct
+              use, we can arrive at values very close to real-world,
+              utility-bill values for total energy use.
+            </p>
+            <p>
+              Click the download button to generate a complete OBJECTIVE
+              TEUIv.4.011 Report (feature pending development). Only for
+              Canadian projects.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather Data Modal -->
+    <div
+      class="modal fade"
+      id="weatherDataModal"
+      tabindex="-1"
+      aria-labelledby="weatherDataModalLabel"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="weatherDataModalLabel">Weather Data</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <pre
+              id="weatherDataContent"
+              class="bg-light p-3"
+              style="max-height: 400px; overflow-y: auto"
+            >
+Select a province and city to view weather data.</pre
+            >
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global modal fix script -->
+    <script>
+      // Simplified fix for lingering modal backdrops
+      document.addEventListener("DOMContentLoaded", function () {
+        // This single event listener handles all modals, but only cleans up when needed
+        document.body.addEventListener("hidden.bs.modal", function () {
+          // Use a short timeout to ensure Bootstrap has completed its operations
+          setTimeout(function () {
+            // Only clean up if there are backdrops but no visible modals
+            if (
+              document.querySelectorAll(".modal-backdrop").length > 0 &&
+              !document.querySelector(".modal.show")
+            ) {
+              console.log("Cleaning up lingering modal backdrops");
+              document
+                .querySelectorAll(".modal-backdrop")
+                .forEach((el) => el.remove());
+              document.body.classList.remove("modal-open");
+              document.body.style.overflow = "";
+              document.body.style.paddingRight = "";
+            }
+          }, 150);
+        });
+      });
+    </script>
+
+    <!-- JavaScript resources -->
+    <!-- Bootstrap already loaded in head -->
+
+    <!-- Initialize components on page load -->
+    <script>
+      // Cross-system navigation with state preservation
+      function saveStateAndNavigate(url) {
+        if (TEUI && TEUI.StateManager) {
+          // console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
+
+          // Force immediate save before navigation
+          TEUI.StateManager.saveState();
+          console.log(
+            "TEUI StateManager: State saved before navigating to OBC Matrix",
+          );
+
+          // Check what was actually saved
+          const saved = localStorage.getItem("TEUI_Calculator_State");
+          // console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
+        }
+
+        // Navigate after a brief delay to ensure save completes
+        setTimeout(() => {
+          window.location.href = url;
+        }, 100);
+      }
+
+      // Reset all data including localStorage
+      function resetAllData() {
+        if (TEUI && TEUI.StateManager) {
+          // Clear all state including localStorage
+          TEUI.StateManager.clear();
+          console.log(
+            "TEUI StateManager: All data cleared including localStorage",
+          );
+
+          // Reload the page to show clean state
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      }
+
+      // Global Target/Reference Toggle Setup
+      function setupGlobalToggleUI(retryCount = 0) {
+        const maxRetries = 10; // Maximum 10 retries = 5 seconds
+
+        const sectionHeader = document.querySelector(
+          "#climateCalculations .section-header",
+        );
+        if (!sectionHeader) {
+          console.warn("Global Toggle: S03 header not found");
+          return;
+        }
+
+        // Check if toggle already exists
+        if (sectionHeader.querySelector(".reference-toggle")) {
+          return;
+        }
+
+        // Use the ModeManager exposed by S03
+        const ModeManager = window.TEUI?.ModeManager;
+        if (!ModeManager) {
+          if (retryCount < maxRetries) {
+            console.warn(
+              `Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`,
+            );
+            // Retry after a delay if S03 isn't ready (with retry limit)
+            setTimeout(() => setupGlobalToggleUI(retryCount + 1), 500);
+          } else {
+            console.error(
+              "Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load.",
+            );
+          }
+          return;
+        }
+
+        // Create toggle container
+        const toggleContainer = document.createElement("div");
+        toggleContainer.style.cssText =
+          "display: flex; align-items: center; gap: 20px; margin-left: auto;";
+
+        // Create state indicator
+        const stateIndicator = document.createElement("span");
+        stateIndicator.className = "state-indicator target";
+        stateIndicator.textContent = "TARGET MODE";
+        stateIndicator.style.cssText = `
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          background-color: #e3f2fd;
+          color: #1976d2;
+        `;
+
+        // Create toggle
+        const toggleDiv = document.createElement("div");
+        toggleDiv.className = "reference-toggle";
+        toggleDiv.style.cssText =
+          "display: flex; align-items: center; gap: 10px;";
+
+        const toggleLabel = document.createElement("label");
+        toggleLabel.textContent = "Show Reference";
+        toggleLabel.style.cssText = `
+          font-weight: 500; color: #fff; margin: 0;
+        `;
+
+        const toggleSwitch = document.createElement("div");
+        toggleSwitch.className = "toggle-switch";
+        toggleSwitch.style.cssText = `
+          position: relative;
+          width: 50px;
+          height: 24px;
+          background-color: #ccc;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        `;
+
+        const toggleSlider = document.createElement("div");
+        toggleSlider.className = "toggle-slider";
+        toggleSlider.style.cssText = `
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 20px;
+          height: 20px;
+          background-color: white;
+          border-radius: 50%;
+          transition: transform 0.3s;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        `;
+
+        // Create reset button
+        const resetButton = document.createElement("button");
+        resetButton.textContent = "Reset States";
+        resetButton.style.cssText = `
+          padding: 6px 12px;
+          background-color: #f44336;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+          font-size: 12px;
+        `;
+
+        // Add toggle functionality
+        toggleSwitch.addEventListener("click", function (event) {
+          event.stopPropagation();
+          const isActive = toggleSwitch.classList.contains("active");
+
+          if (!isActive) {
+            // Switching to reference mode
+            toggleSwitch.classList.add("active");
+            toggleSwitch.style.backgroundColor = "#2196f3";
+            toggleSlider.style.transform = "translateX(26px)";
+            toggleLabel.textContent = "Show Target";
+            stateIndicator.textContent = "REFERENCE MODE";
+            stateIndicator.style.backgroundColor = "#ffebee";
+            stateIndicator.style.color = "#c62828";
+            ModeManager.switchMode("reference");
+          } else {
+            // Switching back to target mode
+            toggleSwitch.classList.remove("active");
+            toggleSwitch.style.backgroundColor = "#ccc";
+            toggleSlider.style.transform = "translateX(0px)";
+            toggleLabel.textContent = "Show Reference";
+            stateIndicator.textContent = "TARGET MODE";
+            stateIndicator.style.backgroundColor = "#e3f2fd";
+            stateIndicator.style.color = "#1976d2";
+            ModeManager.switchMode("target");
+          }
+        });
+
+        // Add reset functionality
+        resetButton.addEventListener("click", function (event) {
+          event.stopPropagation();
+          if (
+            confirm(
+              "Are you sure you want to reset all Target/Reference states to defaults?",
+            )
+          ) {
+            // Clear all dual-state localStorage keys
+            const dualStateKeys = [
+              "S03_TARGET_STATE",
+              "S03_REFERENCE_STATE",
+              "S08_TARGET_STATE",
+              "S08_REFERENCE_STATE",
+              "S09_TARGET_STATE",
+              "S09_REFERENCE_STATE",
+              "S10_TARGET_STATE",
+              "S10_REFERENCE_STATE",
+              "S11_TARGET_STATE",
+              "S11_REFERENCE_STATE",
+              "S12_TARGET_STATE",
+              "S12_REFERENCE_STATE",
+              "S13_TARGET_STATE",
+              "S13_REFERENCE_STATE",
+              "S14_TARGET_STATE",
+              "S14_REFERENCE_STATE",
+              "S15_TARGET_STATE",
+              "S15_REFERENCE_STATE",
+            ];
+
+            dualStateKeys.forEach((key) => {
+              localStorage.removeItem(key);
+              console.log(`Global Reset: Cleared ${key}`);
+            });
+
+            console.log(
+              "Global Reset: All dual-state localStorage cleared. Refreshing page...",
+            );
+
+            // Refresh page to reload defaults
+            location.reload();
+          }
+        });
+
+        // Assemble elements
+        toggleSwitch.appendChild(toggleSlider);
+        toggleDiv.appendChild(toggleLabel);
+        toggleDiv.appendChild(toggleSwitch);
+
+        toggleContainer.appendChild(stateIndicator);
+        toggleContainer.appendChild(toggleDiv);
+        toggleContainer.appendChild(resetButton);
+
+        sectionHeader.appendChild(toggleContainer);
+
+        console.log(
+          "Global Toggle: Setup complete in S03 header using S03's ModeManager",
+        );
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize state manager
+        if (TEUI.StateManager) {
+          // First, verify StateManager has the required functions
+          // console.log("🔍 DEBUG: StateManager functions available:", {
+          //   saveState: typeof TEUI.StateManager.saveState,
+          //   loadState: typeof TEUI.StateManager.loadState,
+          //   clear: typeof TEUI.StateManager.clear
+          // });
+
+          // Check what's in localStorage before initialization
+          const saved = localStorage.getItem("TEUI_Calculator_State");
+          // console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
+
+          if (saved) {
+            const parsedState = JSON.parse(saved);
+            // console.log("🔍 DEBUG: Saved state details:", {
+            //   fieldCount: Object.keys(parsedState).length,
+            //   sampleFields: Object.keys(parsedState).slice(0, 5),
+            //   sampleValues: Object.entries(parsedState).slice(0, 3)
+            // });
+          }
+
+          // Initialize now loads state automatically during initialization
+          TEUI.StateManager.initialize();
+
+          // Check if state was preserved and loaded
+          const debugInfo = TEUI.StateManager.getDebugInfo();
+          // console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
+
+          // Check if user-modified fields are actually loaded
+          const allKeys = TEUI.StateManager.getAllKeys();
+          let userModifiedCount = 0;
+          let importedCount = 0;
+          let defaultCount = 0;
+          let calculatedCount = 0;
+
+          allKeys.forEach((key) => {
+            const fieldInfo = TEUI.StateManager.getDebugInfo(key);
+            if (fieldInfo) {
+              switch (fieldInfo.state) {
+                case "user-modified":
+                  userModifiedCount++;
+                  break;
+                case "imported":
+                  importedCount++;
+                  break;
+                case "default":
+                  defaultCount++;
+                  break;
+                case "calculated":
+                  calculatedCount++;
+                  break;
+              }
+            }
+          });
+
+          // console.log("🔍 DEBUG: Field states after initialize:", {
+          //   'user-modified': userModifiedCount,
+          //   'imported': importedCount,
+          //   'default': defaultCount,
+          //   'calculated': calculatedCount,
+          //   'total': allKeys.length
+          // });
+        }
+
+        // Initialize FieldManager to generate content for all sections
+        if (TEUI.FieldManager) {
+          // console.log("🔍 DEBUG: About to render all sections");
+          TEUI.FieldManager.renderAllSections();
+          // console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+        }
+
+        // ⏸️ DISABLED: Global toggle failing with 10 retries - causing console spam
+        // Setup global toggle UI after sections are rendered and S03's DualState is available
+        // setTimeout(setupGlobalToggleUI, 1500); // Give S03 time to expose ModeManager
+        // TODO: Re-enable when migrating to unified global toggle for all Pattern A sections
+
+        // Initialize Component Bridge
+        /* if (TEUI.ComponentBridge) {
+          TEUI.ComponentBridge.initAll();
+
+          // ✅ Initialize dual-state synchronization
+          TEUI.ComponentBridge.initDualStateSync();
+        } */
+
+        // Initialize Calculator
+        if (TEUI.Calculator) {
+          // console.log("🔍 DEBUG: About to initialize Calculator");
+          TEUI.Calculator.initialize();
+          // console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+
+          // PERFORMANCE FIX: Use longer delay to prevent setTimeout violations (663ms)
+          // Heavy calculations need more time separation to avoid blocking
+          setTimeout(function () {
+            // console.log("🔍 DEBUG: About to run calculateAll");
+            TEUI.Calculator.calculateAll();
+            // console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+          }, 300); // Longer delay prevents setTimeout performance violations
+        }
+
+        console.log("TEUI Calculator 4.011 initialization complete");
+
+        // 🕐 ENSURE CLOCK INITIALIZATION: Force Clock init after all other initialization
+        if (window.TEUI?.Clock?.init) {
+          window.TEUI.Clock.init();
+        }
+
+        // 📚 HELP BUTTON: Toggle tooltips on/off
+        const toggleHelpBtn = document.getElementById('toggleHelpBtn');
+        if (toggleHelpBtn && window.TEUI?.TooltipManager) {
+          // Set initial button state
+          const updateButtonState = () => {
+            const isEnabled = window.TEUI.TooltipManager.isEnabled();
+            if (isEnabled) {
+              toggleHelpBtn.classList.remove('btn-outline-secondary', 'btn-danger');
+              toggleHelpBtn.classList.add('btn-success');
+              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle-fill"></i> Help On';
+            } else {
+              toggleHelpBtn.classList.remove('btn-success', 'btn-outline-secondary');
+              toggleHelpBtn.classList.add('btn-danger');
+              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle"></i> Help Off';
+            }
+          };
+
+          // Initialize button state
+          updateButtonState();
+
+          // Add click handler
+          toggleHelpBtn.addEventListener('click', function() {
+            window.TEUI.TooltipManager.toggleTooltips();
+            updateButtonState();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,524 @@
+{
+  "title": "PART 3 - FIRE PROTECTION, OCCUPANT SAFETY AND ACCESSIBILITY",
+  "sections": [
+    {
+      "id": "3.00",
+      "title": "BUILDING CODE VERSION",
+      "fields": [
+        {
+          "id": "building_code_version",
+          "type": "text",
+          "value": "O.Reg. 163/24",
+          "label": "BUILDING CODE VERSION"
+        },
+        {
+          "id": "last_code_amendment",
+          "type": "text",
+          "value": "O.Reg. 447/24",
+          "label": "LAST CODE AMENDMENT"
+        }
+      ]
+    },
+    {
+      "id": "3.01",
+      "title": "PROJECT TYPE",
+      "fields": [
+        {
+          "id": "project_type",
+          "type": "dropdown",
+          "value": "-",
+          "label": "PROJECT TYPE",
+          "options": ["-", "New", "Addition", "Alteration", "Change of Use"]
+        }
+      ]
+    },
+    {
+      "id": "3.02",
+      "title": "MAJOR OCCUPANCY CLASSIFICATION",
+      "fields": [
+        {
+          "id": "occupancy_1",
+          "type": "dropdown",
+          "value": "-",
+          "label": "OCCUPANCY",
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
+        },
+        {
+          "id": "use_1",
+          "type": "text",
+          "value": "",
+          "label": "USE"
+        },
+        {
+          "id": "occupancy_2",
+          "type": "dropdown",
+          "value": "-",
+          "label": "",
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
+        },
+        {
+          "id": "use_2",
+          "type": "text",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "occupancy_3",
+          "type": "dropdown",
+          "value": "-",
+          "label": "",
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
+        },
+        {
+          "id": "use_3",
+          "type": "text",
+          "value": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "3.03",
+      "title": "SUPERIMPOSED MAJOR OCCUPANCIES",
+      "fields": [
+        {
+          "id": "superimposed_occupancies",
+          "type": "dropdown",
+          "value": "-",
+          "label": "SUPERIMPOSED MAJOR OCCUPANCIES",
+          "options": ["-", "Yes", "No"]
+        },
+        {
+          "id": "superimposed_explanation",
+          "type": "text",
+          "value": "",
+          "label": "EXPLANATION (if Yes)"
+        }
+      ]
+    },
+    {
+      "id": "3.04",
+      "title": "BUILDING AREA (m²)",
+      "fields": [
+        {
+          "id": "area_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "area_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "area_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "area_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        },
+        {
+          "id": "area_desc_2",
+          "type": "text",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_existing_2",
+          "type": "number",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_new_2",
+          "type": "number",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_total_2",
+          "type": "number",
+          "value": "",
+          "label": "",
+          "calculated": true
+        },
+        {
+          "id": "area_desc_3",
+          "type": "text",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_existing_3",
+          "type": "number",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_new_3",
+          "type": "number",
+          "value": "",
+          "label": ""
+        },
+        {
+          "id": "area_total_3",
+          "type": "number",
+          "value": "",
+          "label": "",
+          "calculated": true
+        },
+        {
+          "id": "area_total_existing",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL EXISTING",
+          "calculated": true
+        },
+        {
+          "id": "area_total_new",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL NEW",
+          "calculated": true
+        },
+        {
+          "id": "area_total_all",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL ALL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "3.05",
+      "title": "GROSS AREA (m²)",
+      "fields": [
+        {
+          "id": "gross_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "gross_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "gross_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "gross_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "3.06",
+      "title": "MEZZANINE AREA (m²)",
+      "fields": [
+        {
+          "id": "mezz_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "mezz_type_1",
+          "type": "dropdown",
+          "value": "Select applicable",
+          "label": "MEZZ TYPE",
+          "options": ["Select applicable", "Open", "Enclosed"]
+        },
+        {
+          "id": "mezz_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "mezz_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "mezz_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "3.07",
+      "title": "BUILDING HEIGHT",
+      "fields": [
+        {
+          "id": "storeys_above_grade",
+          "type": "number",
+          "value": "",
+          "label": "STOREYS ABOVE GRADE"
+        },
+        {
+          "id": "storeys_below_grade",
+          "type": "number",
+          "value": "",
+          "label": "STOREYS BELOW GRADE"
+        },
+        {
+          "id": "height_above_grade",
+          "type": "number",
+          "value": "",
+          "label": "(m) ABOVE GRADE"
+        }
+      ]
+    },
+    {
+      "id": "3.08",
+      "title": "HIGH BUILDING",
+      "fields": [
+        {
+          "id": "high_building",
+          "type": "dropdown",
+          "value": "-",
+          "label": "HIGH BUILDING",
+          "options": ["-", "Yes", "No"]
+        }
+      ]
+    },
+    {
+      "id": "3.09",
+      "title": "NUMBER OF STREETS/ FIREFIGHTER ACCESS",
+      "fields": [
+        {
+          "id": "streets_access",
+          "type": "dropdown",
+          "value": "-",
+          "label": "STREET(S)",
+          "options": ["-", "1", "2", "3", "4"]
+        }
+      ]
+    },
+    {
+      "id": "3.10",
+      "title": "BUILDING CLASSIFICATION",
+      "fields": [
+        {
+          "id": "building_classification_1",
+          "type": "dropdown",
+          "value": "-",
+          "label": "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)",
+          "options": [
+            "-",
+            "3.2.2.20. Group A, Division 1, Any Height, Any Area, Sprinklered",
+            "3.2.2.21. Group A, Division 1, up to 3 Storeys",
+            "3.2.2.22. Group A, Division 1, up to 2 Storeys",
+            "3.2.2.23. Group A, Division 2, Any Height, Any Area, Sprinklered",
+            "3.2.2.24. Group A, Division 2, up to 6 Storeys, Sprinklered",
+            "3.2.2.25. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.26. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.27. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.28. Group A, Division 2, up to 1 Storey",
+            "3.2.2.29. Group A, Division 3, Any Height, Any Area, Sprinklered",
+            "3.2.2.30. Group A, Division 3, up to 4 Storeys",
+            "3.2.2.31. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.32. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.33. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.34. Group A, Division 3, up to 1 Storey",
+            "3.2.2.35. Group A, Division 4",
+            "3.2.2.36. Group B, Division 1, Any Height, Any Area, Sprinklered",
+            "3.2.2.37. Group B, Division 1, up to 3 Storeys, Sprinklered",
+            "3.2.2.38. Group B, Division 2, Any Height, Any Area, Sprinklered",
+            "3.2.2.39. Group B, Division 2, up to 3 Storeys, Sprinklered",
+            "3.2.2.40. Group B, Division 2, up to 2 Storeys, Sprinklered",
+            "3.2.2.41. Group B, Division 2, up to 1 Storey, Sprinklered",
+            "3.2.2.42. Group B, Division 3, Any Height, Any Area, Sprinklered",
+            "3.2.2.43. Group B, Division 3, up to 3 Storeys, Sprinklered",
+            "3.2.2.44. Group B, Division 3, up to 2 Storeys, Sprinklered",
+            "3.2.2.45. Group B, Division 3, up to 1 Storey, Sprinklered"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3.11",
+      "title": "SPRINKLER SYSTEM",
+      "fields": [
+        {
+          "id": "sprinkler_system",
+          "type": "dropdown",
+          "value": "-",
+          "label": "SPRINKLER SYSTEM",
+          "options": ["-", "Yes", "No", "Partial"]
+        },
+        {
+          "id": "sprinkler_provided",
+          "type": "dropdown",
+          "value": "-",
+          "label": "PROVIDED",
+          "options": ["-", "NFPA 13", "NFPA 13R", "NFPA 13D"]
+        },
+        {
+          "id": "sprinkler_description",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIBE"
+        }
+      ]
+    },
+    {
+      "id": "3.12",
+      "title": "STANDPIPE SYSTEM",
+      "fields": [
+        {
+          "id": "standpipe_system",
+          "type": "dropdown",
+          "value": "-",
+          "label": "STANDPIPE SYSTEM",
+          "options": ["-", "Yes", "No"]
+        }
+      ]
+    },
+    {
+      "id": "3.13",
+      "title": "FIRE ALARM SYSTEM",
+      "fields": [
+        {
+          "id": "fire_alarm_system",
+          "type": "dropdown",
+          "value": "-",
+          "label": "FIRE ALARM SYSTEM",
+          "options": ["-", "Yes", "No"]
+        },
+        {
+          "id": "fire_alarm_type",
+          "type": "dropdown",
+          "value": "-",
+          "label": "TYPE PROVIDED",
+          "options": ["-", "Single Stage", "Two Stage", "Monitoring"]
+        }
+      ]
+    },
+    {
+      "id": "3.14",
+      "title": "WATER SERVICE/SUPPLY IS ADEQUATE",
+      "fields": [
+        {
+          "id": "water_service",
+          "type": "dropdown",
+          "value": "-",
+          "label": "WATER SERVICE/SUPPLY IS ADEQUATE",
+          "options": ["-", "Yes", "No"]
+        },
+        {
+          "id": "water_service_explanation",
+          "type": "text",
+          "value": "",
+          "label": "EXPLANATION (if No)"
+        }
+      ]
+    },
+    {
+      "id": "3.15",
+      "title": "CONSTRUCTION TYPE",
+      "fields": [
+        {
+          "id": "construction_based_on",
+          "type": "dropdown",
+          "value": "-",
+          "label": "BASED ON",
+          "options": ["-", "Combustible", "Noncombustible", "Both"]
+        },
+        {
+          "id": "construction_restrictions",
+          "type": "dropdown",
+          "value": "-",
+          "label": "RESTRICTIONS",
+          "options": [
+            "-",
+            "Combustible Construction NOT Permitted",
+            "Combustible Construction Permitted",
+            "Noncombustible Construction Permitted"
+          ]
+        },
+        {
+          "id": "construction_actual",
+          "type": "dropdown",
+          "value": "-",
+          "label": "ACTUAL",
+          "options": ["-", "Combustible", "Noncombustible", "Both"]
+        },
+        {
+          "id": "heavy_timber",
+          "type": "dropdown",
+          "value": "-",
+          "label": "HEAVY TIMBER CONSTRUCTION",
+          "options": ["-", "Yes", "No"]
+        }
+      ]
+    }
+  ]
+}

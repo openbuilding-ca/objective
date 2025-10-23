@@ -1,0 +1,2201 @@
+/**
+ * OBC-styles.css Refactored 2025.06.06 to consolidate column widths and improve readability
+ * Core styles for OBC Matrix
+
+ */
+
+:root {
+  /* Layout dimensions */
+  --key-values-height: 0px;
+  --header-height: 60px;
+  --tab-height: 40px;
+  --tab-spacer-height: 15px; /* Fixed spacer height */
+
+  /* Colors */
+  --primary-text: #212529;
+  --secondary-text: #5f6368;
+  --header-bg: #212529;
+  --header-text: #ffffff;
+  --border-color: #dee2e6;
+  --hover-bg: #f8f9fa;
+  --table-header-bg: #f1f3f4;
+  --user-input-color: #0d6efd;
+  --calculated-value-color: #202124;
+  --derived-value-color: #202124;
+  --reference-value-color: #8b0000;
+  --target-value-color: #1a73e8;
+  --actual-value-color: #202124;
+  --link-color: #0d6efd;
+  --tab-active-bg: #495057;
+  --tab-active-border: #0d6efd;
+
+  /* Sizes and spacings */
+  --section-spacing: 12px;
+  --cell-padding: 4px 8px;
+  --header-cell-padding: 6px 8px;
+  --border-radius: 8px;
+
+  /* Font sizes */
+  --base-font-size: 0.85rem;
+  --small-font-size: 0.8em;
+  --smaller-font-size: 0.75em; /* Adjusted this for header rows */
+  --header-font-size: 1rem;
+  --key-values-font-size: 1.3rem;
+}
+
+/* =============== Base Element Styling =============== */
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: var(--base-font-size);
+  line-height: 1.5;
+  color: var(--primary-text);
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  height: var(--header-height);
+}
+
+/* =============== Layout Framework =============== */
+
+/* App wrapper structure */
+#app-wrapper {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  min-height: 100vh; /* Take at least full viewport height */
+  /* Ensure clean separation from header elements */
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Main container structure */
+#calculator-container {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  min-height: 500px;
+}
+
+/* Section spacer to maintain proper distance between tabs and content */
+.section-spacer {
+  display: none;
+  height: 0;
+}
+
+/* In horizontal layout, add fixed spacing below tabs */
+.horizontal-layout .section-spacer {
+  display: block;
+  height: 15px;
+  min-height: 15px;
+  max-height: 15px;
+  width: 100%;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tab spacer - setting to zero height in horizontal layout */
+.tab-spacer {
+  height: 0;
+  display: none;
+  background-color: transparent;
+  position: static;
+}
+
+/* Building Info (S01) positioning - sticky header */
+#buildingInfo {
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  margin-bottom: 0;
+  background-color: #fff;
+  box-shadow: none; /* Remove shadow which can cause line */
+  border-bottom: none; /* Remove border which can cause line */
+}
+
+/* Legacy keyValues support for compatibility */
+#keyValues {
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  margin-bottom: 0;
+  background-color: #fff;
+  box-shadow: none; /* Remove shadow which can cause line */
+  border-bottom: none; /* Remove border which can cause line */
+}
+
+/* Tab container - attach directly to Key Values with no gap */
+.tab-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  background-color: var(--header-bg);
+  border: 2px solid var(--header-bg);
+  border-top: none;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  position: sticky;
+  top: var(
+    --key-values-height
+  ); /* Stick exactly at the bottom of sticky header section */
+  z-index: 109;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: var(--tab-height);
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.tab-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Prevent active sections from getting too close to tabs */
+.horizontal-layout .section.active:not(#keyValues) {
+  position: relative;
+  margin-top: 0; /* Reset margin */
+}
+
+/* =============== Section Styling =============== */
+
+.section {
+  margin-bottom: var(--section-spacing);
+  border: 2px solid var(--header-bg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.section-header {
+  background-color: var(--header-bg);
+  color: white;
+  padding: 8px 12px;
+  font-weight: 500;
+  font-size: var(--header-font-size);
+  display: flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.section-icon {
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-content {
+  transition:
+    max-height 0.3s ease-out,
+    opacity 0.2s ease-out;
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Hide scrollbar for webkit browsers */
+.section-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============== Data Tables - PURE NATURAL BROWSER BEHAVIOR =============== */
+
+/* Minimal table styling - let browser's natural algorithm work perfectly */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--base-font-size);
+  /* NO column constraints - pure browser content-based sizing */
+}
+
+/* Table cells - clean and simple */
+.data-table td,
+.data-table th {
+  padding: var(--cell-padding);
+  border-bottom: 1px solid #eeeeee;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* Ensure cells have minimum vertical padding for focus glow */
+.data-table td {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* UNIVERSAL ALIGNMENT: Simple and clean */
+.data-table td {
+  text-align: left; /* All table content left-aligned by default */
+}
+
+/* Universal numeric field right-alignment - clean field type approach */
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td input[type="number"],
+.data-table td[data-type="numeric"],
+.data-table td.numeric-field {
+  text-align: right;
+}
+
+/* Calculated values are bold (alignment handled above) */
+.calculated-value {
+  font-weight: 700;
+  color: var(--calculated-value-color);
+}
+
+.derived-value {
+  font-weight: 600;
+  color: var(--derived-value-color);
+}
+
+/* Style for fields awaiting measurement/input */
+.PendingValue {
+  font-style: italic;
+  color: #888888;
+}
+
+/* =============== Layout Toggle and Navigation =============== */
+
+/* Toggle buttons for layout modes */
+#layout-toggle {
+  margin-bottom: 15px;
+}
+
+/* Tab styling */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px;
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid #444;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  height: var(--tab-height);
+  min-width: 80px;
+}
+
+.tab i {
+  margin-right: 4px;
+  font-size: 0.9em;
+}
+
+.tab.icon-only {
+  min-width: 40px;
+  padding: 8px 8px;
+  justify-content: center;
+}
+
+.tab.icon-only i {
+  margin-right: 0;
+  font-size: 1.1em;
+}
+
+/* Button sizing fixes */
+#expand-collapse-all,
+.layout-toggle-btn {
+  font-size: 20px;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab:hover {
+  background-color: var(--tab-active-bg);
+}
+
+.tab.active {
+  background-color: var(--tab-active-bg);
+  border-bottom: 4px solid var(--tab-active-border) !important;
+}
+
+/* Layout toggle button in Key Values header */
+.layout-toggle-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.layout-toggle-btn:hover {
+  color: #f1f1f1;
+}
+
+/* Expand/Collapse controls */
+.expand-collapse-all {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background-color: #f1f3f4;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+}
+
+.expand-collapse-all:hover {
+  background-color: #e8eaed;
+}
+
+.expand-collapse-all .toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 4px 0 4px;
+  border-color: var(--primary-text) transparent transparent transparent;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.expand-collapse-all.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Section toggle icon */
+.section-header .toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 4px 0 4px;
+  border-color: white transparent transparent transparent;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.section-header.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Collapsible section content */
+.section-header.collapsed + .section-content {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+/* =============== Layout Modes =============== */
+
+/* Horizontal (tabbed) layout */
+.horizontal-layout #buildingInfo,
+.horizontal-layout #keyValues {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+.horizontal-layout .tab-container {
+  display: flex !important;
+}
+
+.horizontal-layout .expand-collapse-all {
+  display: none;
+}
+
+.horizontal-layout .section:not(#buildingInfo):not(#keyValues):not(.active) {
+  display: none;
+}
+
+.horizontal-layout .section.active:not(#buildingInfo):not(#keyValues) {
+  display: block;
+  margin-top: 0;
+  padding-top: 0;
+  align-self: flex-start;
+}
+
+/* Vertical layout */
+.vertical-layout .tab-container {
+  display: none !important;
+}
+
+.vertical-layout .section {
+  display: block;
+}
+
+.vertical-layout #buildingInfo,
+.vertical-layout #keyValues {
+  margin-bottom: var(--section-spacing) !important;
+  border-bottom-left-radius: var(--border-radius) !important;
+  border-bottom-right-radius: var(--border-radius) !important;
+  border-bottom: 2px solid var(--header-bg) !important;
+}
+
+/* =============== Component Styling =============== */
+
+/* Dropdowns */
+/* Force removal of borders/outlines on dropdowns and their containers */
+.form-select,
+select.form-select,
+select.form-control,
+select,
+option,
+.data-table td select.form-select {
+  /* Font consistency */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-family: sans-serif; /* Fallback */
+
+  /* Restore forcing removal of border and outline */
+  border: none !important; /* Restored rule */
+  outline: none !important;
+  box-shadow: none;
+  /* Keep dropdowns transparent, they don't need hover bg */
+  background-color: transparent;
+
+  /* Ensure consistent size and appearance */
+  font-size: inherit; /* Inherit from parent cell */
+  color: var(--user-input-color); /* Blue color for select */
+  font-weight: 500;
+}
+
+/* Restore Bootstrap's default for dropdown-menu and dropdown-item */
+.dropdown-menu,
+.dropdown-item {
+  background-color: #fff !important;
+}
+
+/* Apply to select elements within table cells */
+.data-table select.form-select {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important; /* Restore Bootstrap border */
+  border-radius: 0.25rem !important; /* Bootstrap default radius */
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
+  background-color: #fff !important; /* Ensure white background */
+  /* Ensure the select sits properly in the cell */
+  margin: 2px 0; /* Small margin to prevent border touching table lines */
+  height: calc(100% - 4px); /* Account for margins */
+}
+
+/* Natural dropdown cell sizing - no min-width constraints */
+[data-dropdown-id] {
+  padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
+}
+
+/* Sliders */
+[data-type="percentage"],
+[data-type="coefficient"],
+[data-type="year_slider"] {
+  cursor: pointer;
+  color: var(--user-input-color);
+  font-weight: 500;
+}
+
+/* =============== MINIMAL INPUT FIELD STYLING =============== */
+/* Ultra-minimal approach - just enough to show editability without visual noise */
+
+/* Base styling for editable fields - minimal and clean */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  /* Minimal borders - preserve table structure */
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+
+  /* Typography */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif !important;
+  font-size: inherit !important;
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+
+  /* Clean interactions */
+  outline: none !important;
+  /* transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important; */ /* REMOVED: TEUI-style animations unnecessary for forms */
+  cursor: text !important;
+
+  /* Default sizing */
+  width: 100% !important;
+  box-sizing: border-box !important;
+  /* text-align: left inherited from universal rule */
+}
+
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td:has(.editable[contenteditable="true"]),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Special alignment for numeric fields handled by universal rule above */
+
+/* Hover state - very subtle background hint + enhanced border */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+}
+
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background + enhanced border */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Parent cell styling - minimal */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.editable,
+.data-table td:has(.user-input[contenteditable="true"]) {
+  padding: 4px 8px !important;
+  vertical-align: middle !important;
+}
+
+/* Override conflicting cell hover styles */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td.editable:hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: transparent !important;
+}
+
+/* Remove conflicting TD focus styles */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Smooth transition between states - REMOVED: TEUI-style animations unnecessary for forms */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  /* transition: color 0.3s ease, font-style 0.3s ease, font-weight 0.3s ease, 
+              border-bottom-color 0.2s ease, background-color 0.2s ease !important; */ /* REMOVED: TEUI confidence feedback animations */
+}
+
+/* =============== END MINIMAL INPUT FIELD STYLING =============== */
+
+/* =============== SECTION 04 SPECIFIC LAYOUT OPTIMIZATION =============== */
+
+/* Section 04: Hide completely empty columns to improve density */
+#firefightingSystems .data-table td:nth-child(6),  /* Column F - empty */
+#firefightingSystems .data-table td:nth-child(7),  /* Column G - empty */
+#firefightingSystems .data-table td:nth-child(10), /* Column J - empty */
+#firefightingSystems .data-table td:nth-child(13), /* Column M - empty */
+#firefightingSystems .data-table td:nth-child(14)  /* Column N - empty */ {
+  display: none;
+}
+
+/* Section 04: Flex/Auto responsive layout for remaining columns */
+#firefightingSystems .data-table {
+  table-layout: auto; /* Allow flexible column sizing */
+  width: 100%;
+}
+
+/* Section 04: Intelligent column sizing for content-bearing columns */
+#firefightingSystems .data-table td:nth-child(1) {
+  width: 4%;
+} /* Row numbers */
+#firefightingSystems .data-table td:nth-child(2) {
+  width: 6%;
+} /* Section numbers */
+#firefightingSystems .data-table td:nth-child(3) {
+  width: 25%;
+} /* Labels */
+#firefightingSystems .data-table td:nth-child(4) {
+  width: 15%;
+} /* Dropdowns */
+#firefightingSystems .data-table td:nth-child(5) {
+  width: 30%;
+} /* Descriptions */
+#firefightingSystems .data-table td:nth-child(8) {
+  width: 12%;
+} /* Content labels */
+#firefightingSystems .data-table td:nth-child(9) {
+  width: 10%;
+} /* Additional dropdowns */
+#firefightingSystems .data-table td:nth-child(11) {
+  /* Column K - flex */
+}
+#firefightingSystems .data-table td:nth-child(12) {
+  width: 10%;
+} /* OBC references */
+#firefightingSystems .data-table td:nth-child(15) {
+  width: 8%;
+} /* Notes */
+
+/* Section 04: Ensure descriptions wrap properly instead of expanding table width */
+#firefightingSystems .data-table td:nth-child(5) {
+  white-space: normal !important; /* Allow text wrapping in description column */
+  word-wrap: break-word;
+  hyphens: auto;
+  max-width: 300px; /* Prevent excessive expansion */
+}
+
+/* Section 04: Compact dropdown sizing */
+#firefightingSystems .data-table select.form-select {
+  font-size: 0.85rem; /* Slightly smaller font for dropdowns */
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem !important; /* Tighter padding */
+}
+
+/* Section 04: Prevent OBC reference column from expanding */
+#firefightingSystems .data-table td:nth-child(12) {
+  white-space: normal !important;
+  word-wrap: break-word;
+  font-size: 0.8rem; /* Smaller font for references */
+  max-width: 120px;
+}
+
+/* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 04 LAYOUT OPTIMIZATION =============== */
+
+/* Section 04: Building Areas - Expandable structure with EXISTING/NEW/TOTAL columns */
+/* Section 04: Intelligent content-based column system */
+#buildingAreas .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 04: Hide completely empty columns to improve density */
+#buildingAreas .data-table td:nth-child(5),  /* Column E - empty */
+#buildingAreas .data-table td:nth-child(6),  /* Column F - empty */
+#buildingAreas .data-table td:nth-child(7),  /* Column G - empty */
+#buildingAreas .data-table td:nth-child(8),  /* Column H - empty */
+#buildingAreas .data-table td:nth-child(13), /* Column M - empty */
+#buildingAreas .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 0 !important; /* Completely hide empty columns */
+  padding: 0 !important; /* Remove all padding */
+  border: none !important; /* Remove borders */
+  overflow: hidden !important;
+}
+
+/* Section 04: Controlled width for content columns */
+#buildingAreas .data-table td:nth-child(1) {
+  width: 70px !important;
+} /* Column A - expandable buttons */
+#buildingAreas .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingAreas .data-table td:nth-child(3) {
+  width: 160px !important;
+} /* Column C - section labels */
+#buildingAreas .data-table td:nth-child(4) {
+  width: 200px !important; /* Column D - descriptions (controlled!) */
+  max-width: 200px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#buildingAreas .data-table td:nth-child(9) {
+  width: 80px !important;
+} /* Column I - EXISTING */
+#buildingAreas .data-table td:nth-child(10) {
+  width: 80px !important;
+} /* Column J - NEW */
+#buildingAreas .data-table td:nth-child(11) {
+  width: 80px !important;
+} /* Column K - TOTAL */
+#buildingAreas .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#buildingAreas .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
+
+/* Section 04: Ensure text inputs don't expand beyond container */
+#buildingAreas .data-table td:nth-child(4) input,
+#buildingAreas .data-table td:nth-child(4) [contenteditable] {
+  width: 100% !important;
+  max-width: 190px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 04: Numeric columns right-aligned */
+#buildingAreas .data-table td:nth-child(9),  /* EXISTING */
+#buildingAreas .data-table td:nth-child(10), /* NEW */
+#buildingAreas .data-table td:nth-child(11)  /* TOTAL */ {
+  text-align: right !important;
+}
+
+/* Section 04: Notes column wrapping */
+#buildingAreas .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 01 LAYOUT OPTIMIZATION =============== */
+
+/* Section 01: Unique layout - longer field labels in Column C, extra generous space for long URLs in Column D */
+/* Section 01: Intelligent content-based column system */
+#buildingInfo .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 01: Hide completely empty columns to maximize input space */
+#buildingInfo .data-table td:nth-child(1),  /* Column A - no expandable rows here */
+#buildingInfo .data-table td:nth-child(5),  /* Column E - empty */
+#buildingInfo .data-table td:nth-child(6),  /* Column F - empty */
+#buildingInfo .data-table td:nth-child(7),  /* Column G - empty */
+#buildingInfo .data-table td:nth-child(8),  /* Column H - empty */
+#buildingInfo .data-table td:nth-child(9),  /* Column I - empty */
+#buildingInfo .data-table td:nth-child(10), /* Column J - empty */
+#buildingInfo .data-table td:nth-child(11), /* Column K - empty */
+#buildingInfo .data-table td:nth-child(12), /* Column L - empty */
+#buildingInfo .data-table td:nth-child(13), /* Column M - empty */
+#buildingInfo .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 0 !important; /* Completely hide empty columns */
+  padding: 0 !important; /* Remove all padding */
+  border: none !important; /* Remove borders */
+  overflow: hidden !important;
+}
+
+/* Section 01: Controlled width for content columns - maximize input space */
+#buildingInfo .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingInfo .data-table td:nth-child(3) {
+  width: 220px !important;
+} /* Column C - field labels */
+#buildingInfo .data-table td:nth-child(4) {
+  width: auto !important; /* Column D - expand to fill available space */
+  min-width: 800px !important; /* Ensure generous minimum width */
+  max-width: none !important; /* Remove width constraints */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#buildingInfo .data-table td:nth-child(15) {
+  width: 250px !important;
+} /* Column O - Notes */
+
+/* Section 01: Allow text inputs to fill expanded container */
+#buildingInfo .data-table td:nth-child(4) input,
+#buildingInfo .data-table td:nth-child(4) [contenteditable] {
+  width: 100% !important;
+  max-width: none !important; /* Remove width constraints to allow full expansion */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 01: CRITICAL - Row 1.10 OAA MEMBER REGISTRATION must show full URL (regulatory requirement) */
+#buildingInfo tr:nth-of-type(10) td:nth-child(4),
+#buildingInfo tr:nth-of-type(10) td:nth-child(4) * {
+  width: auto !important; /* Use the expanded auto width */
+  min-width: 800px !important; /* Ensure minimum space for full URL */
+  max-width: none !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+/* Section 01: Notes column wrapping */
+#buildingInfo .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 01 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 02 LAYOUT OPTIMIZATION =============== */
+
+/* Section 02: Standard layout - shorter labels in Column C, longer user inputs in Column D */
+/* Section 02: Intelligent content-based column system */
+#buildingOccupancy .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 02: Hide completely empty columns to improve density */
+#buildingOccupancy .data-table td:nth-child(1),  /* Column A - no expandable rows here */
+#buildingOccupancy .data-table td:nth-child(6),  /* Column F - empty */
+#buildingOccupancy .data-table td:nth-child(7),  /* Column G - empty */
+#buildingOccupancy .data-table td:nth-child(8),  /* Column H - empty */
+#buildingOccupancy .data-table td:nth-child(9),  /* Column I - empty */
+#buildingOccupancy .data-table td:nth-child(10), /* Column J - empty */
+#buildingOccupancy .data-table td:nth-child(11), /* Column K - empty */
+#buildingOccupancy .data-table td:nth-child(13), /* Column M - empty */
+#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Section 02: Controlled width for content columns */
+#buildingOccupancy .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingOccupancy .data-table td:nth-child(3) {
+  width: 200px !important;
+} /* Column C - field labels */
+#buildingOccupancy .data-table td:nth-child(4) {
+  width: 250px !important; /* Column D - dropdowns */
+  max-width: 250px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(5) {
+  width: 300px !important; /* Column E - descriptions */
+  max-width: 300px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#buildingOccupancy .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
+
+/* Section 02: Ensure dropdowns and inputs don't expand beyond container */
+#buildingOccupancy .data-table td:nth-child(4) select,
+#buildingOccupancy .data-table td:nth-child(4) input,
+#buildingOccupancy .data-table td:nth-child(4) [contenteditable] {
+  width: 100% !important;
+  max-width: 240px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 02: Description field handling */
+#buildingOccupancy .data-table td:nth-child(5) input,
+#buildingOccupancy .data-table td:nth-child(5) [contenteditable] {
+  width: 100% !important;
+  max-width: 290px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 02: Notes column wrapping */
+#buildingOccupancy .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
+
+/* =============== Print Styling =============== */
+
+@media print {
+  .tab-container,
+  .tab-spacer,
+  .layout-toggle-btn,
+  .expand-collapse-all,
+  #layout-toggle {
+    display: none !important;
+  }
+
+  .section {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+
+  .section-content {
+    max-height: none !important;
+    opacity: 1 !important;
+  }
+
+  #keyValues {
+    position: static;
+  }
+}
+
+/* =============== Responsive Adjustments =============== */
+
+@media (max-width: 992px) {
+  .tab {
+    padding: 8px 10px;
+    min-width: 70px;
+  }
+
+  .tab-text-full {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Adjust column behavior at medium size */
+  .data-table {
+    width: 100%;
+  }
+
+  /* Allow description text to wrap only at medium size if absolutely necessary */
+  .data-table td:nth-child(6),
+  .data-table td:nth-child(7) {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --key-values-font-size: 1.1rem;
+    --base-font-size: 0.8rem;
+    --header-font-size: 0.9rem;
+  }
+
+  .tab {
+    min-width: 60px;
+    padding: 8px 6px;
+  }
+
+  .tab-text-full {
+    display: none;
+  }
+
+  .tab-text-short {
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Ensure ID and description columns stay visible - use nth-child instead */
+  .data-table td:nth-child(2) {
+    min-width: 60px;
+  }
+
+  .data-table td:nth-child(3) {
+    min-width: 160px;
+  }
+
+  .tab {
+    padding: 8px 4px;
+    min-width: 60px;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 576px) {
+  .tab {
+    min-width: 40px;
+    padding: 8px 8px;
+    justify-content: center;
+  }
+
+  .tab .tab-text {
+    display: none;
+  }
+
+  .tab i {
+    margin-right: 0;
+    font-size: 1.1em;
+  }
+}
+
+/* Section Controls and Excel Loader Styles */
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.excel-loader {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.excel-loader button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.excel-loader button i {
+  font-size: 0.9em;
+}
+
+#excelStatus {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-error {
+  color: #dc3545;
+}
+.status-success {
+  color: #198754;
+}
+.status-info {
+  color: #0dcaf0;
+}
+.status-warning {
+  color: #ffc107;
+}
+
+/* Weather Data Modal Styles - REMOVED (4011 TEUI specific) */
+
+/* Fix for column width constraints */
+.max-width-150 {
+  max-width: 150px !important;
+  width: auto !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+/* Column spanning for end-of-row text */
+.span3 {
+  grid-column: span 3;
+  width: auto !important;
+  min-width: 200px;
+}
+
+/* Allow text to wrap within span cells */
+.span3.white-space-normal {
+  white-space: normal !important;
+}
+
+/* Text truncation with ellipsis - can be used independently */
+.truncate-text {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Tooltip functionality - now independent from truncation */
+.tooltip-cell {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip-cell:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  white-space: normal;
+  max-width: 250px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure calculated values using reference-value class are properly styled */
+[data-field-id^="m_7"] {
+  color: var(--reference-value-color);
+  font-weight: bold;
+}
+
+/* Preserve table row borders */
+.data-table tr {
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+.data-table td {
+  padding: var(--cell-padding);
+  text-align: left;
+  border-bottom: 1px solid #eeeeee; /* Keep bottom border - removed important */
+  border-left: none; /* Removed important */
+  border-right: none; /* Removed important */
+  border-top: none; /* Removed important */
+  line-height: 1.2;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Ensure this is hidden */
+  text-overflow: ellipsis; /* Ensure this is set */
+}
+
+/* Browser-specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Safari and Chrome specific fixes */
+  [contenteditable="true"],
+  .editable,
+  select.form-select {
+    -webkit-appearance: none;
+    border: 0;
+    outline: none;
+  }
+}
+
+/* Remove completely the prevent-auto-centering class */
+/* .prevent-auto-centering { */
+/*   display: none !important; */
+/* } */
+
+/* Clean up the custom tab container styles */
+.tab-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  background-color: var(--header-bg);
+  border: 2px solid var(--header-bg);
+  border-top: none;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  position: sticky;
+  top: var(--key-values-height);
+  z-index: 109;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  margin-bottom: 0;
+  height: var(--tab-height);
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+/* Improve spacer to act as a scroll barrier */
+.horizontal-layout .section-spacer {
+  display: block;
+  height: 15px;
+  min-height: 15px;
+  width: 100%;
+  background: transparent;
+  /* Make it a scroll barrier */
+  scroll-margin-top: calc(var(--key-values-height) + var(--tab-height));
+  position: relative;
+  z-index: 108;
+}
+
+/* Basic horizontal layout styling */
+.horizontal-layout {
+  display: block;
+  scroll-padding-top: calc(var(--key-values-height) + var(--tab-height));
+  overflow-y: auto;
+  padding-bottom: 50px;
+}
+
+/* Hide default number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Optional: Adjust padding if needed after removing spinners */
+/* 
+input[type=number].form-control {
+    padding-right: 0.75rem; 
+}
+*/
+
+/* --- Global focus style for editable TDs and number inputs --- */
+
+/* Apply focus style to editable table cells when editing */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) {
+  /* Apply to TD when child input is focused */
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25); /* Smaller blue glow on the TD */
+  border-radius: 0.25rem; /* Rounded corners */
+  outline: none; /* Remove default dotted outline */
+}
+
+/* --- End Global focus style --- */
+
+/* --- Add back subtle hover background for editable cells --- */
+.data-table td.editable:hover,
+.data-table td.user-input:hover,
+.data-table td:has(input[type="number"]:hover),
+.data-table td:has([contenteditable="true"]:hover) {
+  background-color: rgba(
+    66,
+    133,
+    244,
+    0.08
+  ) !important; /* Re-added !important */
+  cursor: pointer; /* Indicate interactivity */
+}
+/* --- End Hover Style --- */
+
+/* --- Style input elements --- */
+
+/* Base style for user-input class (text color) */
+.user-input {
+  font-weight: 500;
+  color: var(--user-input-color); /* Removed !important */
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important; /* Ensure no background */
+}
+
+/* Force blue color on focused number inputs */
+.data-table td input[type="number"].user-input:focus {
+  color: var(--user-input-color) !important; /* Force color on focus */
+  /* Keep other focus styles minimal or handled by TD focus */
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/* Remove all the recent numeric input styling we added */
+.data-table td input[type="number"].form-control,
+.data-table td input[type="number"].user-input {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  padding: 0.375rem 0.75rem !important;
+  /* Remove spinners */
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: none !important;
+}
+
+/* Remove spinner buttons in Webkit browsers */
+.data-table td input[type="number"]::-webkit-outer-spin-button,
+.data-table td input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Ensure the cell itself doesn't interfere */
+.data-table td.number-input-cell {
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Keep the blue color for user input */
+.data-table td input[type="number"].user-input {
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+}
+
+/* Text alignment handled by universal rule above */
+
+/* Apply section-subheader styling to all cells in a row with section-subheader class */
+.data-table tr td.section-subheader,
+.data-table tr:has(td.section-subheader) td {
+  background-color: #eaeaea; /* Light grey background */
+  color: #333; /* Darker text */
+  font-size: var(--smaller-font-size); /* Use smaller font */
+  font-weight: 600; /* Bold */
+  padding: 3px 6px; /* Tighter padding */
+  border-bottom: 1px solid #d0d0d0; /* Separator line */
+  white-space: pre-line; /* Allow wrapping on explicit newlines */
+  /* text-align: left inherited from universal rule above */
+}
+
+/* Ensure empty cells in section-subheader rows maintain styling */
+.data-table tr:has(td.section-subheader) td:empty {
+  background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
+}
+
+/* Prevent text wrapping in specific subheader columns */
+.data-table td.col-c.section-subheader {
+  min-width: 220px; /* Ensure longer text like "MAJOR OCCUPANCY CLASSIFICATION" doesn't wrap */
+  width: 220px;
+}
+
+.data-table td.col-l.section-subheader {
+  min-width: 140px; /* Ensure "[A] 1.4.1.2. & 3.2.1.1." doesn't wrap */
+  width: 140px;
+}
+
+/* Section 02 specific overrides no longer needed - universal rule handles alignment */
+
+/* Make the dropdown styling more specific */
+.data-table td select.form-select,
+.data-table td select.form-control,
+table.data-table select.form-select {
+  width: 100%;
+  min-width: 100px; /* Minimum for readability within proportional system */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.25rem !important;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
+  background-color: #fff !important;
+  margin: 2px 0;
+  height: calc(100% - 4px);
+  /* Remove native appearance */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  /* Add Bootstrap-style background arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+}
+
+/* Add hover effect */
+.data-table td select.form-select:hover,
+.data-table td select.form-control:hover,
+table.data-table select.form-select:hover {
+  border-color: #86b7fe !important;
+}
+
+/* Cell padding handled by universal rule above */
+
+/* =============== Text Alignment Utilities =============== */
+
+/* Use these sparingly - most alignment handled by universal rule above */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Special case: Text labels that need specific alignment */
+.text-left-indicator {
+  text-align: left; /* For labels that need explicit left alignment */
+}
+
+/* Style for disabled/non-applicable input fields */
+.disabled-input {
+  color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
+  font-style: italic !important;
+  cursor: default !important;
+  background-color: transparent !important;
+}
+
+/* Section 11 Visual Indicators - REMOVED (4011 TEUI specific) */
+
+/* Dependency Graph Styles (Section 17) - REMOVED (4011 TEUI specific) */
+
+/* Reference Model Toggle Styles - REMOVED (4011 TEUI specific) */
+
+/* Dependency Graph Floating Controls - REMOVED (4011 TEUI specific) */
+
+/* Section 16 - Sankey Diagram Styles - REMOVED (4011 TEUI specific) */
+
+/* Header Button Styling - REMOVED (4011 TEUI specific weather/debug buttons) */
+
+/* =============== Dropdown Sizing - Smart Hybrid System =============== */
+
+/* Default: Dropdowns without size classes use natural content-based sizing */
+.data-table select.form-select {
+  width: auto; /* Content-based by default */
+  min-width: 80px; /* Minimum for usability */
+}
+
+/* Small dropdowns: Standardized for YES/NO, Select options */
+.dropdown-sm,
+.dropdown-sm .form-select,
+[data-dropdown-size="sm"] {
+  width: 120px !important;
+  min-width: 120px !important;
+}
+
+/* Medium dropdowns: Standardized for longer options */
+.dropdown-md,
+.dropdown-md .form-select,
+[data-dropdown-size="md"] {
+  width: 180px !important;
+  min-width: 180px !important;
+}
+
+/* Large dropdowns: Standardized for building classifications */
+.dropdown-lg,
+.dropdown-lg .form-select,
+[data-dropdown-size="lg"] {
+  width: 280px !important;
+  min-width: 280px !important;
+}
+
+/* Ensure dropdowns with size classes override content-based sizing */
+.data-table .dropdown-sm select.form-select,
+.data-table .dropdown-md select.form-select,
+.data-table .dropdown-lg select.form-select {
+  width: 100% !important; /* Fill their sized container */
+}
+
+/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 05 LAYOUT OPTIMIZATION =============== */
+/* Section 05: Structural Requirements - compact dropdown layout with minimal empty columns */
+
+/* #structuralRequirements .data-table - now uses consolidated .obc-data-table pattern */
+
+/* Section 05: Hide empty columns - using consolidated .obc-empty-column pattern */
+#structuralRequirements .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#structuralRequirements .data-table td:nth-child(6),  /* Column F - empty */
+#structuralRequirements .data-table td:nth-child(7),  /* Column G - empty */
+#structuralRequirements .data-table td:nth-child(8),  /* Column H - empty */
+#structuralRequirements .data-table td:nth-child(10), /* Column J - empty */
+#structuralRequirements .data-table td:nth-child(11), /* Column K - empty */
+#structuralRequirements .data-table td:nth-child(13), /* Column M - empty */
+#structuralRequirements .data-table td:nth-child(14)  /* Column N - empty */ {
+  /* Uses .obc-empty-column pattern: width: 1px, padding: 2px 1px, overflow: hidden */
+  width: 1px !important;
+  padding: 2px 1px !important;
+  overflow: hidden !important;
+}
+
+/* Section 05: Controlled width for content columns - using consolidated utilities */
+#structuralRequirements .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs (.obc-col-section-ref) */
+#structuralRequirements .data-table td:nth-child(3) {
+  width: 220px !important;
+} /* Column C - labels */
+#structuralRequirements .data-table td:nth-child(4) {
+  width: 180px !important; /* Column D - dropdowns */
+  max-width: 180px !important;
+  /* Uses .obc-content-constrained pattern */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#structuralRequirements .data-table td:nth-child(5) {
+  width: 300px !important; /* Column E - descriptions */
+  max-width: 300px !important;
+  /* Uses .obc-content-constrained pattern */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#structuralRequirements .data-table td:nth-child(9) {
+  width: 120px !important;
+} /* Column I - additional fields */
+#structuralRequirements .data-table td:nth-child(12) {
+  width: 150px !important;
+} /* Column L - OBC references (variant) */
+#structuralRequirements .data-table td:nth-child(15) {
+  width: 200px !important;
+} /* Column O - Notes (.obc-col-notes-sm) */
+
+/* Section 05: Dropdown and input constraints */
+#structuralRequirements .data-table td:nth-child(4) select,
+#structuralRequirements .data-table td:nth-child(4) [contenteditable] {
+  width: 100% !important;
+  max-width: 170px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 05: Description field handling */
+#structuralRequirements .data-table td:nth-child(5) [contenteditable] {
+  width: 100% !important;
+  max-width: 290px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 05: Notes column wrapping */
+#structuralRequirements .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 05 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 06 LAYOUT OPTIMIZATION =============== */
+/* Section 06: Occupant Safety & Accessibility - focus on occupant load calculations */
+
+/* #occupantSafety .data-table - now uses consolidated .obc-data-table pattern */
+
+/* Section 06: Hide empty columns - CONSOLIDATED with .obc-empty-column pattern */
+#occupantSafety .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#occupantSafety .data-table td:nth-child(3),  /* Column C - empty (content removed) */
+#occupantSafety .data-table td:nth-child(6),  /* Column F - empty */
+#occupantSafety .data-table td:nth-child(7),  /* Column G - empty */
+#occupantSafety .data-table td:nth-child(8),  /* Column H - empty */
+#occupantSafety .data-table td:nth-child(13), /* Column M - empty */
+#occupantSafety .data-table td:nth-child(14)  /* Column N - empty */ {
+  /* CONSOLIDATED: Uses .obc-empty-column utility pattern */
+  width: 1px !important;
+  padding: 2px 1px !important;
+  overflow: hidden !important;
+}
+
+/* Section 06: Controlled width for content columns - OPTIMIZED: Reduce total table width to prevent dropdown clipping */
+#occupantSafety .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#occupantSafety .data-table td:nth-child(4) {
+  width: 150px !important; /* Column D - dropdowns and numeric inputs (reduced from 180px) */
+  max-width: 150px !important;
+  /* Let universal rules handle alignment based on field type */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#occupantSafety .data-table td:nth-child(5) {
+  width: 165px !important; /* Column E - mixed text/numeric inputs (matched to Column C) */
+  max-width: 165px !important;
+  /* Let universal rules handle alignment based on field type */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#occupantSafety .data-table td:nth-child(9) {
+  width: 210px !important; /* Column I - "Based On" dropdowns (sweet spot for dropdown content) */
+  max-width: 210px !important;
+  /* Calculations get right-alignment via .calculated-value class */
+  font-weight: 700 !important;
+}
+#occupantSafety .data-table td:nth-child(10) {
+  width: 180px !important;
+} /* Column J - dropdowns (reduced from 200px) */
+#occupantSafety .data-table td:nth-child(11) {
+  width: 100px !important;
+} /* Column K - counts */
+#occupantSafety .data-table td:nth-child(12) {
+  width: 150px !important;
+} /* Column L - OBC references (variant) */
+#occupantSafety .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - notes (reduced from 250px) */
+
+/* Section 06: Dropdown styling - width constraints only */
+#occupantSafety .data-table td:nth-child(4) select {
+  /* Column D dropdowns */
+  /* Width constraints only - let universal rules handle alignment */
+  width: 100% !important;
+  max-width: 140px !important; /* Reduced to match new column width (150px) */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#occupantSafety .data-table td:nth-child(9) select {
+  /* Column I - "Based On" dropdowns */
+  width: 100% !important;
+  max-width: 205px !important; /* Sweet spot to match column width (210px) */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
+}
+
+#occupantSafety .data-table td:nth-child(10) select {
+  /* Column J dropdowns */
+  /* CONSOLIDATED: .obc-input-constrained + max-width */
+  width: 100% !important;
+  max-width: 170px !important; /* Reduced to match new column width (180px) */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 06: Input styling - let universal rules handle alignment */
+#occupantSafety .data-table td:nth-child(4) input,
+#occupantSafety .data-table td:nth-child(5) input,
+#occupantSafety .data-table td:nth-child(11) input {
+  /* Width constraint only - let universal rules handle alignment and fonts */
+  width: 100% !important;
+}
+
+/* Section 06: Notes column wrapping - CONSOLIDATED with .obc-notes-wrapping */
+#occupantSafety .data-table td:nth-child(15) {
+  /* CONSOLIDATED: .obc-notes-wrapping pattern */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 06 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 07 LAYOUT OPTIMIZATION =============== */
+/* Section 07: Fire Resistance & Spatial Separation - rating tables and assembly specifications */
+
+/* #fireResistance .data-table - now uses consolidated .obc-data-table pattern */
+
+/* Section 07: Hide completely empty columns to improve density */
+#fireResistance .data-table td:nth-child(3),  /* Column C - empty (no content) */
+#fireResistance .data-table td:nth-child(7),  /* Column G - empty */
+#fireResistance .data-table td:nth-child(13), /* Column M - empty */
+#fireResistance .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Section 07: Controlled width for content columns */
+#fireResistance .data-table td:nth-child(1) {
+  width: 70px !important;
+} /* Column A - expandable buttons */
+#fireResistance .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#fireResistance .data-table td:nth-child(4) {
+  width: 250px !important; /* Column D - exposing face descriptions (increased for full text) */
+  max-width: 250px !important;
+  white-space: normal !important; /* Allow text wrapping instead of ellipsis */
+  word-wrap: break-word !important;
+  overflow: visible !important; /* No ellipsis - show full text */
+  vertical-align: top !important; /* Top-align for multi-line text */
+}
+#fireResistance .data-table td:nth-child(5) {
+  width: 100px !important; /* Column E - EBF area (numeric) */
+  max-width: 100px !important;
+  text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(6) {
+  width: 100px !important; /* Column F - L.D. (numeric) */
+  max-width: 100px !important;
+  text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(7) {
+  width: 100px !important; /* Column G - L/H ratio (text/numeric mix) */
+  max-width: 100px !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(8) {
+  width: 160px !important; /* Column H - fire rating dropdowns (RATING H) - increased for dropdown */
+  max-width: 160px !important;
+  text-align: center !important;
+  overflow: visible !important; /* Allow dropdown to show fully */
+  white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(9) {
+  width: 150px !important; /* Column I - supporting assembly dropdowns (normal styling) */
+  max-width: 150px !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(10) {
+  width: 250px !important;
+} /* Column J - construction type dropdowns (long text) */
+#fireResistance .data-table td:nth-child(11) {
+  width: 200px !important;
+} /* Column K - cladding type dropdowns */
+#fireResistance .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#fireResistance .data-table td:nth-child(15) {
+  width: 200px !important;
+} /* Column O - Notes */
+
+/* Section 07: Fire rating center alignment (Columns H & I) */
+#fireResistance .data-table td:nth-child(8) select, /* Column H - Fire ratings */
+#fireResistance .data-table td:nth-child(9) select {
+  /* Column I - Supporting assembly fire ratings */
+  width: 100% !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  color: #d73527 !important; /* Fire red color for both fire rating columns */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+}
+
+/* Specific width constraints for each column */
+#fireResistance .data-table td:nth-child(8) select {
+  /* Column H */
+  max-width: 155px !important; /* Match column width (160px) with buffer */
+}
+#fireResistance .data-table td:nth-child(9) select {
+  /* Column I */
+  max-width: 145px !important; /* Match column width (150px) with buffer */
+}
+
+/* Section 07: Construction and Cladding type dropdown styling */
+#fireResistance .data-table td:nth-child(10) select {
+  /* Column J - Construction Type */
+  width: 100% !important;
+  max-width: 245px !important; /* Match column width (250px) with buffer */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
+}
+
+#fireResistance .data-table td:nth-child(11) select {
+  /* Column K - Cladding Type */
+  width: 100% !important;
+  max-width: 195px !important; /* Match column width (200px) with buffer */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
+}
+
+/* Section 07: Header text wrapping for long column titles */
+#fireResistance .data-table td.section-subheader {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+  padding: 8px 4px !important; /* More padding for readability */
+}
+
+/* Section 07: Notes column wrapping */
+#fireResistance .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 07 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 08 LAYOUT OPTIMIZATION =============== */
+/* Section 08: Plumbing Fixture Requirements - calculations and fixture counts */
+
+#plumbingFixtures .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 08: Hide completely empty columns to improve density */
+#plumbingFixtures .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#plumbingFixtures .data-table td:nth-child(3),  /* Column C - empty in data rows */
+#plumbingFixtures .data-table td:nth-child(5),  /* Column E - empty in data rows */
+#plumbingFixtures .data-table td:nth-child(6),  /* Column F - empty */
+#plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty (OBC moved to M) */
+#plumbingFixtures .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Section 08: Controlled width for content columns */
+#plumbingFixtures .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+/* Column C - now collapsed (was fixture types, moved to subheader) */
+/* Column E - now collapsed (empty in data rows) */
+#plumbingFixtures .data-table td:nth-child(4) {
+  width: 220px !important; /* Column D - floor levels (expanded to use C+E space) */
+  max-width: 220px !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#plumbingFixtures .data-table td:nth-child(7) {
+  width: 120px !important; /* Column G - occupant loads (Excel Col F) */
+  max-width: 120px !important;
+  text-align: right !important;
+}
+
+#plumbingFixtures .data-table td:nth-child(9) {
+  width: 100px !important; /* Column I - water closets required */
+  max-width: 100px !important;
+  text-align: right !important;
+  font-weight: 700 !important;
+}
+#plumbingFixtures .data-table td:nth-child(10) {
+  width: 100px !important;
+} /* Column J - water closets provided */
+#plumbingFixtures .data-table td:nth-child(11) {
+  width: 200px !important;
+} /* Column K - barrier-free required/provided */
+#plumbingFixtures .data-table td:nth-child(12) {
+  width: 200px !important;
+} /* Column L - universal washrooms */
+#plumbingFixtures .data-table td:nth-child(13) {
+  width: 200px !important; /* Column M - OBC references (Excel Col G) */
+  max-width: 200px !important;
+  text-align: left !important;
+}
+#plumbingFixtures .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
+
+/* Section 08: Numeric input styling */
+#plumbingFixtures .data-table td:nth-child(7) input,  /* Column G - occupant loads (Excel F) */
+#plumbingFixtures .data-table td:nth-child(9) input,  /* Column I - water closets required (Excel H) */
+#plumbingFixtures .data-table td:nth-child(10) input, /* Column J - water closets provided (Excel I) */
+#plumbingFixtures .data-table td:nth-child(11) input, /* Column K - barrier-free counts (Excel J) */
+#plumbingFixtures .data-table td:nth-child(12) input {
+  /* Column L - universal washroom counts (Excel K) */
+  width: 100% !important;
+  text-align: right !important;
+  font-family: monospace !important;
+}
+
+/* Section 08: Text input styling for OBC sentences */
+#plumbingFixtures .data-table td:nth-child(13) input {
+  /* Column M - OBC sentences (Excel G) */
+  width: 100% !important;
+  text-align: left !important;
+}
+
+/* Section 08: Notes column wrapping */
+#plumbingFixtures .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* Section 08: Footer ratio note - ensure full display */
+#plumbingFixtures .data-table td.footer-note-wide {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  max-width: none !important;
+  width: auto !important;
+  font-style: italic !important;
+  color: #666 !important;
+  background-color: #f8f9fa !important;
+  padding: 8px 12px !important;
+}
+
+/* =============== END SECTION 08 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 09 LAYOUT OPTIMIZATION =============== */
+/* Section 09: Compliance & Design - energy efficiency and alternative solutions */
+
+#complianceDesign .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 09: Hide completely empty columns to improve density */
+#complianceDesign .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#complianceDesign .data-table td:nth-child(6),  /* Column F - empty */
+#complianceDesign .data-table td:nth-child(7),  /* Column G - empty */
+#complianceDesign .data-table td:nth-child(8),  /* Column H - empty */
+#complianceDesign .data-table td:nth-child(10), /* Column J - empty */
+#complianceDesign .data-table td:nth-child(11), /* Column K - empty */
+#complianceDesign .data-table td:nth-child(13), /* Column M - empty */
+#complianceDesign .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Section 09: Controlled width for content columns */
+#complianceDesign .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#complianceDesign .data-table td:nth-child(3) {
+  width: 240px !important;
+} /* Column C - compliance items */
+#complianceDesign .data-table td:nth-child(4) {
+  width: 220px !important; /* Column D - dropdowns */
+  max-width: 220px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#complianceDesign .data-table td:nth-child(5) {
+  width: 120px !important; /* Column E - values */
+  max-width: 120px !important;
+  text-align: right !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#complianceDesign .data-table td:nth-child(9) {
+  width: 300px !important; /* Column I - descriptions */
+  max-width: 300px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#complianceDesign .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#complianceDesign .data-table td:nth-child(15) {
+  width: 250px !important;
+} /* Column O - Notes */
+
+/* Section 09: Dropdown constraints */
+#complianceDesign .data-table td:nth-child(4) select {
+  width: 100% !important;
+  max-width: 215px !important; /* Match column width (220px) with small buffer */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 09: Description field handling */
+#complianceDesign .data-table td:nth-child(9) [contenteditable] {
+  width: 100% !important;
+  max-width: 295px !important; /* Match column width (300px) with small buffer */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Section 09: Notes column wrapping */
+#complianceDesign .data-table td:nth-child(15) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 09 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 10 LAYOUT OPTIMIZATION =============== */
+/* Section 10: Notes - project documentation and footer information */
+
+#notes .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Section 10: Hide completely empty columns to improve density */
+#notes .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#notes .data-table td:nth-child(2),  /* Column B - empty for notes section */
+#notes .data-table td:nth-child(5),  /* Column E - empty */
+#notes .data-table td:nth-child(6),  /* Column F - empty */
+#notes .data-table td:nth-child(7),  /* Column G - empty */
+#notes .data-table td:nth-child(8),  /* Column H - empty */
+#notes .data-table td:nth-child(9),  /* Column I - empty */
+#notes .data-table td:nth-child(10), /* Column J - empty */
+#notes .data-table td:nth-child(11), /* Column K - empty */
+#notes .data-table td:nth-child(12), /* Column L - empty */
+#notes .data-table td:nth-child(13), /* Column M - empty */
+#notes .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Section 10: Controlled width for content columns - maximize note-taking space */
+#notes .data-table td:nth-child(3) {
+  width: 200px !important;
+} /* Column C - note categories */
+#notes .data-table td:nth-child(4) {
+  width: auto !important; /* Column D - main note content - expand to fill */
+  min-width: 600px !important; /* Generous minimum for note writing */
+  max-width: none !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  vertical-align: top !important;
+}
+#notes .data-table td:nth-child(15) {
+  width: 300px !important;
+} /* Column O - additional notes */
+
+/* Section 10: Note content area optimization */
+#notes .data-table td:nth-child(4) [contenteditable],
+#notes .data-table td:nth-child(15) [contenteditable] {
+  width: 100% !important;
+  min-height: 40px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  line-height: 1.4 !important;
+  padding: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  background-color: #fafafa !important;
+}
+
+/* Section 10: Note content focus styling */
+#notes .data-table td:nth-child(4) [contenteditable]:focus,
+#notes .data-table td:nth-child(15) [contenteditable]:focus {
+  background-color: #fff !important;
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+  outline: none !important;
+}
+
+/* Section 10: Footer note styling - ensure full display with line breaks */
+#notes .data-table td.footer-note-wide {
+  white-space: pre-line !important; /* Preserve line breaks from \n */
+  overflow: visible !important;
+  text-overflow: unset !important;
+  max-width: none !important;
+  width: auto !important;
+  font-style: italic !important;
+  color: #666 !important;
+  background-color: #f8f9fa !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #ddd !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+/* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
+
+/* =============== CONSOLIDATED LAYOUT UTILITIES =============== */
+/* Universal classes to replace repetitive section-specific patterns */
+
+/* Base table layout pattern - used by all sections */
+.obc-data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* Empty column hiding pattern - used 40+ times across sections */
+.obc-empty-column {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
+}
+
+/* Standard column width utilities */
+.obc-col-section-ref {
+  width: 60px !important;
+} /* Column B - section references */
+.obc-col-obc-ref {
+  width: 120px !important;
+} /* Column L - OBC references */
+.obc-col-notes-sm {
+  width: 200px !important;
+} /* Column O - compact notes */
+.obc-col-notes-md {
+  width: 220px !important;
+} /* Column O - standard notes */
+.obc-col-notes-lg {
+  width: 250px !important;
+} /* Column O - expanded notes */
+
+/* Content overflow handling pattern */
+.obc-content-constrained {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Notes column wrapping pattern */
+.obc-notes-wrapping {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* Input/dropdown constraint pattern */
+.obc-input-constrained {
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Right-aligned numeric columns */
+.obc-numeric-column {
+  text-align: right !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Center-aligned rating columns */
+.obc-rating-column {
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Apply consolidated base table pattern to all section tables */
+#firefightingSystems .data-table,
+#buildingAreas .data-table,
+#buildingInfo .data-table,
+#buildingOccupancy .data-table,
+#structuralRequirements .data-table,
+#occupantSafety .data-table,
+#fireResistance .data-table,
+#plumbingFixtures .data-table,
+#complianceDesign .data-table,
+#notes .data-table {
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
+}
+
+/* =============== END CONSOLIDATED LAYOUT UTILITIES =============== */
