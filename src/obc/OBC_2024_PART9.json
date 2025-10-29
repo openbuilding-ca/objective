@@ -1,0 +1,245 @@
+{
+  "title": "PART 9 - HOUSING AND SMALL BUILDINGS",
+  "sections": [
+    {
+      "id": "9.00",
+      "title": "BUILDING CODE VERSION",
+      "fields": [
+        {
+          "id": "building_code_version",
+          "type": "text",
+          "value": "O.Reg. 163/24",
+          "label": "BUILDING CODE VERSION"
+        },
+        {
+          "id": "last_code_amendment",
+          "type": "text",
+          "value": "O.Reg. 447/24",
+          "label": "LAST CODE AMENDMENT"
+        }
+      ]
+    },
+    {
+      "id": "9.01",
+      "title": "PROJECT TYPE",
+      "fields": [
+        {
+          "id": "project_type",
+          "type": "dropdown",
+          "value": "-",
+          "label": "PROJECT TYPE",
+          "options": ["-", "New", "Addition", "Alteration", "Change of Use"]
+        }
+      ]
+    },
+    {
+      "id": "9.02",
+      "title": "OCCUPANCY CLASSIFICATION",
+      "fields": [
+        {
+          "id": "occupancy_1",
+          "type": "dropdown",
+          "value": "-",
+          "label": "OCCUPANCY",
+          "options": [
+            "-",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
+        },
+        {
+          "id": "use_1",
+          "type": "text",
+          "value": "",
+          "label": "USE"
+        }
+      ]
+    },
+    {
+      "id": "9.03",
+      "title": "SUPERIMPOSED MAJOR OCCUPANCIES",
+      "fields": [
+        {
+          "id": "superimposed_occupancies",
+          "type": "dropdown",
+          "value": "-",
+          "label": "SUPERIMPOSED MAJOR OCCUPANCIES",
+          "options": ["-", "Yes", "No"]
+        }
+      ]
+    },
+    {
+      "id": "9.04",
+      "title": "BUILDING AREA (m²)",
+      "fields": [
+        {
+          "id": "area_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "area_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "area_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "area_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "9.05",
+      "title": "GROSS AREA (m²)",
+      "fields": [
+        {
+          "id": "gross_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "gross_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "gross_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "gross_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "9.06",
+      "title": "MEZZANINE AREA (m²)",
+      "fields": [
+        {
+          "id": "mezz_desc_1",
+          "type": "text",
+          "value": "",
+          "label": "DESCRIPTION"
+        },
+        {
+          "id": "mezz_existing_1",
+          "type": "number",
+          "value": "",
+          "label": "EXISTING"
+        },
+        {
+          "id": "mezz_new_1",
+          "type": "number",
+          "value": "",
+          "label": "NEW"
+        },
+        {
+          "id": "mezz_total_1",
+          "type": "number",
+          "value": "",
+          "label": "TOTAL",
+          "calculated": true
+        }
+      ]
+    },
+    {
+      "id": "9.07",
+      "title": "BUILDING HEIGHT",
+      "fields": [
+        {
+          "id": "storeys_above_grade",
+          "type": "number",
+          "value": "",
+          "label": "STOREYS ABOVE GRADE"
+        },
+        {
+          "id": "storeys_below_grade",
+          "type": "number",
+          "value": "",
+          "label": "STOREYS BELOW GRADE"
+        },
+        {
+          "id": "height_above_grade",
+          "type": "number",
+          "value": "",
+          "label": "(m) ABOVE GRADE"
+        }
+      ]
+    },
+    {
+      "id": "9.08",
+      "title": "NUMBER OF STREETS/FIRE FIGHTER ACCESS",
+      "fields": [
+        {
+          "id": "streets_access",
+          "type": "dropdown",
+          "value": "-",
+          "label": "STREET(S)",
+          "options": ["-", "1", "2", "3", "4"]
+        }
+      ]
+    },
+    {
+      "id": "9.09",
+      "title": "SPRINKLER SYSTEM",
+      "fields": [
+        {
+          "id": "sprinkler_system",
+          "type": "dropdown",
+          "value": "-",
+          "label": "SPRINKLER SYSTEM",
+          "options": ["-", "Yes", "No", "Partial"]
+        },
+        {
+          "id": "sprinkler_provided",
+          "type": "dropdown",
+          "value": "-",
+          "label": "PROVIDED",
+          "options": ["-", "NFPA 13", "NFPA 13R", "NFPA 13D"]
+        }
+      ]
+    },
+    {
+      "id": "9.10",
+      "title": "FIRE ALARM SYSTEM",
+      "fields": [
+        {
+          "id": "fire_alarm_system",
+          "type": "dropdown",
+          "value": "-",
+          "label": "FIRE ALARM SYSTEM",
+          "options": ["-", "Yes", "No"]
+        },
+        {
+          "id": "fire_alarm_type",
+          "type": "dropdown",
+          "value": "-",
+          "label": "TYPE PROVIDED",
+          "options": ["-", "Single Stage", "Two Stage", "Monitoring"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pure Browser Default Table Test</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link href="OBC-styles.css" rel="stylesheet" />
+    <style>
+      .demo-section {
+        margin: 2rem 0;
+        padding: 1rem;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        background-color: #f8f9ff;
+      }
+      .width-display {
+        font-size: 10px;
+        color: #666;
+        position: absolute;
+        top: -12px;
+        left: 2px;
+      }
+      .column-demo {
+        position: relative;
+      }
+      .empty-highlight {
+        background-color: rgba(255, 193, 7, 0.1);
+      }
+      .content-highlight {
+        background-color: rgba(40, 167, 69, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid mt-4">
+      <h1>🧪 Pure Browser Default Table Behavior</h1>
+      <p class="lead">
+        Testing what happens with ZERO CSS column control - pure browser
+        algorithm
+      </p>
+
+      <div class="demo-section">
+        <h2>📊 Current State: No CSS Column Control</h2>
+        <p>
+          <strong>Approach:</strong> Let browser's native table algorithm decide
+          all column widths based purely on content
+        </p>
+
+        <div id="buildingAreas" class="section">
+          <div class="section-header">
+            <span class="section-icon"><i class="bi bi-bounding-box"></i></span>
+            SECTION 3. Building Areas (Pure Browser Default)
+          </div>
+          <div class="section-content">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <td class="section-subheader column-demo"></td>
+                  <td class="section-subheader column-demo">
+                    3.04 <span class="width-display" id="width-b"></span>
+                  </td>
+                  <td class="section-subheader column-demo">
+                    BUILDING AREA (m²)
+                    <span class="width-display" id="width-c"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    BUILDING AREA (m²)
+                    <span class="width-display" id="width-d"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-e"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-f"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-g"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-h"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    EXISTING <span class="width-display" id="width-i"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    NEW <span class="width-display" id="width-j"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    TOTAL <span class="width-display" id="width-k"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    [A] 1.4.1.2.
+                    <span class="width-display" id="width-l"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-m"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    <span class="width-display" id="width-n"></span>
+                  </td>
+                  <td
+                    class="section-subheader column-demo content-highlight notes-column"
+                  >
+                    Notes <span class="width-display" id="width-o"></span>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td>22</td>
+                  <td></td>
+                  <td>Enter area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">1,000.00</td>
+                  <td class="text-end">100.00</td>
+                  <td class="text-end"><strong>1,100.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>23</td>
+                  <td></td>
+                  <td>Enter area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">200.00</td>
+                  <td class="text-end">300.00</td>
+                  <td class="text-end"><strong>500.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>27</td>
+                  <td></td>
+                  <td>Enter gross area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">500.00</td>
+                  <td class="text-end">150.00</td>
+                  <td class="text-end"><strong>650.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <h3>🔬 What We're Testing</h3>
+        <ul>
+          <li>
+            <strong>CSS Control:</strong> ZERO - no table-layout, no column
+            widths, no constraints
+          </li>
+          <li>
+            <strong>Browser Algorithm:</strong> Pure browser default table
+            sizing algorithm
+          </li>
+          <li>
+            <strong>Content Columns:</strong>
+            <span class="badge bg-success">Green highlighted</span> - have
+            actual content
+          </li>
+          <li>
+            <strong>Empty Columns:</strong>
+            <span class="badge bg-warning">Yellow highlighted</span> - truly
+            empty
+          </li>
+          <li>
+            <strong>Question:</strong> Will browser naturally size content
+            columns larger than empty ones?
+          </li>
+        </ul>
+      </div>
+
+      <div class="alert alert-primary">
+        <h3>📏 Browser Default Width Distribution</h3>
+        <p>
+          The width measurements above will show exactly how the browser
+          naturally distributes space when given no guidance whatsoever.
+        </p>
+        <p>
+          <strong>Key Insight:</strong> This reveals the browser's inherent
+          preferences and helps us understand whether we need to work WITH these
+          preferences or guide them.
+        </p>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="OBC-Matrix-Index.html" class="btn btn-primary btn-lg me-3">
+          🚀 Test Full Application
+        </a>
+        <button onclick="location.reload()" class="btn btn-secondary btn-lg">
+          🔄 Reload Test
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Display real column widths to understand browser behavior
+      function displayColumnWidths() {
+        const table = document.querySelector(".data-table");
+        if (table) {
+          const firstRow = table.querySelector("thead tr");
+          const cells = firstRow.querySelectorAll("td");
+
+          let totalWidth = 0;
+          const widths = [];
+
+          cells.forEach((cell, index) => {
+            const width = cell.offsetWidth;
+            totalWidth += width;
+            widths.push(width);
+
+            const widthDisplay = cell.querySelector(".width-display");
+            if (widthDisplay) {
+              const percentage =
+                totalWidth > 0 ? ((width / totalWidth) * 100).toFixed(1) : 0;
+              widthDisplay.textContent = `${width}px (${percentage}%)`;
+            }
+          });
+
+          // Log summary for analysis
+          console.log("=== PURE BROWSER DEFAULT WIDTH ANALYSIS ===");
+          console.log("Total table width:", totalWidth);
+          console.log("Column widths:", widths);
+          console.log("Content columns (D,I,J,K,L,O):", [
+            widths[3],
+            widths[8],
+            widths[9],
+            widths[10],
+            widths[11],
+            widths[14],
+          ]);
+          console.log("Empty columns (E,F,G,H,M,N):", [
+            widths[4],
+            widths[5],
+            widths[6],
+            widths[7],
+            widths[12],
+            widths[13],
+          ]);
+
+          // Identify the problematic columns
+          const emptyColumnWidths = [
+            widths[4],
+            widths[5],
+            widths[6],
+            widths[7],
+            widths[12],
+            widths[13],
+          ];
+          const maxEmptyWidth = Math.max(...emptyColumnWidths);
+          const contentColumnWidths = [
+            widths[3],
+            widths[8],
+            widths[9],
+            widths[10],
+            widths[11],
+            widths[14],
+          ];
+          const avgContentWidth =
+            contentColumnWidths.reduce((a, b) => a + b, 0) /
+            contentColumnWidths.length;
+
+          console.log("Max empty column width:", maxEmptyWidth);
+          console.log("Average content column width:", avgContentWidth);
+          console.log(
+            "Problem detected:",
+            maxEmptyWidth > avgContentWidth
+              ? "YES - Empty columns larger than content!"
+              : "NO - Looks good",
+          );
+        }
+      }
+
+      // Update on load and resize
+      window.addEventListener("load", () => {
+        setTimeout(displayColumnWidths, 100); // Small delay for rendering
+      });
+      window.addEventListener("resize", displayColumnWidths);
+
+      console.log("🧪 Pure Browser Default Test Loaded");
+      console.log(
+        "This will show the browser's natural table behavior with zero CSS interference",
+      );
+    </script>
+  </body>
+</html>

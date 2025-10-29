@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pure HTML Table Test - No CSS, No JavaScript</title>
+    <style>
+      /* ABSOLUTE MINIMUM - just basic visibility */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      td,
+      th {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      .highlight-expanding {
+        background-color: yellow;
+      }
+      .width-display {
+        font-size: 10px;
+        color: red;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Pure HTML Table Test - Zero Interference</h1>
+    <p>
+      <strong>Goal:</strong> See if browser naturally distributes 8 columns
+      equally or creates "goalpost expansion"
+    </p>
+
+    <h2>Test 1: Simple Cities Table (8 columns A-H)</h2>
+    <table id="cities-table">
+      <thead>
+        <tr>
+          <th id="col-a">Toronto <span class="width-display"></span></th>
+          <th id="col-b">Vancouver <span class="width-display"></span></th>
+          <th id="col-c">Montreal <span class="width-display"></span></th>
+          <th id="col-d">Calgary <span class="width-display"></span></th>
+          <th id="col-e" class="highlight-expanding">
+            Edmonton <span class="width-display"></span>
+          </th>
+          <th id="col-f">Ottawa <span class="width-display"></span></th>
+          <th id="col-g">Winnipeg <span class="width-display"></span></th>
+          <th id="col-h">Halifax <span class="width-display"></span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2,794,356</td>
+          <td>675,218</td>
+          <td>1,762,949</td>
+          <td>1,336,000</td>
+          <td>981,280</td>
+          <td>994,837</td>
+          <td>749,534</td>
+          <td>439,819</td>
+        </tr>
+        <tr>
+          <td>Ontario</td>
+          <td>BC</td>
+          <td>Quebec</td>
+          <td>Alberta</td>
+          <td>Alberta</td>
+          <td>Ontario</td>
+          <td>Manitoba</td>
+          <td>Nova Scotia</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Test 2: OBC Matrix Structure (15 columns A-O)</h2>
+    <table id="obc-table">
+      <thead>
+        <tr>
+          <td></td>
+          <td>B</td>
+          <td>DESCRIPTION</td>
+          <td>VALUE</td>
+          <td id="col-e-obc" class="highlight-expanding">
+            E <span class="width-display"></span>
+          </td>
+          <td>F</td>
+          <td>G</td>
+          <td>H</td>
+          <td>EXISTING</td>
+          <td>NEW</td>
+          <td>TOTAL</td>
+          <td>REF</td>
+          <td>M</td>
+          <td>N</td>
+          <td>NOTES</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>22</td>
+          <td>Building area description here</td>
+          <td>Some value</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>1,000.00</td>
+          <td>100.00</td>
+          <td>1,100.00</td>
+          <td>3.2.1.1</td>
+          <td></td>
+          <td></td>
+          <td>Notes here</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>23</td>
+          <td>Another building area</td>
+          <td>Another value</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>200.00</td>
+          <td>300.00</td>
+          <td>500.00</td>
+          <td>3.2.1.1</td>
+          <td></td>
+          <td></td>
+          <td>More notes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>📊 Analysis Results</h2>
+    <div id="analysis">
+      <h3>Cities Table (8 columns):</h3>
+      <ul id="cities-analysis"></ul>
+
+      <h3>OBC Table (15 columns):</h3>
+      <ul id="obc-analysis"></ul>
+
+      <h3>🔍 Key Questions:</h3>
+      <ul>
+        <li>
+          Does browser distribute columns equally?
+          <span id="equal-distribution"></span>
+        </li>
+        <li>
+          Does any single column expand disproportionately?
+          <span id="goalpost-detected"></span>
+        </li>
+        <li>
+          If yes, which column and why? <span id="expansion-reason"></span>
+        </li>
+      </ul>
+    </div>
+
+    <script>
+      // PURE JavaScript analysis - no framework interference
+      function analyzeTable(tableId, analysisId) {
+        const table = document.getElementById(tableId);
+        const analysisList = document.getElementById(analysisId);
+
+        if (!table) return;
+
+        const headerCells = table.querySelectorAll(
+          "thead tr:first-child th, thead tr:first-child td",
+        );
+        const totalWidth = table.offsetWidth;
+        const widths = [];
+
+        headerCells.forEach((cell, index) => {
+          const width = cell.offsetWidth;
+          const percentage = ((width / totalWidth) * 100).toFixed(1);
+          widths.push({
+            width,
+            percentage,
+            index,
+            text: cell.textContent.trim(),
+          });
+
+          // Display width in header
+          const widthDisplay = cell.querySelector(".width-display");
+          if (widthDisplay) {
+            widthDisplay.textContent = `${width}px (${percentage}%)`;
+          }
+
+          // Add to analysis
+          const li = document.createElement("li");
+          li.textContent = `Column ${index + 1} (${cell.textContent.trim()}): ${width}px (${percentage}%)`;
+          analysisList.appendChild(li);
+        });
+
+        // Find max and min widths
+        const maxWidth = Math.max(...widths.map((w) => w.width));
+        const minWidth = Math.min(...widths.map((w) => w.width));
+        const maxCol = widths.find((w) => w.width === maxWidth);
+        const minCol = widths.find((w) => w.width === minWidth);
+
+        // Detect goalpost behavior
+        const avgWidth =
+          widths.reduce((sum, w) => sum + w.width, 0) / widths.length;
+        const expansion = maxWidth - avgWidth;
+
+        console.log(`=== ${tableId.toUpperCase()} ANALYSIS ===`);
+        console.log(
+          "Column widths:",
+          widths.map((w) => `${w.text}: ${w.width}px`),
+        );
+        console.log("Max width:", maxWidth, "Column:", maxCol.text);
+        console.log("Min width:", minWidth, "Column:", minCol.text);
+        console.log("Average width:", avgWidth.toFixed(1));
+        console.log("Expansion amount:", expansion.toFixed(1), "pixels");
+        console.log(
+          "Goalpost detected:",
+          expansion > avgWidth * 0.5 ? "YES" : "NO",
+        );
+
+        return {
+          widths,
+          maxCol,
+          minCol,
+          avgWidth,
+          expansion,
+          goalposts: expansion > avgWidth * 0.5,
+        };
+      }
+
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          const citiesResult = analyzeTable("cities-table", "cities-analysis");
+          const obcResult = analyzeTable("obc-table", "obc-analysis");
+
+          // Update summary
+          document.getElementById("equal-distribution").textContent =
+            !citiesResult.goalposts && !obcResult.goalposts
+              ? "✅ YES"
+              : "❌ NO";
+
+          document.getElementById("goalpost-detected").textContent =
+            citiesResult.goalposts || obcResult.goalposts ? "🚨 YES" : "✅ NO";
+
+          if (citiesResult.goalposts || obcResult.goalposts) {
+            const expandingTable = citiesResult.goalposts ? "Cities" : "OBC";
+            const expandingCol = citiesResult.goalposts
+              ? citiesResult.maxCol.text
+              : obcResult.maxCol.text;
+            document.getElementById("expansion-reason").textContent =
+              `${expandingTable} table: ${expandingCol} column expanding`;
+          } else {
+            document.getElementById("expansion-reason").textContent =
+              "✅ Even distribution";
+          }
+
+          console.log("\n🎯 CONCLUSION:");
+          console.log(
+            "Pure HTML exhibits goalpost behavior:",
+            citiesResult.goalposts || obcResult.goalposts,
+          );
+          console.log(
+            "If NO goalposts here but YES in our app → JavaScript interference confirmed",
+          );
+          console.log("If YES goalposts here → Natural browser behavior");
+        }, 100);
+      });
+
+      // Resize handler
+      window.addEventListener("resize", () => {
+        setTimeout(() => {
+          document.getElementById("cities-analysis").innerHTML = "";
+          document.getElementById("obc-analysis").innerHTML = "";
+          analyzeTable("cities-table", "cities-analysis");
+          analyzeTable("obc-table", "obc-analysis");
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

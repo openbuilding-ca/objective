@@ -1,0 +1,44 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# VSCode
+*.code-workspace
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Dependencies
+/node_modules
+package-lock.json
+
+# Excel temp files
+~$*.xlsx
+~$*.csv
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+*.swp
+*.swo
+*~
+
+# Old structure (to be removed after migration)
+OBJECTIVE 4011RF/
+gh-pages-local/
+data/
+deploy-to-gh-pages.sh
+OBJECTIVE WORKSPACE.code-workspace
+tooltip-object.js
+tooltips-comprehensive.json
+extract-validation.py

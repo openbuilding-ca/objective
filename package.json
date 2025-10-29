@@ -1,0 +1,44 @@
+{
+  "name": "objective",
+  "version": "4.012.0",
+  "description": "OBJECTIVE TEUI Calculator - Total Energy Use Intensity calculator for Canadian buildings",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "serve": "npx serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openbuilding-ca/objective.git"
+  },
+  "keywords": [
+    "teui",
+    "tedi",
+    "energy-modeling",
+    "building-performance",
+    "canada",
+    "architecture",
+    "sustainability"
+  ],
+  "author": "Andy Thomson, OpenBuilding, Inc.",
+  "contributors": [
+    "Mark H Pavlidis"
+  ],
+  "license": "CC-BY-NC-ND-4.0",
+  "bugs": {
+    "url": "https://github.com/openbuilding-ca/objective/issues"
+  },
+  "homepage": "https://objective.openbuilding.ca",
+  "devDependencies": {
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-html": "^8.1.3",
+    "eslint-plugin-prettier": "^5.4.1",
+    "globals": "^16.2.0",
+    "prettier": "^3.5.3"
+  }
+}

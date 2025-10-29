@@ -1,0 +1,2071 @@
+/**
+ * 4011-styles.css Refactored 2025.04.21 to consolidate column widths and improve readability
+ * Core styles for TEUI Calculator 4.011
+ * Clean foundation with essential styling only
+ * 
+ * STYLING PRIORITY NOTE:
+ * ---------------------
+ * This application uses Bootstrap 5.1.3 which can influence and override our custom styles.
+ * If fighting with conflicting styles, check Bootstrap influence first!
+ * For critical elements like dropdowns, consider using direct HTML style tags in the head section.
+ * 
+ * INPUT FIELD STYLING GUIDELINES:
+ * ------------------------------
+ * This stylesheet implements a clean, borderless design for all user input elements.
+ * The following principles apply across all input types:
+ * 
+ * 1. NO BORDERS OR BOX SHADOWS: Input fields should never have visible borders or box-shadows
+ *    This includes text fields, numeric inputs, and editable cells.
+ * 
+ * 2. COLOR CODING: User-editable fields are colored blue (--user-input-color)
+ *    Calculated/derived values use black text (--calculated-value-color)
+ * 
+ * 3. MINIMAL STYLING: Only use subtle background changes for hover/focus states
+ *    Avoid using decorative elements that distract from content
+ * 
+ * 4. TABLE STRUCTURE: Preserve table row borders while keeping input fields borderless
+ * 
+ * IMPORTANT: DO NOT add inline styles to override these global styles!
+ * If adjustments are needed, modify the global classes below.
+ */
+
+:root {
+  /* Layout dimensions */
+  --key-values-height: 0px;
+  --header-height: 60px;
+  --tab-height: 40px;
+  --tab-spacer-height: 15px; /* Fixed spacer height */
+
+  /* Colors */
+  --primary-text: #212529;
+  --secondary-text: #5f6368;
+  --header-bg: #212529;
+  --header-text: #ffffff;
+  --border-color: #dee2e6;
+  --hover-bg: #f8f9fa;
+  --table-header-bg: #f1f3f4;
+  --user-input-color: #0d6efd;
+  --user-input-color-rgb: 13, 110, 253;
+  --calculated-value-color: #202124;
+  --derived-value-color: #202124;
+  --reference-value-color: #8b0000;
+  --target-value-color: #1a73e8;
+  --actual-value-color: #202124;
+  --link-color: #0d6efd;
+  --tab-active-bg: #495057;
+  --tab-active-border: #0d6efd;
+
+  /* Sizes and spacings */
+  --section-spacing: 12px;
+  --cell-padding: 4px 8px;
+  --header-cell-padding: 6px 8px;
+  --border-radius: 8px;
+
+  /* Font sizes */
+  --base-font-size: 0.85rem;
+  --small-font-size: 0.8em;
+  --smaller-font-size: 0.75em; /* Adjusted this for header rows */
+  --header-font-size: 1rem;
+  --key-values-font-size: 1.3rem;
+}
+
+/* =============== Base Element Styling =============== */
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: var(--base-font-size);
+  line-height: 1.5;
+  color: var(--primary-text);
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  height: var(--header-height);
+}
+
+/* =============== Layout Framework =============== */
+
+/* App wrapper structure */
+#app-wrapper {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  min-height: 100vh; /* Take at least full viewport height */
+  /* Ensure clean separation from header elements */
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Main container structure */
+#calculator-container {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  min-height: 500px;
+}
+
+/* Section spacer to maintain proper distance between tabs and content */
+.section-spacer {
+  display: none;
+  height: 0;
+}
+
+/* In horizontal layout, add fixed spacing below tabs */
+.horizontal-layout .section-spacer {
+  display: block;
+  height: 15px;
+  min-height: 15px;
+  max-height: 15px;
+  width: 100%;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tab spacer - setting to zero height in horizontal layout */
+.tab-spacer {
+  height: 0;
+  display: none;
+  background-color: transparent;
+  position: static;
+}
+
+/* Key values positioning */
+#keyValues {
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  margin-bottom: 0;
+  background-color: #fff;
+  box-shadow: none; /* Remove shadow which can cause line */
+  border-bottom: none; /* Remove border which can cause line */
+}
+
+/* Tab container - attach directly to Key Values with no gap */
+.tab-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  background-color: var(--header-bg);
+  border: 2px solid var(--header-bg);
+  border-top: none;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  position: sticky;
+  top: var(--key-values-height); /* Stick exactly at the bottom of Key Values */
+  z-index: 109;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: var(--tab-height);
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.tab-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Prevent active sections from getting too close to tabs */
+.horizontal-layout .section.active:not(#keyValues) {
+  position: relative;
+  margin-top: 0; /* Reset margin */
+}
+
+/* =============== Section Styling =============== */
+
+.section {
+  margin-bottom: var(--section-spacing);
+  border: 2px solid var(--header-bg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.section-header {
+  background-color: var(--header-bg);
+  color: white;
+  padding: 8px 12px;
+  font-weight: 500;
+  font-size: var(--header-font-size);
+  display: flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.section-icon {
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-content {
+  transition:
+    max-height 0.3s ease-out,
+    opacity 0.2s ease-out;
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Hide scrollbar for webkit browsers */
+.section-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============== Data Tables =============== */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--base-font-size);
+  table-layout: auto; /* Changed from fixed to auto */
+}
+
+/* Table cells with no wrapping */
+.data-table td,
+.data-table th {
+  padding: var(--cell-padding);
+  text-align: left; /* Default alignment */
+  border-bottom: 1px solid #eeeeee;
+  line-height: 1.2;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Changed from visible */
+  text-overflow: ellipsis; /* Added */
+}
+
+/* Ensure cells have minimum vertical padding for focus glow */
+.data-table td {
+  padding-top: 4px !important; /* Reduced back to 4px */
+  padding-bottom: 4px !important; /* Reduced back to 4px */
+}
+
+/* Right-align numeric columns (D-M) */
+.data-table td.col-d,
+.data-table td.col-f,
+.data-table td.col-h,
+.data-table td.col-j,
+.data-table td.col-k,
+.data-table td.col-l {
+  text-align: right;
+}
+
+/* Force specific text columns (Units, secondary labels) to left-align */
+.data-table
+  td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell) {
+  text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
+}
+
+/* Ensure Calculated/Derived/User Input values are RIGHT-aligned, overriding column defaults */
+.data-table td.col-e.calculated-value,
+.data-table td.col-g.calculated-value,
+.data-table td.col-i.calculated-value,
+.data-table td.col-m.calculated-value,
+.data-table td.col-e .calculated-value, /* Target inner elements too */
+.data-table td.col-g .calculated-value,
+.data-table td.col-i .calculated-value,
+.data-table td.col-m .calculated-value,
+.data-table td.col-e.derived-value,
+.data-table td.col-g.derived-value,
+.data-table td.col-i.derived-value,
+.data-table td.col-m.derived-value,
+.data-table td.col-e .derived-value,
+.data-table td.col-g .derived-value,
+.data-table td.col-i .derived-value,
+.data-table td.col-m .derived-value,
+.data-table td.col-e.user-input,
+.data-table td.col-g.user-input,
+.data-table td.col-i.user-input,
+.data-table td.col-m.user-input,
+.data-table td.col-e .user-input,
+.data-table td.col-g .user-input,
+.data-table td.col-i .user-input,
+.data-table td.col-m .user-input,
+.data-table td.col-e.number-input-cell,
+.data-table td.col-g.number-input-cell,
+.data-table td.col-i.number-input-cell,
+.data-table td.col-m.number-input-cell {
+  text-align: right !important;
+}
+
+/* Calculated/Derived values styling (keep base style) */
+.calculated-value {
+  font-weight: 500;
+  color: var(--calculated-value-color);
+  /* text-align is now handled by the more specific rule above */
+}
+
+.derived-value {
+  font-weight: 500;
+  color: var(--derived-value-color);
+  /* text-align is now handled by the more specific rule above */
+}
+
+/* Style for fields awaiting measurement/input */
+.PendingValue {
+  font-style: italic;
+  color: #888888; /* Light grey */
+}
+
+/* =============== Layout Toggle and Navigation =============== */
+
+/* Toggle buttons for layout modes */
+#layout-toggle {
+  margin-bottom: 15px;
+}
+
+/* Tab styling */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px;
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid #444;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  height: var(--tab-height);
+  min-width: 80px;
+}
+
+.tab i {
+  margin-right: 4px;
+  font-size: 0.9em;
+}
+
+.tab.icon-only {
+  min-width: 40px;
+  padding: 8px 8px;
+  justify-content: center;
+}
+
+.tab.icon-only i {
+  margin-right: 0;
+  font-size: 1.1em;
+}
+
+/* Button sizing fixes */
+#expand-collapse-all,
+.layout-toggle-btn {
+  font-size: 20px;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab:hover {
+  background-color: var(--tab-active-bg);
+}
+
+.tab.active {
+  background-color: var(--tab-active-bg);
+  border-bottom: 4px solid var(--tab-active-border) !important;
+}
+
+/* Layout toggle button in Key Values header */
+.layout-toggle-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.layout-toggle-btn:hover {
+  color: #f1f1f1;
+}
+
+/* Expand/Collapse controls */
+.expand-collapse-all {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background-color: #f1f3f4;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+}
+
+.expand-collapse-all:hover {
+  background-color: #e8eaed;
+}
+
+.expand-collapse-all .toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 4px 0 4px;
+  border-color: var(--primary-text) transparent transparent transparent;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.expand-collapse-all.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Section toggle icon */
+.section-header .toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 4px 0 4px;
+  border-color: white transparent transparent transparent;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.section-header.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Collapsible section content */
+.section-header.collapsed + .section-content {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+/* =============== Layout Modes =============== */
+
+/* Horizontal (tabbed) layout */
+.horizontal-layout #keyValues {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+.horizontal-layout .tab-container {
+  display: flex !important;
+}
+
+.horizontal-layout .expand-collapse-all {
+  display: none;
+}
+
+.horizontal-layout .section:not(#keyValues):not(.active) {
+  display: none;
+}
+
+.horizontal-layout .section.active:not(#keyValues) {
+  display: block;
+  margin-top: 0;
+  padding-top: 0;
+  align-self: flex-start;
+}
+
+/* Vertical layout */
+.vertical-layout .tab-container {
+  display: none !important;
+}
+
+.vertical-layout .section {
+  display: block;
+}
+
+.vertical-layout #keyValues {
+  margin-bottom: var(--section-spacing) !important;
+  border-bottom-left-radius: var(--border-radius) !important;
+  border-bottom-right-radius: var(--border-radius) !important;
+  border-bottom: 2px solid var(--header-bg) !important;
+}
+
+/* =============== Component Styling =============== */
+
+/* Dropdowns */
+/* Force removal of borders/outlines on dropdowns and their containers */
+.form-select,
+select.form-select,
+select.form-control,
+select,
+option,
+.data-table td.dropdown-cell, /* Target the cell itself */
+.data-table td select.form-select {
+  /* Font consistency */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-family: sans-serif; /* Fallback */
+
+  /* Restore forcing removal of border and outline */
+  border: none !important; /* Restored rule */
+  outline: none !important;
+  box-shadow: none;
+  /* Keep dropdowns transparent, they don't need hover bg */
+  background-color: transparent;
+
+  /* Ensure consistent size and appearance */
+  font-size: inherit; /* Inherit from parent cell */
+  color: var(--user-input-color); /* Blue color for select */
+  font-weight: 500;
+}
+
+/* Restore Bootstrap's default for dropdown-menu and dropdown-item */
+.dropdown-menu,
+.dropdown-item {
+  background-color: #fff !important;
+}
+
+/* Apply to select elements within table cells */
+.data-table select.form-select {
+  width: 100%;
+  min-width: 140px; /* Ensure minimum width for content */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important; /* Restore Bootstrap border */
+  border-radius: 0.25rem !important; /* Bootstrap default radius */
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
+  background-color: #fff !important; /* Ensure white background */
+  /* Ensure the select sits properly in the cell */
+  margin: 2px 0; /* Small margin to prevent border touching table lines */
+  height: calc(100% - 4px); /* Account for margins */
+}
+
+/* Ensure dropdown cells have minimum width */
+[data-dropdown-id],
+.dropdown-cell {
+  min-width: 140px;
+  padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
+}
+
+/* Handle dropdowns spanning columns */
+td[colspan="2"] .form-select {
+  min-width: 180px;
+}
+
+/* Sliders */
+[data-type="percentage"],
+[data-type="coefficient"],
+[data-type="year_slider"] {
+  cursor: pointer;
+  color: var(--user-input-color);
+  font-weight: 500;
+}
+
+/* =============== Print Styling =============== */
+
+@media print {
+  .tab-container,
+  .tab-spacer,
+  .layout-toggle-btn,
+  .expand-collapse-all,
+  #layout-toggle {
+    display: none !important;
+  }
+
+  .section {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+
+  .section-content {
+    max-height: none !important;
+    opacity: 1 !important;
+  }
+
+  #keyValues {
+    position: static;
+  }
+}
+
+/* =============== Responsive Adjustments =============== */
+
+@media (max-width: 992px) {
+  .tab {
+    padding: 8px 10px;
+    min-width: 70px;
+  }
+
+  .tab-text-full {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Adjust column behavior at medium size */
+  .data-table {
+    width: 100%;
+  }
+
+  /* Allow description text to wrap only at medium size if absolutely necessary */
+  .description-cell,
+  .data-table td:nth-child(6),
+  .data-table td:nth-child(7) {
+    white-space: normal;
+  }
+
+  /* Prioritize showing description column */
+  .data-table col.col-c {
+    min-width: 200px;
+  }
+
+  /* Also prioritize F and G at medium sizes */
+  .data-table col.col-f,
+  .data-table col.col-g {
+    min-width: 100px;
+  }
+
+  .data-table col.col-d,
+  .data-table col.col-e,
+  .data-table col.col-h,
+  .data-table col.col-i,
+  .data-table col.col-j,
+  .data-table col.col-k,
+  .data-table col.col-l,
+  .data-table col.col-m {
+    width: 80px; /* Further reduce value columns at medium size */
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --key-values-font-size: 1.1rem;
+    --base-font-size: 0.8rem;
+    --header-font-size: 0.9rem;
+  }
+
+  .tab {
+    min-width: 60px;
+    padding: 8px 6px;
+  }
+
+  .tab-text-full {
+    display: none;
+  }
+
+  .tab-text-short {
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Ensure ID and description columns stay visible */
+  .data-table col.col-b {
+    min-width: 60px;
+  }
+
+  .data-table col.col-c {
+    min-width: 160px;
+  }
+
+  .tab {
+    padding: 8px 4px;
+    min-width: 60px;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 576px) {
+  .tab {
+    min-width: 40px;
+    padding: 8px 8px;
+    justify-content: center;
+  }
+
+  .tab .tab-text {
+    display: none;
+  }
+
+  .tab i {
+    margin-right: 0;
+    font-size: 1.1em;
+  }
+}
+
+/* Section Controls and Excel Loader Styles */
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.excel-loader {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.excel-loader button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.excel-loader button i {
+  font-size: 0.9em;
+}
+
+#excelStatus {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-error {
+  color: #dc3545;
+}
+.status-success {
+  color: #198754;
+}
+.status-info {
+  color: #0dcaf0;
+}
+.status-warning {
+  color: #ffc107;
+}
+
+/* Weather Data Modal Styles */
+.weather-data-pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* Fix for column width constraints */
+.max-width-150 {
+  max-width: 150px !important;
+  width: auto !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+/* Column spanning for end-of-row text */
+.span3 {
+  grid-column: span 3;
+  width: auto !important;
+  min-width: 200px;
+}
+
+/* Allow text to wrap within span cells */
+.span3.white-space-normal {
+  white-space: normal !important;
+}
+
+/* Text truncation with ellipsis - can be used independently */
+.truncate-text {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Tooltip functionality - now independent from truncation */
+.tooltip-cell {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip-cell:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  white-space: normal;
+  max-width: 250px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure calculated values using reference-value class are properly styled */
+[data-field-id^="m_7"] {
+  color: var(--reference-value-color);
+  font-weight: bold;
+}
+
+/* Preserve table row borders */
+.data-table tr {
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+.data-table td {
+  padding: var(--cell-padding);
+  text-align: left;
+  border-bottom: 1px solid #eeeeee; /* Keep bottom border - removed important */
+  border-left: none; /* Removed important */
+  border-right: none; /* Removed important */
+  border-top: none; /* Removed important */
+  line-height: 1.2;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Ensure this is hidden */
+  text-overflow: ellipsis; /* Ensure this is set */
+}
+
+/* Browser-specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Safari and Chrome specific fixes */
+  [contenteditable="true"],
+  .editable,
+  select.form-select {
+    -webkit-appearance: none;
+    border: 0;
+    outline: none;
+  }
+}
+
+/* Remove completely the prevent-auto-centering class */
+/* .prevent-auto-centering { */
+/*   display: none !important; */
+/* } */
+
+/* Clean up the custom tab container styles */
+.tab-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  background-color: var(--header-bg);
+  border: 2px solid var(--header-bg);
+  border-top: none;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  position: sticky;
+  top: var(--key-values-height);
+  z-index: 109;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  margin-bottom: 0;
+  height: var(--tab-height);
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+/* Improve spacer to act as a scroll barrier */
+.horizontal-layout .section-spacer {
+  display: block;
+  height: 15px;
+  min-height: 15px;
+  width: 100%;
+  background: transparent;
+  /* Make it a scroll barrier */
+  scroll-margin-top: calc(var(--key-values-height) + var(--tab-height));
+  position: relative;
+  z-index: 108;
+}
+
+/* Basic horizontal layout styling */
+.horizontal-layout {
+  display: block;
+  scroll-padding-top: calc(var(--key-values-height) + var(--tab-height));
+  overflow-y: auto;
+  padding-bottom: 50px;
+}
+
+/* Hide default number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Optional: Adjust padding if needed after removing spinners */
+/* 
+input[type=number].form-control {
+    padding-right: 0.75rem; 
+}
+*/
+
+/* --- Global focus style for editable TDs and number inputs --- */
+
+/* Apply focus style to editable table cells when editing */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) {
+  /* Apply to TD when child input is focused */
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25); /* Smaller blue glow on the TD */
+  border-radius: 0.25rem; /* Rounded corners */
+  outline: none; /* Remove default dotted outline */
+}
+
+/* --- End Global focus style --- */
+
+/* --- Add back subtle hover background for editable cells --- */
+.data-table td.editable:hover,
+.data-table td.user-input:hover,
+.data-table td:has(input[type="number"]:hover),
+.data-table td:has([contenteditable="true"]:hover) {
+  background-color: rgba(
+    66,
+    133,
+    244,
+    0.08
+  ) !important; /* Re-added !important */
+  cursor: pointer; /* Indicate interactivity */
+}
+/* --- End Hover Style --- */
+
+/* --- Style input elements --- */
+
+/* Base style for user-input class (text color) */
+.user-input {
+  font-weight: 500;
+  color: var(--user-input-color); /* Removed !important */
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important; /* Ensure no background */
+}
+
+/* Force blue color on focused number inputs */
+.data-table td input[type="number"].user-input:focus {
+  color: var(--user-input-color) !important; /* Force color on focus */
+  /* Keep other focus styles minimal or handled by TD focus */
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/* Remove all the recent numeric input styling we added */
+.data-table td input[type="number"].form-control,
+.data-table td input[type="number"].user-input {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  padding: 0.375rem 0.75rem !important;
+  /* Remove spinners */
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: none !important;
+}
+
+/* Remove spinner buttons in Webkit browsers */
+.data-table td input[type="number"]::-webkit-outer-spin-button,
+.data-table td input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Ensure the cell itself doesn't interfere */
+.data-table td.number-input-cell {
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Keep the blue color for user input */
+.data-table td input[type="number"].user-input {
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+}
+
+/* Removed conflicting alignment rule - now handled by universal rules */
+
+/* Apply section-subheader styling to all cells in a row with section-subheader class */
+.data-table tr td.section-subheader,
+.data-table tr:has(td.section-subheader) td {
+  background-color: #eaeaea; /* Light grey background - removed !important */
+  color: #333; /* Darker text - removed !important */
+  font-size: var(
+    --smaller-font-size
+  ); /* Use smaller font - removed !important */
+  font-weight: 600; /* Bold - removed !important */
+  padding: 3px 6px; /* Tighter padding - removed !important */
+  border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
+  text-align: center; /* Center align by default */
+  white-space: pre-line; /* Allow wrapping on explicit newlines */
+}
+
+/* Ensure empty cells in section-subheader rows maintain styling */
+.data-table tr:has(td.section-subheader) td:empty {
+  background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
+}
+
+/* Removed conflicting alignment rule - now handled by universal rules */
+
+/* Removed conflicting Section 02 alignment rules - now handled by universal rules */
+
+/* Make the dropdown styling more specific */
+.data-table td select.form-select,
+.data-table td select.form-control,
+table.data-table select.form-select {
+  width: 100%;
+  min-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.25rem !important;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
+  background-color: #fff !important;
+  margin: 2px 0;
+  height: calc(100% - 4px);
+  /* Remove native appearance */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  /* Add Bootstrap-style background arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+}
+
+/* Add hover effect */
+.data-table td select.form-select:hover,
+.data-table td select.form-control:hover,
+table.data-table select.form-select:hover {
+  border-color: #86b7fe !important;
+}
+
+/* Ensure the cell itself doesn't interfere */
+.data-table td.dropdown-cell {
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* --- Utility Classes --- */
+/* Removed conflicting alignment utility classes - now handled by universal rules */
+
+/* Style for disabled/non-applicable input fields */
+.disabled-input {
+  color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
+  font-style: italic !important;
+  cursor: default !important;
+  background-color: transparent !important; /* Ensure no background interferes */
+}
+/* --- End Utility Classes --- */
+
+/* Removed conflicting text-left-indicator - now handled by universal rules */
+
+/* --- Section 11 Visual Indicators --- */
+
+/* Base style for indicator cells */
+.loss-indicator,
+.gain-indicator {
+  position: relative;
+}
+
+/* Dot styles using pseudo-elements */
+.loss-indicator::before,
+.gain-indicator::before {
+  content: "";
+  position: absolute;
+  left: 6px; /* Nudge dot slightly right */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px; /* Increased dot size */
+  height: 10px; /* Increased dot size */
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Apply padding only when text is left aligned AND indicator is present */
+.text-left-indicator.loss-indicator,
+.text-left-indicator.gain-indicator {
+  padding-left: 20px; /* Space for dot + small gap */
+}
+
+/* Heat Loss Indicator Colors (Loss High = Red)*/
+.loss-high::before {
+  background-color: #dc3545; /* Red */
+}
+.loss-medium::before {
+  background-color: #ffc107; /* Yellow */
+}
+.loss-low::before {
+  background-color: #28a745; /* Green */
+}
+
+/* Heat Gain Indicator Colors (Gain High = Green) */
+.gain-high::before {
+  background-color: #28a745; /* Green */
+}
+.gain-medium::before {
+  background-color: #ffc107; /* Yellow */
+}
+.gain-low::before {
+  background-color: #dc3545; /* Red */
+}
+
+/* Text Color for Air vs Ground Facing % (Column H) */
+.text-air-facing {
+  color: #b0e0e6; /* Powder Blue */
+}
+
+.text-ground-facing {
+  color: #8b4513; /* Brown (SaddleBrown) */
+}
+
+/* Style for bolding text in total rows */
+.total-row-text {
+  font-weight: 600; /* Semi-bold */
+}
+
+/* ======================================
+   Dependency Graph Styles (Section 17)
+   ====================================== */
+
+.dependency-graph-controls-wrapper,
+.dependency-graph-info-wrapper {
+  /* Wrappers for placement above the SVG */
+  padding-left: 1rem; /* Align with section content padding */
+  padding-right: 1rem;
+  background-color: #f8f9fa; /* Add light background for fullscreen contrast */
+  border-radius: 0.25rem; /* Optional rounding */
+}
+
+.dependency-graph-controls {
+  /* Styles for the filter/button container */
+  background-color: #f8f9fa; /* Light background */
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.dependency-graph-controls .form-control-sm,
+.dependency-graph-controls .form-select-sm,
+.dependency-graph-controls .btn-sm {
+  font-size: 0.875rem; /* Match Bootstrap small size */
+}
+
+.layout-button.active {
+  background-color: #0d6efd; /* Bootstrap primary blue */
+  color: white;
+  border-color: #0d6efd;
+}
+
+.dependency-info-panel {
+  font-size: 0.9rem;
+  max-height: 200px; /* Increased height for more visible content */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  padding: 12px; /* More internal spacing */
+  margin-bottom: 15px; /* More space below panel */
+  border-left: 3px solid #0d6efd; /* Add accent border */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.dependency-info-panel .info-title {
+  color: #0d6efd; /* Blue title for emphasis */
+  margin-bottom: 10px; /* More space after title */
+}
+
+.dependency-info-panel strong {
+  font-weight: 600; /* Slightly heavier weight for better visibility */
+}
+
+.dependency-graph-svg-wrapper {
+  /* Container for the SVG element */
+  overflow: hidden; /* Hide scrollbars caused by D3 layout */
+  /* Keep initial border */
+  border: 1px solid #dee2e6;
+  border-radius: 6px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  background-color: #ffffff; /* Ensure white background */
+  position: relative; /* For tooltip positioning */
+}
+
+.dependency-graph-svg-wrapper svg {
+  display: block; /* Remove extra space below SVG */
+  width: 100%; /* Make SVG fill wrapper width */
+  height: 100%; /* Make SVG fill wrapper height */
+}
+
+/* Graph element styles */
+.link {
+  stroke: #999;
+  stroke-opacity: 0.6;
+  stroke-width: 1.5px;
+  transition:
+    stroke 0.3s,
+    stroke-opacity 0.3s,
+    stroke-width 0.3s;
+}
+
+.node circle {
+  stroke: #fff;
+  stroke-width: 2px;
+  transition:
+    r 0.3s,
+    stroke-width 0.3s,
+    filter 0.3s;
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
+}
+
+.node-background {
+  fill: white;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.node text {
+  font-size: 12px;
+  font-weight: 500;
+  fill: #333;
+  pointer-events: none; /* Ensure circle is clickable */
+  text-shadow:
+    0 0 3px white,
+    0 0 3px white,
+    0 0 3px white,
+    0 0 3px white;
+  transition: font-size 0.3s;
+}
+
+/* Custom tooltip style */
+.node title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Styles for highlighted nodes/links */
+.node.highlight circle {
+  stroke: #333;
+  stroke-width: 3px;
+  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.3));
+}
+
+.link.highlight-source {
+  stroke: #cc0000; /* Red for outgoing */
+  stroke-opacity: 0.9;
+  stroke-width: 2px;
+}
+
+.link.highlight-target {
+  stroke: #0077cc; /* Blue for incoming */
+  stroke-opacity: 0.9;
+  stroke-width: 2px;
+}
+
+/* Style wrapper AND SVG in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen {
+  background-color: white; /* White background in fullscreen */
+  width: 100%; /* Fill available width */
+  height: 100%; /* Fill available height */
+  border: none; /* Ensure no border */
+  padding: 20px; /* Add padding in fullscreen mode */
+}
+
+.dependency-graph-svg-wrapper:fullscreen svg {
+  /* Ensure SVG also fills with padding */
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+.dependency-graph-svg-wrapper:-webkit-full-screen {
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
+}
+
+.dependency-graph-svg-wrapper:-webkit-full-screen svg {
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+.dependency-graph-svg-wrapper:-moz-full-screen {
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
+}
+
+.dependency-graph-svg-wrapper:-moz-full-screen svg {
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+.dependency-graph-svg-wrapper:-ms-fullscreen {
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
+}
+
+.dependency-graph-svg-wrapper:-ms-fullscreen svg {
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+/* Enhancement for text in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .node text,
+.dependency-graph-svg-wrapper:-webkit-full-screen .node text,
+.dependency-graph-svg-wrapper:-moz-full-screen .node text,
+.dependency-graph-svg-wrapper:-ms-fullscreen .node text {
+  font-size: 14px; /* Larger text in fullscreen */
+  font-weight: 600; /* Bolder text in fullscreen */
+  fill: #000; /* Black text for better contrast */
+}
+
+/* Make nodes more visible in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle:not(.node-background) {
+  filter: drop-shadow(
+    0px 3px 5px rgba(0, 0, 0, 0.3)
+  ); /* Stronger shadow in fullscreen */
+  stroke-width: 2.5px; /* Thicker border in fullscreen */
+}
+
+/* Make links more visible in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .link,
+.dependency-graph-svg-wrapper:-webkit-full-screen .link,
+.dependency-graph-svg-wrapper:-moz-full-screen .link,
+.dependency-graph-svg-wrapper:-ms-fullscreen .link {
+  stroke-width: 2px; /* Thicker links in fullscreen */
+  stroke-opacity: 0.7; /* More opaque links in fullscreen */
+}
+
+/* ==========================================================================
+   Reference Model Toggle Styles
+   ========================================================================== */
+
+.reference-model-toggle {
+  /* Rely on Bootstrap classes (e.g., btn-danger, btn-primary) for background/border */
+  color: white !important; /* Ensure white text (overrides Bootstrap potentially) */
+  margin-right: 0.5rem; /* Space before disclaimer button */
+}
+
+/* Reference Mode Body Class Styles - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .section {
+  border-color: var(--reference-value-color) !important; /* Use #8B0000 */
+}
+
+body.viewing-reference-inputs .section-header {
+  background-color: var(--reference-value-color) !important; /* Use #8B0000 */
+  color: white !important;
+  border: 1px solid var(--reference-value-color); /* Match border to bg */
+}
+
+/* Style section subheaders (unit rows) in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .data-table tr td.section-subheader,
+body.viewing-reference-inputs .data-table tr:has(td.section-subheader) td {
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.5
+  ) !important; /* 50% opacity of #8B0000 */
+  color: #ffffff !important; /* White text for contrast */
+  border-bottom-color: rgba(
+    139,
+    0,
+    0,
+    0.7
+  ) !important; /* Darker, semi-transparent border */
+}
+body.viewing-reference-inputs
+  .data-table
+  tr:has(td.section-subheader)
+  td:empty {
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.5
+  ) !important; /* Ensure empty cells match */
+}
+
+/* Example: Style locked fields in reference mode - CHANGED TO viewing-reference-inputs */
+/* This .reference-locked class might be from the old system, review if still used/needed */
+body.viewing-reference-inputs .reference-locked {
+  color: var(--reference-value-color) !important; /* Red text #8B0000 */
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: transparent !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  /* Visually disable contenteditable */
+  -webkit-user-modify: read-only !important;
+  -moz-user-modify: read-only !important;
+  user-modify: read-only !important;
+}
+
+/* Ensure user-input fields retain their blue color ONLY IF NOT locked - CHANGED TO viewing-reference-inputs */
+/* This also relates to the old .reference-locked style */
+body.viewing-reference-inputs .user-input:not(.reference-locked) {
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  cursor: text !important;
+  pointer-events: auto !important;
+  -webkit-user-modify: read-write !important;
+  -moz-user-modify: read-write !important;
+  user-modify: read-write !important;
+}
+
+/* Style tab container in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab-container {
+  background-color: var(--reference-value-color) !important;
+  border-color: var(--reference-value-color) !important;
+}
+
+/* Style tabs in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab {
+  border-right-color: rgba(
+    255,
+    255,
+    255,
+    0.3
+  ); /* Lighter border between tabs */
+}
+
+/* Style tab hover in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ); /* Slightly lighter transparent white */
+}
+
+/* Style active tab in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab.active {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ) !important; /* Match hover background */
+  border-bottom: 4px solid var(--tab-active-border) !important; /* Explicitly set 4px blue border */
+}
+
+/* Style Key Values table borders in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs #keyValues .key-values-table {
+  border-color: var(--reference-value-color) !important;
+}
+body.viewing-reference-inputs #keyValues .key-values-table tr {
+  border-bottom-color: var(--reference-value-color) !important;
+}
+
+/* MODIFIED STYLE for locked reference input display cells/elements */
+/* This applies when viewing cached reference inputs */
+body.viewing-reference-inputs .reference-input-display-locked {
+  /* This rule primarily handles the background fill for PARENT elements like <td> */
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.1
+  ) !important; /* Subtle 10% red overlay */
+  /* Apply text styles here too, in case the class is on a non-input element that contains text */
+  color: var(--reference-value-color) !important;
+  font-weight: bold !important;
+  font-style: italic !important;
+  cursor: default !important;
+}
+
+/* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
+
+/* Rule for ANY element that has BOTH .user-input AND .reference-input-display-locked */
+body.viewing-reference-inputs .user-input.reference-input-display-locked {
+  color: var(--reference-value-color) !important;
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.1
+  ) !important; /* Ensure fill is also on the input */
+  opacity: 0.95 !important; /* Slightly less dim to see text better */
+  -webkit-text-fill-color: var(--reference-value-color) !important;
+  pointer-events: none !important; /* Ensure it's not interactive */
+  cursor: default !important;
+}
+
+/* Specific for input[type="number"] elements that have BOTH classes */
+body.viewing-reference-inputs
+  input[type="number"].user-input.reference-input-display-locked {
+  color: var(--reference-value-color) !important;
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.1
+  ) !important; /* Ensure fill is also on the input */
+  opacity: 0.95 !important;
+  -webkit-text-fill-color: var(--reference-value-color) !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* If an input is a child of .reference-input-display-locked AND is a .user-input */
+body.viewing-reference-inputs .reference-input-display-locked .user-input {
+  color: var(--reference-value-color) !important;
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.1
+  ) !important; /* Ensure fill is also on the input */
+  opacity: 0.95 !important;
+  -webkit-text-fill-color: var(--reference-value-color) !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Fallback for general child inputs/selects/textareas if they DON'T have .user-input */
+/* but are still meant to be locked and styled for reference display */
+body.viewing-reference-inputs .reference-input-display-locked input,
+body.viewing-reference-inputs .reference-input-display-locked select,
+body.viewing-reference-inputs .reference-input-display-locked textarea {
+  color: var(--reference-value-color) !important;
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: rgba(139, 0, 0, 0.1) !important;
+  opacity: 0.95;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+/* --- END SUPER TARGETED OVERRIDES FOR INPUTS --- */
+
+/* Specifically for select elements to ensure arrow is visible if theme changes too much */
+body.viewing-reference-inputs .reference-input-display-locked select {
+  /* If your select arrow relies on background, you might need to ensure it's still visible */
+  /* For now, the general background above should apply. If an issue, add specific SVG here */
+}
+
+/* Fallback style (grey) - keep this for cases where the class might be applied without the body class */
+/* This can be removed if .reference-input-display-locked is ONLY ever used with the body class */
+.reference-input-display-locked:not(body.viewing-reference-inputs *) {
+  /* More specific to avoid conflict */
+  background-color: #f0f0f0;
+  color: #555;
+  cursor: default;
+  font-style: italic;
+  pointer-events: none;
+}
+.reference-input-display-locked:not(body.viewing-reference-inputs *) input,
+.reference-input-display-locked:not(body.viewing-reference-inputs *) select,
+.reference-input-display-locked:not(body.viewing-reference-inputs *) textarea {
+  background-color: #f0f0f0;
+  color: #555;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Dependency Graph Floating Controls in Fullscreen Mode */
+.dependency-graph-floating-controls,
+.dependency-graph-floating-info {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: all 0.3s ease;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dependency-graph-floating-controls {
+  top: 20px;
+  right: 20px;
+  max-width: 600px;
+}
+
+.dependency-graph-floating-controls .dependency-graph-controls {
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.dependency-graph-floating-controls input,
+.dependency-graph-floating-controls select {
+  border: 1px solid #dee2e6 !important;
+  background-color: #fff !important;
+  padding: 6px 12px !important;
+}
+
+.dependency-graph-floating-info {
+  top: 20px;
+  left: 20px;
+  max-width: 350px;
+  max-height: 400px; /* Increased height for more content */
+  overflow-y: auto;
+  z-index: 10000; /* Ensure it's above everything else */
+}
+
+.dependency-graph-floating-info .dependency-info-panel {
+  margin-bottom: 0;
+  border-left: 3px solid #0d6efd;
+  padding-left: 12px;
+}
+
+.dependency-graph-floating-info .info-title {
+  color: #0d6efd;
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.dependency-graph-floating-info .info-value,
+.dependency-graph-floating-info .info-dependencies,
+.dependency-graph-floating-info .info-dependents {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.dependency-graph-floating-info .info-note {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Color legend styling */
+.dependency-graph-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px;
+  border-radius: 8px;
+  /* Removed box-shadow for frameless appearance */
+  max-width: 300px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  z-index: 100;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.dependency-graph-legend > div:first-child {
+  font-weight: bold;
+  margin-bottom: 10px;
+  /* Removed border-bottom for frameless appearance */
+  padding-bottom: 5px;
+  font-size: 14px;
+}
+
+/* Make the legend items grid nicer */
+.dependency-graph-legend > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+/* Fullscreen specific enhancements for the legend */
+.dependency-graph-svg-wrapper:fullscreen .dependency-graph-legend,
+.dependency-graph-svg-wrapper:-webkit-full-screen .dependency-graph-legend,
+.dependency-graph-svg-wrapper:-moz-full-screen .dependency-graph-legend,
+.dependency-graph-svg-wrapper:-ms-fullscreen .dependency-graph-legend {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px;
+  font-size: 14px;
+  /* Removed box-shadow for frameless appearance */
+}
+
+.dependency-graph-svg-wrapper:fullscreen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .dependency-graph-legend
+  > div:first-child {
+  font-size: 16px;
+}
+
+/* Node styling enhancements */
+.node circle {
+  stroke: #fff;
+  stroke-width: 2px;
+  transition:
+    r 0.3s,
+    stroke-width 0.3s,
+    filter 0.3s;
+}
+
+/* Make the links more visible in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .link,
+.dependency-graph-svg-wrapper:-webkit-full-screen .link,
+.dependency-graph-svg-wrapper:-moz-full-screen .link,
+.dependency-graph-svg-wrapper:-ms-fullscreen .link {
+  stroke-width: 2px; /* Thicker links in fullscreen */
+  stroke-opacity: 0.7; /* More opaque links in fullscreen */
+}
+
+/* Improve visibility of influential nodes in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle:not(.node-background) {
+  filter: drop-shadow(
+    0px 3px 5px rgba(0, 0, 0, 0.3)
+  ); /* Stronger shadow in fullscreen */
+  stroke-width: 2.5px; /* Thicker border in fullscreen */
+}
+
+/* Special styling for influential nodes (stronger glow in fullscreen) */
+.dependency-graph-svg-wrapper:fullscreen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle[style*="drop-shadow(0px 0px"] {
+  filter: drop-shadow(
+    0px 0px 20px rgba(255, 82, 82, 1)
+  ) !important; /* Even stronger glow in fullscreen */
+}
+
+/* ======================================
+   SECTION 16 - SANKEY DIAGRAM STYLES
+   ====================================== */
+
+/* Basic Sankey Element Styles (ported and scoped/simplified) */
+#sankeySection16Container .node {
+  stroke: #000;
+  stroke-width: 1px;
+  cursor: pointer;
+}
+
+#sankeySection16Container .link {
+  fill: none;
+  stroke-opacity: 0.7;
+  cursor: pointer;
+}
+
+#sankeySection16Container .link:hover {
+  stroke-opacity: 0.9;
+}
+
+#sankeySection16Container .node-label {
+  font-size: 12px; /* Corresponds to --font-size-sm */
+  fill: black;
+  pointer-events: none;
+  font-weight: 500;
+  font-family: Arial, sans-serif; /* Ensure a common font */
+}
+
+/* Tooltip for Section 16 Sankey */
+#sankeySection16Tooltip {
+  display: none;
+  position: fixed !important;
+  z-index: 10000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  max-width: 350px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+#sankeySection16Tooltip .tooltip-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+#sankeySection16Svg .node,
+#sankeySection16FullscreenSvg .node {
+  stroke: #000;
+  stroke-width: 1px;
+  fill-opacity: 1 !important;
+}
+
+#sankeySection16Svg .link,
+#sankeySection16FullscreenSvg .link {
+  fill: none;
+  stroke-width: 1px; /* Fallback minimum width */
+  stroke-opacity: 0.6;
+  transition: stroke-opacity 0.3s;
+}
+
+#sankeySection16Svg text,
+#sankeySection16FullscreenSvg text {
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* Controls styling */
+#s16ControlsContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+}
+
+#s16WidthToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Fullscreen styles */
+#s16FullscreenContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+  display: none;
+}
+
+/* Ensure specific buttons in the main header do not wrap text */
+#selectExcelBtn,
+#debugExcelBtn,
+#showWeatherDataBtn {
+  white-space: nowrap;
+}
+
+/* Optional: If all buttons in that controls-container need it */
+/* .controls-container .btn {
+    white-space: nowrap;
+} */
+
+/* =============== CONTENT ALIGNMENT: CLEAN UNIVERSAL RULES =============== */
+/* ROOT CAUSE FIX: Simple rules without aggressive overrides */
+
+/* UNIVERSAL RULE 1: ALL NUMERIC CONTENT → RIGHT ALIGNED */
+.data-table input[type="number"],
+.data-table [contenteditable]:not([data-type="text"]),
+.data-table .calculated-value,
+.data-table .derived-value,
+.data-table .numeric-field {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* UNIVERSAL RULE 2: ALL TEXT CONTENT → LEFT ALIGNED */
+.data-table select,
+.data-table [data-type="text"],
+.data-table .section-subheader {
+  text-align: left;
+}
+
+/* UNIVERSAL RULE 3: SLIDERS → CENTER ALIGNED (Visual Balance) */
+.data-table [data-type="percentage"],
+.data-table [data-type="coefficient"],
+.data-table [data-type="year_slider"],
+.data-table .slider-container {
+  text-align: center;
+}
+
+/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
+.calculated-value,
+.derived-value {
+  text-align: right !important;
+}
+
+/* END CLEAN RULES - Proper CSS cascade without conflicts */
+
+/* =============== GLOBAL PASS/FAIL INDICATORS =============== */
+/* Standard checkmark/warning styles used across all sections */
+.checkmark {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 5px;
+  display: inline-block;
+}
+.warning {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 5px;
+  display: inline-block;
+}
+
+/* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
+/* EXACT COPY from working OBC Matrix styles */
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Base user input styling - minimal and clean */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  outline: none !important;
+}
+
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Hover state - very subtle background hint */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+}
+
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Override conflicting cell hover styles */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: transparent !important;
+}
+
+/* =============== END ELEGANT USER INPUT BEHAVIOR =============== */

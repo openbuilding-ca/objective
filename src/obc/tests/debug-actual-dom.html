@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Structure Debug - Find the Goalpost Culprit</title>
+    <style>
+      .debug-section {
+        margin: 2rem 0;
+        padding: 1rem;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        background-color: #f8f9ff;
+      }
+      .dom-inspector {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .width-measurement {
+        font-size: 10px;
+        color: red;
+        font-weight: bold;
+      }
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      .comparison-table td,
+      .comparison-table th {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      .problematic {
+        background-color: rgba(255, 0, 0, 0.1);
+      }
+      .good {
+        background-color: rgba(0, 255, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid mt-4">
+      <h1>🔍 DOM Structure Debug - Find the Goalpost Culprit</h1>
+      <p class="lead">
+        Let's see exactly what our app generates vs. the working pure HTML test
+      </p>
+
+      <div class="debug-section">
+        <h2>📊 Width Comparison Analysis</h2>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Pure HTML (Working)</th>
+              <th>OBC App (Broken)</th>
+              <th>Difference</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="width-comparison">
+            <!-- Will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="debug-section">
+        <h2>🧪 Pure HTML Test (Working Baseline)</h2>
+        <table id="pure-test-table" class="data-table">
+          <colgroup>
+            <col class="col-a" />
+            <col class="col-b" />
+            <col class="col-c" />
+            <col class="col-d" />
+            <col class="col-e" />
+            <col class="col-f" />
+            <col class="col-g" />
+            <col class="col-h" />
+            <col class="col-i" />
+            <col class="col-j" />
+            <col class="col-k" />
+            <col class="col-l" />
+            <col class="col-m" />
+            <col class="col-n" />
+            <col class="col-o" />
+          </colgroup>
+          <tbody>
+            <tr>
+              <td class="col-a"></td>
+              <td class="col-b">B</td>
+              <td class="col-c">DESCRIPTION</td>
+              <td class="col-d">VALUE</td>
+              <td class="col-e problematic">
+                E <span class="width-measurement" id="pure-width-e"></span>
+              </td>
+              <td class="col-f">F</td>
+              <td class="col-g">G</td>
+              <td class="col-h">H</td>
+              <td class="col-i">EXISTING</td>
+              <td class="col-j">NEW</td>
+              <td class="col-k">TOTAL</td>
+              <td class="col-l">REF</td>
+              <td class="col-m">M</td>
+              <td class="col-n">N</td>
+              <td class="col-o">NOTES</td>
+            </tr>
+            <tr>
+              <td class="col-a"></td>
+              <td class="col-b">22</td>
+              <td class="col-c">Building area description here</td>
+              <td class="col-d">Some value</td>
+              <td class="col-e"></td>
+              <td class="col-f"></td>
+              <td class="col-g"></td>
+              <td class="col-h"></td>
+              <td class="col-i">1,000.00</td>
+              <td class="col-j">100.00</td>
+              <td class="col-k">1,100.00</td>
+              <td class="col-l">3.2.1.1</td>
+              <td class="col-m"></td>
+              <td class="col-n"></td>
+              <td class="col-o">Notes here</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="pure-dom-structure" class="dom-inspector"></div>
+      </div>
+
+      <div class="debug-section">
+        <h2>🔧 OBC App Generated Structure (Broken)</h2>
+        <div id="obc-app-table-container">
+          <!-- This will be populated by loading the actual OBC Matrix structure -->
+        </div>
+        <div id="obc-dom-structure" class="dom-inspector"></div>
+      </div>
+
+      <div class="debug-section">
+        <h2>🎯 Structure Comparison</h2>
+        <div id="structure-diff" class="dom-inspector"></div>
+      </div>
+
+      <div class="debug-section">
+        <h2>🚨 Findings & Next Steps</h2>
+        <div id="findings">
+          <p>
+            Run the analysis to see what's different between working and broken
+            structures...
+          </p>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button onclick="runFullAnalysis()" class="btn btn-primary btn-lg me-3">
+          🔍 Run Full Analysis
+        </button>
+        <button
+          onclick="copyOBCAppStructure()"
+          class="btn btn-secondary btn-lg"
+        >
+          📋 Copy OBC App Structure
+        </button>
+      </div>
+
+      <div class="debug-section">
+        <h2>🚀 Sub-Nuclear CSS Test (Content-Aware Experiments)</h2>
+        <p>
+          Testing different approaches to achieve
+          <strong
+            >"proportional expansion while respecting content minimums"</strong
+          >
+          - the holy grail of table layout!
+        </p>
+
+        <div
+          class="alert alert-info"
+          style="
+            font-size: 0.9em;
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+          "
+        >
+          <strong>🎯 The Goal:</strong> Browser correctly calculates minimum
+          column widths at small size, but ruins them when expanding. We want:
+          <em>"Go nuclear but preserve content visibility"</em><br /><br />
+
+          <strong>🧪 Experiment 1 (Blue):</strong>
+          <code>min-width + width: auto</code> - Set minimums, let browser
+          expand proportionally<br />
+          <strong>🧪 Experiment 2 (Green):</strong>
+          <code>CSS Grid + min-content</code> - Modern layout with content
+          awareness<br />
+          <strong>🧪 Experiment 3 (Orange):</strong>
+          <code>Fixed percentages</code> - Traditional table-layout: fixed
+          approach<br />
+          <strong>🧪 Experiment 4 (Purple):</strong> <code>Stealth Mode</code> -
+          Hide dropdown complexity from layout engine
+        </div>
+
+        <!-- Sub-Nuclear Test Controls -->
+        <div class="mb-3">
+          <label for="test-mode-select" class="form-label"
+            >Test Approach:</label
+          >
+          <select
+            id="test-mode-select"
+            class="form-select form-select-sm mb-2"
+            style="width: auto; display: inline-block"
+          >
+            <option value="percentages">
+              Fixed Percentages (Orange Border)
+            </option>
+            <option value="min-width">Min-Width + Auto (Blue Border)</option>
+            <option value="css-grid">
+              CSS Grid + min-content (Green Border)
+            </option>
+            <option value="stealth-mode">
+              Stealth Mode - Hide Complexity (Purple Border)
+            </option>
+            <option value="hide-column-d">
+              🔍 DEBUG: Hide Column D (Red Border)
+            </option>
+            <option value="hide-column-e">
+              🔍 DEBUG: Hide Column E (Crimson Border)
+            </option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <button
+            onclick="applySubNuclearCSS()"
+            class="btn btn-warning btn-sm me-2"
+          >
+            🚀 Apply Selected Test
+          </button>
+          <button
+            onclick="removeSubNuclearCSS()"
+            class="btn btn-secondary btn-sm me-2"
+          >
+            🔄 Remove Fix
+          </button>
+          <button onclick="testWidthMeasurement()" class="btn btn-info btn-sm">
+            📏 Measure Results
+          </button>
+        </div>
+
+        <div
+          id="sub-nuclear-results"
+          class="dom-inspector"
+          style="min-height: 100px"
+        >
+          Click "Apply Sub-Nuclear Fix" to test the approach...
+        </div>
+      </div>
+    </div>
+
+    <!-- Load OBC Matrix dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="OBC-StateManager.js"></script>
+    <script src="OBC-FieldManager.js"></script>
+    <script src="4011-init.js"></script>
+    <script src="sections/OBC-Section03.js"></script>
+
+    <!-- Load OBC Matrix CSS -->
+    <link href="OBC-styles.css" rel="stylesheet" />
+
+    <style>
+      /* Include the exact same CSS as our app */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      .data-table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: left;
+      }
+
+      /* Make sure section styling matches */
+      .section {
+        margin-bottom: 1rem;
+      }
+      .section-content {
+        padding: 1rem;
+      }
+    </style>
+
+    <script>
+      function runFullAnalysis() {
+        console.log("🔍 Starting full DOM structure analysis...");
+
+        // Step 1: Measure pure HTML test
+        const pureWidths = measureTableWidths("pure-test-table", "pure");
+
+        // Step 2: Generate OBC app structure
+        generateOBCAppStructure();
+
+        // Wait for generation, then measure - try multiple times if needed
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        function findAndAnalyzeTable() {
+          attempts++;
+          console.log(`🔍 Attempt ${attempts}: Looking for generated table...`);
+
+          // Look for the table in the nested structure FieldManager creates
+          const container = document.getElementById("obc-app-table-container");
+          const obcTable =
+            container?.querySelector(".data-table") ||
+            container?.querySelector("table") ||
+            document.querySelector("#obc-app-table-container .data-table") ||
+            document.querySelector("#obc-app-table-container table") ||
+            document.querySelector("#buildingAreas .data-table") ||
+            document.querySelector("#buildingAreas table");
+
+          console.log(
+            "🔍 Container contents:",
+            container?.innerHTML?.substring(0, 400) + "...",
+          );
+          console.log("🔍 Table found:", !!obcTable);
+
+          // Additional debugging to see the structure
+          if (!obcTable && attempts === 1) {
+            const buildingAreasSection =
+              document.querySelector("#buildingAreas");
+            console.log(
+              "🔍 buildingAreas section found:",
+              !!buildingAreasSection,
+            );
+            if (buildingAreasSection) {
+              console.log(
+                "🔍 buildingAreas innerHTML:",
+                buildingAreasSection.innerHTML.substring(0, 300),
+              );
+            }
+          }
+
+          if (obcTable) {
+            obcTable.id = "obc-app-table";
+            console.log("✅ Table found! Measuring widths...");
+
+            const obcWidths = measureTableWidths("obc-app-table", "obc");
+            console.log("📏 OBC table widths:", obcWidths);
+
+            // Step 3: Compare structures
+            compareStructures(pureWidths, obcWidths);
+
+            // Step 4: Show DOM differences
+            showDOMDifferences();
+
+            console.log("✅ Analysis complete!");
+          } else if (attempts < maxAttempts) {
+            console.log(
+              `⏳ Table not found yet, retrying in 200ms... (attempt ${attempts}/${maxAttempts})`,
+            );
+            setTimeout(findAndAnalyzeTable, 200);
+          } else {
+            console.error(
+              "❌ Failed to find table after",
+              maxAttempts,
+              "attempts",
+            );
+            console.error("Container HTML:", container?.innerHTML);
+            document.getElementById("findings").innerHTML =
+              `<p class="text-danger">❌ Failed to find generated table after ${maxAttempts} attempts.<br>
+                         Container contents: ${container?.innerHTML?.substring(0, 300) || "Empty"}</p>`;
+          }
+        }
+
+        // Start looking for the table
+        setTimeout(findAndAnalyzeTable, 100);
+      }
+
+      function measureTableWidths(tableId, prefix) {
+        const table = document.getElementById(tableId);
+        if (!table) return null;
+
+        const firstRow = table.querySelector("tr");
+        const cells = firstRow.querySelectorAll("td, th");
+        const widths = [];
+
+        cells.forEach((cell, index) => {
+          const width = cell.offsetWidth;
+          widths.push({ index, width, element: cell });
+
+          // Update display if element exists
+          const widthSpan = document.getElementById(`${prefix}-width-e`);
+          if (widthSpan && index === 4) {
+            // Column E
+            widthSpan.textContent = `${width}px`;
+          }
+        });
+
+        console.log(`${prefix} table widths:`, widths);
+        return widths;
+      }
+
+      function generateOBCAppStructure() {
+        console.log("🏗️ Generating OBC app structure...");
+
+        try {
+          // Initialize the global TEUI namespace
+          window.TEUI = window.TEUI || {};
+          window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+
+          // Make sure FieldManager is properly initialized
+          if (window.TEUI && window.TEUI.FieldManager) {
+            console.log("🔧 Initializing FieldManager...");
+
+            // Force initialization if needed
+            if (window.TEUI.FieldManager.initializeSections) {
+              window.TEUI.FieldManager.initializeSections();
+            }
+
+            // Create the complete section structure that FieldManager expects
+            const container = document.getElementById(
+              "obc-app-table-container",
+            );
+            container.innerHTML = `
+                        <div id="buildingAreas" class="section">
+                            <div class="section-content">
+                                <div data-render-section="buildingAreas"></div>
+                            </div>
+                        </div>
+                    `;
+
+            // Simulate what happens in the real app
+            console.log("🎯 Rendering buildingAreas section...");
+            const success =
+              window.TEUI.FieldManager.renderSection("buildingAreas");
+
+            if (success) {
+              console.log("✅ OBC app structure generated successfully");
+            } else {
+              throw new Error("renderSection returned false");
+            }
+          } else {
+            throw new Error("TEUI.FieldManager not available");
+          }
+        } catch (error) {
+          console.error("❌ Error generating OBC app structure:", error);
+          console.error(
+            "Available TEUI modules:",
+            Object.keys(window.TEUI?.SectionModules || {}),
+          );
+          document.getElementById("obc-app-table-container").innerHTML =
+            `<p class="text-danger">Error: ${error.message}<br>
+                     Available modules: ${Object.keys(window.TEUI?.SectionModules || {}).join(", ")}</p>`;
+        }
+      }
+
+      function compareStructures(pureWidths, obcWidths) {
+        if (!pureWidths || !obcWidths) return;
+
+        const comparisonBody = document.getElementById("width-comparison");
+        comparisonBody.innerHTML = "";
+
+        const maxLength = Math.max(pureWidths.length, obcWidths.length);
+
+        for (let i = 0; i < maxLength; i++) {
+          const pureWidth = pureWidths[i]?.width || 0;
+          const obcWidth = obcWidths[i]?.width || 0;
+          const difference = obcWidth - pureWidth;
+          const percentDiff =
+            pureWidth > 0 ? ((difference / pureWidth) * 100).toFixed(1) : "N/A";
+
+          const row = document.createElement("tr");
+          const isProblematic = Math.abs(difference) > 50; // Significant difference
+          row.className = isProblematic ? "problematic" : "good";
+
+          row.innerHTML = `
+                    <td>Column ${i + 1}</td>
+                    <td>${pureWidth}px</td>
+                    <td>${obcWidth}px</td>
+                    <td>${difference > 0 ? "+" : ""}${difference}px (${percentDiff}%)</td>
+                    <td>${isProblematic ? "🚨 PROBLEMATIC" : "✅ Good"}</td>
+                `;
+
+          comparisonBody.appendChild(row);
+        }
+      }
+
+      function showDOMDifferences() {
+        // Show actual DOM structure
+        const pureTable = document.getElementById("pure-test-table");
+        const obcTable = document.getElementById("obc-app-table");
+
+        if (pureTable) {
+          document.getElementById("pure-dom-structure").textContent =
+            formatHTML(pureTable.outerHTML);
+        }
+
+        if (obcTable) {
+          document.getElementById("obc-dom-structure").textContent = formatHTML(
+            obcTable.outerHTML,
+          );
+
+          // Show differences
+          const findings = document.getElementById("findings");
+          findings.innerHTML = `
+                    <h4>🔍 Key Findings:</h4>
+                    <ul>
+                        <li><strong>Pure HTML rows:</strong> ${pureTable.querySelectorAll("tr").length}</li>
+                        <li><strong>OBC App rows:</strong> ${obcTable.querySelectorAll("tr").length}</li>
+                        <li><strong>Pure HTML cells (first row):</strong> ${pureTable.querySelector("tr").children.length}</li>
+                        <li><strong>OBC App cells (first row):</strong> ${obcTable.querySelector("tr").children.length}</li>
+                        <li><strong>OBC App classes:</strong> ${Array.from(obcTable.classList).join(", ") || "None"}</li>
+                    </ul>
+                    <h4>🎯 Next Steps:</h4>
+                    <p>Compare the DOM structures above to identify what's causing the goalpost expansion.</p>
+                `;
+        } else {
+          document.getElementById("findings").innerHTML =
+            '<p class="text-danger">❌ Could not generate OBC app structure for comparison.</p>';
+        }
+      }
+
+      function formatHTML(html) {
+        // Simple HTML formatting for readability
+        return html
+          .replace(/></g, ">\n<")
+          .replace(/^\s*\n/gm, "")
+          .replace(/\n\s*\n/g, "\n");
+      }
+
+      function copyOBCAppStructure() {
+        const obcTable = document.getElementById("obc-app-table");
+        if (obcTable) {
+          navigator.clipboard.writeText(obcTable.outerHTML).then(() => {
+            alert("OBC App structure copied to clipboard!");
+          });
+        }
+      }
+
+      // Sub-Nuclear CSS Test Functions
+      let subNuclearStyleElement = null;
+
+      function applySubNuclearCSS() {
+        console.log("🚀 Applying Sub-Nuclear CSS Test...");
+
+        // Remove any existing sub-nuclear styles
+        removeSubNuclearCSS();
+
+        // Get current test mode
+        const testMode =
+          document.getElementById("test-mode-select")?.value || "percentages";
+
+        let subNuclearCSS = "";
+
+        if (testMode === "min-width") {
+          subNuclearCSS = `
+                    /* EXPERIMENT 1: min-width + table-layout fixed */
+                    .data-table {
+                        table-layout: fixed !important;
+                        width: 100% !important;
+                    }
+                    
+                    /* Let browser expand from minimums proportionally */
+                    .data-table td:nth-child(1) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(2) { min-width: 30px !important; width: auto; }   /* ID */
+                    .data-table td:nth-child(3) { min-width: 120px !important; width: auto; }  /* Description */
+                    .data-table td:nth-child(4) { min-width: 100px !important; width: auto; }  /* Value */
+                    .data-table td:nth-child(5) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(6) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(7) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(8) { min-width: 60px !important; width: auto; }   /* Headers */
+                    .data-table td:nth-child(9) { min-width: 60px !important; width: auto; }   /* Existing */
+                    .data-table td:nth-child(10) { min-width: 60px !important; width: auto; }  /* New */
+                    .data-table td:nth-child(11) { min-width: 60px !important; width: auto; }  /* Total */
+                    .data-table td:nth-child(12) { min-width: 50px !important; width: auto; }  /* Ref */
+                    .data-table td:nth-child(13) { min-width: 20px !important; width: auto; }  /* Empty */
+                    .data-table td:nth-child(14) { min-width: 20px !important; width: auto; }  /* Empty */
+                    .data-table td:nth-child(15) { min-width: 100px !important; width: auto; } /* Notes */
+                    
+                    .data-table { border: 3px solid blue !important; }
+                `;
+        } else if (testMode === "css-grid") {
+          subNuclearCSS = `
+                    /* EXPERIMENT 2: CSS Grid with min-content */
+                    .data-table {
+                        display: grid !important;
+                        grid-template-columns: 
+                            min-content      /* Empty */
+                            min-content      /* ID */
+                            minmax(120px, 2fr)  /* Description - expandable */
+                            minmax(100px, 1fr)  /* Value */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            minmax(60px, 1fr)   /* Headers */
+                            minmax(60px, 1fr)   /* Existing */
+                            minmax(60px, 1fr)   /* New */
+                            minmax(60px, 1fr)   /* Total */
+                            min-content      /* Ref */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            minmax(100px, 2fr); /* Notes - expandable */
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                    }
+                    
+                    .data-table tr {
+                        display: contents !important;
+                    }
+                    
+                    .data-table td {
+                        border: 1px solid #ccc !important;
+                        padding: 4px 8px !important;
+                    }
+                    
+                                         .data-table { border: 3px solid green !important; }
+                 `;
+        } else if (testMode === "stealth-mode") {
+          subNuclearCSS = `
+                     /* EXPERIMENT 4: Stealth Mode - "These are not the droids you're looking for" */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser calculate naturally */
+                         width: 100% !important;
+                     }
+                     
+                     /* Hide form complexity from layout engine */
+                     .data-table td {
+                         contain: layout style !important; /* Don't look inside for layout decisions */
+                         position: relative !important;
+                     }
+                     
+                     /* Alternative: Isolate complex elements from layout flow */
+                     .data-table select,
+                     .data-table input {
+                         position: absolute !important;
+                         top: 0;
+                         left: 0;
+                         width: 100% !important;
+                         height: 100% !important;
+                         z-index: 10 !important;
+                         /* User sees and interacts with these */
+                     }
+                     
+                     /* Provide simple text content for layout calculation */
+                     .data-table td:has(select)::before,
+                     .data-table td:has(input)::before {
+                         content: "Text" !important;
+                         visibility: hidden !important; /* Layout sees this, user doesn't */
+                         position: static !important;
+                         z-index: 1 !important;
+                     }
+                     
+                     .data-table { border: 3px solid purple !important; }
+                 `;
+        } else if (testMode === "hide-column-d") {
+          subNuclearCSS = `
+                     /* DEBUG EXPERIMENT: Hide Column D (Content Column) */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser recalculate without column D */
+                         width: 100% !important;
+                     }
+                     
+                     /* Completely hide Column D (5th column - the actual content/dropdown column) */
+                     .data-table td:nth-child(5),
+                     .data-table th:nth-child(5) {
+                         display: none !important;
+                     }
+                     
+                     .data-table { border: 3px solid red !important; }
+                 `;
+        } else if (testMode === "hide-column-e") {
+          subNuclearCSS = `
+                     /* DEBUG EXPERIMENT: Hide Column E (Problem Expander) */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser recalculate without column E */
+                         width: 100% !important;
+                     }
+                     
+                     /* Completely hide Column E (6th column - the problematic expanding empty column) */
+                     .data-table td:nth-child(6),
+                     .data-table th:nth-child(6) {
+                         display: none !important;
+                     }
+                     
+                     .data-table { border: 3px solid crimson !important; }
+                 `;
+        } else {
+          // Default percentage mode
+          subNuclearCSS = `
+                    /* EXPERIMENT 3: Fixed percentages (original approach) */
+                    .data-table {
+                        table-layout: fixed !important;
+                        width: 100% !important;
+                    }
+                    
+                    .data-table td:nth-child(1) { width: 3% !important; }   /* Empty spacer */
+                    .data-table td:nth-child(2) { width: 4% !important; }   /* ID column */
+                    .data-table td:nth-child(3) { width: 20% !important; }  /* Description - needs space */
+                    .data-table td:nth-child(4) { width: 15% !important; }  /* Value - dropdowns need space */
+                    .data-table td:nth-child(5) { width: 3% !important; }   /* Empty - minimal but not invisible */
+                    .data-table td:nth-child(6) { width: 3% !important; }   /* Empty */
+                    .data-table td:nth-child(7) { width: 3% !important; }   /* Empty */
+                    .data-table td:nth-child(8) { width: 8% !important; }   /* Headers */
+                    .data-table td:nth-child(9) { width: 8% !important; }   /* Existing */
+                    .data-table td:nth-child(10) { width: 8% !important; }  /* New */
+                    .data-table td:nth-child(11) { width: 8% !important; }  /* Total */
+                    .data-table td:nth-child(12) { width: 6% !important; }  /* Ref */
+                    .data-table td:nth-child(13) { width: 3% !important; }  /* Empty */
+                    .data-table td:nth-child(14) { width: 3% !important; }  /* Empty */
+                    .data-table td:nth-child(15) { width: 15% !important; } /* Notes - needs expansion space */
+                    
+                    .data-table { border: 3px solid orange !important; }
+                `;
+        }
+
+        // Create and inject the style element
+        subNuclearStyleElement = document.createElement("style");
+        subNuclearStyleElement.textContent = subNuclearCSS;
+        subNuclearStyleElement.id = "sub-nuclear-test-styles";
+        document.head.appendChild(subNuclearStyleElement);
+
+        // Update results with mode-specific messaging
+        let modeDescription = "";
+        let borderColor = "";
+
+        if (testMode === "min-width") {
+          modeDescription = `
+                    <strong>🧪 EXPERIMENT 1: Min-Width + Auto</strong><br>
+                    <code>min-width</code> sets content minimums, <code>width: auto</code> allows proportional growth<br>
+                    <em>This attempts to preserve content while allowing browser to expand proportionally</em>
+                `;
+          borderColor = "blue";
+        } else if (testMode === "css-grid") {
+          modeDescription = `
+                    <strong>🧪 EXPERIMENT 2: CSS Grid + min-content</strong><br>
+                    <code>minmax(min, fr)</code> respects content minimums while using fractional units for expansion<br>
+                    <em>Modern layout that should understand content requirements better than tables</em>
+                `;
+          borderColor = "green";
+        } else if (testMode === "stealth-mode") {
+          modeDescription = `
+                     <strong>🧪 EXPERIMENT 4: Stealth Mode</strong><br>
+                     <code>contain: layout</code> + absolute positioning hides form complexity from layout engine<br>
+                     <em>"These are not the droids you're looking for" - browser treats dropdowns as simple text</em>
+                 `;
+          borderColor = "purple";
+        } else if (testMode === "hide-column-d") {
+          modeDescription = `
+                     <strong>🔍 DEBUG: Hide Column D (Content Column)</strong><br>
+                     <code>display: none</code> on column D to test if removing the content column affects expansion<br>
+                     <em>Red border indicates Column D hidden - see if expansion moves to a different column</em>
+                 `;
+          borderColor = "red";
+        } else if (testMode === "hide-column-e") {
+          modeDescription = `
+                     <strong>🔍 DEBUG: Hide Column E (Problem Expander)</strong><br>
+                     <code>display: none</code> on column E to test if removing the problematic expander fixes it<br>
+                     <em>Crimson border indicates Column E hidden - see if problem moves or disappears</em>
+                 `;
+          borderColor = "crimson";
+        } else {
+          modeDescription = `
+                     <strong>🧪 EXPERIMENT 3: Fixed Percentages</strong><br>
+                     <code>table-layout: fixed</code> with reasonable column percentages<br>
+                     <em>Traditional approach - may clip content if percentages are too small</em>
+                 `;
+          borderColor = "orange";
+        }
+
+        document.getElementById("sub-nuclear-results").innerHTML = `
+                ${modeDescription}<br>
+                ${borderColor.charAt(0).toUpperCase() + borderColor.slice(1)} border indicates test mode is active<br>
+                <strong>Resize browser window to test proportional expansion behavior</strong>
+            `;
+
+        console.log("✅ Sub-Nuclear CSS applied successfully");
+      }
+
+      function removeSubNuclearCSS() {
+        if (subNuclearStyleElement) {
+          subNuclearStyleElement.remove();
+          subNuclearStyleElement = null;
+          console.log("🔄 Sub-Nuclear CSS removed");
+        }
+
+        document.getElementById("sub-nuclear-results").innerHTML = `
+                <strong>🔄 Sub-Nuclear CSS Removed</strong><br>
+                Tables returned to natural browser behavior<br>
+                <em>Back to original state...</em>
+            `;
+      }
+
+      function testWidthMeasurement() {
+        console.log(
+          "📏 Measuring column widths after sub-nuclear treatment...",
+        );
+
+        // Measure both pure and OBC tables
+        const pureWidths = measureTableWidths(
+          "pure-test-table",
+          "pure-subnuclear",
+        );
+        const obcTable = document.querySelector("#buildingAreas .data-table");
+
+        let results = "<strong>📏 Width Measurement Results:</strong><br><br>";
+
+        if (pureWidths) {
+          results += "<strong>Pure HTML Table:</strong><br>";
+          pureWidths.forEach((col, index) => {
+            const letter = String.fromCharCode(65 + index); // A, B, C, etc
+            results += `Column ${letter}: ${col.width}px<br>`;
+          });
+          results += "<br>";
+        }
+
+        if (obcTable) {
+          obcTable.id = "obc-subnuclear-table";
+          const obcWidths = measureTableWidths(
+            "obc-subnuclear-table",
+            "obc-subnuclear",
+          );
+          if (obcWidths) {
+            results += "<strong>OBC App Table:</strong><br>";
+            obcWidths.forEach((col, index) => {
+              const letter = String.fromCharCode(65 + index);
+              results += `Column ${letter}: ${col.width}px<br>`;
+            });
+          }
+        } else {
+          results +=
+            '<strong>OBC App Table:</strong> Not found - run "Run Full Analysis" first<br>';
+        }
+
+        results += "<br><strong>Analysis:</strong><br>";
+        if (subNuclearStyleElement) {
+          results +=
+            "🟠 Sub-nuclear mode ACTIVE - columns should show controlled proportional widths<br>";
+          results +=
+            "🔍 Compare these measurements to the original analysis above<br>";
+        } else {
+          results += "🔵 Natural mode ACTIVE - browser determines widths<br>";
+        }
+
+        document.getElementById("sub-nuclear-results").innerHTML = results;
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log(
+          '🧪 DOM Debug page loaded. Click "Run Full Analysis" to start.',
+        );
+
+        // Initialize TEUI namespace
+        window.TEUI = window.TEUI || {};
+        window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+
+        // Wait a bit for all scripts to load, then check what's available
+        setTimeout(() => {
+          console.log("Available TEUI components:", {
+            FieldManager: !!window.TEUI.FieldManager,
+            StateManager: !!window.TEUI.StateManager,
+            SectionModules: Object.keys(window.TEUI.SectionModules || {}),
+          });
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Test: Hide Column D or E</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link href="OBC-styles.css" rel="stylesheet" />
+    <style>
+      .demo-section {
+        margin: 2rem 0;
+        padding: 1rem;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        background-color: #f8f9ff;
+      }
+      .width-display {
+        font-size: 10px;
+        color: #666;
+        position: absolute;
+        top: -12px;
+        left: 2px;
+      }
+      .column-demo {
+        position: relative;
+      }
+      .empty-highlight {
+        background-color: rgba(255, 193, 7, 0.1);
+      }
+      .content-highlight {
+        background-color: rgba(40, 167, 69, 0.1);
+      }
+      .hidden-column {
+        background-color: rgba(220, 53, 69, 0.2);
+      }
+
+      /* DEBUG: Hide Column D (4th column) */
+      .hide-column-d .data-table td:nth-child(4),
+      .hide-column-d .data-table th:nth-child(4) {
+        display: none !important;
+      }
+
+      /* DEBUG: Hide Column E (5th column) */
+      .hide-column-e .data-table td:nth-child(5),
+      .hide-column-e .data-table th:nth-child(5) {
+        display: none !important;
+      }
+
+      .test-controls {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+      }
+      .test-controls button {
+        margin: 0.25rem;
+      }
+      .analysis-panel {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid mt-4">
+      <h1>🔍 Debug Test: Hide Column D or E</h1>
+      <p class="lead">
+        Testing what happens when we hide the problematic expanding columns
+      </p>
+
+      <div class="test-controls">
+        <h3>🎛️ Debug Controls</h3>
+        <p>
+          <strong>Experiment:</strong> Hide different columns to see how it
+          affects expansion behavior
+        </p>
+        <button onclick="showAllColumns()" class="btn btn-success">
+          Show All Columns
+        </button>
+        <button onclick="hideColumnD()" class="btn btn-warning">
+          Hide Column D (Content)
+        </button>
+        <button onclick="hideColumnE()" class="btn btn-danger">
+          Hide Column E (Problem Expander)
+        </button>
+        <button onclick="measureAndAnalyze()" class="btn btn-info">
+          📏 Measure & Analyze
+        </button>
+      </div>
+
+      <div class="demo-section">
+        <h2 id="current-state">📊 Current State: All Columns Visible</h2>
+
+        <div id="buildingAreas" class="section">
+          <div class="section-header">
+            <span class="section-icon"><i class="bi bi-bounding-box"></i></span>
+            SECTION 3. Building Areas (Debug Test)
+          </div>
+          <div class="section-content">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <td class="section-subheader column-demo">
+                    A <span class="width-display" id="width-a"></span>
+                  </td>
+                  <td class="section-subheader column-demo">
+                    B<br />3.04 <span class="width-display" id="width-b"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    C<br />BUILDING AREA (m²)
+                    <span class="width-display" id="width-c"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    D<br />DESCRIPTION
+                    <span class="width-display" id="width-d"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    E<br />EMPTY
+                    <span class="width-display" id="width-e"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    F<br />EMPTY
+                    <span class="width-display" id="width-f"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    G<br />EMPTY
+                    <span class="width-display" id="width-g"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    H<br />EMPTY
+                    <span class="width-display" id="width-h"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    I<br />EXISTING
+                    <span class="width-display" id="width-i"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    J<br />NEW <span class="width-display" id="width-j"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    K<br />TOTAL
+                    <span class="width-display" id="width-k"></span>
+                  </td>
+                  <td class="section-subheader column-demo content-highlight">
+                    L<br />[A] 1.4.1.2.
+                    <span class="width-display" id="width-l"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    M<br />EMPTY
+                    <span class="width-display" id="width-m"></span>
+                  </td>
+                  <td class="section-subheader column-demo empty-highlight">
+                    N<br />EMPTY
+                    <span class="width-display" id="width-n"></span>
+                  </td>
+                  <td
+                    class="section-subheader column-demo content-highlight notes-column"
+                  >
+                    O<br />Notes
+                    <span class="width-display" id="width-o"></span>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td>22</td>
+                  <td></td>
+                  <td>Enter area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">1,000.00</td>
+                  <td class="text-end">100.00</td>
+                  <td class="text-end"><strong>1,100.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>23</td>
+                  <td></td>
+                  <td>Enter area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">200.00</td>
+                  <td class="text-end">300.00</td>
+                  <td class="text-end"><strong>500.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>27</td>
+                  <td></td>
+                  <td>Enter gross area description</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end">500.00</td>
+                  <td class="text-end">150.00</td>
+                  <td class="text-end"><strong>650.00</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>enter notes here...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="analysis-panel" id="analysis-results">
+        <h3>📊 Analysis Results</h3>
+        <p>
+          Click "Measure & Analyze" to see detailed width analysis for the
+          current state.
+        </p>
+      </div>
+
+      <div class="alert alert-info">
+        <h3>🧪 Debug Hypothesis</h3>
+        <p>
+          <strong>Theory:</strong> If we hide the problematic expanding column
+          (E), will the expansion behavior:
+        </p>
+        <ul>
+          <li>Move to a different column?</li>
+          <li>Distribute more evenly across remaining columns?</li>
+          <li>Reveal which column the browser "prefers" to expand?</li>
+        </ul>
+        <p><strong>Expected Results:</strong></p>
+        <ul>
+          <li>
+            <strong>Hide Column D:</strong> Remove content column, see if
+            expansion moves
+          </li>
+          <li>
+            <strong>Hide Column E:</strong> Remove problematic expander, see
+            what happens next
+          </li>
+        </ul>
+      </div>
+
+      <div class="text-center mt-4">
+        <a
+          href="test-pure-browser-default.html"
+          class="btn btn-primary btn-lg me-3"
+        >
+          🧪 Pure Browser Test
+        </a>
+        <a href="OBC-Matrix-Index.html" class="btn btn-secondary btn-lg">
+          🚀 Full Application
+        </a>
+      </div>
+    </div>
+
+    <script>
+      let currentState = "all-visible";
+
+      function showAllColumns() {
+        const body = document.body;
+        body.classList.remove("hide-column-d", "hide-column-e");
+        currentState = "all-visible";
+        updateStateDisplay();
+        setTimeout(measureAndAnalyze, 100);
+      }
+
+      function hideColumnD() {
+        const body = document.body;
+        body.classList.remove("hide-column-e");
+        body.classList.add("hide-column-d");
+        currentState = "hide-column-d";
+        updateStateDisplay();
+        setTimeout(measureAndAnalyze, 100);
+      }
+
+      function hideColumnE() {
+        const body = document.body;
+        body.classList.remove("hide-column-d");
+        body.classList.add("hide-column-e");
+        currentState = "hide-column-e";
+        updateStateDisplay();
+        setTimeout(measureAndAnalyze, 100);
+      }
+
+      function updateStateDisplay() {
+        const stateDisplay = document.getElementById("current-state");
+        switch (currentState) {
+          case "all-visible":
+            stateDisplay.innerHTML = "📊 Current State: All Columns Visible";
+            break;
+          case "hide-column-d":
+            stateDisplay.innerHTML =
+              '📊 Current State: <span class="text-warning">Column D Hidden</span> (Content Column)';
+            break;
+          case "hide-column-e":
+            stateDisplay.innerHTML =
+              '📊 Current State: <span class="text-danger">Column E Hidden</span> (Problem Expander)';
+            break;
+        }
+      }
+
+      function measureAndAnalyze() {
+        const table = document.querySelector(".data-table");
+        if (!table) return;
+
+        const firstRow = table.querySelector("thead tr");
+        const cells = firstRow.querySelectorAll("td");
+
+        let totalWidth = 0;
+        const widths = [];
+        const visibleColumns = [];
+
+        cells.forEach((cell, index) => {
+          const computedStyle = window.getComputedStyle(cell);
+          const isVisible = computedStyle.display !== "none";
+
+          if (isVisible) {
+            const width = cell.offsetWidth;
+            totalWidth += width;
+            widths.push(width);
+            visibleColumns.push(String.fromCharCode(65 + index)); // A, B, C, etc.
+
+            const widthDisplay = cell.querySelector(".width-display");
+            if (widthDisplay) {
+              const percentage =
+                totalWidth > 0 ? ((width / totalWidth) * 100).toFixed(1) : 0;
+              widthDisplay.textContent = `${width}px (${percentage}%)`;
+            }
+          } else {
+            const widthDisplay = cell.querySelector(".width-display");
+            if (widthDisplay) {
+              widthDisplay.textContent = "HIDDEN";
+            }
+          }
+        });
+
+        // Analysis
+        console.log(`=== DEBUG ANALYSIS: ${currentState.toUpperCase()} ===`);
+        console.log("Visible columns:", visibleColumns);
+        console.log("Column widths:", widths);
+        console.log("Total table width:", totalWidth);
+
+        // Find the largest column
+        const maxWidth = Math.max(...widths);
+        const maxIndex = widths.indexOf(maxWidth);
+        const maxColumn = visibleColumns[maxIndex];
+
+        // Update analysis panel
+        const analysisPanel = document.getElementById("analysis-results");
+        analysisPanel.innerHTML = `
+                <h3>📊 Analysis Results - ${currentState.replace("-", " ").toUpperCase()}</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>🏆 Largest Column:</h5>
+                        <p><strong>Column ${maxColumn}: ${maxWidth}px</strong></p>
+                        
+                        <h5>📏 Visible Columns:</h5>
+                        <p>${visibleColumns.length} columns visible</p>
+                        <p>Total width: ${totalWidth}px</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>📈 Width Distribution:</h5>
+                        <ul class="list-unstyled">
+                            ${visibleColumns
+                              .map(
+                                (col, i) =>
+                                  `<li><strong>Column ${col}:</strong> ${widths[i]}px 
+                                 ${widths[i] === maxWidth ? '<span class="badge bg-danger">LARGEST</span>' : ""}
+                                 ${widths[i] > 100 ? '<span class="badge bg-warning">WIDE</span>' : ""}
+                                </li>`,
+                              )
+                              .join("")}
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert ${maxWidth > 200 ? "alert-warning" : "alert-success"} mt-3">
+                    <strong>Expansion Behavior:</strong> 
+                    ${
+                      maxWidth > 200
+                        ? `⚠️ Column ${maxColumn} is still expanding (${maxWidth}px). The problem persists or moved!`
+                        : `✅ No problematic expansion detected. All columns under 200px.`
+                    }
+                </div>
+            `;
+      }
+
+      // Initial measurement on load
+      window.addEventListener("load", () => {
+        setTimeout(measureAndAnalyze, 200);
+      });
+
+      window.addEventListener("resize", measureAndAnalyze);
+
+      console.log("🔍 Debug Column Hide Test Loaded");
+      console.log(
+        "Use the buttons to hide columns D or E and see the expansion effects",
+      );
+    </script>
+  </body>
+</html>
