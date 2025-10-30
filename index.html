@@ -289,9 +289,16 @@
             </div>
             <!-- Cross-Navigation to OBC Matrix -->
             <a
-              href="src/obc/indexobc.html"
+              href="src/obc/"
               class="btn btn-sm btn-dark ms-2"
-              title="View OBC Matrix tool"
+              onclick="event.preventDefault();"
+              title="Pending feature - ask dev team for demo link"
+              style="
+                transition: background-color 0.2s ease;
+                cursor: not-allowed;
+              "
+              onmouseover="this.style.backgroundColor='#6c757d'"
+              onmouseout="this.style.backgroundColor=''"
             >
               <i class="bi bi-building"></i> OBC Matrix
             </a>
