@@ -917,6 +917,30 @@ window.TEUI.CoolingCalculations = (function () {
       calculateStage1("reference");
     });
 
+    // ✅ NEW: Listen for h_24 (Target cooling setpoint) changes from S03
+    // Cooling setpoint affects temperature differential for free cooling calculations
+    console.log(
+      `[Cooling] 🔗 Registering h_24 listener for cooling setpoint changes`,
+    );
+    sm.addListener("h_24", function (newValue) {
+      console.log(
+        `[Cooling] 🌡️ Target cooling setpoint changed: h_24=${newValue}°C → recalculating Stage 1 (Target mode)`,
+      );
+
+      // Cooling setpoint affects Stage 1 free cooling calculations
+      calculateStage1("target");
+    });
+
+    // ✅ NEW: Listen for ref_h_24 (Reference cooling setpoint) changes from S03
+    sm.addListener("ref_h_24", function (newValue) {
+      console.log(
+        `[Cooling] 🌡️ Reference cooling setpoint changed: ref_h_24=${newValue}°C → recalculating Stage 1 (Reference mode)`,
+      );
+
+      // Cooling setpoint affects Stage 1 free cooling calculations
+      calculateStage1("reference");
+    });
+
     // ✅ FIX: Listen for d_120 (base ventilation rate) changes
     // This ensures m_124 updates when base ventilation rate changes
     sm.addListener("d_120", function (newValue) {

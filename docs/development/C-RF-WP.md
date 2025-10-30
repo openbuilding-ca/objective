@@ -49,6 +49,59 @@
 
 ---
 
+## 📍 LATEST UPDATE (Oct 30, 2025) - L24/H24 Conditional Logic
+
+**LAST UPDATED**: Oct 30, 2025 - Commit 589c1dd
+
+**WORK COMPLETED**:
+- ✅ **L24/H24 Conditional Logic**: Implemented Excel formula `H24=IF(L24>24, L24, 24)` in S03
+  - If user sets l_24 cooling override higher than 24°C, use that value; otherwise use 24°C default
+  - Added mode-aware h_24 and ref_h_24 listeners to Cooling.js for proper Stage 1 cascade
+  - Fixed S03 `calculateReferenceModel()` to always restore mode via finally block
+  - **Commit**: 589c1dd - "Add h_24 listeners to Cooling.js and fix S03 mode restoration"
+
+**STATE MIXING ISSUE DISCOVERED**:
+- ⚠️ **Critical Finding**: State mixing (Target contaminating Reference) occurs in BOTH Excel and JS versions
+  - Previously thought this was a JS-only issue, but discovered it exists in Excel baseline
+  - May have been inadvertently replicated during JS port
+  - **Suspected Source**: SCHEDULE-related values in Cooling.js or related files (Section09, Section13)
+
+**DEBUG FINDINGS** (via debug-l24-trace.js):
+- 🔍 **Root Cause Identified**: Section03.js uses LOCAL ModeManager object (line ~181)
+  - S03 defines its own `const ModeManager = { currentMode: "target", ... }`
+  - When S03 sets `ModeManager.currentMode = "reference"`, it only affects local object
+  - All other sections check `window.TEUI.ModeManager.currentMode` which remains undefined!
+  - **Pattern Violation**: Per 4012-CHEATSHEET.md Pattern 1, sections should use `window.TEUI.ModeManager` directly
+
+- 🐛 **Why it works in Reference mode but not Target**:
+  - Likely initialization order issue where Reference calculations happen after Target
+  - By that time, something has populated `window.TEUI.ModeManager`
+  - But Target mode calculations happen too early, before global ModeManager is ready
+
+**POTENTIAL FIX**:
+- Replace S03's local `ModeManager` object with direct references to `window.TEUI.ModeManager`
+- Update `calculateTargetModel()` and `calculateReferenceModel()` to use global ModeManager
+- **CAUTION**: Suspect there may be more to state mixing than just this - old listeners may also contribute
+
+**NEXT STEPS**:
+1. ❌ **DO NOT** proceed with removing legacy listeners from Cooling.js yet
+2. 🔍 **FIRST**: Fix ModeManager usage in Section03.js
+   - Remove local ModeManager object (line ~181)
+   - Use `window.TEUI.ModeManager.currentMode` directly
+   - Test thoroughly to ensure both Target and Reference modes work correctly
+3. 🔍 **SECOND**: Track down SCHEDULE-related state contamination source
+   - Investigate where Target model SCHEDULE changes affect Reference calculations
+   - Check Section09, Section13, and Cooling.js SCHEDULE references
+   - Verify Excel formulas to understand intended vs. actual behavior
+4. ✅ **THEN**: Once all state mixing sources are identified and fixed, proceed with Cooling.js listener cleanup
+
+**BASELINE CHECKPOINT**:
+- **Working Commit**: 589c1dd provides stable baseline with l_24/h_24 logic intact
+- App calculations functional but state mixing still present (Excel parity maintained)
+- Session timed out during attempted Cooling.js refactor - files corrupted, restored from 589c1dd
+
+---
+
 ## Executive Summary
 
 ### Goals
