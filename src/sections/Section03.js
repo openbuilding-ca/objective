@@ -1796,6 +1796,8 @@ window.TEUI.SectionModules.sect03 = (function () {
    * ✅ PHASE 2: Integrated climate data fetch for perfect state isolation
    */
   function calculateReferenceModel() {
+    // Ensure Reference engine always uses Reference state regardless of UI mode
+    const originalMode = ModeManager.currentMode;
     try {
       // ✅ STEP 1: Get climate data based on ReferenceState location with Reference occupancy
       const climateValues = getClimateDataForState(ReferenceState, "reference");
@@ -1806,7 +1808,6 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
 
       // Force Reference mode temporarily for other calculations
-      const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
 
       // ✅ STEP 3: Run calculations that depend on climate data
@@ -1816,13 +1817,14 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateGroundFacing();
       updateCoolingDependents();
 
-      // Restore original mode
-      ModeManager.currentMode = originalMode;
-
       // ✅ STEP 4: Store all Reference results for downstream sections
       storeReferenceResults();
     } catch (error) {
       console.error("Error during Section 03 calculateReferenceModel:", error);
+    } finally {
+      // ✅ CRITICAL: Always restore original mode, even if errors occur
+      // This prevents mode contamination where subsequent user edits go to wrong model
+      ModeManager.currentMode = originalMode;
     }
   }
 
@@ -1942,14 +1944,21 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Calculate Base Cooling Setpoint (h_24) based on Occupancy Type (d_12)
+   * Calculate Base Cooling Setpoint (h_24) based on l_24 override
+   * Excel Formula: H24=IF(L24>24, L24, 24)
+   * If user sets l_24 cooling override higher than 24, use that value, otherwise use 24
    */
   function calculateCoolingSetpoint_h24() {
     const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
-    let coolingSetpoint = 24; // Default for all types currently
 
-    // Add specific logic based on occupancy if needed in the future
-    setFieldValue("h_24", coolingSetpoint); // Update state and DOM
+    // ✅ Read l_24 cooling override (mode-aware: reads Target l_24 or Reference l_24)
+    const override_l24 = getNumericValue("l_24") || 24;
+
+    // ✅ Apply Excel formula: IF(L24>24, L24, 24)
+    const coolingSetpoint = override_l24 > 24 ? override_l24 : 24;
+
+    // ✅ Update state and StateManager (mode-aware: sets h_24 or ref_h_24)
+    setFieldValue("h_24", coolingSetpoint);
     return coolingSetpoint; // Return value for potential chaining
   }
 
