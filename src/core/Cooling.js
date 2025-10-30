@@ -869,13 +869,9 @@ window.TEUI.CoolingCalculations = (function () {
       calculateStage2("reference");
     });
 
-    // Listen for cooling load updates (legacy - now handled by m_129 listener)
-    sm.addListener("d_129", function (newValue) {
-      // Update cooling load and recalculate
-      state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
-      calculateDaysActiveCooling();
-      updateStateManager(); // 📊 STATEMANAGER: Publish updated results
-    });
+    // ❌ REMOVED: Legacy d_129 listener (now handled by m_129 listener for Target + ref_m_129 for Reference)
+    // Per C-RF-WP.md: m_129 (mitigated load from S13) triggers Stage 2, NOT d_129 (total unmitigated load)
+    // Proper cascade: Stage 1 → publishes h_124 → S13 calculates m_129 → Stage 2 listens to m_129
 
     // Listen for indoor RH% changes from S08 i_59 slider
     console.log(
@@ -894,16 +890,10 @@ window.TEUI.CoolingCalculations = (function () {
 
     // D117/L114 now calculated by S13, not Cooling.js - listeners removed
 
-    // ✅ FIX: Listen for h_124 (free cooling limit) changes from S13
-    // This fixes the m_124 dependency chain: l_119 → d_122/d_123 → h_124 → m_124
-    sm.addListener("h_124", function (newValue) {
-      console.log(
-        `[Cooling] Free cooling limit changed: h_124=${newValue} → recalculating m_124 (days active cooling)`,
-      );
-      state.freeCoolingLimit = parseFloat(newValue.replace(/,/g, "")) || 0;
-      calculateDaysActiveCooling(); // Recalculate m_124 with new h_124
-      updateStateManager(); // Publish updated cooling_m_124 to StateManager
-    });
+    // ❌ REMOVED: Legacy h_124 listener (bypasses proper two-stage architecture)
+    // Per C-RF-WP.md: h_124 should trigger S13, S13 calculates m_129, THEN m_129 triggers Stage 2
+    // Old code: h_124 → directly calls Stage 2 (WRONG! Bypasses S13)
+    // Proper cascade: h_124 → S13 reads it → S13 calculates m_129 → m_129 listener triggers Stage 2
 
     // ✅ FIX: Listen for l_119 (summer boost) changes to trigger complete m_124 recalculation
     // This ensures m_124 updates when ventilation parameters change
