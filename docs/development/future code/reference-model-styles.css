@@ -1,0 +1,203 @@
+/**
+ * Reference Model Display Styles
+ * 
+ * These styles provide visual distinction between the user's design model
+ * and the reference model (building code minimum) display modes.
+ * 
+ * To use: Add these styles to 4011-styles.css or import as a separate stylesheet.
+ */
+
+/* Root variable additions */
+:root {
+  /* Add reference model colors */
+  --reference-primary-color: #8b0000; /* Dark red for text */
+  --reference-secondary-color: #a52a2a; /* Medium red for secondary elements */
+  --reference-highlight-color: #cd5c5c; /* Light red for highlights */
+  --reference-background-color: #fff0f0; /* Very light red background */
+  --reference-hover-color: rgba(139, 0, 0, 0.1); /* Transparent red for hover */
+  --reference-locked-color: #d3d3d3; /* Light gray for locked fields */
+}
+
+/* Reference display mode - global styles */
+body[data-display-mode="reference"] {
+  /* Add a subtle indicator that we're in reference mode */
+  background-color: var(--reference-background-color);
+}
+
+/* Header styling in reference mode */
+body[data-display-mode="reference"] .section-header {
+  background-color: var(--reference-primary-color);
+}
+
+/* Table styling in reference mode */
+body[data-display-mode="reference"] .data-table td,
+body[data-display-mode="reference"] .calculated-value,
+body[data-display-mode="reference"] .derived-value {
+  color: var(--reference-primary-color) !important;
+}
+
+/* User input styling in reference mode */
+body[data-display-mode="reference"] .user-input {
+  color: var(--reference-secondary-color) !important;
+}
+
+/* Hover effects for editable fields in reference mode */
+body[data-display-mode="reference"] .user-input:hover,
+body[data-display-mode="reference"] .editable:hover {
+  background-color: var(--reference-hover-color) !important;
+}
+
+/* Locked fields in reference mode - fields that cannot be edited in reference mode */
+body[data-display-mode="reference"] .reference-locked {
+  color: var(--reference-locked-color) !important;
+  cursor: not-allowed !important;
+}
+
+/* Subheader styling in reference mode */
+body[data-display-mode="reference"] .section-subheader,
+body[data-display-mode="reference"] tr:has(td.section-subheader) td {
+  background-color: rgba(139, 0, 0, 0.1) !important;
+  color: var(--reference-primary-color) !important;
+}
+
+/* Key Values section styling in reference mode */
+body[data-display-mode="reference"] #keyValues .data-table td {
+  background-color: var(--reference-background-color) !important;
+}
+
+/* Focus styling for editable fields in reference mode */
+body[data-display-mode="reference"] .data-table td.editable.editing,
+body[data-display-mode="reference"] .data-table td.user-input.editing,
+body[data-display-mode="reference"]
+  .data-table
+  td:has([contenteditable="true"].editing),
+body[data-display-mode="reference"]
+  .data-table
+  td:has(input[type="number"]:focus) {
+  box-shadow: 0 0 0 0.15rem rgba(139, 0, 0, 0.25) !important; /* Red glow instead of blue */
+}
+
+/* Toggle button styling */
+.reference-model-toggle {
+  position: fixed;
+  top: 70px; /* Position below header */
+  right: 20px;
+  z-index: 1000;
+  padding: 8px 12px;
+  background: var(--header-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.reference-model-toggle:hover {
+  background: #343a40;
+}
+
+.reference-model-toggle:active {
+  transform: translateY(1px);
+}
+
+/* Toggle button content */
+.reference-model-toggle::before {
+  content: "Show Reference Model";
+}
+
+/* Toggle button when in reference mode */
+body[data-display-mode="reference"] .reference-model-toggle {
+  background: var(--reference-primary-color);
+}
+
+body[data-display-mode="reference"] .reference-model-toggle:hover {
+  background: var(--reference-secondary-color);
+}
+
+body[data-display-mode="reference"] .reference-model-toggle::before {
+  content: "Show Design Model";
+}
+
+/* Status indicator in header */
+.model-mode-indicator {
+  display: inline-block;
+  margin-left: 15px;
+  font-size: 0.85rem;
+  font-weight: normal;
+  padding: 2px 6px;
+  border-radius: 3px;
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+body[data-display-mode="reference"] .model-mode-indicator {
+  background-color: var(--reference-primary-color);
+  opacity: 1;
+}
+
+/* Print styles for reference mode */
+@media print {
+  body[data-display-mode="reference"] {
+    background-color: white !important; /* Reset background for printing */
+  }
+
+  body[data-display-mode="reference"] .data-table td,
+  body[data-display-mode="reference"] .calculated-value,
+  body[data-display-mode="reference"] .derived-value,
+  body[data-display-mode="reference"] .user-input {
+    color: var(--reference-primary-color) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .reference-model-toggle {
+    display: none !important;
+  }
+
+  .model-mode-indicator {
+    border: 1px solid var(--reference-primary-color);
+  }
+}
+
+/* Comparison visualization */
+.comparison-cell {
+  position: relative;
+}
+
+/* Percentage comparison visualization */
+.comparison-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: #1a73e8;
+  opacity: 0.7;
+  transition: width 0.3s;
+}
+
+/* Reference mode comparison bars */
+body[data-display-mode="reference"] .comparison-bar {
+  background-color: var(--reference-primary-color);
+}
+
+/* Comparison highlights */
+.comparison-better {
+  color: #0d6efd !important;
+}
+
+.comparison-worse {
+  color: #dc3545 !important;
+}
+
+body[data-display-mode="reference"] .comparison-better {
+  color: #006400 !important; /* Dark green */
+}
+
+body[data-display-mode="reference"] .comparison-worse {
+  color: var(--reference-primary-color) !important;
+}

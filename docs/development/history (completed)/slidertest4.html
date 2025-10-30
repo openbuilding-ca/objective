@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 
+    ============================================================================
+    SLIDER TEST 4 - "ModparSlider" Pattern
+    ============================================================================
+    
+    PATTERN NAME: ModparSlider (Modify Parameter Slider)
+    
+    PURPOSE:
+    Demonstrate a robust and simple pattern for using a slider to adjust 
+    (increment/decrement) an existing editable numeric field within the TEUI 
+    application, leveraging existing stable components and avoiding the 
+    complexities of combined dual-input elements.
+    
+    PROBLEM ADDRESSED:
+    Previous attempts (slidertest1, 2, 3) using combined input+slider components 
+    led to layout issues, calculation race conditions, broken event handling, 
+    and general instability within the main TEUI application's architecture.
+    
+    SOLUTION OVERVIEW:
+    Instead of a new component, use two separate, standard elements:
+    1. An Editable Field (e.g., `h_15`): A standard `<td>` marked as `editable` 
+       that holds the primary numeric value. Uses standard `blur` and `keydown` 
+       events to update StateManager.
+    2. An Adjustment Slider (e.g., `i_15_slider`): A standard `<input type="range">` 
+       rendered via FieldManager (`type: "generic_slider"`). This slider does 
+       *not* represent the absolute value but rather a +/- adjustment.
+       
+    LOGIC:
+    1. Editable Field (`h_15`): 
+       - User can type directly into it.
+       - On `blur` or `Enter`, the value is validated and updated in StateManager.
+    2. Adjustment Slider (`i_15_slider`):
+       - Slider range is set to represent adjustments (e.g., -500 to +500).
+       - Default value is always 0.
+       - `input` Event (Dragging):
+         - Reads the *original* value of the target field (stored temporarily or from StateManager).
+         - Calculates `original_value + current_slider_adjustment`.
+         - Updates the *display* (`textContent`) of the target field (`h_15`) live.
+         - DOES NOT update StateManager.
+         - DOES NOT reset the slider's value (allows thumb to move).
+       - `change` Event (Release):
+         - Reads the *original* value of the target field.
+         - Calculates `original_value + final_slider_adjustment`.
+         - Updates the *display* (`textContent`) of the target field (`h_15`).
+         - Updates the target field's value (`h_15`) in **StateManager**.
+         - **Resets the slider's value to 0.**
+
+    ADVANTAGES:
+    - Uses existing, well-tested rendering patterns (editable fields, range sliders).
+    - Avoids complex component synchronization logic.
+    - Clear separation of concerns: Text input for direct entry, slider for adjustments.
+    - Less prone to race conditions as StateManager is updated definitively on `change`.
+    - Integrates smoothly with existing table layout and CSS.
+    - Easier to understand, debug, and maintain.
+
+    IMPLEMENTATION STEPS (Example for h_15 adjusted by i_15_slider):
+    1. Define `h_15` in Section Module (`Section02.js`) as `type: "editable"`.
+    2. Define `i_15_slider` in Section Module as `type: "generic_slider"` with appropriate 
+       `min`, `max`, `step`, and `value: "0"`.
+    3. Ensure `FieldManager.js` renders `type: "generic_slider"` correctly (as an input range 
+       without a separate value display span) - see edits from 2025.04.23.
+    4. Add event handling logic within the Section Module (`Section02.js`):
+       - In `initializeEventHandlers` (or `onSectionRendered`):
+         - Attach `handleAreaSliderInput` to the slider's `input` event.
+         - Attach `handleAreaSliderChange` to the slider's `change` event.
+       - Implement `handleAreaSliderInput`:
+         - Get original value of target field.
+         - Calculate `original + slider.value`.
+         - Update target field's `textContent`.
+       - Implement `handleAreaSliderChange`:
+         - Get original value of target field.
+         - Calculate `original + slider.value`.
+         - Update target field's `textContent`.
+         - Update target field's value in `StateManager`.
+         - Set `slider.value = 0;`.
+    ============================================================================
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slider Test 4 - ModparSlider Pattern</title>
+    <link href="../4011-styles.css" rel="stylesheet" />
+    <style>
+      body {
+        max-width: 700px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+      .component-container {
+        margin-bottom: 24px;
+        border: 1px solid #eee;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Space between editable field and slider */
+        min-height: 40px;
+      }
+      /* Mimic TD styling */
+      .editable-cell-mock {
+        flex-basis: 150px; /* Give editable field some base width */
+        flex-grow: 1;
+        text-align: right;
+        padding: var(--cell-padding);
+        border: none; /* Ensure borderless */
+        outline: none;
+        color: var(--user-input-color);
+        font-weight: 500;
+      }
+      .slider-cell-mock {
+        flex-basis: 200px; /* Give slider some base width */
+        flex-grow: 2;
+        display: flex;
+        align-items: center;
+        padding: var(--cell-padding);
+      }
+      .area-adjust-slider {
+        width: 100%;
+        accent-color: var(--user-input-color);
+        cursor: pointer;
+      }
+      hr {
+        margin: 40px 0;
+      }
+      #calculation-display {
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+      }
+      #calculation-display span {
+        display: inline-block;
+        margin-right: 15px;
+        font-weight: bold;
+      }
+      #log-container {
+        margin-top: 15px;
+        font-family: monospace;
+        font-size: 0.8em;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        padding: 5px;
+        background: #f8f8f8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Slider Test 4 - "ModparSlider" Pattern</h1>
+    <p>
+      Uses a standard editable field (right) adjusted by a separate slider
+      (left). Slider value resets to 0 on release.
+    </p>
+
+    <div class="component-container">
+      <!-- 1. Editable Field -->
+      <div
+        data-field-id="h_15"
+        class="editable-cell-mock user-input editable"
+        contenteditable="true"
+        aria-label="Conditioned Area"
+      >
+        1,427.20
+      </div>
+
+      <!-- 2. Adjustment Slider -->
+      <div class="slider-cell-mock">
+        <input
+          type="range"
+          id="i_15_slider_mock"
+          data-field-id="i_15_slider"
+          class="form-range area-adjust-slider"
+          min="-500"
+          max="500"
+          step="10"
+          value="0"
+          aria-label="Adjust Conditioned Area"
+        />
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- Display simulated calculated values -->
+    <div id="calculation-display">
+      <strong>Simulated Dependent Values (e.g., TEUI):</strong><br />
+      <span>T.3 Target (h_10): <span id="h_10-val">--</span></span> |
+      <span>T.3 Actual (k_10): <span id="k_10-val">--</span></span>
+    </div>
+
+    <!-- Logging -->
+    <div id="log-container"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const areaField = document.querySelector('[data-field-id="h_15"]');
+        const areaSlider = document.getElementById("i_15_slider_mock");
+        const logContainer = document.getElementById("log-container");
+
+        function log(msg) {
+          console.log(msg);
+          const entry = document.createElement("div");
+          entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+          logContainer.insertBefore(entry, logContainer.firstChild);
+        }
+
+        // --- Mock StateManager ---
+        const MockStateManager = {
+          state: { h_15: "1427.20" }, // Initial state
+          listeners: new Map(),
+          setValue(fieldId, value, state = "user-modified") {
+            log(`StateManager: setValue('${fieldId}', '${value}')`);
+            this.state[fieldId] = value;
+            this.notifyListeners(fieldId, value);
+          },
+          getValue(fieldId) {
+            return this.state[fieldId] || null;
+          },
+          addListener(fieldId, callback) {
+            if (!this.listeners.has(fieldId))
+              this.listeners.set(fieldId, new Set());
+            this.listeners.get(fieldId).add(callback);
+          },
+          notifyListeners(fieldId, newValue) {
+            if (this.listeners.has(fieldId)) {
+              this.listeners.get(fieldId).forEach((cb) => cb(newValue));
+            }
+          },
+        };
+
+        // --- Mock Dependent Calculations (e.g., TEUI in Section 1) ---
+        const calculateMockTEUI = (newAreaValueStr) => {
+          const area =
+            parseFloat(String(newAreaValueStr).replace(/,/g, "")) || 1;
+          log(`Recalculating TEUI with area: ${area}`);
+          // Simplified TEUI Calculation
+          const h10_val = (130000 / area).toFixed(1);
+          const k10_val = (131000 / area).toFixed(1);
+          document.getElementById("h_10-val").textContent = h10_val;
+          document.getElementById("k_10-val").textContent = k10_val;
+          log(`Calculated: Target TEUI=${h10_val}, Actual TEUI=${k10_val}`);
+        };
+        // Listen to h_15 changes in StateManager
+        MockStateManager.addListener("h_15", calculateMockTEUI);
+        // Initial calculation
+        calculateMockTEUI(MockStateManager.getValue("h_15"));
+
+        // --- Event Handlers (Mirroring Section02.js logic) ---
+
+        // Store original value when focusing the editable field
+        areaField.addEventListener("focus", function () {
+          this.dataset.originalValue = this.textContent.trim();
+          log(
+            `Area field focused. Original value: ${this.dataset.originalValue}`,
+          );
+        });
+
+        // Handle direct edits to the area field
+        areaField.addEventListener("blur", function () {
+          const currentValue = this.textContent.trim();
+          const originalValue = this.dataset.originalValue;
+          log(
+            `Area field blurred. Current: ${currentValue}, Original: ${originalValue}`,
+          );
+          if (currentValue !== originalValue) {
+            const rawValue = currentValue.replace(/,/g, "");
+            const numericValue = parseFloat(rawValue);
+            if (!isNaN(numericValue)) {
+              const validValue = Math.max(10, numericValue); // Ensure min value
+              const formattedValue = validValue.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
+              this.textContent = formattedValue; // Update display
+              MockStateManager.setValue("h_15", validValue.toFixed(2));
+              log(
+                `Area field updated via text input to ${validValue.toFixed(2)}`,
+              );
+            } else {
+              // Revert if invalid
+              this.textContent =
+                originalValue || MockStateManager.getValue("h_15") || "0.00";
+              log("Invalid area input, reverted.");
+            }
+          } else {
+            log("Area field value unchanged.");
+          }
+        });
+        areaField.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            this.blur();
+          }
+        });
+
+        // --- Slider Logic ---
+
+        // Helper function to calculate and update area based on slider
+        function _updateAreaFromSlider(slider, isFinalUpdate) {
+          log(
+            `_updateAreaFromSlider called. Slider value: ${slider.value}, isFinal: ${isFinalUpdate}`,
+          );
+          if (!areaField) return;
+          try {
+            // Prioritize stored original value, fall back to current state/display
+            const originalAreaStr =
+              slider.dataset.originalArea ||
+              MockStateManager.getValue("h_15") ||
+              areaField.dataset.originalValue ||
+              areaField.textContent.trim();
+            let originalArea = parseFloat(
+              String(originalAreaStr).replace(/,/g, ""),
+            );
+            if (isNaN(originalArea)) originalArea = 0;
+
+            const adjustment = parseFloat(slider.value);
+            if (isNaN(adjustment)) return;
+
+            let newArea = Math.max(10, originalArea + adjustment);
+            newArea = parseFloat(newArea.toFixed(2));
+
+            // Update target field display
+            areaField.textContent = newArea.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+            log(`Updated display to ${areaField.textContent}`);
+
+            if (isFinalUpdate) {
+              // Update StateManager
+              MockStateManager.setValue("h_15", newArea.toFixed(2));
+              log(`Area updated via slider to ${newArea.toFixed(2)}`);
+
+              // Reset slider to 0
+              slider.value = 0;
+              log("Slider reset to 0.");
+
+              // Clear stored original area
+              delete slider.dataset.originalArea;
+              log("Cleared stored original area.");
+            } else {
+              // Store original value for the 'change' event if not already stored
+              if (!slider.dataset.originalArea) {
+                slider.dataset.originalArea = originalAreaStr;
+                log(
+                  `Stored original area (${originalAreaStr}) for slider change event.`,
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error in _updateAreaFromSlider:", error);
+          }
+        }
+
+        // Handle slider INPUT (live dragging)
+        function handleAreaSliderInput(event) {
+          _updateAreaFromSlider(event.target, false); // Call helper, not final update
+        }
+
+        // Handle slider CHANGE (release)
+        function handleAreaSliderChange(event) {
+          _updateAreaFromSlider(event.target, true); // Call helper, IS final update
+        }
+
+        // Attach slider listeners
+        areaSlider.addEventListener("input", handleAreaSliderInput);
+        areaSlider.addEventListener("change", handleAreaSliderChange);
+
+        log("ModparSlider pattern initialized.");
+      });
+    </script>
+  </body>
+</html>

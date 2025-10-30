@@ -1,0 +1,237 @@
+{
+  "COOLING-TARGET.csv Variable Mapping": {
+    "description": "Comprehensive mapping of COOLING-TARGET.csv variables to DOM elements and internal calculations",
+    "purpose": "Enable future agents to understand Excel cooling logic and implement proper parity",
+    "created": "2025-09-28",
+
+    "CRITICAL_CALCULATIONS": {
+      "E55_m_124": {
+        "excel_formula": "=E52/(E54*24)",
+        "description": "Days Active Cooling Required",
+        "dependencies": ["E52", "E54"],
+        "our_equivalent": "m_124"
+      },
+      "E52": {
+        "excel_formula": "=E50-E51",
+        "description": "kWh Remaining UnMet Cooling Load",
+        "dependencies": ["E50", "E51"]
+      },
+      "E50": {
+        "excel_formula": "=E37*E45",
+        "description": "Seasonal Cooling Load (Unmitigated)",
+        "dependencies": ["E37", "E45"]
+      },
+      "E51": {
+        "excel_formula": "=E36*E45",
+        "description": "kWh Total Seasonal Free Cooling Potential",
+        "dependencies": ["E36", "E45"]
+      }
+    },
+
+    "FOUNDATION_VARIABLES": {
+      "A3": {
+        "value": "20.43",
+        "description": "Night-Time Temp Outside in °C (Summer Mean Jun-Aug)",
+        "our_equivalent": "state.nightTimeTemp"
+      },
+      "A4": {
+        "value": "0.5585",
+        "description": "Cooling Season Mean RH in % at 15h00 LST (Jun-Sept)",
+        "our_equivalent": "state.coolingSeasonMeanRH"
+      },
+      "A8": {
+        "excel_formula": "=REPORT!H24",
+        "description": "B.1.3 Indoor Design Temperature (Initial Interior and Tset Temp in °C)",
+        "our_equivalent": "h_24 (cooling setpoint)"
+      },
+      "A9": {
+        "excel_formula": "=REPORT!D105",
+        "description": "Volume of Space in m3",
+        "our_equivalent": "d_105"
+      },
+      "A10": {
+        "excel_formula": "=REPORT!D101",
+        "description": "Surface Area Ae in m2",
+        "our_equivalent": "d_101"
+      },
+      "A11": {
+        "excel_formula": "=REPORT!D102",
+        "description": "Surface Area Ag in m2",
+        "our_equivalent": "d_102"
+      },
+      "A52": {
+        "excel_formula": "=REPORT!I59",
+        "description": "A.5 Cooling Season Interior RH in % from FACTS",
+        "our_equivalent": "i_59 (S08 cooling season indoor RH% slider)",
+        "note": "Different from d_59 which is heating season indoor humidity"
+      }
+    },
+
+    "PHYSICS_CONSTANTS": {
+      "E3": {
+        "value": "1.204",
+        "description": "Mass of Air kg/m3",
+        "our_equivalent": "state.airMass"
+      },
+      "E4": {
+        "value": "1005",
+        "description": "Spec. Heat Cap. of Air J/(kg•K)",
+        "our_equivalent": "state.specificHeatCapacity"
+      },
+      "E6": {
+        "value": "2501000",
+        "description": "Latent Heat of Vaporization J/kg",
+        "our_equivalent": "state.latentHeatVaporization"
+      }
+    },
+
+    "LATENT_LOAD_FACTOR_CHAIN": {
+      "A6": {
+        "excel_formula": "=1+A64/A55",
+        "description": "V.4.2. Latent Load Factor (Calculated from This Sheet)",
+        "dependencies": ["A64", "A55"],
+        "our_equivalent": "state.latentLoadFactor",
+        "note": "Published to StateManager as cooling_latentLoadFactor"
+      },
+      "A64": {
+        "excel_formula": "=A54*E3*E6*A63",
+        "description": "Latent Cooling Load Calculated",
+        "dependencies": ["A54", "E3", "E6", "A63"],
+        "note": "Numerator of latent load factor"
+      },
+      "A55": {
+        "excel_formula": "=H26*E3*E4*(A49-H27)",
+        "description": "Watts Present Sensible Seasonal Average VENTILATION ONLY Cooling Load Calculated",
+        "dependencies": ["H26", "E3", "E4", "A49", "H27"],
+        "note": "Denominator of latent load factor"
+      },
+      "A63": {
+        "excel_formula": "=A62-A61",
+        "description": "Humidity Ratio Difference ΔW=Wavg-Windoor kg/kg PRESENT",
+        "dependencies": ["A62", "A61"],
+        "our_equivalent": "state.humidityRatioDifference"
+      },
+      "A62": {
+        "excel_formula": "=0.62198*A58/(E15-A56)",
+        "description": "Humidity Ratio at Seasonal Average Conditions kg/kg",
+        "our_equivalent": "state.humidityRatioAvg"
+      },
+      "A61": {
+        "excel_formula": "=0.62198*A60/(E15-A60)",
+        "description": "Indoor Humidity Ratio kg/kg",
+        "our_equivalent": "state.humidityRatioIndoor"
+      },
+      "A54": {
+        "excel_formula": "=A53/3600",
+        "description": "V1.1 Ventilation Rate in m3/s",
+        "dependencies": ["A53"],
+        "note": "Converts hourly to per-second rate"
+      },
+      "A53": {
+        "excel_formula": "=H25",
+        "description": "V1.1 Ventilation Rate in m3/hr (for Full Occupancy)",
+        "dependencies": ["H25"]
+      },
+      "H25": {
+        "excel_formula": "=REPORT!H120",
+        "description": "V1.1 Ventilation Rate in m3/hr (for Full Occupancy)",
+        "our_equivalent": "h_120"
+      },
+      "H26": {
+        "excel_formula": "=H25/3600",
+        "description": "V1.1 Ventilation Rate in m3/s",
+        "dependencies": ["H25"],
+        "note": "Same as A54 - both reference h_120/3600"
+      },
+      "H27": {
+        "excel_formula": "=REPORT!H24",
+        "description": "B.1.3 Indoor Design Temperature",
+        "our_equivalent": "h_24 (cooling setpoint)"
+      },
+      "A49": {
+        "excel_formula": "=A3",
+        "description": "°C Cooling Season average dry-bulb temperature (From A3 above)",
+        "our_equivalent": "state.nightTimeTemp (20.43)"
+      }
+    },
+
+    "CALCULATION_CHAIN": {
+      "A28": {
+        "excel_formula": "=IF(REPORT!L119=\"None\", REPORT!D120, REPORT!D120*REPORT!L119)",
+        "description": "Ventilation Rate l/s (with summer boost)",
+        "dependencies": ["REPORT!L119", "REPORT!D120"],
+        "our_equivalent": "d_120 * l_119_factor"
+      },
+      "A29": {
+        "excel_formula": "=A28/1000",
+        "description": "m3/second ventilation rate"
+      },
+      "A30": {
+        "excel_formula": "=A29*E3",
+        "description": "Mass-Flow Rate of Air kg/s"
+      },
+      "A31": {
+        "excel_formula": "=A30*E4*A16",
+        "description": "Q̇ = ṁ * cₚ * ΔT (Heat Removal per Second in J/s or Watts)"
+      },
+      "A32": {
+        "excel_formula": "=A31*86400",
+        "description": "Heat Removed in one Day (Joules)"
+      },
+      "A33": {
+        "excel_formula": "=A32/3600000",
+        "description": "Heat Removed in one Day (kWh)",
+        "note": "This is the daily free cooling potential"
+      },
+      "E36": {
+        "excel_formula": "=A33",
+        "description": "kWh Reduced by Free Cooling in One Day"
+      },
+      "E37": {
+        "excel_formula": "=REPORT!M129",
+        "description": "Partially Mitigated (Free Cooling Subtracted) Energy Added in kWh",
+        "our_equivalent": "m_129"
+      },
+      "E45": {
+        "excel_formula": "=REPORT!D21",
+        "description": "CDD for Named Location (in °C)",
+        "our_equivalent": "d_21"
+      },
+      "E54": {
+        "excel_formula": "=REPORT!M19",
+        "description": "Length of Cooling Period in Days",
+        "our_equivalent": "m_19"
+      }
+    },
+
+    "TEMPERATURE_CALCULATIONS": {
+      "A16": {
+        "excel_formula": "=A8-A3",
+        "description": "Temp Diff °K ΔT for Ae (indoor - outdoor night temp)",
+        "calculation": "h_24 - nightTimeTemp"
+      }
+    },
+
+    "FINAL_RESULTS": {
+      "E50_seasonal_cooling_load": {
+        "excel_formula": "=E37*E45",
+        "description": "Seasonal cooling load (m_129 * d_21)",
+        "our_calculation": "m_129 * d_21"
+      },
+      "E51_seasonal_free_cooling": {
+        "excel_formula": "=E36*E45",
+        "description": "Seasonal free cooling potential (daily_potential * d_21)",
+        "our_calculation": "daily_free_cooling_kWh * d_21"
+      },
+      "E52_unmet_load": {
+        "excel_formula": "=E50-E51",
+        "description": "Unmet cooling load after free cooling"
+      },
+      "E55_days_active_cooling": {
+        "excel_formula": "=E52/(E54*24)",
+        "description": "Days Active Cooling Required",
+        "our_target": "m_124"
+      }
+    }
+  }
+}
