@@ -62,27 +62,47 @@ From improved debug script (3,030 lines):
 
 ```
 BEFORE edit:
-  e_10 = 182.2 (Reference total)
+  e_10 = 182.2 (Reference total - from debug logs)
   h_10 = 93.72 (Target total)
 
 USER EDITS l_24 in Target mode
 
-AFTER edit:
+AFTER edit (from debug logs):
   e_10 = 198 ← CHANGED! (Reference contaminated)
   h_10 = 90.91 ← Changed (expected)
-  
+
 Call stack for e_10 write:
   at updateTEUIDisplay (Section01.js:876)
 ```
+
+**⚠️ CRITICAL DISCREPANCY (Oct 31, 12:00am)**:
+- Debug logs show: e_10 = 182.2 (before) → 198 (after)
+- **User reports UI actually shows: e_10 = 197.7** (final value after full initialization)
+- Excel parity target: e_10 = 196.6
+- **197.7 is MUCH CLOSER to Excel than 182.2!**
+
+**IMPLICATIONS**:
+1. Debug script may not capture final settled value after all initialization completes
+2. There may be additional calculation cycles AFTER the debug logs stop
+3. The value 182.2 may be INCOMPLETE, not fully initialized
+4. The value 197.7 (seen in UI) is nearly correct (196.6 target)
+5. **REVISED HYPOTHESIS**: Problem may be initialization sequence, not l_24 edit cascade
+6. Need to investigate WHY initial value is 182.2 vs final value 197.7
 
 ## Key Observations
 
 1. ✅ ref_cooling_h_124 stayed constant at 48381.43968
    - Our h_24 fix IS working for Cooling.js
-   
-2. ❌ But e_10 still changed
-   - Contamination is happening DOWNSTREAM of Cooling.js
+
+2. ⚠️ e_10 changes in logs BUT settles correctly in UI
+   - Contamination may be happening DURING initialization
+   - Final settled value (197.7) is nearly correct (Excel: 196.6)
    - In the S13 → S14 → S15 → S04 → S01 cascade
+
+3. 🔍 **NEW FOCUS**: Initialization order/timing, not just edit cascade
+   - Why does e_10 start at 182.2 instead of 197.7?
+   - What calculation pass brings it from 182.2 → 197.7?
+   - Is there a race condition during initialization?
 
 ## Hypothesis: Contamination Source
 
