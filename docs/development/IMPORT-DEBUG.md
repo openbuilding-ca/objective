@@ -664,6 +664,37 @@ When d_113 = "Heatpump":
 
 ## 🎯 **SOLUTION: Skip ReferenceValues Overlay During Import Sync**
 
+### **Critical Discovery (2025-10-31 pm):**
+
+**Test Result:** Commenting out ExcelMapper `ref_f_113` import did NOT fix the issue!
+- Reference mode still shows f_113 = 10 (not 7.1)
+- Slider still broken
+
+**Investigation:**
+1. ✅ ExcelMapper: ref_f_113 commented out (line 344) - NOT importing
+2. ✅ localStorage: No S13 Reference state saved (or matches imported values)
+3. ✅ S10/S11 localStorage: Exact match of imported values
+4. ❌ **syncFromGlobalState()**: Still has f_113 in fieldIds list (line 215)
+
+**The Smoking Gun:**
+
+Even though ref_f_113 is NOT imported from Excel, `syncFromGlobalState()` still tries to sync it. Where does it get ref_f_113 = 10?
+
+**Answer:** StateManager might have ref_f_113 from:
+1. Previous session (before we commented out ExcelMapper)
+2. CSV export initialization code (line 246) publishing ReferenceState to StateManager
+3. **OR**: The Target value (f_113 = 10) is bleeding through somehow
+
+**Next Test:**
+1. Remove f_113, d_118, j_115 from Section13.syncFromGlobalState() fieldIds list (line 215-219)
+2. Clear browser cache/localStorage/cookies completely
+3. Import Heatpump file again
+4. Check if f_113 slider shows 7.1 in Reference mode
+
+**Also apply same fix to S11:**
+- Remove g_88, g_89, g_90, g_91, g_92, g_93 from Section11.ReferenceState.syncFromGlobalState() fieldIds list
+- This may fix the S11 → S15 cascade issue if it's related to U-value contamination
+
 ### **Root Cause Summary:**
 
 Pattern A sections use `syncFromGlobalState()` during import to copy imported `ref_` values from StateManager to ReferenceState. BUT this overwrites ReferenceValues overlay fields that should maintain their standard-based defaults.
