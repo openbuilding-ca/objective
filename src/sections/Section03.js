@@ -791,6 +791,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           value: "196",
           section: "climateCalculations",
           classes: ["user-input", "editable"], // ✅ Add styling for editable field
+          tooltip: true, // ✅ Shows help with Climate Atlas link when unavailable
         },
         f: { content: "G.4.2", classes: ["label-prefix"] },
         g: { content: "Capacitance", classes: ["label-main"] },
