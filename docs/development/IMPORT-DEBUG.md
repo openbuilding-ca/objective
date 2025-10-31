@@ -98,22 +98,102 @@ Import's `syncFromGlobalState()` may be **overwriting** ReferenceValues overlay 
 
 ## 📊 **EVIDENCE FROM CONSOLE LOGS**
 
+### **Log Analysis 2025-10-31 (Import Test)**
+
+**Test Setup:**
+- Import broken Excel file with S11 in Target mode
+- Observe S01 dashboard e_10 (Reference TEUI) value
+- Toggle S11 to Reference mode, observe changes
+
+**Results:**
+```
+After import: e_10 = 387.3 (WRONG - expected ~172.7)
+After S11 Reference toggle: e_10 = 191.5 (closer but still wrong)
+After S13 Reference toggles + Cooling off/on: e_10 = 176.7 (very close to expected 172.7)
+```
+
+**S15 Error Pattern:**
 ```
 Section15.js:1423 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
 ```
+- This error repeats multiple times in logs
+- S15's calculateReferenceModel() IS running but cannot find upstream values from S11
+- S15 falls back to initialization defaults
+
+**S11 Evidence:**
+```
+[S11] REF CLIMATE READ: ref_d_19=Ontario, ref_h_19=Alexandria
+[S11] Writing ref penalty: ref_i_97=40886.40
+```
+- S11's calculateReferenceModel() IS running during post-import calculateAll()
+- S11 logs show it's attempting to write ref_ values
+- But S15 doesn't see these values immediately after
+
+**Key Finding:**
+User observation: "This S11 mode switch, followed by S13 toggles of Reference mode, the Cooling off, then Cooling on again gets our Reference e_10 value to 176.7, where we expect 172.7"
 
 **Analysis:**
 - S15 complains it can't find Reference values from S11
-- This suggests S11's `calculateReferenceModel()` either:
-  1. Didn't run during post-import `calculateAll()`
-  2. Ran but didn't write ref_ values to StateManager
-  3. Ran and wrote values, but they were immediately overwritten
+- Multiple mode switches + recalculations gradually improve the value (387.3 → 191.5 → 176.7)
+- This suggests **calculation cascade not completing** during initial post-import calculateAll()
+- Hypothesis: S11 writes ref_ values, but downstream sections (S15, etc.) don't see them OR run before S11 completes
 
 ---
 
 ## 🔍 **KEY QUESTIONS TO INVESTIGATE**
 
-### **Q1: S11 Reference Calculation Timing**
+### **Q1: Calculation Cascade Ordering (PRIORITY)**
+
+**Does calculateAll() execute sections in the wrong order, causing downstream sections to run before upstream dependencies complete?**
+
+**Evidence:**
+- S15 reports missing ref_g_101, ref_d_101, ref_i_104 from S11
+- S11 logs show it IS writing ref_ values
+- Multiple mode toggles gradually fix the value (387.3 → 191.5 → 176.7)
+- This pattern suggests incomplete cascade, not missing calculations
+
+**Hypothesis:**
+During post-import calculateAll(), sections may execute in parallel or wrong order:
+```
+BAD: S15.calculateReferenceModel() runs BEFORE S11.calculateReferenceModel() completes
+     ↓
+     S15 tries to read ref_g_101, ref_d_101, ref_i_104 → NOT FOUND
+     ↓
+     S15 uses fallback defaults → wrong calculations
+     ↓
+     User toggles modes → triggers new calculateAll() with different timing
+     ↓
+     This time S11 completes first → S15 finds values → better result
+```
+
+**Debug Strategy:**
+Add timestamps to track execution order in calculateReferenceModel():
+
+```javascript
+// In S11.calculateReferenceModel()
+console.log(`[S11-REF-CALC] START at ${Date.now()}`);
+// ... calculations ...
+console.log(`[S11-REF-CALC] Writing ref_g_101=${value_g_101} at ${Date.now()}`);
+window.TEUI.StateManager.setValue('ref_g_101', value_g_101, 'calculated');
+console.log(`[S11-REF-CALC] END at ${Date.now()}`);
+
+// In S15.calculateReferenceModel()
+console.log(`[S15-REF-CALC] START at ${Date.now()}`);
+const ref_g_101 = window.TEUI.StateManager.getValue('ref_g_101');
+console.log(`[S15-REF-CALC] Reading ref_g_101=${ref_g_101} at ${Date.now()}`);
+if (!ref_g_101) {
+  console.log(`[S15-REF-CALC] MISSING ref_g_101 - using fallback`);
+}
+console.log(`[S15-REF-CALC] END at ${Date.now()}`);
+```
+
+**Expected:** S11 START → S11 END → S15 START → S15 END
+
+**If Wrong Order:** S15 runs before S11 completes → root cause identified
+
+---
+
+### **Q2: S11 Reference Calculation Timing**
 
 **Does S11's `calculateReferenceModel()` run during post-import `calculateAll()`?**
 
@@ -338,25 +418,59 @@ DOM updates must be mode-aware and update the correct state values without cross
 
 ## 🧩 **INVESTIGATION PLAN**
 
-### **Phase 1: Logging (No Code Changes)**
+### **Phase 1: Calculation Cascade Timing (PRIORITY)**
 
-Add comprehensive console logs to track:
+**Focus:** Determine if S15 runs before S11 completes during post-import calculateAll()
 
-1. **Import Flow:**
-   - FileHandler: When sync happens, what values are synced
-   - StateManager: What ref_ values are written during import
+Add timestamp logging to track execution order:
 
-2. **Calculation Flow:**
-   - S11: When calculateReferenceModel() runs, what values it writes
-   - S15: When calculateReferenceModel() runs, what upstream values it reads
+1. **S11.calculateReferenceModel():**
+   - Log START with timestamp
+   - Log each ref_ value write (ref_g_101, ref_d_101, ref_i_104) with timestamp
+   - Log END with timestamp
 
-3. **ReferenceValues Overlay:**
-   - S13: When setDefaults() runs, what values it sets
-   - S13: When syncFromGlobalState() runs, does it overwrite ReferenceValues
+2. **S15.calculateReferenceModel():**
+   - Log START with timestamp
+   - Log each upstream ref_ value read with timestamp
+   - Log MISSING value warnings with timestamp
+   - Log END with timestamp
 
-4. **Mode Switching:**
-   - What happens when user switches S11 mode after import
-   - Does it trigger calculateAll()? (Should not!)
+3. **Calculator.calculateAll():**
+   - Log execution order of sections
+   - Track which sections run calculateReferenceModel() in what sequence
+
+**Expected Result:**
+```
+[CALC-ALL] Running calculateReferenceModel() for all sections...
+[S11-REF-CALC] START at 1234567890
+[S11-REF-CALC] Writing ref_g_101=X at 1234567895
+[S11-REF-CALC] END at 1234567900
+[S15-REF-CALC] START at 1234567905
+[S15-REF-CALC] Reading ref_g_101=X at 1234567910 ✅
+[S15-REF-CALC] END at 1234567915
+```
+
+**If Bug Exists:**
+```
+[CALC-ALL] Running calculateReferenceModel() for all sections...
+[S11-REF-CALC] START at 1234567890
+[S15-REF-CALC] START at 1234567891 ❌ TOO EARLY!
+[S15-REF-CALC] Reading ref_g_101=null at 1234567892 ❌ NOT FOUND
+[S15-REF-CALC] MISSING ref_g_101 - using fallback
+[S11-REF-CALC] Writing ref_g_101=X at 1234567895 ⚠️ TOO LATE!
+```
+
+### **Phase 1b: Secondary Logging (If cascade timing correct)**
+
+If S11 completes before S15 runs, add additional logs:
+
+1. **StateManager.setValue():**
+   - Log when ref_g_101, ref_d_101, ref_i_104 are written to StateManager
+   - Log caller context (which section is writing)
+
+2. **StateManager.getValue():**
+   - Log when S15 tries to read these values
+   - Log what's actually in StateManager at that moment
 
 ### **Phase 2: Reproduce & Capture**
 
@@ -389,10 +503,87 @@ Fix ONLY the identified root cause without refactoring other working code.
 
 ## 🚧 **NEXT STEPS**
 
+### **NEW PRIORITY: Debug S13 HSPF Slider (Easier Entry Point)**
+
+**Rationale:**
+- S13 d_118 (ERV) slider: **WORKS** after import (slider visible, correct thumb position, mode-aware)
+- S13 f_113 (HSPF) slider: **BREAKS** after import (slider vanishes, shows Target value in Reference mode)
+- Both fields use ReferenceValues.js overlay
+- Both are in same section (S13)
+- **Working comparison available** → easier to isolate root cause
+
+**Investigation Complete - Root Cause Identified:**
+
+### **Field Comparison:**
+
+**f_113 (HSPF - BROKEN):**
+```javascript
+// Section13.js lines 887-896
+fieldId: "f_113",
+type: "coefficient",  // ❌ Type not handled in FieldManager!
+value: "12.5",
+min: 3.5,
+max: 20,
+step: 0.1,
+```
+
+**d_118 (ERV - WORKING):**
+```javascript
+// Section13.js lines 1184-1191
+fieldId: "d_118",
+type: "percentage",  // ✅ Type properly handled in FieldManager
+value: "89",
+min: 0,
+max: 100,
+step: 1,
+```
+
+### **Root Cause: Missing "coefficient" Handler in FieldManager**
+
+**Location:** `src/core/FieldManager.js` function `initializeSliders()` (lines 849-1000)
+
+**The Bug:**
+
+FieldManager's slider initialization handles these types:
+- ✅ `"percentage"` (lines 915, 950) - formats display value
+- ✅ `"coefficient_slider"` (lines 930, 966) - formats display value
+- ✅ `"year_slider"` (lines 935, 971) - formats display value
+- ❌ **`"coefficient"` - NO HANDLER!** Falls through to default
+
+**What Happens:**
+
+1. **Initial Render (FieldManager.js lines 608-616):**
+   - Recognizes "coefficient" type
+   - Creates placeholder `.slider-cell` with text "12.5"
+
+2. **Slider Initialization (FieldManager.js lines 849-1000):**
+   - Creates `<input type="range">` element with correct min/max/step
+   - But when setting initial display value (lines 948-977):
+     - No "coefficient" case → Falls through to default
+     - Sets `displaySpan.textContent = rangeInput.value` (raw number)
+   - When user interacts (lines 911-946):
+     - No "coefficient" case → Falls through to line 942
+     - Sets `displaySpan.textContent = value` (raw number, no formatting)
+
+3. **Import Flow:**
+   - Imported value writes to ReferenceState
+   - refreshUI() tries to update slider
+   - Slider element exists but formatting is inconsistent
+   - **Result:** Slider behaves erratically or vanishes
+
+**Solution:**
+Add "coefficient" type handling to FieldManager matching "coefficient_slider" pattern (format as "number-2dp" or "number-1dp").
+
+---
+
+### **Original Plan (S11 → S15 Cascade - Defer if S13 fix solves it)**
+
 1. Add debug logging (Phase 1)
 2. Perform import test with logs enabled
 3. Analyze log output to identify exact failure point
 4. Document findings here before implementing fix
 5. Create targeted fix based on evidence
 
-**NO CODE CHANGES until we understand the exact root cause from logs.**
+**Note:** S13 slider fix may reveal root cause that also fixes S11 → S15 Reference cascade issue.
+
+**NO CODE CHANGES until we understand the exact root cause from comparison analysis.**
