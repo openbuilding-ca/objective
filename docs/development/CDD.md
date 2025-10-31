@@ -1,151 +1,62 @@
-# CDD Dynamic Editability Feature - Implementation Analysis
+# CDD User-Editable Field - Simple Implementation
 
 **Created**: 2025-10-31
-**Updated**: 2025-10-31 (Simplified approach)
-**Status**: 📋 **READY FOR IMPLEMENTATION** - Simple dynamic field behavior
-**Goal**: Make Section 03 CDD field (d_21) dynamically editable when climate data unavailable
+**Updated**: 2025-10-31 (Radically simplified)
+**Status**: 📋 **READY FOR IMPLEMENTATION** - Simple editable field pattern
+**Goal**: Make Section 03 CDD field (d_21) user-editable with climate data defaults
 
 ---
 
 ## 📋 **OBJECTIVE**
 
-Enhance Section 03 user experience when CDD (Cooling Degree Days) climate data is missing from ClimateValues.js:
+Make the CDD (Cooling Degree Days) field in Section 03 behave like Section 11's U-value fields (g_88-g_93):
 
 ### **Requirements:**
-1. **When CDD unavailable**: Field shows "Unavailable" and becomes user-editable (like `m_19` "Days Cooling")
-2. **When CDD available**: Field shows climate data and is locked (non-editable)
-3. **User-entered values**: Remain editable with user-input styling (bold blue) UNTIL location changes
-4. **Location changes with NEW CDD data**: Overwrites user value, locks field
-5. **Location changes STILL unavailable**: Clears to "Unavailable", stays editable
-6. **Mode switching**: Target and Reference track their CDD values independently (already works via existing dual-state)
+1. **Always user-editable** - Field never locks (like m_19 "Days Cooling")
+2. **Climate data as default** - Loads suggested value from ClimateValues.js based on Province/City
+3. **User can override** - Any edits persist in TargetState/ReferenceState until location changes
+4. **Location change** - New climate data overwrites user value (new suggested default)
+5. **Missing data** - Shows "Unavailable" as placeholder text, user can enter value
+6. **Mode switching** - Target and Reference track independently (dual-state already works)
 
 ---
 
-## 💡 **KEY INSIGHT: KISS PRINCIPLE**
+## 💡 **KEY INSIGHT: FOLLOW SECTION 11 PATTERN**
 
-**We don't need complex state tracking!** Just make the field behavior dynamic based on whether climate data is available:
+**Section 11 already solves this!** Fields g_88-g_93 are:
+- Type: `"editable"` (always user-editable, never lock)
+- Have defaults from ReferenceValues.js (like our ClimateValues.js)
+- User can override anytime
+- No complex locking or preservation logic needed
 
-- **Climate data exists** → Field is locked (calculated/derived field)
-- **Climate data missing** → Field is editable (user-input field)
-- **User enters value** → Stays editable (but looks like user-input)
-- **New location with data** → Becomes locked again (calculated field)
-
-**This is exactly how other fields work** - no special tracking needed!
-
----
-
-## ❌ **WHAT WE TRIED (FAILED APPROACH)**
-
-### **Attempt 1: Simple State Attribute Tracking**
-
-**Implementation:**
-- Changed "N/A" to "Unavailable" text for missing CDD
-- Added `data-cdd-source` DOM attribute to track "user" vs "system" source
-- Created `updateCDDFieldEditability()` function to toggle contentEditable
-- Added `handleCDDBlur()` for user input processing
-- Used `clearUserEnteredCDDValue()` on location changes
-
-**Problems Discovered:**
-
-1. **State Bleeding Between Modes**
-   - Switching from Target to Reference mode showed "Unavailable" even when Reference location had valid CDD data
-   - User-entered values in Target mode disappeared when switching to Reference
-   - Reference user-entered values contaminated Target when switching back
-
-2. **State Source Tracking Complexity**
-   - Started with DOM attributes (`data-cdd-source`)
-   - Tried adding metadata objects to TargetState/ReferenceState
-   - Attempted StateManager fields (`d_21_source`, `ref_d_21_source`)
-   - Each approach added complexity without solving isolation
-
-3. **Dual-Engine Architecture Violation**
-   - Initial approach called `calculateAll()` in `switchMode()` (anti-pattern!)
-   - User input handler didn't properly preserve values during recalculation
-   - Climate data fetch didn't properly isolate Target vs Reference CDD
+**Apply the same pattern to d_21!**
 
 ---
 
-## 🚨 **ROOT CAUSE ANALYSIS**
+## ✅ **SIMPLE SOLUTION (3 Changes)**
 
-### **Core Issue: Insufficient State Isolation**
+### **Change 1: Make Field Editable (Line ~788)**
 
-Per **4012-CHEATSHEET.md Anti-Pattern 1: State Contamination via Fallbacks**:
+Change field type from `"derived"` to `"editable"`:
 
-> **The Correct Pattern:** Logic must be strictly isolated. If a Reference value does not exist, it should use a defined default or show '0', but it must **never** use a Target value.
-
-**Our Implementation Failed Because:**
-
-1. **Incomplete Mode-Aware Reading**
-   - `updateCDDFieldEditability()` checked current mode but didn't properly isolate state
-   - DOM attribute tracking (`data-cdd-source`) not sufficient for dual-state isolation
-
-2. **Preservation Logic Issues**
-   - User-entered values preserved during calculation BUT not during mode switches
-   - Climate data fetch didn't distinguish between:
-     - Target location with unavailable CDD
-     - Reference location with available CDD
-     - User-entered override for either mode
-
-3. **StateManager Publication Gaps**
-   - CDD source tracking (`d_21_source`) added to StateManager
-   - But mode switching didn't properly refresh from isolated state objects
-
----
-
-## ✅ **PROPER DUAL-STATE ARCHITECTURE PATTERNS**
-
-### **From 4012-CHEATSHEET.md Section: Core Architectural Principles**
-
-#### **Principle 1: Dual-Engine Calculations**
-> `calculateAll()` **MUST** run both `calculateTargetModel()` and `calculateReferenceModel()` in parallel on every data change.
-
-**Application to CDD:**
-- Both engines must run simultaneously
-- Each engine must independently fetch climate data for its location
-- User-entered CDD overrides must be preserved per-engine
-
-#### **Principle 2: UI Toggle is Display-Only**
-> The `switchMode()` function **MUST NOT** trigger calculations. It is a UI filter that only changes which pre-calculated state is displayed.
-
-**What We Did Wrong:**
 ```javascript
-// ❌ WRONG: Added calculateAll() to switchMode()
-switchMode: function (mode) {
-  calculateAll(); // ❌ Anti-pattern!
-  this.refreshUI();
-}
+d: {
+  fieldId: "d_21",
+  type: "editable",  // ✅ Changed from "derived" - always editable like g_88
+  value: "196",      // Default for Alexandria, ON
+  section: "climateCalculations",
+  classes: ["user-input", "editable"],  // ✅ Add styling classes
+},
 ```
 
-**Correct Pattern:**
-```javascript
-// ✅ CORRECT: Only refresh UI, calculations already done
-switchMode: function (mode) {
-  this.refreshUI();
-  this.updateCalculatedDisplayValues();
-}
-```
+### **Change 2: Climate Data Returns "Unavailable" (Line ~626)**
 
-#### **Principle 3: State Sovereignty**
-> Each section manages its own `TargetState` and `ReferenceState`. It does not read `target_` or `ref_` prefixed values from other sections for its internal calculations.
-
-**Application to CDD:**
-- CDD source tracking belongs in TargetState and ReferenceState
-- Not in separate metadata objects
-- Not just in DOM attributes
-- Not just in StateManager auxiliary fields
-
----
-
-## 🎯 **SIMPLIFIED SOLUTION (4 Small Changes)**
-
-### **Change 1: Climate Data Returns "Unavailable" (Already Done!)**
-
-In `getClimateDataForState()` around line 626:
+When CDD unavailable, return "Unavailable" instead of "N/A":
 
 ```javascript
 const climateValues = {
   d_20: hdd !== null && hdd !== undefined && hdd !== 666 ? hdd : "N/A",
-  d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed from "N/A"
+  d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed
   j_19: determineClimateZone(hdd),
   d_23: selectedJanTemp,
   d_24: cityData.July_2_5_Tdb || "34",
@@ -153,210 +64,141 @@ const climateValues = {
 };
 ```
 
-### **Change 2: Preserve User Values When Climate Unavailable**
+### **Change 3: Add d_21 to TargetState/ReferenceState Defaults**
 
-In `calculateTargetModel()` and `calculateReferenceModel()` around line 1798:
+In `setDefaults()` for both states (lines ~36-56 and ~114-138), add d_21:
 
+**TargetState.setDefaults():**
 ```javascript
-// ✅ STEP 2: Update both local state AND StateManager immediately
-Object.entries(climateValues).forEach(([key, value]) => {
-  // Special handling for d_21 (CDD): preserve user-entered values
-  if (key === "d_21" && value === "Unavailable") {
-    const currentValue = TargetState.getValue("d_21");
-    // Only overwrite with "Unavailable" if current value is also unavailable/empty
-    if (currentValue && currentValue !== "Unavailable" && currentValue !== "N/A") {
-      console.log(`[S03] Preserving user-entered CDD value: ${currentValue}`);
-      return; // Skip updating this field - keep user value
-    }
-  }
-
-  TargetState.setValue(key, value, "calculated");
-  window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
-});
-```
-
-**Same pattern for ReferenceState in `calculateReferenceModel()`**
-
-### **Change 3: Dynamic Editability Function**
-
-Add new function after `updateCriticalOccupancyFlag()`:
-
-```javascript
-/**
- * ✅ NEW: Update CDD field (d_21) editability based on data availability
- * When CDD data is unavailable, make field editable like m_19 (Days Cooling)
- * When CDD data is available, lock the field (derived from climate data)
- */
-function updateCDDFieldEditability() {
-  const cddField = document.querySelector('[data-field-id="d_21"]');
-  if (!cddField) return;
-
-  const cddValue = ModeManager.getValue("d_21");
-  const isUnavailable = cddValue === "Unavailable" || cddValue === "N/A";
-
-  if (isUnavailable) {
-    // Make field editable when data is unavailable
-    cddField.contentEditable = "true";
-    cddField.classList.add("user-input", "editable");
-
-    // Add event listeners if not already present
-    if (!cddField.hasEditableListeners) {
-      cddField.addEventListener("blur", handleEditableBlur); // ✅ Use existing handler!
-      cddField.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          e.stopPropagation();
-          this.blur();
-        }
-      });
-      cddField.hasEditableListeners = true;
-    }
-  } else {
-    // Lock field when valid climate data is available
-    cddField.contentEditable = "false";
-    cddField.classList.remove("user-input", "editable");
-    cddField.hasEditableListeners = false;
-  }
+setDefaults: function () {
+  this.state = {
+    d_19: getFieldDefault("d_19"), // Province
+    h_19: getFieldDefault("h_19"), // City
+    h_20: getFieldDefault("h_20"), // Timeframe
+    h_21: getFieldDefault("h_21"), // Capacitance
+    m_19: getFieldDefault("m_19"), // Cooling days
+    l_20: getFieldDefault("l_20"), // Summer night temp
+    l_21: getFieldDefault("l_21"), // Summer RH%
+    l_22: getFieldDefault("l_22"), // Elevation
+    l_24: getFieldDefault("l_24"), // Cooling override
+    i_21: getFieldDefault("i_21"), // Capacitance %
+    d_21: getFieldDefault("d_21"), // ✅ ADD: CDD (user-editable with climate defaults)
+  };
 }
 ```
 
-### **Change 4: Call Editability Update After Calculations**
+**ReferenceState.setDefaults():** Same change.
 
-In `calculateAll()` around line 1771:
+---
 
-```javascript
-function calculateAll() {
-  // ALWAYS run BOTH engines in parallel for complete downstream data
-  calculateTargetModel(); // Updates Target values (unprefixed)
-  calculateReferenceModel(); // Stores ref_ values for downstream sections
+## 🎯 **HOW IT WORKS**
 
-  // MANDATORY: Update DOM display after calculations (strict isolation)
-  ModeManager.updateCalculatedDisplayValues();
+### **On Page Load:**
+1. TargetState/ReferenceState initialize with d_21 from localStorage OR field default (196)
+2. `calculateAll()` runs → fetches climate data for selected location
+3. Climate CDD value updates TargetState/ReferenceState (replaces default)
+4. User sees climate value in editable field
 
-  // ✅ NEW: Update CDD field editability based on data availability
-  updateCDDFieldEditability();
-}
-```
+### **When User Edits CDD:**
+1. User clicks field, enters new value (e.g., 250)
+2. `handleEditableBlur()` saves to TargetState → localStorage
+3. Calculations run with user value
+4. Value persists across page reloads
 
-**That's it!** No complex state tracking, no new metadata, no custom handlers.
+### **When User Changes Location:**
+1. Province/City dropdown changes
+2. `calculateAll()` runs → fetches NEW climate data
+3. New CDD overwrites user value (new suggested default)
+4. If no climate data → shows "Unavailable", user can enter value
+
+### **Mode Switching:**
+1. Target has user CDD = 250 (editable)
+2. Reference has climate CDD = 196 (editable)
+3. Switch modes → each shows its own value
+4. No cross-contamination (dual-state isolation works)
 
 ---
 
 ## 🧪 **TESTING PROTOCOL**
 
-### **Test 1: Target Mode - Unavailable CDD**
-1. Set Target location to city without CDD data
-2. ✅ Field shows "Unavailable" and is editable (grey italic default style)
-3. Enter CDD value (e.g., 200)
-4. ✅ Field shows "200" with user-input styling (bold blue)
-5. ✅ Calculations run with user value
-6. Switch to Reference mode and back
-7. ✅ Target user value preserved (200, still editable with user-input style)
+### **Test 1: Default Climate Data**
+1. Fresh load → Alexandria, ON
+2. ✅ d_21 shows "196" (climate default)
+3. ✅ Field is editable (blue border on click)
 
-### **Test 2: Reference Mode - Available CDD**
-1. Set Reference location to Alexandria, ON (has CDD = 196)
-2. Switch to Reference mode
-3. ✅ Field shows "196" and is locked (non-editable)
-4. ✅ No contamination from Target user-entered value
+### **Test 2: User Override**
+1. Click d_21, change to "250"
+2. ✅ Calculations use 250
+3. ✅ Refresh page → 250 persists
 
-### **Test 3: Location Change - New Data Available**
-1. Target mode with user-entered CDD = 200
-2. Change city to Ottawa (has CDD = 230)
-3. ✅ User CDD overwritten with climate data (230)
-4. ✅ Field locks (becomes non-editable)
-5. ✅ Calculations use new climate value
+### **Test 3: Location Change with Data**
+1. User CDD = 250
+2. Change city to Ottawa
+3. ✅ d_21 shows "230" (Ottawa's climate CDD)
+4. ✅ User value overwritten
 
-### **Test 4: Location Change - Still Unavailable**
-1. Target mode with user-entered CDD = 200
-2. Change city to remote location (no CDD data)
-3. ✅ Field resets to "Unavailable"
-4. ✅ Field remains editable
-5. ✅ User can enter new value for new location
+### **Test 4: Location Change without Data**
+1. Change to city without CDD
+2. ✅ d_21 shows "Unavailable"
+3. ✅ Field editable, user can enter value
 
-### **Test 5: Persistence Across Refresh**
-1. Enter user CDD = 200 in Target mode
-2. Refresh page
-3. ✅ User CDD value restored (200)
-4. ✅ Field remains editable with user-input styling
-5. ✅ Calculations use restored value
-
-### **Test 6: Mode Isolation**
-1. Target: User-entered CDD = 200 (editable)
-2. Reference: Climate CDD = 196 (locked)
-3. Switch between modes 5+ times
-4. ✅ Each mode maintains its own value and editability state
-5. ✅ No cross-contamination
+### **Test 5: Mode Isolation**
+1. Target: User CDD = 250
+2. Reference: Climate CDD = 196
+3. ✅ Switch modes → each shows its value
+4. ✅ No cross-contamination
 
 ---
 
-## 📚 **RELEVANT CHEATSHEET SECTIONS**
+## 📚 **ARCHITECTURAL PATTERN**
 
-### **Core Principles We Must Follow:**
-- ✅ **Principle 2**: UI toggle display-only (no calculateAll in switchMode)
-- ✅ **Principle 3**: State sovereignty (CDD source in TargetState/ReferenceState)
-- ✅ **Principle 4**: Reference results shared (publish ref_d_21 to StateManager)
+**This follows existing patterns:**
+- ✅ **Section 11 Pattern**: g_88-g_93 U-values (always editable, ReferenceValues defaults)
+- ✅ **m_19 "Days Cooling"**: User-editable field with suggested default
+- ✅ **Dual-State Architecture**: TargetState/ReferenceState handle isolation
+- ✅ **No special logic**: Field behaves like any other editable field
 
-### **Anti-Patterns We Hit:**
-- ❌ **Anti-Pattern 1**: State contamination via fallbacks
-- ❌ **Anti-Pattern 2**: Direct DOM writes from calculation logic (initial attempts)
-
-### **Correct Patterns to Apply:**
-- ✅ **Pattern A**: Self-contained state module with TargetState/ReferenceState
-- ✅ **Dual-Engine**: Both engines run in parallel, preserve user overrides
-- ✅ **refreshUI**: Mode switching only updates display from pre-calculated states
-
----
-
-## 🎯 **SUCCESS CRITERIA**
-
-### **Functional Requirements:**
-- ✅ CDD field editable when data unavailable (shows "Unavailable", grey italic)
-- ✅ CDD field locked when climate data available (non-editable)
-- ✅ User-entered values remain editable with user-input styling (bold blue)
-- ✅ Location changes with new CDD data: overwrites user value, locks field
-- ✅ Location changes still unavailable: resets to "Unavailable", stays editable
-- ✅ Values persist across page reloads via TargetState/ReferenceState
-
-### **Architectural Requirements:**
-- ✅ No state contamination between Target and Reference (dual-state already works)
-- ✅ No calculateAll() in switchMode() (not added)
-- ✅ Uses existing handleEditableBlur() - no custom handlers
-- ✅ User values preserved during recalculation (skip logic in climate fetch)
-- ✅ Mode switching only calls refreshUI() (no changes to that)
-
-### **User Experience:**
-- ✅ Clear visual feedback (editable=blue, locked=black text)
-- ✅ User-input styling (bold blue) automatic via CSS classes
-- ✅ Smooth mode switching without losing data (dual-state handles it)
-- ✅ Intuitive behavior: data overwrites user, unavailable stays editable
-
-### **Simplicity:**
-- ✅ Only 4 small code changes
-- ✅ No new metadata tracking
-- ✅ No special state objects
-- ✅ Reuses existing infrastructure
+**No complex features needed:**
+- ❌ No dynamic locking/unlocking
+- ❌ No preservation logic in calculation engines
+- ❌ No custom event handlers
+- ❌ No state tracking metadata
 
 ---
 
 ## 📋 **IMPLEMENTATION STEPS**
 
-1. **Change 1**: Update "N/A" to "Unavailable" in `getClimateDataForState()` (line 626)
-2. **Change 2**: Add preservation logic to both calculation engines (lines 1798 & 1862)
-3. **Change 3**: Add `updateCDDFieldEditability()` function (after line 2072)
-4. **Change 4**: Call `updateCDDFieldEditability()` in `calculateAll()` (line 1771)
-5. **Test**: Run complete testing protocol above
-6. **Verify**: No state contamination, mode switching works correctly
+1. **Change 1**: Update field definition (line ~788) - type: "editable", add classes
+2. **Change 2**: Update climate fallback (line ~626) - "N/A" → "Unavailable"
+3. **Change 3**: Add d_21 to TargetState.setDefaults() (line ~36-56)
+4. **Change 4**: Add d_21 to ReferenceState.setDefaults() (line ~114-138)
+5. **Test**: Run 5 test scenarios above
+6. **Verify**: No state contamination, values persist correctly
 
 ---
 
-## 💡 **KEY LEARNINGS**
+## 🎯 **SUCCESS CRITERIA**
 
-1. **State Isolation is Hard**: Simple approaches (DOM attributes, metadata objects) insufficient
-2. **Follow the Architecture**: CHEATSHEET patterns exist for a reason - deviating causes issues
-3. **Test Incrementally**: Don't batch multiple changes - test after each phase
-4. **Mode Switching is Display-Only**: Never add calculation logic to switchMode()
-5. **State Objects are Sovereign**: Track field metadata in TargetState/ReferenceState, not externally
+### **Functional:**
+- ✅ Field always editable (never locks)
+- ✅ Climate data loads as suggested default
+- ✅ User can override and value persists
+- ✅ Location changes overwrite with new climate data
+- ✅ "Unavailable" shows when climate data missing
+- ✅ Target/Reference track independently
+
+### **Architectural:**
+- ✅ No special logic beyond existing patterns
+- ✅ Reuses existing infrastructure (handleEditableBlur, TargetState)
+- ✅ Follows Section 11 editable field pattern
+- ✅ No state contamination
+
+### **Simplicity:**
+- ✅ Only 3-4 small changes
+- ✅ No new functions
+- ✅ No complex logic
+- ✅ Easy to maintain
 
 ---
 
-**Status**: Ready for proper implementation following dual-state architecture patterns
+**Status**: Ready for implementation with radically simplified approach
