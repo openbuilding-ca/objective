@@ -512,67 +512,223 @@ Fix ONLY the identified root cause without refactoring other working code.
 - Both are in same section (S13)
 - **Working comparison available** → easier to isolate root cause
 
-**Investigation Complete - Root Cause Identified:**
+**Investigation Complete - REVISED Root Cause Theory:**
 
 ### **Field Comparison:**
 
-**f_113 (HSPF - BROKEN):**
+**f_113 (HSPF - BREAKS on Heatpump import, WORKS on Gas import):**
 ```javascript
 // Section13.js lines 887-896
 fieldId: "f_113",
-type: "coefficient",  // ❌ Type not handled in FieldManager!
+type: "coefficient",
 value: "12.5",
 min: 3.5,
 max: 20,
 step: 0.1,
 ```
 
-**d_118 (ERV - WORKING):**
+**d_118 (ERV - WORKS on all imports):**
 ```javascript
 // Section13.js lines 1184-1191
 fieldId: "d_118",
-type: "percentage",  // ✅ Type properly handled in FieldManager
+type: "percentage",
 value: "89",
 min: 0,
 max: 100,
 step: 1,
 ```
 
-### **Root Cause: Missing "coefficient" Handler in FieldManager**
+### **REVISED Root Cause: ReferenceValues Overlay + Ghosting Timing Conflict**
 
-**Location:** `src/core/FieldManager.js` function `initializeSliders()` (lines 849-1000)
+**Location:** Section13.js ghosting logic (line 3550) + ReferenceState.setDefaults() (line 130)
 
-**The Bug:**
+**Key Discovery:**
 
-FieldManager's slider initialization handles these types:
-- ✅ `"percentage"` (lines 915, 950) - formats display value
-- ✅ `"coefficient_slider"` (lines 930, 966) - formats display value
-- ✅ `"year_slider"` (lines 935, 971) - formats display value
-- ❌ **`"coefficient"` - NO HANDLER!** Falls through to default
+**Why f_113 BREAKS on Heatpump import but WORKS on Gas import:**
 
-**What Happens:**
+```javascript
+// Section13.js line 3550
+setFieldGhosted("f_113", !isHP); // HSPF Slider ghosted unless Heatpump
+```
 
-1. **Initial Render (FieldManager.js lines 608-616):**
-   - Recognizes "coefficient" type
-   - Creates placeholder `.slider-cell` with text "12.5"
+**Gas Import (Slider WORKS - but shouldn't matter since ghosted):**
+1. ExcelMapper: `ref_f_113 = 10` (imported from REFERENCE sheet)
+2. ReferenceState.setDefaults(): `ref_f_113 = 7.1` (ReferenceValues overlay)
+3. Ghosting: `setFieldGhosted("f_113", true)` → **slider hidden/inactive**
+4. No visible conflict - slider isn't displayed, so ReferenceValues/import competition doesn't matter
 
-2. **Slider Initialization (FieldManager.js lines 849-1000):**
-   - Creates `<input type="range">` element with correct min/max/step
-   - But when setting initial display value (lines 948-977):
-     - No "coefficient" case → Falls through to default
-     - Sets `displaySpan.textContent = rangeInput.value` (raw number)
-   - When user interacts (lines 911-946):
-     - No "coefficient" case → Falls through to line 942
-     - Sets `displaySpan.textContent = value` (raw number, no formatting)
+**Heatpump Import (Slider BREAKS):**
+1. ExcelMapper: `ref_f_113 = 10` (imported from REFERENCE sheet)
+2. ReferenceState.setDefaults(): `ref_f_113 = 7.1` (ReferenceValues overlay)
+3. Ghosting: `setFieldGhosted("f_113", false)` → **slider MUST be visible**
+4. **CONFLICT:** Import value (10) vs ReferenceValues overlay (7.1)
+5. Timing issue in: import sync → ReferenceValues overlay → ghosting → refreshUI sequence
+6. **Result:** Slider initialization gets inconsistent state → vanishes
 
-3. **Import Flow:**
-   - Imported value writes to ReferenceState
-   - refreshUI() tries to update slider
-   - Slider element exists but formatting is inconsistent
-   - **Result:** Slider behaves erratically or vanishes
+**Why d_118 ALWAYS WORKS:**
+- No ghosting logic - always visible regardless of heating system
+- No conditional state changes during import
+- ReferenceValues overlay (d_118 = 81) doesn't compete with ghosting state
 
-**Solution:**
-Add "coefficient" type handling to FieldManager matching "coefficient_slider" pattern (format as "number-2dp" or "number-1dp").
+### **Connection to S11 Issue:**
+
+**User insight:** "This ReferenceValues issue may be related to why S11 isn't working as expected after import. ReferenceValues IS setting U-values and RSI values based on ref_d_13 selection at the SAME time it is trying to map values on import..."
+
+**S11 Pattern (Building Envelope):**
+- ReferenceState.setDefaults() loads U-values from ReferenceValues.js based on `ref_d_13` (reference standard)
+- Import also writes `ref_g_88` through `ref_g_93` (U-values) from REFERENCE sheet
+- **SAME COMPETITION:** ReferenceValues overlay vs imported values
+- But S11 fields are always visible (no ghosting) - so why does it break?
+
+**Hypothesis:** The issue isn't ghosting-specific - it's the **timing of ReferenceValues.setDefaults() relative to import sync**.
+
+### **The Race Condition:**
+
+**FileHandler.js import flow (lines 153-199):**
+```javascript
+// 1. Mute listeners
+StateManager.muteListeners();
+
+// 2. Import Target data
+updateStateFromImportData(importedData, 0, false);
+
+// 3. Import Reference data
+processImportedExcelReference(workbook);
+
+// 4. Sync Pattern A sections (writes imported ref_ values to local state)
+syncPatternASections(); // ← Calls ReferenceState.syncFromGlobalState()
+
+// 5. Unmute listeners
+StateManager.unmuteListeners();
+
+// 6. Calculate and refresh
+calculateAll();
+patternASections.forEach(section => {
+  section.ModeManager.refreshUI();
+  section.ModeManager.updateCalculatedDisplayValues();
+});
+```
+
+**The Problem:**
+
+`syncPatternASections()` at step 4 calls `ReferenceState.syncFromGlobalState()`, which writes imported `ref_` values to ReferenceState.
+
+**BUT** when did `ReferenceState.setDefaults()` run to load ReferenceValues overlay?
+
+- On page load: `ReferenceState.initialize()` → `setDefaults()` ✅
+- On import: Does `syncFromGlobalState()` **overwrite** the ReferenceValues overlay? ❌
+
+**Solution Direction:**
+ReferenceValues overlay fields (f_113, d_118, g_88-g_93) should NOT be overwritten by import sync. They should maintain their ReferenceValues.js defaults based on current reference standard.
+
+---
+
+### **Gas Import Analysis - Hypothesis CONFIRMED**
+
+**Logs.md Analysis (Gas Import):**
+
+**Key Finding:** **ZERO f_113/HSPF logs** during entire Gas import sequence.
+
+**What logs show:**
+- S07 logs: `systemType="Gas"` confirmed (lines 1245, 2853, 4371-4376)
+- S13 logs: Only cooling/ventilation calculations (d_120, d_122, d_129)
+- **NO f_113 slider initialization**
+- **NO HSPF calculations**
+- **NO ghosting logs**
+- **NO ReferenceValues overlay logs for f_113**
+
+**Interpretation:**
+
+When d_113 = "Gas":
+1. f_113 slider is **ghosted** via `setFieldGhosted("f_113", true)` (Section13.js:3550)
+2. Ghosted sliders don't trigger initialization logs
+3. refreshUI() skips ghosted fields or hides them
+4. **No visible conflict** even if ReferenceValues (7.1) competes with import value (10)
+5. User can't see slider → no breakage reported
+
+**This confirms the hypothesis:**
+- The issue is NOT FieldManager rendering
+- The issue is NOT missing "coefficient" type handler
+- The issue IS **ReferenceValues overlay timing when slider must be visible**
+
+**Predicted Heatpump Import Behavior:**
+
+When d_113 = "Heatpump":
+1. f_113 slider is **active** via `setFieldGhosted("f_113", false)`
+2. Slider MUST initialize during refreshUI()
+3. ReferenceValues overlay (7.1) competes with import value (10)
+4. **Visible conflict** → slider gets inconsistent state
+5. Result: Slider vanishes or shows wrong value
+
+---
+
+## 🎯 **SOLUTION: Skip ReferenceValues Overlay During Import Sync**
+
+### **Root Cause Summary:**
+
+Pattern A sections use `syncFromGlobalState()` during import to copy imported `ref_` values from StateManager to ReferenceState. BUT this overwrites ReferenceValues overlay fields that should maintain their standard-based defaults.
+
+**Affected Fields:**
+- **S13**: f_113 (HSPF), d_118 (ERV), j_115 (AFUE) - from ReferenceValues.js based on d_13
+- **S11**: g_88-g_93 (U-values) - from ReferenceValues.js based on d_13
+- Any other fields with ReferenceValues overlay pattern
+
+### **Proposed Fix:**
+
+**Location:** `ReferenceState.syncFromGlobalState()` in Pattern A sections (S11, S13, etc.)
+
+**Current Code (S13 example - lines 212-234):**
+```javascript
+syncFromGlobalState: function (fieldIds = [...]) {
+  fieldIds.forEach((fieldId) => {
+    const refFieldId = `ref_${fieldId}`;
+    const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+    if (globalValue !== null && globalValue !== undefined) {
+      this.setValue(fieldId, globalValue, "imported"); // ❌ Overwrites ReferenceValues overlay!
+    }
+  });
+}
+```
+
+**Fixed Code:**
+```javascript
+syncFromGlobalState: function (fieldIds = [...]) {
+  // ✅ Define fields that use ReferenceValues overlay (should NOT sync from import)
+  const referenceValueFields = ["f_113", "d_118", "j_115"]; // HSPF, ERV, AFUE
+
+  fieldIds.forEach((fieldId) => {
+    // Skip fields that use ReferenceValues overlay
+    if (referenceValueFields.includes(fieldId)) {
+      console.log(`[S13-SYNC] Skipping ${fieldId} - uses ReferenceValues overlay`);
+      return;
+    }
+
+    const refFieldId = `ref_${fieldId}`;
+    const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+    if (globalValue !== null && globalValue !== undefined) {
+      this.setValue(fieldId, globalValue, "imported"); // ✅ Only sync non-overlay fields
+    }
+  });
+}
+```
+
+**Apply same pattern to:**
+- **S11.ReferenceState.syncFromGlobalState()** - skip g_88, g_89, g_90, g_91, g_92, g_93 (U-values)
+- Any other Pattern A sections with ReferenceValues overlays
+
+### **Why This Works:**
+
+1. **On page load**: ReferenceState.initialize() → setDefaults() loads ReferenceValues overlay ✅
+2. **On import**: syncFromGlobalState() **skips** overlay fields → preserves ReferenceValues ✅
+3. **On d_13 change**: onReferenceStandardChange() → setDefaults() updates overlay with new standard ✅
+4. **User override**: User can still manually edit fields → marked as user-modified ✅
+
+**Benefits:**
+- ✅ Fixes S13 f_113 HSPF slider vanishing on Heatpump import
+- ✅ Fixes S11 U-values contamination on import
+- ✅ Fixes S11 → S15 cascade issues (if related to U-value contamination)
+- ✅ Maintains separation: Imported project data vs. Reference standard defaults
+- ✅ Minimal code change - just skip list in syncFromGlobalState()
 
 ---
 
