@@ -46,6 +46,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
+        d_21: getFieldDefault("d_21"), // ✅ CDD (user-editable with climate defaults)
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
         // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
@@ -125,6 +126,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
+        d_21: getFieldDefault("d_21"), // ✅ CDD (user-editable with climate defaults)
 
         // 2. Reference-specific overrides (same as Target for S03 Excel compliance)
         // Both Target and Reference use Ontario/Alexandria for Excel baseline
@@ -623,7 +625,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     const climateValues = {
       d_20: hdd !== null && hdd !== undefined && hdd !== 666 ? hdd : "N/A",
-      d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "N/A",
+      d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed for user-editable field
       j_19: determineClimateZone(hdd),
       d_23: selectedJanTemp, // ✅ Now uses occupancy-aware temperature selection
       d_24: cityData.July_2_5_Tdb || "34",
@@ -785,10 +787,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         c: { content: "Cooling Degree Days (CDD)", type: "label" },
         d: {
           fieldId: "d_21",
-          type: "derived",
+          type: "editable", // ✅ Changed from "derived" - always editable like g_88
           value: "196",
           section: "climateCalculations",
-          dependencies: ["d_19", "h_19"],
+          classes: ["user-input", "editable"], // ✅ Add styling for editable field
         },
         f: { content: "G.4.2", classes: ["label-prefix"] },
         g: { content: "Capacitance", classes: ["label-main"] },
@@ -1746,6 +1748,16 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // ✅ STEP 2: Update both local state AND StateManager immediately
       Object.entries(climateValues).forEach(([key, value]) => {
+        // ✅ Preserve user-entered CDD values when climate data unavailable
+        if (key === "d_21" && value === "Unavailable") {
+          const currentValue = TargetState.getValue("d_21");
+          // Don't overwrite numeric user values with "Unavailable"
+          if (currentValue && currentValue !== "Unavailable" && currentValue !== "N/A" && !isNaN(parseFloat(currentValue))) {
+            // console.log(`[S03] Preserving user-entered Target CDD: ${currentValue}`);
+            return; // Skip this update - keep user value
+          }
+        }
+
         TargetState.setValue(key, value, "calculated");
         // CRITICAL: Publish to StateManager so downstream sections can access
         window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
@@ -1804,6 +1816,16 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // ✅ STEP 2: Update ReferenceState with the new climate data
       Object.entries(climateValues).forEach(([key, value]) => {
+        // ✅ Preserve user-entered CDD values when climate data unavailable
+        if (key === "d_21" && value === "Unavailable") {
+          const currentValue = ReferenceState.getValue("d_21");
+          // Don't overwrite numeric user values with "Unavailable"
+          if (currentValue && currentValue !== "Unavailable" && currentValue !== "N/A" && !isNaN(parseFloat(currentValue))) {
+            // console.log(`[S03] Preserving user-entered Reference CDD: ${currentValue}`);
+            return; // Skip this update - keep user value
+          }
+        }
+
         ReferenceState.setValue(key, value, "calculated");
       });
 
@@ -2197,6 +2219,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         const selectedCity = this.value;
         console.log("Section03: City selected:", selectedCity);
         ModeManager.setValue("h_19", selectedCity, "user-modified");
+
+        // ✅ Clear CDD when location changes so new climate data can populate
+        // This prevents preserving previous city's climate value when new city has no data
+        ModeManager.getCurrentState().state.d_21 = undefined;
+
         calculateAll(); // ✅ Let the engines handle climate data updates
       });
     }
