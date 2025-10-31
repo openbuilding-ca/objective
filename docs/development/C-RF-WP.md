@@ -67,33 +67,31 @@
   - **Suspected Source**: SCHEDULE-related values in Cooling.js or related files (Section09, Section13)
 
 **DEBUG FINDINGS** (via debug-l24-trace.js):
-- 🔍 **Root Cause Identified**: Section03.js uses LOCAL ModeManager object (line ~181)
-  - S03 defines its own `const ModeManager = { currentMode: "target", ... }`
-  - When S03 sets `ModeManager.currentMode = "reference"`, it only affects local object
-  - All other sections check `window.TEUI.ModeManager.currentMode` which remains undefined!
-  - **Pattern Violation**: Per 4012-CHEATSHEET.md Pattern 1, sections should use `window.TEUI.ModeManager` directly
+- ⚠️ **INCORRECT DIAGNOSIS - REVERTED** (Commits 4eb6045 → c355293):
+  - Initial assumption: Local ModeManager objects were causing state mixing
+  - Attempted fix: Created getters/setters referencing `window.TEUI.ModeManager`
+  - **WRONG**: Per 4012-CHEATSHEET.md, sections SHOULD have local ModeManager (Pattern A architecture)
+  - There is NO global `window.TEUI.ModeManager` - each section manages its own state independently
+  - Changes reverted - local ModeManagers restored
 
-- 🐛 **Why it works in Reference mode but not Target**:
-  - Likely initialization order issue where Reference calculations happen after Target
-  - By that time, something has populated `window.TEUI.ModeManager`
-  - But Target mode calculations happen too early, before global ModeManager is ready
+- 🔍 **ACTUAL ROOT CAUSE** (Per 4012-CHEATSHEET.md Anti-Patterns 6 & 7):
+  - **Anti-Pattern 6**: Cross-Section DOM Listener Contamination
+    - A section listening to l_24/h_24 via DOM when these belong to S03
+    - That section writes using its own ModeManager state → state mixing
+  - **Anti-Pattern 7**: Self-Listening to Own Input Fields
+    - S03 may have StateManager listeners for its own l_24/h_24 fields
+    - User edit → ModeManager.setValue → calculateAll → listener fires → calculateAll again
+    - Creates double calculations interfering with normal flow
+  - **Evidence**: 39,828 lines of debug output indicates massive recursion/double-calculation
 
-**POTENTIAL FIX**:
-- Replace S03's local `ModeManager` object with direct references to `window.TEUI.ModeManager`
-- Update `calculateTargetModel()` and `calculateReferenceModel()` to use global ModeManager
-- **CAUTION**: Suspect there may be more to state mixing than just this - old listeners may also contribute
-
-**NEXT STEPS**:
-1. ❌ **DO NOT** proceed with removing legacy listeners from Cooling.js yet
-2. 🔍 **FIRST**: Fix ModeManager usage in Section03.js
-   - Remove local ModeManager object (line ~181)
-   - Use `window.TEUI.ModeManager.currentMode` directly
-   - Test thoroughly to ensure both Target and Reference modes work correctly
-3. 🔍 **SECOND**: Track down SCHEDULE-related state contamination source
-   - Investigate where Target model SCHEDULE changes affect Reference calculations
-   - Check Section09, Section13, and Cooling.js SCHEDULE references
-   - Verify Excel formulas to understand intended vs. actual behavior
-4. ✅ **THEN**: Once all state mixing sources are identified and fixed, proceed with Cooling.js listener cleanup
+**NEXT STEPS** (Corrected):
+1. 🔍 **CHECK**: Does S03 have StateManager listeners for l_24/h_24? (Anti-Pattern 7)
+   - Remove if found - user edits should call calculateAll() directly, not via listener
+2. 🔍 **CHECK**: Do other sections have DOM listeners for l_24/h_24? (Anti-Pattern 6)
+   - Sections should only listen to their OWN fields via DOM
+   - External dependencies should use StateManager listeners (both unprefixed AND ref_ prefixed)
+3. 🔍 **THEN**: Investigate SCHEDULE-related contamination in S09/S13/Cooling.js
+4. ✅ **FINALLY**: Clean up legacy listeners from Cooling.js once state mixing is resolved
 
 **BASELINE CHECKPOINT**:
 - **Working Commit**: 589c1dd provides stable baseline with l_24/h_24 logic intact
