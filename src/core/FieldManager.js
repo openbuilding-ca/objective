@@ -578,7 +578,12 @@ TEUI.FieldManager = (function () {
           } else if (index === 2) {
             // Description column
             cellElement.classList.add("description-cell");
-            cellElement.textContent = cellDef.label || "";
+            // Use innerHTML if htmlContent flag is set, otherwise textContent for safety
+            if (cellDef.htmlContent) {
+              cellElement.innerHTML = cellDef.label || cellDef.content || "";
+            } else {
+              cellElement.textContent = cellDef.label || "";
+            }
           } else {
             // Value columns with enhanced dropdown handling
             if (cellDef.fieldId) {
@@ -700,7 +705,12 @@ TEUI.FieldManager = (function () {
                 });
               }
             } else if (cellDef.content) {
-              cellElement.textContent = cellDef.content;
+              // Use innerHTML if htmlContent flag is set, otherwise textContent for safety
+              if (cellDef.htmlContent) {
+                cellElement.innerHTML = cellDef.content;
+              } else {
+                cellElement.textContent = cellDef.content;
+              }
 
               // --- ADDED DEBUG LOG for initial textContent ---
               if (cellDef.fieldId === "d_119" || cellDef.fieldId === "j_115") {

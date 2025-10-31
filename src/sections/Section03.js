@@ -784,7 +784,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       rowId: "L.2.3",
       label: "Cooling Degree Days (CDD)",
       cells: {
-        c: { content: "Cooling Degree Days (CDD)", type: "label" },
+        c: {
+          content: 'Cooling Degree Days (<a href="https://climateatlas.ca/map/canada/cooldd_2060_85#" target="_blank" rel="noopener noreferrer">CDD</a>)',
+          type: "label",
+          htmlContent: true  // ✅ Enable HTML rendering for clickable link
+        },
         d: {
           fieldId: "d_21",
           type: "editable", // ✅ Changed from "derived" - always editable like g_88
