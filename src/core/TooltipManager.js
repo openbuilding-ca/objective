@@ -140,7 +140,7 @@
       cell: "D49",
       title: "DHW/SHW Use Method (lpppd)",
       message:
-        "PHPP Method: 62.5 Total, 25 DHW_x000a_NBC Method: 225 Total, 88 DHW_x000a_OBC Method: 275 Total, 110 DHW_x000a_Luxury: 400 Total, 160 DHW_x000a__x000a_By Engineer: Uses kWh value calculated externally",
+        "PHPP Method: 62.5 Total, 25 DHW_x000a_NBC Method: 220 Total, 88 DHW_x000a_OBC Method: 275 Total, 110 DHW_x000a_Luxury: 400 Total, 160 DHW_x000a__x000a_By Engineer: Uses kWh value calculated externally",
     },
     d_51: {
       cell: "D51",

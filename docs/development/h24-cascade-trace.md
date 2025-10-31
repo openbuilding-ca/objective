@@ -75,34 +75,35 @@ Call stack for e_10 write:
   at updateTEUIDisplay (Section01.js:876)
 ```
 
-**⚠️ CRITICAL DISCREPANCY (Oct 31, 12:00am)**:
-- Debug logs show: e_10 = 182.2 (before) → 198 (after)
-- **User reports UI actually shows: e_10 = 197.7** (final value after full initialization)
-- Excel parity target: e_10 = 196.6
-- **197.7 is MUCH CLOSER to Excel than 182.2!**
+**⚠️ ACTUAL BUG BEHAVIOR (Oct 31, 12:05am)**:
+- Debug logs incomplete/misleading (show large jumps 182.2 → 198)
+- **ACTUAL UI behavior**: e_10 increases by ~0.1 when h_24 increases
+- Excel parity: e_10 should be ~196.6 (relatively stable)
+- **This is ILLOGICAL**: Higher h_24 (cooling setpoint) should REDUCE cooling load, not increase it
+- **Even tiny changes are WRONG**: Reference (e_10) must NEVER change from Target edits
 
-**IMPLICATIONS**:
-1. Debug script may not capture final settled value after all initialization completes
-2. There may be additional calculation cycles AFTER the debug logs stop
-3. The value 182.2 may be INCOMPLETE, not fully initialized
-4. The value 197.7 (seen in UI) is nearly correct (196.6 target)
-5. **REVISED HYPOTHESIS**: Problem may be initialization sequence, not l_24 edit cascade
-6. Need to investigate WHY initial value is 182.2 vs final value 197.7
+**THE BUG**:
+1. When user increases h_24 in Target mode (e.g., 24°C → 26°C)
+2. e_10 (Reference total) increases by small amounts (~0.1 kWh/m²/yr)
+3. This is backwards logic: tolerating higher temperature = LESS cooling needed
+4. Small increments suggest calculation glitch/contamination, not major corruption
+5. **Zero tolerance**: ANY change to e_10 from Target edits is a bug
 
 ## Key Observations
 
 1. ✅ ref_cooling_h_124 stayed constant at 48381.43968
    - Our h_24 fix IS working for Cooling.js
 
-2. ⚠️ e_10 changes in logs BUT settles correctly in UI
-   - Contamination may be happening DURING initialization
-   - Final settled value (197.7) is nearly correct (Excel: 196.6)
-   - In the S13 → S14 → S15 → S04 → S01 cascade
+2. ❌ e_10 changes by ~0.1 each time h_24 increases (SHOULD NOT CHANGE AT ALL)
+   - Small but persistent contamination
+   - Backwards logic: higher setpoint = more cooling (should be less!)
+   - Contamination happening in S13 → S14 → S15 → S04 → S01 cascade
+   - Debug logs misleading/incomplete (show large jumps vs actual tiny increments)
 
-3. 🔍 **NEW FOCUS**: Initialization order/timing, not just edit cascade
-   - Why does e_10 start at 182.2 instead of 197.7?
-   - What calculation pass brings it from 182.2 → 197.7?
-   - Is there a race condition during initialization?
+3. 🔍 **FOCUS**: Find where Reference calculations read unprefixed Target values
+   - Small increments suggest subtle read contamination, not major logic error
+   - Similar to h_24 bug we found in Cooling.js, but elsewhere in cascade
+   - Check S13, S14, S15 for non-mode-aware StateManager.getValue() calls
 
 ## Hypothesis: Contamination Source
 

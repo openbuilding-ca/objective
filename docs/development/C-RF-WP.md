@@ -160,11 +160,16 @@ function calculateDailyFreeCoolingPotential() {
 - Cascade effects through S13 → S14 → S15 → S01 that contaminate Reference
 - Possible issues in how `state.currentMode` is set/used in Cooling.js
 
-**NEXT STEPS** (Tomorrow):
-1. Review ALL StateManager.getValue() calls in Cooling.js for mode-awareness
-2. Check if other helper functions need mode-aware reads
-3. Trace complete cascade from l_24 edit through to e_10 change
-4. Consider if the dual-engine Pattern A execution itself has timing issues
+**NEXT STEPS** (Oct 31, 2025):
+1. **See [h24-cascade-trace.md](h24-cascade-trace.md)** for complete investigation roadmap
+2. Search ALL `StateManager.getValue()` calls in S13, S14, S15, S04 for mode-awareness
+3. Focus on cooling-related fields: m_129, d_129, cooling_m_124, h_124
+4. Debug logs show contamination is DOWNSTREAM of Cooling.js (not in Cooling itself)
+
+**Key Finding from Debug Logs (3,030 lines)**:
+- ✅ ref_cooling_h_124 stayed constant → h_24 fix IS working
+- ❌ e_10 changed 182.2 → 198 → contamination in S13→S14→S15→S04→S01 cascade
+- 📍 e_10 written from Section01.js:876 reading contaminated upstream values
 
 **BASELINE CHECKPOINT**:
 - **Working Commit**: 589c1dd provides stable baseline with l_24/h_24 logic intact
