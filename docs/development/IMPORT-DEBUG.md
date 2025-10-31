@@ -664,36 +664,71 @@ When d_113 = "Heatpump":
 
 ## 🎯 **SOLUTION: Skip ReferenceValues Overlay During Import Sync**
 
-### **Critical Discovery (2025-10-31 pm):**
+### **Critical Discovery (2025-10-31 pm): TARGET-TO-REFERENCE CONTAMINATION**
 
 **Test Result:** Commenting out ExcelMapper `ref_f_113` import did NOT fix the issue!
 - Reference mode still shows f_113 = 10 (not 7.1)
 - Slider still broken
 
 **Investigation:**
-1. ✅ ExcelMapper: ref_f_113 commented out (line 344) - NOT importing
-2. ✅ localStorage: No S13 Reference state saved (or matches imported values)
-3. ✅ S10/S11 localStorage: Exact match of imported values
-4. ❌ **syncFromGlobalState()**: Still has f_113 in fieldIds list (line 215)
+1. ✅ ExcelMapper: ref_f_113 commented out (line 344) - NOT importing from REFERENCE sheet
+2. ✅ ExcelMapper: f_113 = 10 STILL imported from REPORT sheet (Target, line 186)
+3. ✅ localStorage: No S13 Reference state saved (or matches imported values)
+4. ✅ S10/S11 localStorage: Exact match of imported values
+5. ❌ **syncFromGlobalState()**: Still has f_113 in fieldIds list (line 215)
 
-**The Smoking Gun:**
+**USER KEY INSIGHT:** "That 10 value for HSPF can ONLY be coming from the import/Target state value of 10. Because all defaults and reference standards have the default HSPF set at 7.1"
 
-Even though ref_f_113 is NOT imported from Excel, `syncFromGlobalState()` still tries to sync it. Where does it get ref_f_113 = 10?
+**The Smoking Gun: TARGET VALUE CONTAMINATION**
 
-**Answer:** StateManager might have ref_f_113 from:
-1. Previous session (before we commented out ExcelMapper)
-2. CSV export initialization code (line 246) publishing ReferenceState to StateManager
-3. **OR**: The Target value (f_113 = 10) is bleeding through somehow
+Reference mode shows f_113 = 10, but:
+- ReferenceValues.js: f_113 = 7.1 ✅ ALWAYS
+- Field defaults: 12.5 ✅ Never 10
+- Previous sessions: N/A ✅ Not a factor
+- **Target import**: f_113 = 10 ❌ **THIS IS THE SOURCE**
 
-**Next Test:**
-1. Remove f_113, d_118, j_115 from Section13.syncFromGlobalState() fieldIds list (line 215-219)
-2. Clear browser cache/localStorage/cookies completely
-3. Import Heatpump file again
-4. Check if f_113 slider shows 7.1 in Reference mode
+**The only possible source of "10" is the Target import from REPORT sheet.**
 
-**Also apply same fix to S11:**
-- Remove g_88, g_89, g_90, g_91, g_92, g_93 from Section11.ReferenceState.syncFromGlobalState() fieldIds list
-- This may fix the S11 → S15 cascade issue if it's related to U-value contamination
+**How Target Contaminates Reference:**
+
+Even though we commented out ref_f_113 import, syncFromGlobalState() at line 215 still has f_113 in the fieldIds list. When it runs:
+
+1. Looks for `ref_f_113` in StateManager
+2. If not found, **OR if StateManager has stale/wrong ref_f_113**
+3. The Target value (10) somehow bleeds into Reference display
+
+**Mystery: WHY does Heatpump break but Gas doesn't?**
+
+Both imports have same Target f_113 = 10. But:
+- **Gas import**: f_113 slider ghosted → no visible breakage
+- **Heatpump import**: f_113 slider MUST be visible → breakage occurs
+
+**Hypothesis:** When slider is ghosted (Gas), the contamination exists but doesn't cause UI issues. When slider must render (Heatpump), the contaminated value (10 instead of 7.1) creates state inconsistency that breaks slider initialization.
+
+**Workplan for Later:**
+
+**Phase 1: Prevent Sync of ReferenceValues Fields**
+1. **S13.ReferenceState.syncFromGlobalState()** (line 212):
+   - Add skip logic for f_113, d_118, j_115
+   - These fields should NEVER sync from StateManager during import
+   - They maintain ReferenceValues.js defaults (7.1, 81, 0.90)
+
+2. **S11.ReferenceState.syncFromGlobalState()**:
+   - Add skip logic for g_88, g_89, g_90, g_91, g_92, g_93 (U-values)
+   - Same reason - maintain ReferenceValues.js defaults
+
+**Phase 2: Test with Clean Browser State**
+1. Clear ALL browser data (localStorage, cache, cookies)
+2. Reload page
+3. Import Heatpump file
+4. Verify Reference f_113 = 7.1 (not 10)
+5. Verify slider visible and functional
+
+**Phase 3: If Still Broken - Debug Contamination Path**
+Add logging to track where Target f_113 = 10 writes to StateManager as ref_f_113:
+- Check if calculations write ref_f_113
+- Check if CSV export init (line 246) writes it
+- Check if there's a fallback that reads Target when Reference missing
 
 ### **Root Cause Summary:**
 
