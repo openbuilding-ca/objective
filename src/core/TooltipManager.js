@@ -91,7 +91,7 @@
         d_21: {
       cell: "D21",
       title: "Cooling Degree Days",
-      message: "If Unavailable, you can enter a value here. CDD lookup: https://climateatlas.ca/map/canada/cooldd_2060_85#",
+      message: "If Unavailable, you can enter a value here. Click the Link on the CDD text left to find values from the Climate Atlas of Canada.",
     },
     d_25: {
       cell: "D25",
