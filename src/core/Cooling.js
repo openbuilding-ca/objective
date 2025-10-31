@@ -396,8 +396,8 @@ window.TEUI.CoolingCalculations = (function () {
     const A30_mass_flow_rate_kgs = A29_ventilation_rate_m3s * state.airMass; // E3 = 1.204 kg/m3
 
     // COOLING-TARGET A16: Temp difference = A8 - A3 (indoor - outdoor night temp)
-    const h_24 =
-      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_24")) || 24; // A8: Indoor setpoint
+    // ✅ FIX (Oct 30, 2025): Use mode-aware read to prevent Reference contamination
+    const h_24 = window.TEUI.parseNumeric(getModeAwareValue("h_24", "24")) || 24; // A8: Indoor setpoint
     const A16_temp_diff = h_24 - state.nightTimeTemp; // A8 - A3
 
     // COOLING-TARGET A31: Heat removal power = A30 * E4 * A16 (J/s or Watts)

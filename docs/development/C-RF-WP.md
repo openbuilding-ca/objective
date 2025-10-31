@@ -86,17 +86,91 @@
 
 **NEXT STEPS** (Corrected):
 1. 🔍 **CHECK**: Does S03 have StateManager listeners for l_24/h_24? (Anti-Pattern 7)
-   - Remove if found - user edits should call calculateAll() directly, not via listener
+   - ✅ CHECKED: No self-listeners found - S03 is correct
 2. 🔍 **CHECK**: Do other sections have DOM listeners for l_24/h_24? (Anti-Pattern 6)
-   - Sections should only listen to their OWN fields via DOM
-   - External dependencies should use StateManager listeners (both unprefixed AND ref_ prefixed)
-3. 🔍 **THEN**: Investigate SCHEDULE-related contamination in S09/S13/Cooling.js
-4. ✅ **FINALLY**: Clean up legacy listeners from Cooling.js once state mixing is resolved
+   - ✅ CHECKED: Only Cooling.js has StateManager listeners - architecture is correct
+3. 🔍 **TRACE**: h_24 dependency chain to find contamination source
+   - ✅ FOUND: Root cause identified in Cooling.js
+
+---
+
+## 🎯 ROOT CAUSE FOUND (Oct 30, 2025)
+
+**BUG LOCATION**: [Cooling.js:399-400](src/core/Cooling.js#L399-L400)
+
+### The Bug
+
+`calculateDailyFreeCoolingPotential()` reads unprefixed `h_24` instead of using mode-aware read:
+
+```javascript
+// ❌ BUG: Not mode-aware!
+function calculateDailyFreeCoolingPotential() {
+  const h_24 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_24")) || 24;
+  const A16_temp_diff = h_24 - state.nightTimeTemp;
+  // ... calculation uses contaminated h_24 ...
+}
+```
+
+### The Cascade Path
+
+**When user edits l_24 in Target mode:**
+
+1. S03 calculates and publishes `h_24` (Target value)
+2. Cooling.js h_24 listener fires → `calculateStage1("target")`
+3. Pattern A: Both Target AND Reference engines run (correct behavior)
+4. **During Reference engine run**:
+   - S13 `calculateReferenceModel()` calls `Cooling.calculateAll("reference")`
+   - `calculateDaysActiveCooling()` calls `calculateDailyFreeCoolingPotential()`
+   - **❌ BUG: Reads unprefixed "h_24"** → gets Target value just published!
+   - Reference cooling calculation contaminated with Target data
+5. Contaminated Reference values cascade → `e_10` changes incorrectly
+
+### Why This Explains Observations
+
+- **Target mode edit corrupts Reference**: ✅ Explained - Reference reads Target h_24
+- **Reference mode edit works correctly**: ✅ Explained - ref_h_24 is published but function reads stale unprefixed h_24
+- **39,828 debug lines**: Not recursion, just normal dual-engine calculation cascade amplified by debug output
+
+### Proposed Fix
+
+Make `calculateDailyFreeCoolingPotential()` mode-aware:
+
+```javascript
+// ✅ FIX: Use mode-aware read via getModeAwareValue helper
+function calculateDailyFreeCoolingPotential() {
+  const h_24 = window.TEUI.parseNumeric(getModeAwareValue("h_24", "24")) || 24;
+  const A16_temp_diff = h_24 - state.nightTimeTemp;
+  // ... rest stays the same ...
+}
+```
+
+**Files to Modify**:
+- `src/core/Cooling.js` line 399-400: Change to mode-aware read
+
+**Testing Results** (Oct 30, 2025 11:15pm):
+1. ✅ Fix applied to Cooling.js line 400 - h_24 now reads mode-aware
+2. ❌ **State mixing still occurs** - both e_10 and h_10 change when editing l_24 in Target mode
+3. **Conclusion**: The h_24 fix was necessary but **not sufficient**
+   - There are ADDITIONAL contamination paths beyond h_24
+   - The bug is more complex than initially diagnosed
+
+**ADDITIONAL CONTAMINATION PATHS** (To investigate):
+- Other fields in `calculateDailyFreeCoolingPotential()` that may not be mode-aware
+- StateManager listeners triggering both engines inappropriately
+- Cascade effects through S13 → S14 → S15 → S01 that contaminate Reference
+- Possible issues in how `state.currentMode` is set/used in Cooling.js
+
+**NEXT STEPS** (Tomorrow):
+1. Review ALL StateManager.getValue() calls in Cooling.js for mode-awareness
+2. Check if other helper functions need mode-aware reads
+3. Trace complete cascade from l_24 edit through to e_10 change
+4. Consider if the dual-engine Pattern A execution itself has timing issues
 
 **BASELINE CHECKPOINT**:
 - **Working Commit**: 589c1dd provides stable baseline with l_24/h_24 logic intact
-- App calculations functional but state mixing still present (Excel parity maintained)
-- Session timed out during attempted Cooling.js refactor - files corrupted, restored from 589c1dd
+- **Partial Fix**: Commit TBD (Oct 30 11:15pm) - h_24 mode-aware read applied but insufficient
+- **Status**: State mixing persists - requires deeper investigation
+- App calculations functional, Excel parity maintained, but Target/Reference contamination unresolved
 
 ---
 
