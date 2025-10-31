@@ -177,18 +177,9 @@ window.TEUI.SectionModules.sect03 = (function () {
     },
   };
 
-  // PATTERN 2: Use Global ModeManager (Per 4012-CHEATSHEET.md Pattern 1)
-  // ✅ FIX (Oct 30, 2025): Remove local ModeManager, use window.TEUI.ModeManager
-  // This ensures all sections see the same mode state
+  // PATTERN 2: The ModeManager Facade (Standardized Pattern A)
   const ModeManager = {
-    get currentMode() {
-      return window.TEUI.ModeManager?.currentMode || "target";
-    },
-    set currentMode(value) {
-      if (window.TEUI.ModeManager) {
-        window.TEUI.ModeManager.currentMode = value;
-      }
-    },
+    currentMode: "target",
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
