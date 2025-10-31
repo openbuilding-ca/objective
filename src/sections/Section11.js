@@ -313,6 +313,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Only refresh UI if currently in reference mode
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
+        // ✅ CORRECT: Reference standard change (d_13) is a DATA CHANGE requiring recalculation
+        // This loads new ReferenceValues.js data and must recalculate all dependent sections
         calculateAll();
       }
     },
@@ -401,7 +403,9 @@ window.TEUI.SectionModules.sect11 = (function () {
       // ✅ S10-S11 AREA SYNC: Sync areas after mode switch completes
       syncAreasFromS10();
 
-      calculateAll(); // Recalculate for the new mode
+      // ❌ REMOVED ANTI-PATTERN: calculateAll() should NOT be called during mode switch
+      // Mode switch is display-only; calculations happen on data changes via calculateAll()
+
       // Ensure displayed values reflect the selected mode
       if (typeof this.updateCalculatedDisplayValues === "function") {
         this.updateCalculatedDisplayValues();
