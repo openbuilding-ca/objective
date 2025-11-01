@@ -243,7 +243,7 @@ class ExcelMapper {
 
       // Section 05: Emissions (REFERENCE! Sheet)
       D39: "ref_d_39",
-      //I41: "ref_i_41", // Calculated field in Reference mode (i_41 = i_39), not user input
+      //I41: "ref_i_41", // Calculated in Reference mode (i_41 = i_39 from typology), not imported
 
       // Section 06: Renewable Energy (REFERENCE! Sheet)
       D44: "ref_d_44",
@@ -344,8 +344,8 @@ class ExcelMapper {
       F113: "ref_f_113",
       J115: "ref_j_115",
       D116: "ref_d_116",
-      D118: "ref_d_118",
-      H118: "ref_g_118",
+      D118: "ref_d_118", //why is this value not importing properly??
+      H118: "ref_g_118", //why is this value not importing properly??
       L118: "ref_l_118",
       D119: "ref_d_119",
       L119: "ref_l_119",

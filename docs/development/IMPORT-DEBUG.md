@@ -8,21 +8,21 @@
 ## ✅ **S13 HSPF Slider Bug - RESOLVED**
 
 **Status**: FIXED & TESTED
-**Commit**: a0b685d
+**Commits**: a0b685d (initial fix), 3d43a59 (d_118 fix), [current] (skip logic removal)
 **Priority**: COMPLETE
 
 ### **Root Cause**
 
-Two-part issue:
-1. **Type mismatch**: f_113 used `"coefficient"` instead of `"coefficient_slider"` (no slider handler)
-2. **ReferenceValues contamination**: syncFromGlobalState() synced overlay fields from import
+**Single Issue**: f_113 used `"coefficient"` instead of `"coefficient_slider"` (no slider handler in FieldManager)
+
+**Initial Misdiagnosis**: We thought skip logic was needed to prevent ReferenceValues contamination, but testing proved otherwise.
 
 ### **The "12.5 Default Anomaly"**
 
 Bug only visible when:
 - Heatpump system (slider unghosted)
 - Target f_113 ≠ 12.5 (field default)
-- ref_f_113 NOT imported from REFERENCE sheet
+- This allowed us to notice the type mismatch
 
 **Test Results:**
 
@@ -36,9 +36,9 @@ Bug only visible when:
 
 ### **The Fix**
 
-**Section13.js changes:**
+**Section13.js - ONE change only:**
 
-1. **Type fix** ([Section13.js:888](src/sections/Section13.js#L888)):
+**Type fix** ([Section13.js:888](src/sections/Section13.js#L888)):
 ```javascript
 // BEFORE:
 type: "coefficient", // ❌ No slider handler
@@ -47,35 +47,31 @@ type: "coefficient", // ❌ No slider handler
 type: "coefficient_slider", // ✅ Recognized slider type (like S10 SHGC sliders)
 ```
 
-2. **Skip logic** ([Section13.js:227-238](src/sections/Section13.js#L227-L238)):
-```javascript
-syncFromGlobalState: function (fieldIds = [...]) {
-  // ✅ ReferenceValues overlay fields - should NOT sync from import
-  const referenceValueFields = ["f_113", "d_118", "j_115"];
+### **🧪 Skip Logic Testing (Nov 1, 2025)**
 
-  fieldIds.forEach((fieldId) => {
-    // Skip ReferenceValues overlay fields
-    if (referenceValueFields.includes(fieldId)) {
-      console.log(`[S13-REF-SYNC] Skipping ${fieldId} - uses ReferenceValues overlay`);
-      return;
-    }
+**Hypothesis**: Skip logic might have been technical debt, not actual fix.
 
-    const refFieldId = `ref_${fieldId}`;
-    const globalValue = window.TEUI.StateManager.getValue(refFieldId);
-    if (globalValue !== null && globalValue !== undefined) {
-      this.setValue(fieldId, globalValue, "imported");
-    }
-  });
-}
-```
+**Test Results**:
+- ✅ f_113 imports correctly from Excel WITHOUT skip logic
+- ✅ f_113 still responds to d_13 Standard changes WITHOUT skip logic
+- ✅ j_115 (AFUE) works correctly WITHOUT skip logic
+- ✅ All import scenarios passing WITHOUT skip logic
+
+**Conclusion**: Type fix was the ENTIRE solution. Skip logic was unnecessary and has been **REMOVED** (commit [current]).
+
+**What Actually Happens**:
+- ReferenceState.setDefaults() sets f_113 = 7.1 (from ReferenceValues.js)
+- Import syncFromGlobalState() CAN overwrite with Excel value
+- onReferenceStandardChange() d_13 listener re-applies ReferenceValues when Standard changes
+- This natural flow works perfectly without any skip logic
 
 ### **Success Criteria - All Achieved**
 
 - ✅ f_113 slider visible and functional after Heatpump import (any f_113 value)
-- ✅ Reference f_113 shows ReferenceValues default (7.1), NOT Target value
-- ✅ No Target-to-Reference contamination for S13 ReferenceValues fields
+- ✅ Reference f_113 uses ReferenceValues defaults AND can import from Excel
+- ✅ d_13 Standard changes properly update f_113/j_115 via onReferenceStandardChange()
 - ✅ Gas/Electricity imports: No regression (slider properly ghosted)
-- ✅ User can still manually edit overlay fields if needed
+- ✅ Cleaner code without unnecessary skip logic (reduced technical debt)
 
 ---
 
@@ -140,19 +136,23 @@ ref_g_101, ref_d_101, ref_i_104
 
 ## 🔧 **ARCHITECTURAL NOTES**
 
-### **ReferenceValues Overlay Pattern**
+### **ReferenceValues Overlay Pattern** ⚠️ REVISED
 
-Certain fields in Reference model should ALWAYS use values from ReferenceValues.js based on current reference standard (d_13), NOT imported from Excel.
+**Previous Understanding** (INCORRECT): Certain fields require skip logic to prevent import contamination.
 
-**Fields with ReferenceValues Overlay:**
-- **S13**: f_113 (HSPF), d_118 (ERV), j_115 (AFUE) - ✅ FIXED
-- **S11**: g_88-g_93 (U-values) - ❌ CASCADE ISSUE PERSISTS
+**Correct Understanding** (Nov 1, 2025): ReferenceValues overlay works through natural flow:
 
-**How it should work:**
-1. Page load: ReferenceState.setDefaults() loads ReferenceValues based on d_13
-2. Import: syncFromGlobalState() SKIPS overlay fields, preserves ReferenceValues
-3. d_13 change: onReferenceStandardChange() updates ReferenceValues overlay
-4. User edit: User can manually override (marked as "user-modified")
+**How it actually works:**
+1. **Page load**: ReferenceState.setDefaults() loads ReferenceValues based on d_13
+2. **Import**: syncFromGlobalState() CAN overwrite with Excel values (no skip logic needed)
+3. **d_13 change**: onReferenceStandardChange() listener re-applies ReferenceValues
+4. **User edit**: User can manually override at any time
+
+**Why skip logic was unnecessary:**
+- ReferenceValues defaults set on page load
+- d_13 changes trigger onReferenceStandardChange() which resets to code values
+- Natural event-driven flow handles everything
+- Skip logic was adding complexity without benefit
 
 ### **Pattern A Dual-State Architecture**
 
@@ -195,45 +195,34 @@ Sections 02-15 use isolated TargetState/ReferenceState objects:
 
 ---
 
-### **🔍 WORKING THEORY - The Skip List Distinction**
+### **🔍 REVISED UNDERSTANDING** ⚠️
 
-**Key Insight from S13 HSPF Fix:**
+**Previous Theory (WRONG)**: We thought there were two categories requiring different skip logic.
 
-We successfully fixed f_113 by adding skip logic, but we **over-applied** the pattern. There are TWO categories of Reference fields:
+**Correct Understanding** (Tested Nov 1, 2025):
 
-#### **Category 1: ReferenceValues Overlay Fields (Code-Mandated Standards)**
+**ALL Reference fields can import from Excel normally.** No skip logic is needed anywhere.
 
-These are equipment efficiency STANDARDS mandated by building codes (NBC, NECB, etc.). They change based on d_13 (Reference Standard selection). **These should NOT import from Excel.**
+**Why This Works:**
+- ReferenceValues defaults set on page load (ReferenceState.setDefaults())
+- Import CAN overwrite these defaults with Excel values
+- When user changes d_13 Standard, onReferenceStandardChange() listener resets code-mandated fields
+- Natural event-driven architecture handles everything automatically
 
-**Examples:**
-- **f_113** (HSPF) - Heat pump heating efficiency standard
-- **j_115** (AFUE) - Furnace efficiency standard
-- **g_88-g_93** (U-values) - Envelope assembly thermal performance standards
+**Field Categories (for understanding, NOT for skip logic):**
 
-**Why skip import?**
-- These represent regulatory requirements, not design choices
-- Values come from ReferenceValues.js based on selected code (d_13)
-- User shouldn't import outdated code values from Excel
-- When d_13 changes (e.g., NBC 2015 → NBC 2020), these auto-update
+#### **ReferenceValues-Based Fields** (can still import!)
+- **f_113** (HSPF), **j_115** (AFUE), **g_88-g_93** (U-values)
+- Have code-based defaults from ReferenceValues.js
+- Excel CAN import these (e.g., if modeling a specific existing system)
+- User changing d_13 Standard resets them via onReferenceStandardChange()
 
-**Implementation:** Add to skip list in syncFromGlobalState()
+#### **Regular Reference Fields** (always import)
+- **d_118** (ERV%), **g_118** (Vent method), **i_41** (Air tightness in Target)
+- Design choices for Reference model
+- Excel imports these normally
 
-#### **Category 2: Regular Reference Fields (Design Choices)**
-
-These are project-specific design choices for the Reference model. They describe what equipment/systems were SELECTED, not what standards mandate. **These SHOULD import from Excel.**
-
-**Examples:**
-- **d_118** (ERV% efficiency) - Specific ERV/HRV unit selected for Reference model
-- **g_118** (Ventilation method) - How ventilation is delivered (constant, scheduled, etc.)
-- **i_41** (Air tightness @ 50Pa) - Measured/designed air leakage rate
-
-**Why allow import?**
-- These represent actual design decisions for the Reference building
-- Excel REFERENCE sheet contains the as-designed Reference model
-- User needs to import their specific Reference design choices
-- Not code-mandated values (though may be informed by code minimums)
-
-**Implementation:** Keep in fieldIds list, do NOT add to skip list
+**Key Insight**: Skip logic was NEVER needed. Type fix alone solved S13 HSPF slider issue.
 
 ---
 

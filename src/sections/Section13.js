@@ -224,21 +224,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         "k_120", // Unoccupied Setback %
       ],
     ) {
-      // ✅ ReferenceValues overlay fields - should NOT sync from import
-      // These maintain standard-based defaults from ReferenceValues.js based on d_13
-      // Only f_113 (HSPF) and j_115 (AFUE) are true code standards
-      // d_118 (ERV%) represents actual equipment selected, should import from Excel
-      const referenceValueFields = ["f_113", "j_115"];
+      // ✅ SIMPLIFIED: No skip logic needed (tested and verified)
+      // Type fix (coefficient → coefficient_slider) was the entire solution
+      // f_113/j_115 import correctly AND still respond to d_13 Standard changes
+      // Previous skip logic was technical debt (removed Nov 1, 2025)
 
       fieldIds.forEach((fieldId) => {
-        // Skip ReferenceValues overlay fields - they use ReferenceState.setDefaults()
-        if (referenceValueFields.includes(fieldId)) {
-          console.log(
-            `[S13-REF-SYNC] Skipping ${fieldId} - uses ReferenceValues overlay`,
-          );
-          return;
-        }
-
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
