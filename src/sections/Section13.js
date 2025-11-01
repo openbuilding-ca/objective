@@ -224,7 +224,19 @@ window.TEUI.SectionModules.sect13 = (function () {
         "k_120", // Unoccupied Setback %
       ],
     ) {
+      // ✅ ReferenceValues overlay fields - should NOT sync from import
+      // These maintain standard-based defaults from ReferenceValues.js based on d_13
+      const referenceValueFields = ["f_113", "d_118", "j_115"];
+
       fieldIds.forEach((fieldId) => {
+        // Skip ReferenceValues overlay fields - they use ReferenceState.setDefaults()
+        if (referenceValueFields.includes(fieldId)) {
+          console.log(
+            `[S13-REF-SYNC] Skipping ${fieldId} - uses ReferenceValues overlay`,
+          );
+          return;
+        }
+
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -885,7 +897,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         },
         f: {
           fieldId: "f_113",
-          type: "coefficient", // Changed from editable to coefficient slider type
+          type: "coefficient_slider", // ✅ Fixed: was "coefficient" (no handler), now "coefficient_slider"
           value: "12.5", // Default value
           min: 3.5, // Min value
           max: 20, // Max value
