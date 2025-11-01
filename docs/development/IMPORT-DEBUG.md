@@ -170,6 +170,239 @@ Sections 02-15 use isolated TargetState/ReferenceState objects:
 
 ---
 
+## 🔄 **THREE NEW IMPORT FAILURES - WORKPLAN**
+
+**Status**: INVESTIGATION COMPLETE - READY FOR IMPLEMENTATION
+**Priority**: HIGH
+**Next Session**: Apply fixes based on learnings from S13 HSPF bug
+
+### **The Three Failures**
+
+1. **ref_i_41** (S05, [ExcelMapper.js:246](src/core/ExcelMapper.js#L246)) - Air tightness @ 50Pa
+   - Excel: Contains numeric value
+   - Target i_41: ✅ Imports correctly
+   - Reference ref_i_41: ❌ Does NOT import (shows initialized default)
+
+2. **ref_d_118** (S13, [ExcelMapper.js:347](src/core/ExcelMapper.js#L347)) - ERV/HRV Sensible Recovery Efficiency %
+   - Excel REFERENCE sheet: 60%
+   - Target d_118: ✅ Imports correctly
+   - Reference ref_d_118: ❌ Shows 81% (ReferenceValues default, not Excel import)
+
+3. **ref_g_118** (S13, [ExcelMapper.js:348](src/core/ExcelMapper.js#L348)) - Ventilation Method dropdown
+   - Excel REFERENCE sheet: Contains selected ventilation method
+   - Target g_118: ✅ Imports correctly
+   - Reference ref_g_118: ❌ Shows "Volume by Schedule" (initialized default)
+
+---
+
+### **🔍 WORKING THEORY - The Skip List Distinction**
+
+**Key Insight from S13 HSPF Fix:**
+
+We successfully fixed f_113 by adding skip logic, but we **over-applied** the pattern. There are TWO categories of Reference fields:
+
+#### **Category 1: ReferenceValues Overlay Fields (Code-Mandated Standards)**
+
+These are equipment efficiency STANDARDS mandated by building codes (NBC, NECB, etc.). They change based on d_13 (Reference Standard selection). **These should NOT import from Excel.**
+
+**Examples:**
+- **f_113** (HSPF) - Heat pump heating efficiency standard
+- **j_115** (AFUE) - Furnace efficiency standard
+- **g_88-g_93** (U-values) - Envelope assembly thermal performance standards
+
+**Why skip import?**
+- These represent regulatory requirements, not design choices
+- Values come from ReferenceValues.js based on selected code (d_13)
+- User shouldn't import outdated code values from Excel
+- When d_13 changes (e.g., NBC 2015 → NBC 2020), these auto-update
+
+**Implementation:** Add to skip list in syncFromGlobalState()
+
+#### **Category 2: Regular Reference Fields (Design Choices)**
+
+These are project-specific design choices for the Reference model. They describe what equipment/systems were SELECTED, not what standards mandate. **These SHOULD import from Excel.**
+
+**Examples:**
+- **d_118** (ERV% efficiency) - Specific ERV/HRV unit selected for Reference model
+- **g_118** (Ventilation method) - How ventilation is delivered (constant, scheduled, etc.)
+- **i_41** (Air tightness @ 50Pa) - Measured/designed air leakage rate
+
+**Why allow import?**
+- These represent actual design decisions for the Reference building
+- Excel REFERENCE sheet contains the as-designed Reference model
+- User needs to import their specific Reference design choices
+- Not code-mandated values (though may be informed by code minimums)
+
+**Implementation:** Keep in fieldIds list, do NOT add to skip list
+
+---
+
+### **🔧 ROOT CAUSE ANALYSIS**
+
+#### **Issue 1: ref_i_41 (S05)**
+
+**Finding:** [Section05.js:151](src/sections/Section05.js#L151)
+```javascript
+// ReferenceState.syncFromGlobalState()
+syncFromGlobalState: function (fieldIds = ["d_39"]) {
+  // ❌ i_41 is NOT in the fieldIds array!
+  // Only d_39 is being synced for Reference
+```
+
+**Root Cause:** Missing from ReferenceState fieldIds list
+
+**Expected Behavior:**
+- TargetState syncs: ["d_39", "i_41"] ✅
+- ReferenceState syncs: ["d_39"] ❌ Should be ["d_39", "i_41"]
+
+#### **Issue 2: ref_d_118 (S13)**
+
+**Finding:** [Section13.js:229](src/sections/Section13.js#L229)
+```javascript
+// ReferenceState.syncFromGlobalState()
+const referenceValueFields = ["f_113", "d_118", "j_115"];
+// ❌ d_118 is in the skip list but shouldn't be!
+```
+
+**Root Cause:** Incorrectly categorized as ReferenceValues overlay field
+
+**Why This Happened:**
+- During S13 HSPF fix, we assumed d_118 (ERV%) was a code standard like HSPF/AFUE
+- Actually, d_118 represents the SELECTED ERV/HRV unit efficiency (design choice)
+- ReferenceValues.js provides a DEFAULT (81%), but Excel should override it with actual design (60%)
+
+**Expected Behavior:**
+- f_113 (HSPF): Skip import, use ReferenceValues ✅ CORRECT
+- j_115 (AFUE): Skip import, use ReferenceValues ✅ CORRECT
+- d_118 (ERV%): Import from Excel ❌ CURRENTLY SKIPPED (wrong!)
+
+#### **Issue 3: ref_g_118 (S13)**
+
+**Finding:** [Section13.js:220](src/sections/Section13.js#L220)
+```javascript
+// ReferenceState.syncFromGlobalState()
+syncFromGlobalState: function (fieldIds = [
+  "d_113", "f_113", "j_115", "d_116", "j_116",
+  "d_118", "g_118", // ✅ g_118 IS in the fieldIds list
+  "l_118", "d_119", "l_119", "k_120"
+]) {
+```
+
+**Root Cause:** g_118 IS in the list and NOT in skip list. Need to investigate:
+1. Is ExcelMapper correctly reading from Excel?
+2. Is value null/undefined in Excel?
+3. Is there a dropdown-specific import issue?
+
+**Investigation Required:** Need to check if dropdown fields have special handling requirements
+
+---
+
+### **📋 FIX PROPOSAL WORKPLAN**
+
+#### **Phase 1: Add i_41 to Section05 ReferenceState Sync** (5 mins)
+
+**File:** [Section05.js:151](src/sections/Section05.js#L151)
+
+**Change:**
+```javascript
+// BEFORE:
+syncFromGlobalState: function (fieldIds = ["d_39"]) {
+
+// AFTER:
+syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
+```
+
+**Test:**
+1. Import Excel file with ref_i_41 value
+2. Switch to S05 Reference mode
+3. Verify i_41 shows Excel value (not initialized default)
+
+#### **Phase 2: Remove d_118 from S13 Skip List** (5 mins)
+
+**File:** [Section13.js:229](src/sections/Section13.js#L229)
+
+**Change:**
+```javascript
+// BEFORE:
+const referenceValueFields = ["f_113", "d_118", "j_115"];
+
+// AFTER:
+const referenceValueFields = ["f_113", "j_115"];
+// Only f_113 (HSPF) and j_115 (AFUE) are code standards
+// d_118 (ERV%) is a design choice - should import from Excel
+```
+
+**Test:**
+1. Import Excel file with ref_d_118 = 60%
+2. Switch to S13 Reference mode
+3. Verify d_118 slider shows 60% (not 81% ReferenceValues default)
+
+#### **Phase 3: Investigate ref_g_118 Import** (15 mins)
+
+**Diagnostic Steps:**
+
+1. **Check ExcelMapper read:**
+   - Add console log in [ExcelMapper.js:348](src/core/ExcelMapper.js#L348)
+   - Verify Excel cell value is being read correctly
+
+2. **Check StateManager storage:**
+   - After import, check `window.TEUI.StateManager.getValue("ref_g_118")`
+   - Verify value made it to StateManager
+
+3. **Check syncFromGlobalState execution:**
+   - Add console log in [Section13.js:243](src/sections/Section13.js#L243)
+   - Verify g_118 sync is executing (not being skipped)
+
+4. **Check dropdown field handling:**
+   - Verify dropdown fields have special import requirements
+   - Check if dropdown options validation is rejecting import value
+
+**Possible Fixes:**
+- If StateManager doesn't have value → ExcelMapper issue
+- If StateManager has value but sync fails → syncFromGlobalState issue
+- If sync works but display wrong → dropdown refresh issue
+
+#### **Phase 4: Test All Three Imports** (10 mins)
+
+**Test Matrix:**
+
+| Field | Excel Value | Expected Result | Status |
+|-------|-------------|----------------|---------|
+| ref_i_41 | (numeric) | Shows Excel value | 🔧 TO FIX |
+| ref_d_118 | 60% | Shows 60%, not 81% | 🔧 TO FIX |
+| ref_g_118 | (dropdown) | Shows Excel selection | 🔍 TO INVESTIGATE |
+
+**Success Criteria:**
+- All three Reference fields import correctly from Excel
+- f_113 (HSPF) and j_115 (AFUE) still maintain ReferenceValues defaults (not regressing)
+- No cascade issues or calculation errors
+- Mode switching works correctly
+
+---
+
+### **📚 ARCHITECTURAL CLARIFICATION**
+
+**Updated ReferenceValues Overlay Pattern:**
+
+The skip list should contain ONLY code-mandated equipment efficiency standards that change based on d_13 (Reference Standard selection).
+
+**✅ SHOULD Skip Import (ReferenceValues Overlay):**
+- **S13**: f_113 (HSPF), j_115 (AFUE) - Equipment efficiency STANDARDS
+- **S11**: g_88-g_93 (U-values) - Envelope assembly thermal performance STANDARDS
+
+**✅ SHOULD Import from Excel (Design Choices):**
+- **S13**: d_118 (ERV%), g_118 (Ventilation method), d_116 (Cooling system), j_116 (COPc), l_118 (ACH), etc.
+- **S11**: (all other fields besides U-values)
+- **S05**: i_41 (Air tightness)
+- **All sections**: Most fields are design choices, not code standards
+
+**Rule of Thumb:**
+- If it changes when d_13 changes → ReferenceValues overlay (skip import)
+- If it describes what was built/designed → Regular field (import from Excel)
+
+---
+
 **Last Updated**: 2025-10-31 evening
-**S13 Status**: ✅ FIXED & COMMITTED (a0b685d)
-**S11 Status**: 🔍 REQUIRES FURTHER INVESTIGATION
+**S13 HSPF Status**: ✅ FIXED & COMMITTED (a0b685d)
+**S11 Cascade Status**: 🔍 REQUIRES FURTHER INVESTIGATION
+**Three Import Failures**: 📋 WORKPLAN COMPLETE - READY TO IMPLEMENT

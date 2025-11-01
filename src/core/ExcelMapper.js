@@ -243,7 +243,7 @@ class ExcelMapper {
 
       // Section 05: Emissions (REFERENCE! Sheet)
       D39: "ref_d_39",
-      I41: "ref_i_41",
+      //I41: "ref_i_41", // Calculated field in Reference mode (i_41 = i_39), not user input
 
       // Section 06: Renewable Energy (REFERENCE! Sheet)
       D44: "ref_d_44",

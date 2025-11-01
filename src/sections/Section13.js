@@ -226,7 +226,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     ) {
       // ✅ ReferenceValues overlay fields - should NOT sync from import
       // These maintain standard-based defaults from ReferenceValues.js based on d_13
-      const referenceValueFields = ["f_113", "d_118", "j_115"];
+      // Only f_113 (HSPF) and j_115 (AFUE) are true code standards
+      // d_118 (ERV%) represents actual equipment selected, should import from Excel
+      const referenceValueFields = ["f_113", "j_115"];
 
       fieldIds.forEach((fieldId) => {
         // Skip ReferenceValues overlay fields - they use ReferenceState.setDefaults()

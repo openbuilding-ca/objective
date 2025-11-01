@@ -146,7 +146,8 @@ window.TEUI.SectionModules.sect05 = (function () {
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated ReferenceState for imported values
-     * NOTE: i_41 is NOT synced - it's calculated as i_41 = i_39 in Reference mode
+     * NOTE: i_41 is NOT synced - in Reference mode, i_41 = i_39 (calculated from typology)
+     * i_41 is user-editable in Target mode only
      */
     syncFromGlobalState: function (fieldIds = ["d_39"]) {
       fieldIds.forEach((fieldId) => {
@@ -260,6 +261,7 @@ window.TEUI.SectionModules.sect05 = (function () {
         "i_38",
         "i_39",
         "i_40",
+        "i_41", // Target: user-editable | Reference: calculated (i_41 = i_39)
         "d_40",
         "d_41",
         "m_38",
