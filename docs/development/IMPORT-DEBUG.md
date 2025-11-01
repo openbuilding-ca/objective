@@ -265,24 +265,44 @@ const referenceValueFields = ["f_113", "d_118", "j_115"];
 - j_115 (AFUE): Skip import, use ReferenceValues ✅ CORRECT
 - d_118 (ERV%): Import from Excel ❌ CURRENTLY SKIPPED (wrong!)
 
-#### **Issue 3: ref_g_118 (S13)**
+#### **Issue 3: ref_g_118 (S13)** ✅ FIXED
 
-**Finding:** [Section13.js:220](src/sections/Section13.js#L220)
+**Symptom:** Both Target and Reference g_118 show "Volume by Schedule" (initialized default) instead of Excel values
+
+**Expected Values:**
+- REPORT sheet (Target g_118): "Occupant Constant"
+- REFERENCE sheet (Reference ref_g_118): "Volume Constant"
+
+**Diagnostic Investigation (Nov 1, 2025 evening):**
+
+Added debug logging to trace import pipeline - NO ExcelMapper logs appeared for g_118 import, confirming cell was never read from Excel.
+
+**Root Cause:**
+
+**ExcelMapper.js had WRONG Excel column mapping.**
+
+[ExcelMapper.js:190](src/core/ExcelMapper.js#L190) and [line 348](src/core/ExcelMapper.js#L348):
 ```javascript
-// ReferenceState.syncFromGlobalState()
-syncFromGlobalState: function (fieldIds = [
-  "d_113", "f_113", "j_115", "d_116", "j_116",
-  "d_118", "g_118", // ✅ g_118 IS in the fieldIds list
-  "l_118", "d_119", "l_119", "k_120"
-]) {
+// BEFORE (WRONG):
+H118: "g_118",      // ❌ Wrong column! H is for h_118 fields
+H118: "ref_g_118",  // ❌ Wrong column!
+
+// AFTER (CORRECT):
+G118: "g_118",      // ✅ Column G for g_* fields
+G118: "ref_g_118",  // ✅ Column G for g_* fields
 ```
 
-**Root Cause:** g_118 IS in the list and NOT in skip list. Need to investigate:
-1. Is ExcelMapper correctly reading from Excel?
-2. Is value null/undefined in Excel?
-3. Is there a dropdown-specific import issue?
+**Why This Happened:**
+- Field naming convention: g_118 field should map to column G, row 118
+- ExcelMapper was incorrectly mapping to column H (which would be h_118)
+- Excel DOES contain the data in G118, but ExcelMapper was looking in wrong column
 
-**Investigation Required:** Need to check if dropdown fields have special handling requirements
+**The Fix:**
+Changed ExcelMapper mapping from H118 → G118 for both Target and Reference
+
+**Why This Differs from HSPF Bug:**
+- HSPF: Field type mismatch (slider initialization) - FieldManager issue
+- g_118: Wrong Excel column mapping - ExcelMapper issue
 
 ---
 
@@ -391,7 +411,14 @@ The skip list should contain ONLY code-mandated equipment efficiency standards t
 
 ---
 
-**Last Updated**: 2025-10-31 evening
-**S13 HSPF Status**: ✅ FIXED & COMMITTED (a0b685d)
-**S11 Cascade Status**: 🔍 REQUIRES FURTHER INVESTIGATION
-**Three Import Failures**: 📋 WORKPLAN COMPLETE - READY TO IMPLEMENT
+**Last Updated**: 2025-11-01 evening
+
+## 📊 **STATUS SUMMARY**
+
+| Issue | Status | Type | Resolution |
+|-------|--------|------|------------|
+| **S13 HSPF Slider** | ✅ FIXED | Code Bug | Type fix: "coefficient" → "coefficient_slider" (commit a0b685d, c799192) |
+| **ref_d_118 (ERV%)** | ✅ FIXED | Code Bug | Removed from skip list (commit 3d43a59) |
+| **ref_i_41 (S05)** | ✅ FIXED | Code Bug | Made calculated in Reference (i_41 = i_39) (commit 3d43a59) |
+| **ref_g_118 (Vent Method)** | ✅ FIXED | Code Bug | ExcelMapper wrong column: H118 → G118 (commit [current]) |
+| **S11 → S15 Cascade** | 🔍 UNRESOLVED | Timing Issue | Requires different debugging approach |

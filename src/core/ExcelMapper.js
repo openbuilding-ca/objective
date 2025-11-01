@@ -187,7 +187,7 @@ class ExcelMapper {
       J115: "j_115", // AFUE (Editable Number)
       D116: "d_116", // Cooling System (Dropdown)
       D118: "d_118", // HRV/ERV SRE % (Percentage Slider -> Number 0-100)
-      H118: "g_118", // Ventilation Method (Dropdown)
+      G118: "g_118", // Ventilation Method (Dropdown)
       L118: "l_118", // ACH (Editable Number)
       D119: "d_119", // Rate Per Person (Editable Number)
       L119: "l_119", // Summer Boost (Dropdown)
@@ -345,7 +345,7 @@ class ExcelMapper {
       J115: "ref_j_115",
       D116: "ref_d_116",
       D118: "ref_d_118", //why is this value not importing properly??
-      H118: "ref_g_118", //why is this value not importing properly??
+      G118: "ref_g_118", //why is this value not importing properly??
       L118: "ref_l_118",
       D119: "ref_d_119",
       L119: "ref_l_119",
