@@ -6,7 +6,7 @@ console.log("=== i_59 Trace Script Loading ===");
 
 // 1. Intercept StateManager setValue to trace all i_59 writes
 if (window.TEUI?.StateManager) {
-  const original SetValue = window.TEUI.StateManager.setValue;
+  const originalSetValue = window.TEUI.StateManager.setValue;
   window.TEUI.StateManager.setValue = function(fieldId, value, source) {
     if (fieldId === "i_59" || fieldId === "ref_i_59") {
       console.log(`%c[StateManager WRITE] ${fieldId} = "${value}" (source: ${source})`,
