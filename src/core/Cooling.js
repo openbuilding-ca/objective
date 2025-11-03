@@ -709,10 +709,69 @@ window.TEUI.CoolingCalculations = (function () {
   }
 
   /**
+   * 📊 EXPLICIT MODE PUBLICATION: Publish cooling results with explicit mode parameter
+   * This avoids contamination from stale state.currentMode after dual-engine runs
+   * @param {string} mode - "target" or "reference"
+   */
+  function publishCoolingResults(mode) {
+    if (typeof window.TEUI.StateManager === "undefined") return;
+
+    const sm = window.TEUI.StateManager;
+    const prefix = mode === "reference" ? "ref_" : "";
+
+    console.log(
+      `[Cooling] 📊 publishCoolingResults(${mode}): Publishing with prefix="${prefix}"`,
+    );
+
+    // Publish ALL cooling calculations for the specified mode
+    sm.setValue(
+      `${prefix}cooling_m_124`,
+      state.daysActiveCooling.toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_h_124`,
+      state.freeCoolingLimit.toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_d_124`,
+      ((state.freeCoolingLimit / state.coolingLoad) * 100).toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_latentLoadFactor`,
+      (state.latentLoadFactor || 0).toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_wetBulbTemperature`,
+      (state.wetBulbTemperature || 0).toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_atmosphericPressure`,
+      state.atmPressure.toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_partialPressure`,
+      state.partialPressure.toString(),
+      "calculated",
+    );
+    sm.setValue(
+      `${prefix}cooling_humidityRatio`,
+      state.humidityRatioDifference.toString(),
+      "calculated",
+    );
+  }
+
+  /**
    * 📊 STATEMANAGER INTEGRATION: Publish calculated cooling values (LEGACY - kept for compatibility)
    * S13 reads these values from StateManager for display and further calculations
    * Now MODE-AWARE to support both Target and Reference models
    * NOTE: This is being phased out in favor of Stage 1 and Stage 2 functions
+   * ⚠️ WARNING: Uses state.currentMode which can be stale after dual-engine runs!
    */
   function updateStateManager() {
     if (typeof window.TEUI.StateManager === "undefined") return;
@@ -874,7 +933,12 @@ window.TEUI.CoolingCalculations = (function () {
       // Update cooling load and recalculate
       state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
       calculateDaysActiveCooling();
-      updateStateManager(); // 📊 STATEMANAGER: Publish updated results
+
+      // ✅ FIX: Don't use updateStateManager() which relies on stale state.currentMode
+      // After dual-engine runs, state.currentMode is stuck on "reference"
+      // Instead, explicitly publish for BOTH modes
+      publishCoolingResults("target");
+      publishCoolingResults("reference");
     });
 
     // Listen for indoor RH% changes from S08 i_59 slider (Target mode)
