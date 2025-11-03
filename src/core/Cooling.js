@@ -883,11 +883,11 @@ window.TEUI.CoolingCalculations = (function () {
     );
     sm.addListener("i_59", function (newValue) {
       console.log(
-        `[Cooling] 🌡️ Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`,
+        `[Cooling] 🌡️ Indoor RH% changed: i_59=${newValue}% → recalculating both engines`,
       );
-      state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
 
-      // ✅ DUAL-ENGINE: Indoor RH affects Stage 1 calculations for BOTH modes
+      // ✅ FIX: Don't pre-set shared state.indoorRH - let each engine read its own value
+      // Each engine will read mode-aware value (i_59 for Target, ref_i_59 for Reference)
       calculateStage1("target");
       calculateStage1("reference");
     });
@@ -898,11 +898,11 @@ window.TEUI.CoolingCalculations = (function () {
     );
     sm.addListener("ref_i_59", function (newValue) {
       console.log(
-        `[Cooling] 🌡️ Indoor RH% changed: ref_i_59=${newValue}% → updating latent load calculations`,
+        `[Cooling] 🌡️ Indoor RH% changed: ref_i_59=${newValue}% → recalculating both engines`,
       );
-      state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
 
-      // ✅ DUAL-ENGINE: Indoor RH affects Stage 1 calculations for BOTH modes
+      // ✅ FIX: Don't pre-set shared state.indoorRH - let each engine read its own value
+      // Each engine will read mode-aware value (i_59 for Target, ref_i_59 for Reference)
       calculateStage1("target");
       calculateStage1("reference");
     });
