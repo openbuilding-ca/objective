@@ -877,13 +877,28 @@ window.TEUI.CoolingCalculations = (function () {
       updateStateManager(); // 📊 STATEMANAGER: Publish updated results
     });
 
-    // Listen for indoor RH% changes from S08 i_59 slider
+    // Listen for indoor RH% changes from S08 i_59 slider (Target mode)
     console.log(
       `[Cooling] 🔗 Registering i_59 listener for indoor humidity changes`,
     );
     sm.addListener("i_59", function (newValue) {
       console.log(
         `[Cooling] 🌡️ Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`,
+      );
+      state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
+
+      // ✅ DUAL-ENGINE: Indoor RH affects Stage 1 calculations for BOTH modes
+      calculateStage1("target");
+      calculateStage1("reference");
+    });
+
+    // Listen for indoor RH% changes from S08 ref_i_59 slider (Reference mode)
+    console.log(
+      `[Cooling] 🔗 Registering ref_i_59 listener for indoor humidity changes`,
+    );
+    sm.addListener("ref_i_59", function (newValue) {
+      console.log(
+        `[Cooling] 🌡️ Indoor RH% changed: ref_i_59=${newValue}% → updating latent load calculations`,
       );
       state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
 
@@ -1003,7 +1018,7 @@ window.TEUI.CoolingCalculations = (function () {
         ? parseFloat(area.toString().replace(/,/g, ""))
         : 1427.2;
 
-      const indoorRH = window.TEUI.StateManager.getValue("i_59");
+      const indoorRH = getModeAwareValue("i_59", "45");
       state.indoorRH = indoorRH ? parseFloat(indoorRH) / 100 : 0.45;
 
       // Calculate atmospheric pressure from elevation (COOLING-TARGET E15 logic)
