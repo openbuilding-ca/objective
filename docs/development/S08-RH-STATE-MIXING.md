@@ -420,21 +420,54 @@ This fix implements:
 
 ## Console Debug Scripts
 
+### NEW: Comprehensive i_59 Trace Script
+
+**File**: [docs/development/I59-TRACE-SCRIPT.js](I59-TRACE-SCRIPT.js)
+
+Copy and paste the entire contents of I59-TRACE-SCRIPT.js into browser console BEFORE testing.
+
+**Usage**:
+1. Load the script in console
+2. Run `TEUI.checkI59State()` to see baseline state
+3. Change i_59 slider in S08 (in Target or Reference mode)
+4. Watch console for WRITE/READ logs
+5. Run `TEUI.checkI59State()` again to see changes
+
+**What to Look For**:
+
+**Target Mode Test** (slider should write unprefixed i_59):
+```
+[StateManager WRITE] i_59 = "60" (source: user-modified) ✅
+[StateManager READ] i_59 = "60" ✅ (Cooling.js reads for Target engine)
+[StateManager READ] ref_i_59 = "45" ✅ (Cooling.js reads for Reference engine - unchanged!)
+```
+
+**Reference Mode Test** (slider should write ref_i_59):
+```
+[StateManager WRITE] ref_i_59 = "30" (source: user-modified) ✅
+[StateManager READ] i_59 = "60" ✅ (Cooling.js reads for Target engine - unchanged!)
+[StateManager READ] ref_i_59 = "30" ✅ (Cooling.js reads for Reference engine)
+```
+
+**Contamination Symptoms**:
+- ❌ Reference mode writes `i_59` instead of `ref_i_59`
+- ❌ Both engines read same value
+- ❌ No `ref_i_59` WRITE when slider moved in Reference mode
+
 ### Script 1: Check Current i_59 State
 
 ```javascript
-// Run in browser console
-const target_i59 = window.TEUI.StateManager.getValue("i_59");
-const ref_i59 = window.TEUI.StateManager.getValue("ref_i_59");
-console.log(`Target i_59: ${target_i59}`);
-console.log(`Reference ref_i_59: ${ref_i59}`);
-console.log(`Cooling state.indoorRH: ${window.TEUI.CoolingCalculations?.state?.indoorRH}`);
+// Simpler quick-check (use after I59-TRACE-SCRIPT is loaded)
+TEUI.checkI59State();
 ```
 
-### Script 2: Trace i_59 Changes
+### Legacy Scripts (for reference)
+
+<details>
+<summary>Old manual trace scripts (use I59-TRACE-SCRIPT.js instead)</summary>
 
 ```javascript
-// Run in browser console BEFORE changing i_59
+// Script 2: Trace i_59 Changes
 const originalSetValue = window.TEUI.StateManager.setValue;
 window.TEUI.StateManager.setValue = function(fieldId, value, source) {
   if (fieldId === "i_59" || fieldId === "ref_i_59") {
@@ -443,24 +476,19 @@ window.TEUI.StateManager.setValue = function(fieldId, value, source) {
   }
   return originalSetValue.call(this, fieldId, value, source);
 };
-console.log("✅ Tracing enabled for i_59/ref_i_59");
-```
 
-### Script 3: Monitor Cooling State Changes
-
-```javascript
-// Run in browser console to watch state.indoorRH changes
+// Script 3: Monitor Cooling State
 let lastIndoorRH = null;
 setInterval(() => {
   const currentRH = window.TEUI.CoolingCalculations?.state?.indoorRH;
   if (currentRH !== lastIndoorRH) {
     console.log(`[MONITOR] Cooling state.indoorRH changed: ${lastIndoorRH} → ${currentRH}`);
-    console.trace("Changed by:");
     lastIndoorRH = currentRH;
   }
 }, 100);
-console.log("✅ Monitoring Cooling state.indoorRH every 100ms");
 ```
+
+</details>
 
 ---
 
