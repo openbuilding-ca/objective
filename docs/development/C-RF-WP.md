@@ -179,6 +179,81 @@ function calculateDailyFreeCoolingPotential() {
 
 ---
 
+## 📍 S08-RH% INVESTIGATION (Nov 3, 2025) - Branch: S08-RH%
+
+**LAST UPDATED**: Nov 3, 2025
+
+**OBJECTIVE**: Implement Reference mode support for S08 Indoor RH% (i_59) field:
+- S08 should publish both `i_59` (Target) and `ref_i_59` (Reference) to StateManager
+- S13 and Cooling.js should have paired listeners for i_59/ref_i_59
+- Cooling calculations should be mode-aware, reading appropriate values based on current mode
+
+**INVESTIGATION SUMMARY**:
+
+Three tactical fixes were attempted to resolve state mixing observed when changing Target i_59:
+1. **Commit dbc1896**: Added ref_i_59 listener to Cooling.js and fixed non-mode-aware read at line 1021
+2. **Commit 35b0097**: Removed shared state pre-setting from i_59/ref_i_59 listeners
+3. **Commit 0169662**: Created `publishCoolingResults(mode)` with explicit mode parameter to eliminate stale `state.currentMode` contamination
+
+**DIAGNOSTIC TOOLS CREATED**:
+- [I59-TRACE-SCRIPT.js](I59-TRACE-SCRIPT.js) - Runtime tracing of i_59/ref_i_59 StateManager reads/writes
+- [S08-RH-STATE-MIXING.md](S08-RH-STATE-MIXING.md) - Complete investigation documentation with log analysis
+
+**KEY FINDINGS FROM LOG ANALYSIS** (40,058 lines):
+- ✅ **S08 Publication WORKING**: Correctly publishes i_59="65" (Target) without touching ref_i_59="45"
+- ✅ **Cooling.js Reads WORKING**: Target engine reads i_59, Reference engine reads ref_i_59 (mode-aware reads functioning correctly)
+- ❌ **State Mixing PERSISTS**: Both e_10 (Reference) and h_10 (Target) totals change when editing Target i_59, proving downstream contamination
+
+**ROOT CAUSE IDENTIFIED**:
+
+Cooling.js uses a **single shared state object** for both Target and Reference engines:
+
+```javascript
+const state = {
+  currentMode: "target",
+  indoorRH: 0.45,  // ❌ SHARED between both engines
+  latentLoadFactor: 0,
+  wetBulbTemperature: 0,
+  // ... other shared state
+};
+```
+
+**The Problem Chain**:
+1. User changes i_59 in Target mode
+2. i_59 listener runs both engines (correct dual-engine pattern)
+3. Target engine: `calculateStage1("target")` sets `state.currentMode = "target"`, reads i_59="65", writes `state.indoorRH = 0.65`
+4. Reference engine: `calculateStage1("reference")` sets `state.currentMode = "reference"`, reads ref_i_59="45", **overwrites** `state.indoorRH = 0.45`
+5. Subsequent calculations using `state.indoorRH` see only the last value written (0.45)
+6. Both engines use contaminated shared state, causing cross-contamination between models
+
+**CONCLUSION**:
+
+The attempted tactical fixes addressed real issues (missing listeners, non-mode-aware reads, stale mode tracking) but **cannot resolve the fundamental architectural problem**: Cooling.js shared state object prevents true isolation between Target and Reference calculations.
+
+**DECISION** (Nov 3, 2025):
+
+Abandon tactical band-aid fixes on S08-RH% branch. Instead, complete the **strategic C-RF refactor** per this workplan:
+- Refactor Cooling.js to **Pattern A architecture** with separate `TargetState` and `ReferenceState` objects
+- Refactor S13 to dual-engine architecture with proper state isolation
+- Eliminate all shared state dependencies between Target and Reference engines
+
+**BRANCH STATUS**:
+- S08-RH% branch preserved with investigation commits and diagnostic tools
+- Branch will be merged to C-RF to provide context for proper refactor
+- All code changes functionally correct but insufficient to resolve shared state issue
+
+**FILES TO REFERENCE**:
+- [S08-RH-STATE-MIXING.md](S08-RH-STATE-MIXING.md) - Complete investigation with evidence
+- [I59-TRACE-SCRIPT.js](I59-TRACE-SCRIPT.js) - Diagnostic tool for runtime tracing
+- [Cooling.js](../src/core/Cooling.js) - Module requiring Pattern A refactor
+
+**NEXT STEPS**:
+1. Merge S08-RH% investigation to C-RF branch for context
+2. Proceed with Cooling.js Pattern A refactor (separate TargetState/ReferenceState)
+3. Apply lessons learned about shared state contamination to refactor design
+
+---
+
 ## Executive Summary
 
 ### Goals
