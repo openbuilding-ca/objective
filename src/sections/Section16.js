@@ -692,7 +692,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         .attr("x", (d) => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
         .attr("y", (d) => (d.y1 + d.y0) / 2)
         .attr("dy", "0.35em")
-        .text((d) => d.name)
+        .text((d) => this.formatNodeLabel(d))
         .style("opacity", 0); // Start invisible
 
       // Merge new and existing labels for updates
@@ -700,7 +700,8 @@ window.TEUI.SectionModules.sect16 = (function () {
         .merge(textEnter)
         .attr("text-anchor", (d) => (d.x0 < this.width / 2 ? "start" : "end"))
         .attr("x", (d) => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
-        .attr("y", (d) => (d.y1 + d.y0) / 2);
+        .attr("y", (d) => (d.y1 + d.y0) / 2)
+        .text((d) => this.formatNodeLabel(d)); // Update text on refresh
 
       // EXACT SANKEY3035ORIGINAL ANIMATION PATTERN FOR LABELS
       if (isInitialLoad) {
