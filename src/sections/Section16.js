@@ -927,11 +927,22 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     formatNodeLabel(node) {
       if (node.name && node.name.toLowerCase().includes("emissions")) {
-        const totalEmissionsInGrams =
-          node.targetLinks?.reduce((sum, link) => sum + link.value, 0) || 0;
-        const kgValue = totalEmissionsInGrams / 1000;
+        let totalEmissionsKg = 0;
+
+        // Read emission values directly from StateManager (mode-aware)
+        // These values are calculated by other sections and are always available
+        if (node.name.includes("Scope 1")) {
+          // Scope 1: Gas/Oil emissions from Space Heating and DHW
+          const spaceHeatingEmissionsKg = parseFloat(getModeAwareValue("f_114") || 0);
+          const dhwEmissionsKg = parseFloat(getModeAwareValue("k_49") || 0);
+          totalEmissionsKg = spaceHeatingEmissionsKg + dhwEmissionsKg;
+        } else if (node.name.includes("Scope 2")) {
+          // Scope 2: Electricity emissions
+          totalEmissionsKg = parseFloat(getModeAwareValue("k_27") || 0);
+        }
+
         const formattedKgValue = window.TEUI.formatNumber(
-          kgValue,
+          totalEmissionsKg,
           "number-2dp-comma",
         );
         return `${node.name} (${formattedKgValue} kg CO2e/yr)`;
