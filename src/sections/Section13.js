@@ -2893,9 +2893,10 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Calculate CED Mitigated (m_129) - Excel: MAX(0, D129 - H124 - D123)
    * Moved from Cooling.js - needs D123 from S13
+   * @param {boolean} isReferenceCalculation - Whether calculating Reference or Target
+   * @param {number} h124Value - Pre-calculated h_124 value to avoid race conditions
    */
-  function calculateCEDMitigated(isReferenceCalculation = false) {
-    // ✅ FIX (Oct 6, 2025): Mode-aware reads for Reference calculation
+  function calculateCEDMitigated(isReferenceCalculation = false, h124Value = null) {
     const d129 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -2903,12 +2904,14 @@ window.TEUI.SectionModules.sect13 = (function () {
           : getFieldValue("d_129"),
       ) || 0;
 
-    const h124 =
+    // Use provided h124Value if available, otherwise read from state (for backwards compatibility)
+    const h124 = h124Value !== null ? h124Value : (
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? window.TEUI.StateManager.getValue("ref_h_124")
           : getFieldValue("h_124"),
-      ) || 0;
+      ) || 0
+    );
 
     const d123 =
       window.TEUI.parseNumeric(
@@ -2920,7 +2923,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
     const cedMitigated = Math.max(0, d129 - h124 - d123);
 
-    // ✅ Update DOM for both Target and Reference (mode-aware via ModeManager.currentMode)
+    // Update DOM for both Target and Reference (mode-aware via ModeManager.currentMode)
     setFieldValue("m_129", cedMitigated, "number-2dp-comma");
 
     return { m_129: cedMitigated };
@@ -2984,8 +2987,17 @@ window.TEUI.SectionModules.sect13 = (function () {
         finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
       }
 
-      // ✅ Update values (mode-aware via ModeManager.currentMode)
+      // Update values (mode-aware via ModeManager.currentMode)
       setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
+
+      // Update StateManager with adjusted value after setback
+      // This ensures cooling_h_124 reflects the final value used in m_129 calculation
+      const prefix = isReferenceCalculation ? "ref_" : "";
+      window.TEUI.StateManager.setValue(
+        `${prefix}cooling_h_124`,
+        finalFreeCoolingLimit.toString(),
+        "calculated"
+      );
 
       // Calculate D124 (% Free Cooling Capacity)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for d_129
@@ -3116,7 +3128,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       };
 
       // Cooling system (D117, L114, L116) - needs M129
-      const mitigatedResults = calculateCEDMitigated(true);
+      // Pass h_124 value directly to avoid race condition with StateManager
+      const mitigatedResults = calculateCEDMitigated(true, freeCoolingResults.h_124);
       const coolingResults = calculateCoolingSystem(true, copResults);
 
       // Store Reference Model results with ref_ prefix for downstream sections
@@ -3184,7 +3197,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       };
 
       // Cooling system (D117, L114, L116) - needs M129
-      const mitigatedResults = calculateCEDMitigated(false);
+      // Pass h_124 value directly to avoid race condition with StateManager
+      const mitigatedResults = calculateCEDMitigated(false, freeCoolingResults.h_124);
       const coolingResults = calculateCoolingSystem(false, copResults);
 
       // Update DOM with Target calculation results

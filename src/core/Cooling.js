@@ -267,8 +267,9 @@ window.TEUI.CoolingCalculations = (function () {
    * @param {Object} stateObj - The state object (TargetState or ReferenceState)
    */
   function calculateHumidityRatios(stateObj) {
-    // Atmospheric pressure for calculation (sea level standard)
-    const atmosphericPressure = 101325; // Pa
+    // Use elevation-adjusted atmospheric pressure from state object
+    // Excel uses E15 = E13 × EXP(-E14 ÷ 8434) for elevation adjustment
+    const atmosphericPressure = stateObj.atmPressure || 101325; // Pa
 
     // Calculate humidity ratio indoor
     // Excel A61: 0.62198 * partialPressureIndoor / (atmosphericPressure - partialPressureIndoor)
@@ -277,10 +278,11 @@ window.TEUI.CoolingCalculations = (function () {
       (atmosphericPressure - stateObj.partialPressureIndoor);
 
     // Calculate humidity ratio at average conditions
-    // Excel A62: 0.62198 * partialPressure / (atmosphericPressure - partialPressure)
+    // Excel A62 uses NON-STANDARD formula: 0.62198 * partialPressure / (atmosphericPressure - pSatAvg)
+    // Note: Excel uses saturation pressure (pSatAvg) in denominator, not partial pressure (standard formula)
     const humidityRatioAvg =
       (0.62198 * stateObj.partialPressure) /
-      (atmosphericPressure - stateObj.partialPressure);
+      (atmosphericPressure - stateObj.pSatAvg);
 
     // Calculate humidity ratio difference
     // Excel A63: A62 - A61
@@ -359,10 +361,6 @@ window.TEUI.CoolingCalculations = (function () {
       window.TEUI.parseNumeric(getModeAwareValue("l_22", "80", mode)) || 80; // Project elevation from S03
     const seaLevelPressure = 101325; // E13 - Standard atmospheric pressure at sea level
     stateObj.atmPressure = seaLevelPressure * Math.exp(-elevation / 8434); // E15 logic
-
-    console.log(
-      `[Cooling] Atmospheric pressure updated (${mode}): elevation=${elevation}m → atmPressure=${stateObj.atmPressure.toFixed(0)}Pa`,
-    );
   }
 
   /**
@@ -503,12 +501,8 @@ window.TEUI.CoolingCalculations = (function () {
     const twbSimple =
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
 
-    // Second formula with dewpoint correction factor
-    const twbCorrected =
-      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-
-    // Average of both
-    stateObj.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
+    // Excel uses only the simple formula (matches Excel COOLING-TARGET E64)
+    stateObj.wetBulbTemperature = twbSimple;
 
     return stateObj.wetBulbTemperature;
   }
@@ -1002,7 +996,8 @@ window.TEUI.CoolingCalculations = (function () {
       console.log(
         `[Cooling] Elevation changed: l_22=${newValue}m → updating atmospheric pressure for both modes`,
       );
-      updateAtmosphericPressure(); // Recalculate atmospheric pressure
+      updateAtmosphericPressure(TargetState, "target");
+      updateAtmosphericPressure(ReferenceState, "reference");
 
       // ✅ DUAL-ENGINE: Atmospheric pressure affects humidity calculations in Stage 1 for BOTH modes
       calculateStage1("target");
@@ -1164,6 +1159,10 @@ window.TEUI.CoolingCalculations = (function () {
 
 // Initialize when StateManager becomes available
 document.addEventListener("teui-statemanager-ready", function () {
-  // Initialize with StateManager values
   window.TEUI.CoolingCalculations.initialize();
 });
+
+// If StateManager is already available when this module loads, initialize immediately
+if (typeof window.TEUI !== "undefined" && typeof window.TEUI.StateManager !== "undefined") {
+  window.TEUI.CoolingCalculations.initialize();
+}
