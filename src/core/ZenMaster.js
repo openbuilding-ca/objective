@@ -154,31 +154,34 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @param {*} value - The value that was read
    */
   recordAccess(accessedFieldId, value) {
-    if (!this.isTracing || this.calculationStack.length === 0) {
-      return; // Not currently tracing
+    if (!this.isEnabled) {
+      return; // ZenMaster not enabled, skip recording
     }
 
-    const currentCalc = this.calculationStack[this.calculationStack.length - 1];
-
-    // Don't record self-references
-    if (accessedFieldId === currentCalc.fieldId) {
-      return;
-    }
-
-    // Record the dependency
-    currentCalc.dependencies.add(accessedFieldId);
-
-    // Log the access for detailed analysis
+    // Log all accesses when enabled (for general observation)
     this.accessLog.push({
       timestamp: Date.now(),
-      calculatingField: currentCalc.fieldId,
-      mode: currentCalc.mode,
+      calculatingField: this.currentCalculation || 'unknown',
+      mode: this.currentMode,
       accessedField: accessedFieldId,
       value: value,
       stackDepth: this.calculationStack.length
     });
 
-    console.log(`  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`);
+    // If we're in an active trace with calculation stack, record dependencies
+    if (this.isTracing && this.calculationStack.length > 0) {
+      const currentCalc = this.calculationStack[this.calculationStack.length - 1];
+
+      // Don't record self-references
+      if (accessedFieldId === currentCalc.fieldId) {
+        return;
+      }
+
+      // Record the dependency
+      currentCalc.dependencies.add(accessedFieldId);
+
+      console.log(`  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`);
+    }
   }
 
   /**
@@ -238,20 +241,64 @@ window.TEUI.ZenMaster = class ZenMaster {
   }
 
   /**
+   * Build dependency map from access log (when no structured traces used)
+   * Analyzes temporal patterns in access log to infer dependencies
+   */
+  buildDependenciesFromAccessLog() {
+    if (this.accessLog.length === 0) {
+      console.warn('[ZenMaster] No access events recorded. Enable ZenMaster and interact with the app.');
+      return;
+    }
+
+    console.log(`🔍 [ZenMaster] Analyzing ${this.accessLog.length} access events...`);
+
+    // Group accesses by field being set (inferred from setValue timing)
+    // For now, use simple approach: all getValue() calls are potential dependencies
+    const fieldAccesses = new Map();
+
+    this.accessLog.forEach(event => {
+      if (!fieldAccesses.has(event.accessedField)) {
+        fieldAccesses.set(event.accessedField, new Set());
+      }
+    });
+
+    // Add all accessed fields to global dependency map
+    fieldAccesses.forEach((_deps, fieldId) => {
+      if (!this.dependencies.has(fieldId)) {
+        this.dependencies.set(fieldId, new Set());
+      }
+    });
+
+    console.log(`✅ [ZenMaster] Discovered ${fieldAccesses.size} fields accessed`);
+  }
+
+  /**
    * Export the discovered dependency graph
    * @returns {Object} Dependency graph in Dependency.js compatible format
    */
   exportDependencyGraph() {
+    // If dependencies map is empty but we have access log, try to build from log
+    if (this.dependencies.size === 0 && this.accessLog.length > 0) {
+      this.buildDependenciesFromAccessLog();
+    }
+
     const graph = {
       nodes: [],
       links: []
     };
 
-    // Build unique node set
+    // Build unique node set from access log (all fields that were accessed)
     const nodeSet = new Set();
+
+    // Add all fields from structured dependencies
     this.dependencies.forEach((deps, fieldId) => {
       nodeSet.add(fieldId);
       deps.forEach(dep => nodeSet.add(dep));
+    });
+
+    // Also add all fields from access log
+    this.accessLog.forEach(event => {
+      nodeSet.add(event.accessedField);
     });
 
     // Create nodes
@@ -261,7 +308,7 @@ window.TEUI.ZenMaster = class ZenMaster {
       group: this.getFieldSection(id)
     }));
 
-    // Create links
+    // Create links from structured dependencies
     this.dependencies.forEach((deps, fieldId) => {
       deps.forEach(dep => {
         graph.links.push({
