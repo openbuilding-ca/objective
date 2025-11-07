@@ -383,6 +383,81 @@ async function runComprehensiveZenTest() {
 
 ---
 
+## Test Scenario 11: ConditionalDeps Validation (Section 02)
+
+**Purpose:** Test enhanced ZenMaster validation with conditionalDeps support
+
+**What Was Changed:**
+
+1. **Section02.js Field Definitions:**
+   - Added `conditionalDeps` and `uiDeps` metadata support to `getFields()`
+   - Field `d_16` (Embodied Carbon Target) now declares:
+     ```javascript
+     {
+       fieldId: "d_16",
+       dependencies: ["d_15"],           // Always uses d_15 (Carbon Standard)
+       conditionalDeps: ["i_39", "i_41"], // i_39 when TGS4, i_41 when Self Reported
+     }
+     ```
+
+2. **ZenMaster.js Enhanced Validation:**
+   - Now categorizes phantom dependencies into 4 types:
+     - **TRUE PHANTOMS** ❌: Declared but never used
+     - **CONDITIONAL** 🔀: Declared as `conditionalDeps`, not triggered in this test
+     - **UI DEPS** 🎨: Declared as `uiDeps`, for dropdown/validation only
+     - **NON-EXISTENT** 🚫: Dependency field doesn't exist in FieldManager
+
+### Sub-Scenario 11a: Self Reported Standard
+
+**Goal:** Verify that `i_41` is traced, `i_39` is marked as conditional (not phantom)
+
+1. Reset and Enable ZenMaster: `zenReset(); zenEnable();`
+2. Navigate to Section 02 (Building Info)
+3. Ensure `d_15` (Carbon Benchmarking Standard) = "Self Reported"
+4. Toggle Reporting Year to trigger calculation
+5. Disable: `zenDisable()`
+
+**Expected Results for d_16:**
+- ✅ `d_15` traced (always used)
+- ✅ `i_41` traced (used when d_15 = "Self Reported")
+- 🔀 `i_39` marked as CONDITIONAL (not triggered, not a phantom)
+
+### Sub-Scenario 11b: TGS4 Standard
+
+**Goal:** Verify that `i_39` is traced, `i_41` is marked as conditional (not phantom)
+
+1. Reset and Enable: `zenReset(); zenEnable();`
+2. Change `d_15` to "TGS4"
+3. Trigger calculation
+4. Disable: `zenDisable()`
+
+**Expected Results for d_16:**
+- ✅ `d_15` traced
+- ✅ `i_39` traced (used when d_15 = "TGS4")
+- 🔀 `i_41` marked as CONDITIONAL (not triggered)
+
+### Sub-Scenario 11c: BR18 Standard (No External Deps)
+
+**Goal:** Verify that both `i_39` and `i_41` are marked as conditional (not phantoms)
+
+1. Reset and Enable: `zenReset(); zenEnable();`
+2. Change `d_15` to "BR18 (Denmark)" (uses hardcoded value 500)
+3. Trigger calculation
+4. Disable: `zenDisable()`
+
+**Expected Results for d_16:**
+- ✅ `d_15` traced
+- 🔀 `i_39` marked as CONDITIONAL
+- 🔀 `i_41` marked as CONDITIONAL
+
+**Success Criteria:**
+- ✅ Conditional deps are NOT flagged as true phantoms
+- ✅ Validation summary shows breakdown by category
+- ✅ Console output uses emoji indicators for clarity
+- ✅ All three sub-scenarios show 0 true phantoms for d_16
+
+---
+
 ## Conclusion
 
 This comprehensive test protocol ensures ZenMaster captures ALL dependency paths, including:
@@ -394,5 +469,6 @@ This comprehensive test protocol ensures ZenMaster captures ALL dependency paths
 - ✅ Embodied carbon paths
 - ✅ Envelope variations
 - ✅ Occupancy-based calculations
+- ✅ ConditionalDeps validation (Section 02)
 
 After completing this protocol, you'll have a **complete runtime dependency graph** that accurately represents your application's TRUE calculation flow, enabling confident dependency cleanup and Calculator.js optimization.

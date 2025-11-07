@@ -615,6 +615,62 @@ When human runs `zenExportSections()`, you'll see output like:
 
 **Your Action**: Merge these into existing field definitions, preserving other properties (type, value, label, section, etc.)
 
+### Step 3a: Understanding Dependency Types
+
+**IMPORTANT**: ZenMaster now supports three types of dependencies:
+
+1. **`dependencies`** - Core calculation dependencies
+   - Always accessed during calculation
+   - Required for field to compute correctly
+   - Example: `d_16` depends on `d_15` (carbon standard selection)
+
+2. **`conditionalDeps`** - Conditional calculation dependencies
+   - Used only in specific scenarios (if/switch logic)
+   - Not phantoms if unused in a particular test
+   - Example: `d_16` conditionally depends on `i_39` (when TGS4) or `i_41` (when Self Reported)
+
+3. **`uiDeps`** - UI-only dependencies
+   - Used for dropdown options, validation, DOM manipulation
+   - Never accessed via `getValue()` during calculations
+   - Example: `h_19` (Municipality) depends on `d_19` (Province) for dropdown filtering
+
+**Field Definition Example**:
+
+```javascript
+d_16: {
+  fieldId: "d_16",
+  type: "derived",
+  label: "Embodied Carbon Target",
+  section: "buildingInfo",
+  dependencies: ["d_15"],           // Always used
+  conditionalDeps: ["i_39", "i_41"], // i_39 when TGS4, i_41 when Self Reported
+  uiDeps: [],                        // None for this field
+}
+```
+
+**When to Use Each Type:**
+
+- **dependencies**: Field is ALWAYS accessed when calculating this field
+- **conditionalDeps**: Field is accessed ONLY when certain conditions are true (if/switch branches, heating system type, province selection, etc.)
+- **uiDeps**: Field is used for UI behavior but NOT for calculation (dropdown population, form validation, etc.)
+
+**Validation Output Interpretation:**
+
+ZenMaster now categorizes phantom dependencies:
+
+```
+⚠️ d_16 (Embodied Carbon Target) [type: derived]
+  🔀 CONDITIONAL deps (not triggered): i_39
+
+✅ This is EXPECTED! i_39 is only used when d_15="TGS4"
+```
+
+**Categories:**
+- ❌ **TRUE PHANTOMS**: Remove these from dependencies array
+- 🔀 **CONDITIONAL**: Keep in conditionalDeps array (working as designed)
+- 🎨 **UI DEPS**: Keep in uiDeps array (UI behavior, not calculation)
+- 🚫 **NON-EXISTENT**: Typos or deleted fields - remove immediately
+
 ### Step 4: Update Dependency.js Graph (If Requested)
 
 If human provides JSON from `zenExportFile()`:
