@@ -1702,7 +1702,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "68,819.02",
           section: "radiantGains",
-          dependencies: ["h_80", "k_80"],
+          dependencies: ["e_80", "i_80"],
         },
       },
     },

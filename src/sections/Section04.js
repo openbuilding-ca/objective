@@ -400,14 +400,18 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "f_32",
           type: "calculated",
           value: "0",
+          label: "∑ Actual Energy",
           section: "actualTargetEnergy",
+          dependencies: ["f_27", "f_28", "f_29", "f_30", "f_31"],
           // Excel: =SUM(F27:F31) (actual energy subtotal)
         },
         g: {
           fieldId: "g_32",
           type: "calculated",
           value: "0",
+          label: "∑ Actual Emissions",
           section: "actualTargetEnergy",
+          dependencies: ["g_27", "g_28", "g_29", "g_30", "g_31", "d_60"],
           // Excel: =SUM(G27:G31)-(D60*1000) (actual emissions minus wood offset)
         },
         h: { content: "" },
@@ -416,14 +420,18 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "j_32",
           type: "calculated",
           value: "0",
+          label: "∑ Target Energy",
           section: "actualTargetEnergy",
+          dependencies: ["j_27", "j_28", "j_29", "j_30", "j_31"],
           // Excel: =SUM(J27:J31) (target energy subtotal)
         },
         k: {
           fieldId: "k_32",
           type: "calculated",
           value: "0",
+          label: "∑ Target Emissions",
           section: "actualTargetEnergy",
+          dependencies: ["k_27", "k_28", "k_29", "k_30", "k_31", "d_60"],
           // Excel: =SUM(K27:K31)-(D60*1000) (target emissions minus wood offset)
         },
         l: { content: "" },
