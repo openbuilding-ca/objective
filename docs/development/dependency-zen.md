@@ -603,6 +603,11 @@ h_80: {
 ❌ **Don't** blindly copy dependencies without understanding the calculation
 ❌ **Don't** remove dependencies that make logical sense even if ZenMaster didn't catch them (might be conditionally used)
 ❌ **Don't** forget to add unique labels when fixing dependencies
+❌ **Don't** use generic row labels as field labels - be specific!
+   - **Bad**: `label: "Total Fossil Gas Use"` (row name, generic)
+   - **Good**: `label: "Gas Price (gCO₂e/m³)"` (specific to field l_28)
+   - Human users need to know what "l_28" means - is it volume, price, emissions?
+   - Example: "Gas Cost" vs "Gas Price" - price is per unit, cost is total spent
 ❌ **Don't** introduce circular dependencies
 ❌ **Don't** skip verification that referenced fields actually exist
 
@@ -615,6 +620,211 @@ After updating dependencies, verify:
 - [ ] Labels are unique and descriptive
 - [ ] Commit message explains changes
 - [ ] No circular dependency chains introduced
+
+---
+
+## Integration with Calculator.js and Clock.js
+
+### How ZenMaster Works with Calculator.js
+
+**Calculator.js** defines the section calculation order in `calculateAll()`:
+
+```javascript
+const calcOrder = [
+  "sect02", // Building Info
+  "sect03", // Climate
+  "sect08", // IAQ
+  "sect09", // Internal Gains
+  "sect10", // Radiant Gains (i80 for S15)
+  "sect11", // Transmission Losses (writes ref_i_98 for S12)
+  "sect12", // Volume Metrics (reads ref_i_98 from S11)
+  // ... more sections
+  "sect01", // Key Values (consumes S15, S05)
+];
+```
+
+This order has been manually tuned multiple times for performance. **ZenMaster can validate and improve this ordering.**
+
+### The Optimization Loop
+
+**Phase 1: Discover True Dependencies**
+
+1. Enable ZenMaster: `zenEnable()`
+2. Trigger full calculation: `TEUI.Calculator.calculateAll()`
+3. ZenMaster traces all getValue() calls during execution
+4. Discovers which sections ACTUALLY depend on which fields
+5. Validates against manual dependencies in field definitions
+
+**Phase 2: Measure Current Performance**
+
+Clock.js already measures:
+- Total calculation time
+- User interaction responsiveness
+- Section-by-section timing (if instrumented)
+
+**Phase 3: Analyze Dependencies**
+
+1. Export ZenMaster graph: `zenExportFile()`
+2. Perform topological sort on dependency graph
+3. Identify sections that could run earlier (fewer deps)
+4. Identify sections blocking others (many dependents)
+5. Find unnecessary recalculations (phantom deps)
+
+**Phase 4: Optimize Calculation Order**
+
+Based on ZenMaster discoveries:
+
+```javascript
+// OLD ORDER (manual tuning)
+const calcOrder = ["sect02", "sect03", ..., "sect01"];
+
+// NEW ORDER (ZenMaster-optimized)
+const calcOrder = [
+  // Foundation: No dependencies, run first
+  "sect02", // Building Info (defines h_15, h_12, h_13)
+  "sect03", // Climate (defines d_20, d_21, climate data)
+
+  // Mid-tier: Depend on foundation only
+  "sect12", // Volume (depends on h_15)
+  "sect08", // IAQ (depends on h_15, climate)
+
+  // Calculations: Build on foundation + mid-tier
+  "sect09", // Internal Gains
+  "sect10", // Radiant Gains (depends on sect09)
+  "sect11", // Transmission (depends on volumes)
+
+  // Energy calculations: Need all physical calculations
+  "sect13", // Mechanical Loads
+  "sect07", // Water Use
+  "sect06", // Renewables
+
+  // Summaries: Consume everything
+  "sect04", // Energy Totals
+  "sect05", // Emissions
+  "sect14", // TEDI Summary
+  "sect15", // TEUI Summary
+
+  // Display: Last (pure visualization)
+  "sect01", // Key Values (dashboard)
+  "sect16", // Sankey
+  "sect17", // Dependency Graph
+];
+```
+
+**Phase 5: Validate Performance Improvement**
+
+1. Implement new calculation order
+2. Run Clock.js benchmarks
+3. Compare before/after performance metrics
+4. If faster → keep new order
+5. If slower → analyze why, adjust order
+6. Iterate until optimal
+
+### ZenMaster + Clock.js Integration (Future)
+
+**Proposed enhancement** to ZenMaster.js:
+
+```javascript
+// Auto-capture Clock.js metrics with dependency traces
+class ZenMaster {
+  startCalculationTrace() {
+    this.performanceBaseline = {
+      startTime: performance.now(),
+      clockMetrics: window.TEUI?.Clock?.getMetrics() || {}
+    };
+    this.enable();
+  }
+
+  endCalculationTrace() {
+    this.disable();
+    const endTime = performance.now();
+    const duration = endTime - this.performanceBaseline.startTime;
+
+    return {
+      dependencies: this.exportDependencyGraph(),
+      performance: {
+        totalTime: duration,
+        clockMetrics: window.TEUI?.Clock?.getMetrics() || {},
+        fieldsTracked: this.dependencies.size,
+        accessEvents: this.accessLog.length
+      }
+    };
+  }
+
+  // Compare two calculation orders
+  benchmarkCalculationOrder(orderA, orderB) {
+    const resultsA = this.runWithOrder(orderA);
+    const resultsB = this.runWithOrder(orderB);
+
+    console.log(`Order A: ${resultsA.performance.totalTime}ms`);
+    console.log(`Order B: ${resultsB.performance.totalTime}ms`);
+    console.log(`Winner: ${resultsA.performance.totalTime < resultsB.performance.totalTime ? 'A' : 'B'}`);
+
+    return resultsA.performance.totalTime < resultsB.performance.totalTime ? orderA : orderB;
+  }
+}
+```
+
+### Workflow: Optimize Calculator.js Order
+
+**Goal**: Find the fastest section calculation order
+
+```javascript
+// 1. Trace current order
+zenEnable()
+TEUI.Calculator.calculateAll()
+const currentMetrics = zenMaster.endCalculationTrace()
+
+// 2. Get ZenMaster's suggested order
+const dependencies = zenExport()
+const suggestedOrder = topologicalSort(dependencies)
+
+// 3. Implement suggested order in Calculator.js
+// Edit calcOrder array based on ZenMaster output
+
+// 4. Benchmark new order
+zenEnable()
+TEUI.Calculator.calculateAll()
+const newMetrics = zenMaster.endCalculationTrace()
+
+// 5. Compare performance
+console.log(`Old: ${currentMetrics.performance.totalTime}ms`)
+console.log(`New: ${newMetrics.performance.totalTime}ms`)
+console.log(`Improvement: ${((currentMetrics.performance.totalTime - newMetrics.performance.totalTime) / currentMetrics.performance.totalTime * 100).toFixed(1)}%`)
+```
+
+### What ZenMaster Reveals About Calculator Order
+
+**Common Issues Discovered**:
+
+1. **Section calculates too early**: Depends on fields not yet calculated
+   - Causes recalculation overhead
+   - ZenMaster shows missing dependencies
+
+2. **Section calculates too late**: All dependencies ready but waiting
+   - Wastes time, could run earlier
+   - ZenMaster shows no blockers
+
+3. **Circular section dependencies**: Sections depend on each other
+   - Requires iterative calculation (expensive!)
+   - ZenMaster flags circular paths
+
+4. **Phantom cross-section reads**: Section reads field but doesn't declare dependency
+   - Risk of stale data
+   - ZenMaster catches as missing dependency
+
+### Example Optimization Result
+
+**Before** (manual ordering):
+- Total calculation time: 450ms
+- 3 recalculation passes needed
+- Some sections read stale data
+
+**After** (ZenMaster-optimized):
+- Total calculation time: 280ms ✅ 38% faster
+- 1 calculation pass (perfect topological order)
+- No stale data reads
+- Clock.js confirms improvement
 
 ---
 

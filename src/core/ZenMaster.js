@@ -7,6 +7,32 @@
  * of reality" that can be used to optimize Dependency.js.
  *
  * Philosophy: Truth over intention. What the code DOES, not what we THINK it does.
+ *
+ * DOCUMENTATION: Complete usage instructions available at:
+ * docs/development/dependency-zen.md
+ *
+ * Includes:
+ * - Human user guide (3-click workflow with 🧘 Zen button)
+ * - AI agent integration instructions
+ * - Workflow examples and validation checklists
+ * - Common dependency patterns and anti-patterns
+ *
+ * INTEGRATION WITH CALCULATOR.JS:
+ * - ZenMaster traces getValue() calls during Calculator.calculateAll()
+ * - Discovers actual dependencies vs declared dependencies
+ * - Works with section-ordered calculation flow
+ * - Should observe Clock.js performance metrics to learn optimization impact
+ * - Use traced dependencies to reorder Calculator sections for better performance
+ *
+ * INTEGRATION WITH CLOCK.JS:
+ * - Clock.js measures calculation performance (timing metrics)
+ * - ZenMaster discovers calculation dependencies (what depends on what)
+ * - Together they enable:
+ *   1. ZenMaster finds true dependency graph
+ *   2. Clock.js measures current performance
+ *   3. Reorder Calculator sections based on ZenMaster graph
+ *   4. Clock.js validates performance improvement
+ *   5. Iterate until optimal calculation flow achieved
  */
 
 window.TEUI = window.TEUI || {};
