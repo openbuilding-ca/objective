@@ -458,6 +458,133 @@ async function runComprehensiveZenTest() {
 
 ---
 
+## Test Scenario 12: Emissions Tracking (Multi-Conditional)
+
+**Purpose:** Test comprehensive conditional dependencies across multiple sections
+
+**Why This Test is Superior to Test 11:**
+- Province-dependent emission factors (S03: d_19)
+- Year-dependent emission factors (S02: h_12)
+- Fuel-type variations (S04: d_27-d_31 enable/disable calculation branches)
+- Wood offset calculations (S08: d_60 subtracted from totals)
+- Cross-section cascades: S02 → S03 → S04 → S05 → S08 → emissions
+- Expected 1200+ links (vs 547 from Test 11)
+
+**Key Fields Under Test:**
+- `k_27` - Electricity Emissions (depends on d_19 province, h_12 year)
+- `k_28` - Gas Emissions (conditional on d_28 usage > 0)
+- `k_29` - Propane Emissions (conditional on d_29 usage > 0)
+- `k_30` - Oil Emissions (conditional on d_30 usage > 0)
+- `k_31` - Wood Emissions (conditional on d_31 usage > 0, d_60 offset)
+- `k_32` - ∑ Target Emissions (sum of active fuel types minus d_60)
+
+### Sub-Scenario 12a: Baseline Emissions (Ontario, 2024)
+
+**Goal:** Capture baseline emission dependencies with electricity + gas only
+
+1. Reset and Enable: `zenReset(); zenEnable();`
+2. Configure baseline:
+   - Province (d_19) = "Ontario"
+   - Reporting Year (h_12) = "2024"
+   - Enable electricity and gas use (d_27 > 0, d_28 > 0)
+   - Disable propane, oil, wood (d_29 = 0, d_30 = 0, d_31 = 0)
+3. Trigger full calculation (toggle between Target/Reference modes)
+4. Disable: `zenDisable()`
+
+**Expected Dependencies:**
+- k_27 → d_19 (province emission factor)
+- k_27 → h_12 (year emission factor)
+- k_27 → d_27, f_27, j_27 (electricity use values)
+- k_28 → d_19, h_12 (province/year factors)
+- k_28 → d_28, f_28, j_28 (gas use values)
+- k_32 → k_27, k_28 (sum of active fuel types only)
+- k_29, k_30, k_31 marked as CONDITIONAL (not traced when usage = 0)
+
+### Sub-Scenario 12b: Multi-Fuel + Wood Offset (BC, 2022)
+
+**Goal:** Capture wood burning with offset calculation
+
+1. Reset and Enable: `zenReset(); zenEnable();`
+2. Configure multi-fuel scenario:
+   - Province (d_19) = "British Columbia"
+   - Reporting Year (h_12) = "2022"
+   - Enable all fuel types (d_27-d_31 all > 0)
+   - Wood burning active → triggers d_60 offset calculation (S08)
+3. Trigger calculation
+4. Disable: `zenDisable()`
+
+**Expected Additional Dependencies:**
+- k_31 → d_31 (wood use)
+- k_31 → d_60 (wood emissions offset from S08)
+- d_60 → [S08 IAQ fields] (combustion efficiency, stack losses)
+- k_32 → k_27, k_28, k_29, k_30, k_31, d_60 (all fuel types + offset)
+
+### Sub-Scenario 12c: Province Comparison (AB vs QC)
+
+**Goal:** Verify province-conditional emission factors trigger different dependencies
+
+1. Reset and Enable: `zenReset(); zenEnable();`
+2. Test Alberta (high carbon grid):
+   - Province (d_19) = "Alberta"
+   - All fuel types enabled
+   - Note emission intensity values
+3. Change to Quebec (low carbon hydro grid):
+   - Province (d_19) = "Quebec"
+   - Observe recalculation with different factors
+4. Disable: `zenDisable()`
+
+**Expected Behavior:**
+- Same dependency structure (d_19 → k_27-k_31)
+- Different emission factor VALUES accessed from S03 lookup tables
+- Demonstrates province as primary conditional dependency source
+
+**Success Criteria:**
+- ✅ All active fuel types (k_27-k_31) traced with province + year dependencies
+- ✅ Inactive fuel types (usage = 0) do NOT create phantom dependencies
+- ✅ Wood offset (d_60) only appears when d_31 > 0
+- ✅ Cross-section dependencies captured: S03 → S04 → S08 → emissions
+- ✅ Greater link count than Test 11 (expected: 1200+ vs 547)
+- ✅ ConditionalDeps validation correctly categorizes fuel-type conditionals
+
+**Export Analysis:**
+
+After running all 3 sub-scenarios:
+```javascript
+zenExportFile()  // Saves zen-dependencies-[timestamp].json
+```
+
+**Expected Metrics:**
+- **Node Count:** 350+ (vs 282 from Test 11)
+- **Link Count:** 1200+ (vs 547 from Test 11)
+- **Access Events:** 20,000+ (multi-fuel scenarios generate more events)
+
+**⚠️ Clock.js Performance Warning:**
+
+Test 12 will generate significant Clock.js console spam due to:
+- **h_12 slider** (reporting year) using `input` event → cascades on every pixel
+- **Province dropdown** (d_19) recalculating ALL emission factors
+- **Multi-fuel scenarios** (5 parallel calculation paths k_27-k_31)
+
+**Recommendation:** Apply "calculate on release" pattern to h_12 slider (like d_97) BEFORE running Test 12:
+
+```javascript
+// In Section02.js - Change h_12 slider from 'input' to 'change' event
+yearSlider.addEventListener("input", function (e) {
+  // Update display only (no calculation)
+  const yearDisplay = this.nextElementSibling;
+  if (yearDisplay) yearDisplay.textContent = e.target.value;
+});
+
+yearSlider.addEventListener("change", function (e) {
+  // Calculate only on release
+  const newYear = e.target.value;
+  ModeManager.setValue("h_12", newYear, "user-modified");
+  // ... rest of calculation logic
+});
+```
+
+---
+
 ## Conclusion
 
 This comprehensive test protocol ensures ZenMaster captures ALL dependency paths, including:
@@ -470,5 +597,6 @@ This comprehensive test protocol ensures ZenMaster captures ALL dependency paths
 - ✅ Envelope variations
 - ✅ Occupancy-based calculations
 - ✅ ConditionalDeps validation (Section 02)
+- ✅ Multi-fuel emissions tracking (Section 04 → 08)
 
 After completing this protocol, you'll have a **complete runtime dependency graph** that accurately represents your application's TRUE calculation flow, enabling confident dependency cleanup and Calculator.js optimization.
