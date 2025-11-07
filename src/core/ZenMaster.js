@@ -101,10 +101,11 @@ window.TEUI.ZenMaster = class ZenMaster {
       return;
     }
 
-    // Store original method
+    // Store original methods
     this.originalGetValue = stateManager.getValue.bind(stateManager);
+    this.originalSetValue = stateManager.setValue.bind(stateManager);
 
-    // Replace with tracing version
+    // Replace getValue with tracing version
     const zenMaster = this;
     stateManager.getValue = function(fieldId) {
       // Call original method to get the value
@@ -116,7 +117,16 @@ window.TEUI.ZenMaster = class ZenMaster {
       return value;
     };
 
-    console.log('🔍 [ZenMaster] StateManager.getValue intercepted');
+    // Replace setValue with tracing version
+    stateManager.setValue = function(fieldId, value) {
+      // Record that this field is being calculated/set
+      zenMaster.recordSetValue(fieldId, value);
+
+      // Call original method to set the value
+      return zenMaster.originalSetValue(fieldId, value);
+    };
+
+    console.log('🔍 [ZenMaster] StateManager.getValue and setValue intercepted');
   }
 
   /**
@@ -131,7 +141,12 @@ window.TEUI.ZenMaster = class ZenMaster {
     stateManager.getValue = this.originalGetValue;
     this.originalGetValue = null;
 
-    console.log('🔄 [ZenMaster] StateManager.getValue restored');
+    if (this.originalSetValue) {
+      stateManager.setValue = this.originalSetValue;
+      this.originalSetValue = null;
+    }
+
+    console.log('🔄 [ZenMaster] StateManager.getValue and setValue restored');
   }
 
   /**
@@ -182,6 +197,33 @@ window.TEUI.ZenMaster = class ZenMaster {
 
       console.log(`  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`);
     }
+  }
+
+  /**
+   * Record when a field value is being set (calculated field being updated)
+   * This helps identify which field is currently being calculated
+   * @param {string} fieldId - The field being set
+   * @param {*} value - The value being set
+   */
+  recordSetValue(fieldId, value) {
+    if (!this.isEnabled) {
+      return; // ZenMaster not enabled, skip recording
+    }
+
+    // Update current calculation context
+    // This tells recordAccess() which field is "consuming" dependencies
+    this.currentCalculation = fieldId;
+
+    // Log the setValue event
+    this.accessLog.push({
+      timestamp: Date.now(),
+      type: 'setValue',
+      calculatingField: fieldId,
+      mode: this.currentMode,
+      accessedField: fieldId,
+      value: value,
+      stackDepth: this.calculationStack.length
+    });
   }
 
   /**
@@ -252,24 +294,43 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     console.log(`🔍 [ZenMaster] Analyzing ${this.accessLog.length} access events...`);
 
-    // Group accesses by field being set (inferred from setValue timing)
-    // For now, use simple approach: all getValue() calls are potential dependencies
-    const fieldAccesses = new Map();
+    // Infer dependencies from access patterns:
+    // When field X is set (setValue), any getValue calls immediately after are dependencies of X
+    let currentField = null;
+    let dependencyCount = 0;
 
-    this.accessLog.forEach(event => {
-      if (!fieldAccesses.has(event.accessedField)) {
-        fieldAccesses.set(event.accessedField, new Set());
+    this.accessLog.forEach((event) => {
+      // Check if this is a setValue event
+      if (event.type === 'setValue') {
+        currentField = event.calculatingField;
+
+        // Initialize dependency set for this field
+        if (!this.dependencies.has(currentField)) {
+          this.dependencies.set(currentField, new Set());
+        }
+      }
+      // If calculatingField changed, this is a new calculation context
+      else if (event.calculatingField !== 'unknown' && event.calculatingField !== currentField) {
+        currentField = event.calculatingField;
+
+        // Initialize dependency set for this field
+        if (!this.dependencies.has(currentField)) {
+          this.dependencies.set(currentField, new Set());
+        }
+      }
+
+      // Record getValue dependencies for current field
+      if (currentField && event.type !== 'setValue' && event.accessedField !== currentField) {
+        const deps = this.dependencies.get(currentField);
+        if (deps && !deps.has(event.accessedField)) {
+          deps.add(event.accessedField);
+          dependencyCount++;
+        }
       }
     });
 
-    // Add all accessed fields to global dependency map
-    fieldAccesses.forEach((_deps, fieldId) => {
-      if (!this.dependencies.has(fieldId)) {
-        this.dependencies.set(fieldId, new Set());
-      }
-    });
-
-    console.log(`✅ [ZenMaster] Discovered ${fieldAccesses.size} fields accessed`);
+    const fieldsWithDeps = Array.from(this.dependencies.entries()).filter(([_, deps]) => deps.size > 0);
+    console.log(`✅ [ZenMaster] Discovered ${fieldsWithDeps.length} fields with ${dependencyCount} total dependencies`);
   }
 
   /**

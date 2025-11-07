@@ -309,18 +309,135 @@ Section 04:
 4. ✅ Create ZenMaster.js - Runtime dependency discovery system
 5. ✅ Add 🧘 Zen button to index.html for easy enable/disable
 6. ✅ Export to file functionality (downloads JSON for Dependency.js)
+7. ✅ Add setValue() interception for accurate dependency link inference
+8. ✅ Enhance buildDependenciesFromAccessLog() to create links from temporal patterns
+9. ✅ Full dependency graph export (768 nodes, 2499 links)
 
 ### In Progress 🔄
 
-7. 🔄 Run ZenMaster across all sections to discover true dependencies
-8. 🔄 Validate discovered vs declared dependencies
-9. 🔄 Update section field definitions with correct dependencies
+10. 🔄 Distinguish true phantoms from conditional dependencies
+11. 🔄 Update section field definitions with correct dependencies (removing true phantoms)
+12. 🔄 Document conditional dependency patterns for future reference
 
 ### Planned 📋
 
-10. 📋 Integrate ZenMaster hooks into StateManager for automatic detection
-11. 📋 Add continuous validation warnings in development mode
-12. 📋 Create calculation optimization based on true dependency graph
+13. 📋 Integrate ZenMaster hooks into StateManager for automatic detection
+14. 📋 Add continuous validation warnings in development mode
+15. 📋 Create calculation optimization based on true dependency graph
+16. 📋 Enhance validation to distinguish user inputs from calculated fields
+17. 📋 Add conditional dependency markers in field definitions
+
+---
+
+## How ZenMaster Works (Technical Details)
+
+### setValue() and getValue() Interception
+
+ZenMaster intercepts both `StateManager.setValue()` and `StateManager.getValue()` to capture the complete dependency graph:
+
+**setValue Interception:**
+```javascript
+// When a calculated field is updated
+StateManager.setValue(fieldId, value)
+  ↓
+ZenMaster.recordSetValue(fieldId, value)
+  ↓
+Sets currentCalculation = fieldId
+  ↓
+Subsequent getValue() calls are dependencies of this field
+```
+
+**getValue Interception:**
+```javascript
+// When a field value is read during calculation
+StateManager.getValue(dependencyFieldId)
+  ↓
+ZenMaster.recordAccess(dependencyFieldId, value)
+  ↓
+If currentCalculation is set:
+  Record: currentCalculation depends on dependencyFieldId
+```
+
+**Temporal Dependency Inference:**
+
+The `buildDependenciesFromAccessLog()` method analyzes the access log to infer dependencies:
+
+1. **setValue event** → Marks field X as "currently calculating"
+2. **getValue events** → All fields read are dependencies of X
+3. **Next setValue event** → Switch to new calculating field
+4. **Result:** Complete dependency graph built from runtime behavior
+
+**Example Flow:**
+```
+setValue(k_32)           // k_32 is being calculated
+  getValue(k_27)         // k_32 depends on k_27
+  getValue(k_28)         // k_32 depends on k_28
+  getValue(k_29)         // k_32 depends on k_29
+  getValue(k_30)         // k_32 depends on k_30
+  getValue(k_31)         // k_32 depends on k_31
+  getValue(d_60)         // k_32 depends on d_60
+setValue(d_33)           // Switch: d_33 is now being calculated
+  getValue(k_32)         // d_33 depends on k_32
+  getValue(f_32)         // d_33 depends on f_32
+```
+
+This produces:
+- Link: k_27 → k_32
+- Link: k_28 → k_32
+- Link: k_29 → k_32
+- Link: k_30 → k_32
+- Link: k_31 → k_32
+- Link: d_60 → k_32
+- Link: k_32 → d_33
+- Link: f_32 → d_33
+
+### Phantom Dependencies vs Conditional Dependencies
+
+**Phantom Dependency**: Declared but NEVER used in any scenario
+```javascript
+// TRUE PHANTOM - should be removed
+i_82: {
+  dependencies: ["h_80", "k_80"],  // These fields don't even exist!
+}
+```
+
+**Conditional Dependency**: Declared and used SOMETIMES based on conditions
+```javascript
+// CONDITIONAL - should be kept
+h_19: {
+  dependencies: ["d_19"],  // Only used when province selection changes
+}
+
+d_114: {
+  dependencies: ["d_113", "d_127", "h_113"],  // Used based on heating system type
+}
+```
+
+**How to Distinguish:**
+
+1. **Check if field exists**: If dependency field isn't in FieldManager, it's a true phantom
+2. **Check field type**: If dependency is user input (`type: "input"`), it may not trigger getValue() during normal calculations
+3. **Test multiple scenarios**: Change user inputs to trigger conditional code paths
+4. **Review calculation logic**: Read the actual calculation code to see if dependency is used conditionally
+
+### User Input Fields vs Calculated Fields
+
+**Key Insight**: User input fields (type: "input") are often declared as dependencies but don't appear in ZenMaster traces because they're read directly from the DOM, not via `getValue()`.
+
+**Example:**
+```javascript
+// Section 10: Window calculations
+i_73: {
+  fieldId: "i_73",
+  type: "calculated",
+  dependencies: ["d_73", "e_73", "f_73", "g_73"],  // All user inputs
+  // Calculation reads these values directly from input fields
+  // getValue() is never called on them
+  // ZenMaster sees them as "phantoms" but they're actually necessary
+}
+```
+
+**Solution**: ZenMaster should check field types before flagging phantoms.
 
 ---
 
