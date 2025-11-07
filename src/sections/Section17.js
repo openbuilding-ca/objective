@@ -15,25 +15,10 @@ window.TEUI.SectionModules.sect17 = (function () {
   }
 
   function getLayout() {
-    // Layout now primarily managed by 4011-Dependency.js, but we need a basic row structure
-    // so FieldManager doesn't complain. The actual content div will be populated by D3.
+    // Layout is entirely managed by index.html and 4011-Dependency.js
+    // Return empty rows array to prevent FieldManager from rendering any default structure
     return {
-      rows: [
-        {
-          id: "dependencyGraphContainerRow", // Unique ID for the row
-          cells: [
-            {},
-            {},
-            {
-              // span: 12, // Span across columns C-N
-              // content: "<!-- Graph rendering target -->", // Placeholder content removed
-              // Add a specific class or ID if needed for the wrapper div styling?
-              // We'll rely on the structure added in index.html for now.
-            },
-            // Other cells implicitly empty
-          ],
-        },
-      ],
+      rows: [],
     };
   }
 

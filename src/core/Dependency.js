@@ -1531,8 +1531,13 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       return numA - numB;
     });
 
-    // Create legend items
+    // Create legend items (exclude architectural layers as they appear in separate section below)
     entries.forEach(([group, color]) => {
+      // Skip architectural layer groups (they're shown in the Architectural Layers section)
+      if (group === "🏗️ Foundation" || group === "🧮 Coordination" || group === "🎯 Application") {
+        return;
+      }
+
       const item = document.createElement("div");
       item.className = "dependency-graph-legend-item";
       const colorBox = document.createElement("span");
