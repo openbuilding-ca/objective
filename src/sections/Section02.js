@@ -317,6 +317,8 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "345.82",
           section: "buildingInfo",
           tooltip: true, // S4. Targets
+          dependencies: ["d_15"], // Carbon benchmarking standard selection
+          conditionalDeps: ["i_39", "i_41"], // i_39 used when d_15="TGS4", i_41 used when d_15="Self Reported"
         },
         e: { content: "" }, // Empty but needed for alignment
         f: {
@@ -421,6 +423,10 @@ window.TEUI.SectionModules.sect02 = (function () {
             fields[cell.fieldId].getOptions = cell.getOptions;
           if (cell.dependencies)
             fields[cell.fieldId].dependencies = cell.dependencies;
+          if (cell.conditionalDeps)
+            fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
+          if (cell.uiDeps)
+            fields[cell.fieldId].uiDeps = cell.uiDeps;
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
           if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
@@ -661,6 +667,8 @@ window.TEUI.SectionModules.sect02 = (function () {
   /**
    * Register calculations with StateManager
    * This is the standard approach from other working sections
+   *
+   * ✅ ENHANCED: Now uses field metadata (dependencies, conditionalDeps) for automatic registration
    */
   function registerCalculations() {
     if (!window.TEUI || !window.TEUI.StateManager) {
@@ -668,10 +676,27 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
 
     try {
-      // Register dependencies - these must be registered AFTER the calculation
-      window.TEUI.StateManager.registerDependency("d_15", "d_16"); // d_16 depends on the standard selected
-      window.TEUI.StateManager.registerDependency("i_41", "d_16"); // d_16 depends on i_41 when standard is 'Self Reported' or default
-      window.TEUI.StateManager.registerDependency("i_39", "d_16"); // d_16 depends on i_39 when standard is 'TGS4'
+      // Get all fields with their metadata
+      const fields = getFields();
+
+      // Register dependencies from field definitions
+      Object.entries(fields).forEach(([fieldId, fieldDef]) => {
+        // Register standard dependencies
+        if (fieldDef.dependencies && Array.isArray(fieldDef.dependencies)) {
+          fieldDef.dependencies.forEach(depId => {
+            window.TEUI.StateManager.registerDependency(depId, fieldId);
+          });
+        }
+
+        // Register conditional dependencies (used in specific scenarios)
+        if (fieldDef.conditionalDeps && Array.isArray(fieldDef.conditionalDeps)) {
+          fieldDef.conditionalDeps.forEach(depId => {
+            window.TEUI.StateManager.registerDependency(depId, fieldId);
+          });
+        }
+      });
+
+      console.log("[S02] Registered dependencies from field metadata");
     } catch (_error) {
       // console.warn("Error registering calculations:", _error);
     }

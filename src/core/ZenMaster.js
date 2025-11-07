@@ -406,7 +406,13 @@ window.TEUI.ZenMaster = class ZenMaster {
 
   /**
    * Validate discovered dependencies against manual declarations
-   * @returns {Object} Validation results with phantoms and missing deps
+   *
+   * ✅ ENHANCED: Now handles conditionalDeps and uiDeps metadata
+   * - conditionalDeps: Dependencies used only in specific scenarios (not phantoms if unused)
+   * - uiDeps: Dependencies for UI behavior (dropdown options, validation) - skip phantom check
+   * - Also validates that dependency fields actually exist in FieldManager
+   *
+   * @returns {Object} Validation results with phantoms and missing deps categorized
    */
   validateDependencies() {
     console.log('\n🔍 [ZenMaster] ========== DEPENDENCY VALIDATION ==========');
@@ -418,7 +424,10 @@ window.TEUI.ZenMaster = class ZenMaster {
         fieldsWithPhantoms: 0,
         fieldsWithMissing: 0,
         totalPhantoms: 0,
-        totalMissing: 0
+        totalMissing: 0,
+        totalConditional: 0,
+        totalUIDeps: 0,
+        totalNonExistent: 0
       }
     };
 
@@ -433,21 +442,64 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     // For each field with declared dependencies, compare to traced
     Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
-      if (!fieldDef.dependencies || fieldDef.dependencies.length === 0) {
+      const hasDeps = fieldDef.dependencies && fieldDef.dependencies.length > 0;
+      const hasConditionalDeps = fieldDef.conditionalDeps && fieldDef.conditionalDeps.length > 0;
+      const hasUIDeps = fieldDef.uiDeps && fieldDef.uiDeps.length > 0;
+
+      if (!hasDeps && !hasConditionalDeps && !hasUIDeps) {
         return; // No declared dependencies to validate
       }
 
-      const declaredDeps = new Set(fieldDef.dependencies);
+      // Combine all declared dependencies for comparison
+      const declaredDeps = new Set([
+        ...(fieldDef.dependencies || []),
+        ...(fieldDef.conditionalDeps || []),
+        ...(fieldDef.uiDeps || [])
+      ]);
+
       const tracedDeps = this.dependencies.get(fieldId) || new Set();
 
-      // Find phantoms (declared but not actually used)
-      const phantoms = Array.from(declaredDeps).filter(dep => !tracedDeps.has(dep));
+      // Categorize phantom dependencies
+      const phantoms = [];
+      const conditionalPhantoms = [];
+      const uiPhantoms = [];
+      const nonExistentDeps = [];
 
-      // Find missing (used but not declared)
+      Array.from(declaredDeps).forEach(dep => {
+        if (!tracedDeps.has(dep)) {
+          // Check if dependency field exists
+          if (!fieldManager.getField(dep)) {
+            nonExistentDeps.push(dep);
+            return;
+          }
+
+          // Check category
+          if (fieldDef.uiDeps && fieldDef.uiDeps.includes(dep)) {
+            uiPhantoms.push(dep); // UI dependency - expected to not show in trace
+          } else if (fieldDef.conditionalDeps && fieldDef.conditionalDeps.includes(dep)) {
+            conditionalPhantoms.push(dep); // Conditional - may not have been triggered
+          } else {
+            phantoms.push(dep); // True phantom - declared but never used
+          }
+        }
+      });
+
+      // Find missing (used but not declared in any category)
       const missing = Array.from(tracedDeps).filter(dep => !declaredDeps.has(dep));
 
-      if (phantoms.length === 0 && missing.length === 0) {
-        return; // Perfect match!
+      // Skip if no issues
+      if (phantoms.length === 0 && missing.length === 0 && nonExistentDeps.length === 0) {
+        // Log conditional/UI deps for awareness but don't flag as issues
+        if (conditionalPhantoms.length > 0 || uiPhantoms.length > 0) {
+          console.log(`\n✅ ${fieldId} (${fieldDef.label || 'unlabeled'})`);
+          if (conditionalPhantoms.length > 0) {
+            console.log(`  🔀 CONDITIONAL deps (not triggered): ${conditionalPhantoms.join(', ')}`);
+          }
+          if (uiPhantoms.length > 0) {
+            console.log(`  🎨 UI deps (for dropdown/validation): ${uiPhantoms.join(', ')}`);
+          }
+        }
+        return; // No true issues
       }
 
       // Record issues
@@ -459,9 +511,13 @@ window.TEUI.ZenMaster = class ZenMaster {
       const issue = {
         fieldId,
         label: fieldDef.label || fieldId,
+        type: fieldDef.type,
         declared: Array.from(declaredDeps).sort(),
         traced: Array.from(tracedDeps).sort(),
         phantoms,
+        conditionalPhantoms,
+        uiPhantoms,
+        nonExistentDeps,
         missing
       };
 
@@ -477,14 +533,32 @@ window.TEUI.ZenMaster = class ZenMaster {
         results.summary.fieldsWithMissing++;
         results.summary.totalMissing += missing.length;
       }
+      if (conditionalPhantoms.length > 0) {
+        results.summary.totalConditional += conditionalPhantoms.length;
+      }
+      if (uiPhantoms.length > 0) {
+        results.summary.totalUIDeps += uiPhantoms.length;
+      }
+      if (nonExistentDeps.length > 0) {
+        results.summary.totalNonExistent += nonExistentDeps.length;
+      }
 
-      // Log the issue
-      console.log(`\n⚠️ ${fieldId} (${fieldDef.label || 'unlabeled'})`);
+      // Log the issue with categorization
+      console.log(`\n⚠️ ${fieldId} (${fieldDef.label || 'unlabeled'}) [type: ${fieldDef.type || 'unknown'}]`);
+      if (nonExistentDeps.length > 0) {
+        console.log(`  🚫 NON-EXISTENT deps (field doesn't exist): ${nonExistentDeps.join(', ')}`);
+      }
       if (phantoms.length > 0) {
-        console.log(`  ❌ PHANTOM deps (declared but never used): ${phantoms.join(', ')}`);
+        console.log(`  ❌ TRUE PHANTOM deps (declared but never used): ${phantoms.join(', ')}`);
+      }
+      if (conditionalPhantoms.length > 0) {
+        console.log(`  🔀 CONDITIONAL deps (not triggered in this test): ${conditionalPhantoms.join(', ')}`);
+      }
+      if (uiPhantoms.length > 0) {
+        console.log(`  🎨 UI deps (for dropdown/validation, not calculation): ${uiPhantoms.join(', ')}`);
       }
       if (missing.length > 0) {
-        console.log(`  ✅ MISSING deps (used but not declared): ${missing.join(', ')}`);
+        console.log(`  ➕ MISSING deps (used but not declared): ${missing.join(', ')}`);
       }
     });
 
@@ -492,8 +566,11 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     console.log('\n📊 [ZenMaster] ========== VALIDATION SUMMARY ==========');
     console.log(`Total fields validated: ${results.summary.totalFields}`);
-    console.log(`Fields with phantom deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} total phantoms)`);
-    console.log(`Fields with missing deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} total missing)`);
+    console.log(`Fields with TRUE phantom deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} phantoms)`);
+    console.log(`Fields with missing deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} missing)`);
+    console.log(`Conditional deps not triggered: ${results.summary.totalConditional}`);
+    console.log(`UI-only deps (expected): ${results.summary.totalUIDeps}`);
+    console.log(`Non-existent dependency fields: ${results.summary.totalNonExistent} ⚠️`);
     console.log('==========================================================\n');
 
     return results;
