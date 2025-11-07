@@ -170,6 +170,7 @@ TEUI.StateManager = (function () {
   let dirtyFields = new Set(); // Fields needing recalculation
   let listeners = new Map(); // Field change listeners
   let listenersActive = true; // Flag to mute listeners during import quarantine
+  let observers = new Set(); // Field access observers (for debugging/tracing tools)
   let activeReferenceDataSet = {};
   let independentReferenceState = {}; // << NEW: For independently editable Reference fields (like h_12)
   let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
@@ -298,6 +299,8 @@ TEUI.StateManager = (function () {
    * @returns {any} The field value or null if not found
    */
   function getValue(fieldId) {
+    let value;
+
     if (
       window.TEUI &&
       TEUI.ReferenceToggle &&
@@ -307,23 +310,28 @@ TEUI.StateManager = (function () {
       if (
         Object.prototype.hasOwnProperty.call(independentReferenceState, fieldId)
       ) {
-        return independentReferenceState[fieldId];
+        value = independentReferenceState[fieldId];
+      } else if (
+        Object.prototype.hasOwnProperty.call(
+          activeReferenceDataSet,
+          fieldId,
+        )
+      ) {
+        // Then check activeReferenceDataSet
+        value = activeReferenceDataSet[fieldId];
+      } else {
+        // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
+        value = fields.has(fieldId) ? fields.get(fieldId).value : null;
       }
-
-      // Then check activeReferenceDataSet
-      // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
-      return Object.prototype.hasOwnProperty.call(
-        activeReferenceDataSet,
-        fieldId,
-      )
-        ? activeReferenceDataSet[fieldId]
-        : fields.has(fieldId)
-          ? fields.get(fieldId).value
-          : null; // Last resort fallback
     } else {
       // Existing logic for Application Mode
-      return fields.has(fieldId) ? fields.get(fieldId).value : null;
+      value = fields.has(fieldId) ? fields.get(fieldId).value : null;
     }
+
+    // Notify observers of this field access
+    notifyObserversGetValue(fieldId, value);
+
+    return value;
   }
 
   /**
@@ -334,6 +342,9 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+    // Notify observers of this setValue call (before the actual set)
+    notifyObserversSetValue(fieldId, value, state);
+
     // 🎯 SMART USER INTERACTION TIMING: Auto-detect user changes and start performance timing
     if (
       state === VALUE_STATES.USER_MODIFIED &&
@@ -563,6 +574,74 @@ TEUI.StateManager = (function () {
         callback(newValue, oldValue, fieldId, state);
       } catch (error) {
         console.error(`Error in listener for ${fieldId}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Add an observer for field access events
+   * Observers are notified on getValue() and setValue() calls
+   * Used by debugging/tracing tools like ZenMaster
+   * @param {Object} observer - Observer object with optional onGetValue and onSetValue methods
+   */
+  function addObserver(observer) {
+    if (!observer || typeof observer !== 'object') {
+      console.error('[StateManager] Invalid observer - must be an object');
+      return;
+    }
+
+    observers.add(observer);
+    console.log('[StateManager] Observer added');
+  }
+
+  /**
+   * Remove an observer
+   * @param {Object} observer - Observer object to remove
+   */
+  function removeObserver(observer) {
+    observers.delete(observer);
+    console.log('[StateManager] Observer removed');
+  }
+
+  /**
+   * Notify all observers of a getValue call
+   * @param {string} fieldId - Field ID being accessed
+   * @param {any} value - Value being returned
+   */
+  function notifyObserversGetValue(fieldId, value) {
+    if (observers.size === 0) {
+      return; // Fast path: no observers
+    }
+
+    observers.forEach((observer) => {
+      try {
+        if (typeof observer.onGetValue === 'function') {
+          observer.onGetValue(fieldId, value);
+        }
+      } catch (error) {
+        console.error('[StateManager] Error in observer.onGetValue:', error);
+      }
+    });
+  }
+
+  /**
+   * Notify all observers of a setValue call
+   * @param {string} fieldId - Field ID being set
+   * @param {any} value - Value being set
+   * @param {string} state - Value state
+   */
+  function notifyObserversSetValue(fieldId, value, state) {
+    if (observers.size === 0) {
+      return; // Fast path: no observers
+    }
+
+    observers.forEach((observer) => {
+      try {
+        if (typeof observer.onSetValue === 'function') {
+          observer.onSetValue(fieldId, value, state);
+        }
+      } catch (error) {
+        console.error('[StateManager] Error in observer.onSetValue:', error);
       }
     });
   }
@@ -2012,6 +2091,10 @@ TEUI.StateManager = (function () {
     removeListener: removeListener,
     muteListeners: muteListeners,
     unmuteListeners: unmuteListeners,
+
+    // Observer management (for debugging/tracing tools)
+    addObserver: addObserver,
+    removeObserver: removeObserver,
 
     // UI updates
     updateUI: updateUI,

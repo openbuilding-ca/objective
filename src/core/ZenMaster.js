@@ -8,12 +8,20 @@
  *
  * Philosophy: Truth over intention. What the code DOES, not what we THINK it does.
  *
+ * ARCHITECTURE: Observer Pattern
+ * - Implements observer interface (onGetValue, onSetValue methods)
+ * - Registers with StateManager.addObserver() instead of monkey-patching
+ * - Loose coupling: StateManager and ZenMaster are independent modules
+ * - Zero performance overhead when disabled (fast-path optimization)
+ * - Clean separation of concerns and explicit relationships
+ *
  * DOCUMENTATION: Complete usage instructions available at:
  * docs/development/dependency-zen.md
  *
  * Includes:
  * - Human user guide (3-click workflow with 🧘 Zen button)
  * - AI agent integration instructions
+ * - Observer pattern architecture details
  * - Workflow examples and validation checklists
  * - Common dependency patterns and anti-patterns
  *
@@ -49,10 +57,6 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     // Mode tracking for Target/Reference state isolation
     this.currentMode = 'target'; // 'target' or 'reference'
-
-    // Track original methods for restoration
-    this.originalGetValue = null;
-    this.originalSetValue = null;
   }
 
   /**
@@ -66,15 +70,21 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     console.log('🧘 [ZenMaster] Enabling runtime dependency tracing...');
 
-    // Intercept StateManager.getValue to track field accesses
-    this.interceptStateManager();
+    // Register as an observer with StateManager
+    const stateManager = window.TEUI?.StateManager;
+    if (!stateManager) {
+      console.error('[ZenMaster] StateManager not found. Cannot enable tracing.');
+      return;
+    }
+
+    stateManager.addObserver(this);
 
     this.isEnabled = true;
-    console.log('✅ [ZenMaster] Enabled. All getValue() calls will be traced.');
+    console.log('✅ [ZenMaster] Enabled. All getValue() and setValue() calls will be traced.');
   }
 
   /**
-   * Disable the ZenMaster and restore original methods
+   * Disable the ZenMaster and unregister as an observer
    */
   disable() {
     if (!this.isEnabled) {
@@ -84,69 +94,35 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     console.log('🧘 [ZenMaster] Disabling runtime dependency tracing...');
 
-    // Restore original methods
-    this.restoreStateManager();
+    // Unregister as an observer from StateManager
+    const stateManager = window.TEUI?.StateManager;
+    if (stateManager) {
+      stateManager.removeObserver(this);
+    }
 
     this.isEnabled = false;
-    console.log('✅ [ZenMaster] Disabled. Original methods restored.');
+    console.log('✅ [ZenMaster] Disabled. Observer unregistered.');
   }
 
   /**
-   * Intercept StateManager.getValue to track dependencies
+   * Observer interface method: called when StateManager.getValue is invoked
+   * @param {string} fieldId - The field being accessed
+   * @param {*} value - The value being returned
    */
-  interceptStateManager() {
-    const stateManager = window.TEUI?.StateManager;
-    if (!stateManager) {
-      console.error('[ZenMaster] StateManager not found. Cannot enable tracing.');
-      return;
-    }
-
-    // Store original methods
-    this.originalGetValue = stateManager.getValue.bind(stateManager);
-    this.originalSetValue = stateManager.setValue.bind(stateManager);
-
-    // Replace getValue with tracing version
-    const zenMaster = this;
-    stateManager.getValue = function(fieldId) {
-      // Call original method to get the value
-      const value = zenMaster.originalGetValue(fieldId);
-
-      // Record this access if we're tracing
-      zenMaster.recordAccess(fieldId, value);
-
-      return value;
-    };
-
-    // Replace setValue with tracing version
-    stateManager.setValue = function(fieldId, value) {
-      // Record that this field is being calculated/set
-      zenMaster.recordSetValue(fieldId, value);
-
-      // Call original method to set the value
-      return zenMaster.originalSetValue(fieldId, value);
-    };
-
-    console.log('🔍 [ZenMaster] StateManager.getValue and setValue intercepted');
+  onGetValue(fieldId, value) {
+    // Record this access
+    this.recordAccess(fieldId, value);
   }
 
   /**
-   * Restore original StateManager methods
+   * Observer interface method: called when StateManager.setValue is invoked
+   * @param {string} fieldId - The field being set
+   * @param {*} value - The value being set
+   * @param {string} state - The value state
    */
-  restoreStateManager() {
-    const stateManager = window.TEUI?.StateManager;
-    if (!stateManager || !this.originalGetValue) {
-      return;
-    }
-
-    stateManager.getValue = this.originalGetValue;
-    this.originalGetValue = null;
-
-    if (this.originalSetValue) {
-      stateManager.setValue = this.originalSetValue;
-      this.originalSetValue = null;
-    }
-
-    console.log('🔄 [ZenMaster] StateManager.getValue and setValue restored');
+  onSetValue(fieldId, value, state) {
+    // Record that this field is being calculated/set
+    this.recordSetValue(fieldId, value);
   }
 
   /**
