@@ -104,6 +104,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           fieldId: "l_12",
           type: "editable",
           value: "$0.1300",
+          label: "Electricity Price", // Price per kWh
           section: "buildingInfo",
           tooltip: true, // Assume $0.13/kwh
         },
@@ -173,6 +174,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           fieldId: "l_13",
           type: "editable",
           value: "$0.5070",
+          label: "Gas Price", // Price per m³
           section: "buildingInfo",
           tooltip: true, // Assume $0.507 (Ontario)
         },
@@ -225,6 +227,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           fieldId: "l_14",
           type: "editable",
           value: "$1.6200",
+          label: "Propane Price", // Price per kg
           section: "buildingInfo",
           tooltip: true, // Assume $1.62 (Ontario)
         },
@@ -292,6 +295,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           fieldId: "l_15",
           type: "editable",
           value: "$180.00",
+          label: "Wood Price", // Price per m³
           section: "buildingInfo",
           tooltip: true, // Assume $180/m3 (Ontario)
         }, // Restored: Field l_15 back in L
@@ -338,6 +342,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           fieldId: "l_16",
           type: "editable",
           value: "$1.5000",
+          label: "Oil Price", // Price per litre
           section: "buildingInfo",
           tooltip: true, // Assume $1.50 (Ontario)
         },
