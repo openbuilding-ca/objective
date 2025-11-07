@@ -1253,8 +1253,10 @@ window.TEUI.SectionModules.sect15 = (function () {
     sm.registerDependency("d_136", "h_141");
     sm.registerDependency("l_12", "h_141"); // Electricity price
 
-    // Dependencies for l_141: =(L13*D28)+(D29*L14)+(L15*D31)
-    ["l_13", "d_28", "d_29", "l_14", "l_15", "d_31"].forEach((dep) =>
+    // Dependencies for l_141: =(L13*D28)+(L14*D29)+(L15*D31)+(L16*D30)
+    // l_13=gas price, d_28=gas usage, l_14=propane price, d_29=propane usage,
+    // l_15=wood price, d_31=wood usage, l_16=oil price, d_30=oil usage
+    ["l_13", "d_28", "l_14", "d_29", "l_15", "d_31", "l_16", "d_30"].forEach((dep) =>
       sm.registerDependency(dep, "l_141"),
     );
 
