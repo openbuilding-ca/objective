@@ -1769,10 +1769,12 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   bottom: 40px; /* Raised by 10px to prevent bottom clipping */
   right: 50px; /* Increased right margin to prevent text clipping */
   background: rgba(255, 255, 255, 0.95);
-  padding: 12px 36px 22px 36px; /* Added 10px extra bottom padding to prevent clipping */
+  padding: 12px 36px 12px 36px; /* Balanced padding */
   border-radius: 8px;
   /* Removed box-shadow for frameless appearance */
   max-width: 390px; /* Increased by 10px more to prevent text clipping */
+  max-height: calc(100% - 80px); /* Ensure legend never exceeds container height minus margins */
+  overflow-y: auto; /* Allow scrolling if content is too tall */
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 12px;
