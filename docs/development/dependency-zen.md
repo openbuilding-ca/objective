@@ -893,47 +893,176 @@ const calcOrder = [
 5. If slower → analyze why, adjust order
 6. Iterate until optimal
 
-### ZenMaster + Clock.js Integration (Future)
+### ZenMaster + Clock.js Integration
 
-**Proposed enhancement** to ZenMaster.js:
+**Status:** Ready to implement
+
+#### Method 1: Add Performance Metrics to exportDependencyGraph()
+
+**Location:** ZenMaster.js line ~340
 
 ```javascript
-// Auto-capture Clock.js metrics with dependency traces
-class ZenMaster {
-  startCalculationTrace() {
-    this.performanceBaseline = {
-      startTime: performance.now(),
-      clockMetrics: window.TEUI?.Clock?.getMetrics() || {}
-    };
-    this.enable();
-  }
+exportDependencyGraph() {
+  // Existing code...
 
-  endCalculationTrace() {
-    this.disable();
-    const endTime = performance.now();
-    const duration = endTime - this.performanceBaseline.startTime;
+  const graph = {
+    nodes: [],
+    links: [],
+    // NEW: Add metadata section
+    metadata: {
+      captureTimestamp: new Date().toISOString(),
+      totalAccessEvents: this.accessLog.length,
+      nodesDiscovered: nodeSet.size,
+      linksDiscovered: this.dependencies.size,
+      // Capture Clock.js metrics if available
+      clockMetrics: this.getClock MetricsIfAvailable()
+    }
+  };
 
-    return {
-      dependencies: this.exportDependencyGraph(),
-      performance: {
-        totalTime: duration,
-        clockMetrics: window.TEUI?.Clock?.getMetrics() || {},
-        fieldsTracked: this.dependencies.size,
-        accessEvents: this.accessLog.length
+  // ... rest of export logic
+  return graph;
+}
+
+// NEW: Helper method to safely read Clock.js data
+getClockMetricsIfAvailable() {
+  if (!window.TEUI?.Clock) return null;
+
+  return {
+    totalCalculations: window.TEUI.Clock.calculationCount || 0,
+    avgCalculationTime: window.TEUI.Clock.avgTime || 0,
+    lastCalculationTime: window.TEUI.Clock.lastTime || 0,
+    userInteractions: window.TEUI.Clock.interactionCount || 0
+  };
+}
+```
+
+#### Method 2: Add Calculator.js Section Timing
+
+**Location:** ZenMaster.js - new method to intercept Calculator.calculateAll()
+
+```javascript
+// NEW: Track section-level performance
+interceptCalculator() {
+  const calculator = window.TEUI?.Calculator;
+  if (!calculator) return;
+
+  this.originalCalculateAll = calculator.calculateAll;
+  this.sectionTimings = new Map();
+
+  calculator.calculateAll = () => {
+    if (!this.isEnabled) {
+      return this.originalCalculateAll.call(calculator);
+    }
+
+    // Get calcOrder from Calculator
+    const calcOrder = calculator.calcOrder || [];
+
+    calcOrder.forEach(sectionId => {
+      const startTime = performance.now();
+
+      // Call section's calculateAll()
+      const sectionModule = window.TEUI?.Sections?.[sectionId];
+      if (sectionModule?.calculateAll) {
+        sectionModule.calculateAll();
       }
-    };
+
+      const duration = performance.now() - startTime;
+      this.sectionTimings.set(sectionId, duration);
+    });
+  };
+}
+
+// Export section timings in graph metadata
+exportDependencyGraph() {
+  // ... existing code
+
+  metadata: {
+    // ... existing metadata
+    sectionPerformance: Object.fromEntries(this.sectionTimings)
+  }
+}
+```
+
+#### Method 3: Benchmark Calculator.js Order Variations
+
+**Location:** ZenMaster.js - new utility methods
+
+```javascript
+// NEW: Benchmark different calculation orders
+async benchmarkCalculatorOrder(orderVariations) {
+  const results = [];
+
+  for (const orderConfig of orderVariations) {
+    this.reset();
+    this.enable();
+
+    // Temporarily override Calculator.calcOrder
+    const originalOrder = window.TEUI.Calculator.calcOrder;
+    window.TEUI.Calculator.calcOrder = orderConfig.order;
+
+    const startTime = performance.now();
+    window.TEUI.Calculator.calculateAll();
+    const duration = performance.now() - startTime;
+
+    this.disable();
+
+    results.push({
+      name: orderConfig.name,
+      order: orderConfig.order,
+      duration: duration,
+      accessEvents: this.accessLog.length,
+      dependencies: this.exportDependencyGraph()
+    });
+
+    // Restore original order
+    window.TEUI.Calculator.calcOrder = originalOrder;
   }
 
-  // Compare two calculation orders
-  benchmarkCalculationOrder(orderA, orderB) {
-    const resultsA = this.runWithOrder(orderA);
-    const resultsB = this.runWithOrder(orderB);
+  return results;
+}
 
-    console.log(`Order A: ${resultsA.performance.totalTime}ms`);
-    console.log(`Order B: ${resultsB.performance.totalTime}ms`);
-    console.log(`Winner: ${resultsA.performance.totalTime < resultsB.performance.totalTime ? 'A' : 'B'}`);
+// NEW: Suggest optimal order using topological sort
+suggestCalculatorOrder() {
+  // Build section dependency graph from field dependencies
+  const sectionDeps = new Map();
 
-    return resultsA.performance.totalTime < resultsB.performance.totalTime ? orderA : orderB;
+  this.dependencies.forEach((fieldDeps, fieldId) => {
+    const fieldSection = this.getFieldSection(fieldId);
+    if (!sectionDeps.has(fieldSection)) {
+      sectionDeps.set(fieldSection, new Set());
+    }
+
+    fieldDeps.forEach(depFieldId => {
+      const depSection = this.getFieldSection(depFieldId);
+      if (depSection !== fieldSection) {
+        sectionDeps.get(fieldSection).add(depSection);
+      }
+    });
+  });
+
+  // Topological sort of sections
+  return this.topologicalSort(sectionDeps);
+}
+```
+
+#### Method 4: Real-time Performance Dashboard
+
+**Location:** New console logging during tracing
+
+```javascript
+// NEW: Add to recordAccess() for real-time monitoring
+recordAccess(accessedFieldId, value) {
+  // ... existing code
+
+  // Log performance warnings in real-time
+  if (this.accessLog.length % 1000 === 0) {
+    console.warn(`[ZenMaster] 🐌 ${this.accessLog.length} access events captured - potential performance issue`);
+
+    // Check if Clock.js shows slowdown
+    const clockMetrics = this.getClockMetricsIfAvailable();
+    if (clockMetrics && clockMetrics.avgCalculationTime > 100) {
+      console.error(`[ZenMaster] ⚠️ Avg calculation time: ${clockMetrics.avgCalculationTime}ms - SLOW!`);
+    }
   }
 }
 ```

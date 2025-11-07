@@ -585,6 +585,59 @@ yearSlider.addEventListener("change", function (e) {
 
 ---
 
+## Section-by-Section Dependency Validation Workplan
+
+**Goal:** Systematically validate and fix dependencies using ZenMaster runtime discovery.
+
+**Prerequisites:**
+- ✅ Global slider fix (FieldManager.js calculate-on-release)
+- ✅ ConditionalDeps pattern (Section02.js)
+- ✅ ZenMaster categorizes phantoms (TRUE/CONDITIONAL/UI/NON-EXISTENT)
+
+### Validation Workflow (Repeat Per Section)
+
+1. `zenReset(); zenEnable();`
+2. Interact with section fields (change dropdowns, adjust sliders, toggle modes)
+3. `zenDisable();` → runs `zenValidate()`
+4. `zenExportFile();`
+5. Analyze output → Update field definitions → Re-test → Commit
+
+---
+
+### Phase 1: S02 (Building Info) - CURRENT
+
+**Fields:** d_16 ✅, h_12 ✅, h_13, d_14, d_15, prices (l_12-l_16 likely uiDeps)
+
+**Status:** ConditionalDeps working (i_41 → d_16 traced in Test 11)
+
+---
+
+### Phase 2: S03 (Climate) → Phase 3: S04 (Energy/Emissions) → Phase 4: S05 (Methods)
+
+**Key Conditionals:**
+- S03: Province-based lookups (d_19 → climate/emission factors)
+- S04: Fuel-type variations (d_27-d_31, wood offset d_60 from S08)
+- S05: Typology carbon intensities (i_39 TGS4, i_41 Self Reported)
+
+**Test:** Run Test 12 (Emissions Tracking) after S03-S05 complete
+
+---
+
+### Phase 5-10: S06 (Envelope) → S07 (Glazing) → S08 (IAQ/Wood) → S09 (Internal Gains) → S10 (Radiant) ✅ → S11 (Metrics) → S13 (Mechanical) → S14-15 (Summary/PV)
+
+**S13 Note:** d_118 slider has intentional local override (calculate-during-drag for accuracy - don't change)
+
+---
+
+### Success Metrics Per Section
+
+- ✅ Zero TRUE PHANTOMS
+- ✅ Conditionals in conditionalDeps array
+- ✅ UI deps in uiDeps array
+- ✅ No NON-EXISTENT references
+
+---
+
 ## Conclusion
 
 This comprehensive test protocol ensures ZenMaster captures ALL dependency paths, including:

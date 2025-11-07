@@ -917,7 +917,8 @@ TEUI.FieldManager = (function () {
         sliderContainer.className =
           "slider-container d-flex align-items-center";
 
-        // Update display when slider changes
+        // ✅ PERFORMANCE FIX: Split slider events for better UX
+        // 'input' event: Update display only (no calculation) - fires during drag
         rangeInput.addEventListener("input", function () {
           const value = this.value;
           let displayValue = value;
@@ -950,7 +951,12 @@ TEUI.FieldManager = (function () {
           }
 
           displaySpan.textContent = displayValue;
+          // No calculation here - only update display
+        });
 
+        // 'change' event: Calculate on thumb release - fires when user releases slider
+        rangeInput.addEventListener("change", function () {
+          const value = this.value;
           // ✅ DUAL-STATE AWARE: Route through section ModeManager
           routeToSectionModeManager(fieldId, value, "user-modified");
         });
