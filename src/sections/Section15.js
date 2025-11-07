@@ -824,6 +824,7 @@ window.TEUI.SectionModules.sect15 = (function () {
           fieldId: "l_141",
           type: "calculated",
           value: "$0.00", // Default to $0.00
+          label: "∑ Other Energy", // Sum of non-electric fuel costs (gas+propane+wood+oil)
           classes: ["calculated-value"],
           section: "teuiSummary",
         },
