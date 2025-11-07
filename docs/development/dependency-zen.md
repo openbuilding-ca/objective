@@ -326,7 +326,28 @@ Section 04:
 
 ## How to Use ZenMaster (Integrated)
 
-### UI Button Method (Easiest)
+### Quick Start Guide (Human Users)
+
+**Goal**: Discover which fields your calculations ACTUALLY use, not what you think they use.
+
+**The 3-Click Workflow**:
+
+1. **Click 🧘 Zen** button → Button turns green "🧘 Zen ON"
+2. **Use the app normally** → Change values, interact with sections
+3. **Click 🧘 Zen ON** → Validation results appear in browser console
+
+**What You'll See**:
+- ✅ Fields with correct dependencies (nothing to do!)
+- ⚠️ Fields with phantom dependencies (declared but never used)
+- ⚠️ Fields with missing dependencies (used but not declared)
+
+**Next Steps**:
+- Type `zenExportFile()` in console → Downloads JSON of true dependencies
+- Give JSON to AI agent → "Fix dependencies using this ZenMaster output"
+- Agent updates section files with correct dependencies
+- Dependency graph in Section 17 now shows reality, not guesses!
+
+### UI Button Method (Detailed)
 
 1. **Click the 🧘 Zen button** in the top toolbar (next to Help and Weather buttons)
 2. Button turns green: "🧘 Zen ON" - dependency tracing is now active
@@ -402,6 +423,198 @@ The exported JSON from `zenExportFile()` can be used to update Dependency.js:
 ```
 
 This replaces manual guesswork with **runtime truth**.
+
+---
+
+## AI Agent Integration Instructions
+
+### When You See ZenMaster Output
+
+If a human asks you to "use ZenMaster to fix dependencies" or provides ZenMaster validation output, follow these steps:
+
+### Step 1: Understand the Validation Output
+
+ZenMaster validation shows three types of issues:
+
+```javascript
+⚠️ i_82 (Net UN-usable Htg. Gains)
+  ❌ PHANTOM deps (declared but never used): h_80, k_80
+  ✅ MISSING deps (used but not declared): e_80, i_80
+```
+
+**Interpretation**:
+- **PHANTOM**: Dependencies listed in field definition but never accessed during calculation
+- **MISSING**: Fields accessed during calculation but not listed in dependencies array
+
+### Step 2: Fix Field Definitions in Section Files
+
+For each field with issues, update the section file (e.g., Section10.js):
+
+**Before** (with phantoms):
+```javascript
+i: {
+  fieldId: "i_82",
+  type: "calculated",
+  value: "68,819.02",
+  section: "radiantGains",
+  dependencies: ["h_80", "k_80"],  // ❌ PHANTOM - these don't exist!
+},
+```
+
+**After** (with discovered deps):
+```javascript
+i: {
+  fieldId: "i_82",
+  type: "calculated",
+  value: "68,819.02",
+  label: "Net UN-usable Htg. Gains",  // ✅ Add unique label if missing
+  section: "radiantGains",
+  dependencies: ["e_80", "i_80"],  // ✅ CORRECTED - actual dependencies
+},
+```
+
+### Step 3: Process ZenMaster Export Data
+
+When human runs `zenExportSections()`, you'll see output like:
+
+```javascript
+// ZenMaster Discovered Dependencies
+// Copy these into your section field definitions
+
+// radiantGains
+  e_80: {
+    dependencies: ["h_79", "i_71"],
+  },
+  g_80: {
+    dependencies: ["d_80"],
+  },
+  i_80: {
+    dependencies: ["e_80", "g_80"],
+  },
+  i_82: {
+    dependencies: ["e_80", "i_80"],  // ✅ Discovered, not guessed
+  },
+```
+
+**Your Action**: Merge these into existing field definitions, preserving other properties (type, value, label, section, etc.)
+
+### Step 4: Update Dependency.js Graph (If Requested)
+
+If human provides JSON from `zenExportFile()`:
+
+```javascript
+{
+  "nodes": [
+    { "id": "k_32", "label": "∑ Target Emissions", "group": "actualTargetEnergy" },
+    { "id": "k_27", "label": "Electricity Emissions", "group": "actualTargetEnergy" },
+    // ...
+  ],
+  "links": [
+    { "source": "k_27", "target": "k_32" },
+    { "source": "k_28", "target": "k_32" },
+    // ...
+  ]
+}
+```
+
+**Your Action**:
+1. Read current Dependency.js to understand structure
+2. Merge/replace nodes and links with ZenMaster-discovered data
+3. Preserve any manual annotations or metadata
+4. Test that graph renders correctly in Section 17
+
+### Step 5: Verify No Orphans
+
+After updating dependencies, check that:
+1. All referenced field IDs actually exist in section definitions
+2. No circular dependencies introduced (A → B → A)
+3. Labels are unique and descriptive (not generic row labels)
+4. Dependencies match actual calculation logic in calculateAll() functions
+
+### Step 6: Commit Pattern
+
+Use this commit message template:
+
+```
+Fix: Update [SectionXX] dependencies from ZenMaster discovery
+
+Corrected dependencies based on runtime tracing:
+
+**Phantom deps removed** (declared but never used):
+- field_id: removed [phantom1, phantom2]
+
+**Missing deps added** (used but not declared):
+- field_id: added [missing1, missing2]
+
+**Label improvements**:
+- field_id: "Generic Label" → "Specific Label"
+
+ZenMaster validation confirms accurate dependency graph.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### Example Workflow
+
+**Human**: "I ran ZenMaster and it found issues in Section 10. Here's the output: [paste]"
+
+**Agent Response**:
+1. Parse validation output
+2. Identify fields with phantom/missing deps
+3. Read Section10.js
+4. Update field definitions with correct dependencies
+5. Add unique labels where missing
+6. Verify changes against calculation logic
+7. Commit with descriptive message
+8. Summarize what was fixed
+
+### Common Patterns
+
+**Pattern 1: Sum calculations**
+```javascript
+// Field that sums other fields
+k_32: {
+  dependencies: ["k_27", "k_28", "k_29", "k_30", "k_31", "d_60"],
+  // k_27-k_31 are summed, d_60 is offset
+}
+```
+
+**Pattern 2: Ratio calculations**
+```javascript
+// Field that divides two fields
+d_145: {
+  dependencies: ["k_32", "ref_k_32"],
+  // d_145 = 1 - (k_32 / ref_k_32)
+}
+```
+
+**Pattern 3: Conditional dependencies**
+```javascript
+// Field that uses different deps based on mode
+h_80: {
+  dependencies: ["e_80", "g_80", "d_80"],
+  // e_80 * g_80 when d_80 = "method1", else other calculation
+}
+```
+
+### What NOT to Do
+
+❌ **Don't** blindly copy dependencies without understanding the calculation
+❌ **Don't** remove dependencies that make logical sense even if ZenMaster didn't catch them (might be conditionally used)
+❌ **Don't** forget to add unique labels when fixing dependencies
+❌ **Don't** introduce circular dependencies
+❌ **Don't** skip verification that referenced fields actually exist
+
+### Validation Checklist
+
+After updating dependencies, verify:
+- [ ] All field IDs in dependencies array exist in field definitions
+- [ ] No phantom dependencies remain
+- [ ] All accessed fields are declared
+- [ ] Labels are unique and descriptive
+- [ ] Commit message explains changes
+- [ ] No circular dependency chains introduced
 
 ---
 
