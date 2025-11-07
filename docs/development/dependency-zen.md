@@ -299,14 +299,109 @@ Section 04:
 
 ---
 
-## Immediate Action Items
+## Implementation Status
+
+### Completed ✅
 
 1. ✅ Fix phantom dependencies in Section 10 (h_80, k_80 → e_80, i_80)
 2. ✅ Add missing labels to Section 04 row 32 (k_32, j_32, etc.)
 3. ✅ Add dependencies to Section 04 row 32 calculations
-4. 🔄 Create runtime tracer prototype for Section 10
-5. 🔄 Generate baseline dependency report
-6. 🔄 Identify all sections missing dependency declarations
+4. ✅ Create ZenMaster.js - Runtime dependency discovery system
+5. ✅ Add 🧘 Zen button to index.html for easy enable/disable
+6. ✅ Export to file functionality (downloads JSON for Dependency.js)
+
+### In Progress 🔄
+
+7. 🔄 Run ZenMaster across all sections to discover true dependencies
+8. 🔄 Validate discovered vs declared dependencies
+9. 🔄 Update section field definitions with correct dependencies
+
+### Planned 📋
+
+10. 📋 Integrate ZenMaster hooks into StateManager for automatic detection
+11. 📋 Add continuous validation warnings in development mode
+12. 📋 Create calculation optimization based on true dependency graph
+
+---
+
+## How to Use ZenMaster (Integrated)
+
+### UI Button Method (Easiest)
+
+1. **Click the 🧘 Zen button** in the top toolbar (next to Help and Weather buttons)
+2. Button turns green: "🧘 Zen ON" - dependency tracing is now active
+3. **Interact with the app**: Change values, trigger calculations, switch sections
+4. **Click 🧘 Zen ON again** to disable and see validation results in console
+5. Results automatically run `zenValidate()` showing phantoms and missing deps
+
+### Console Commands Method (Advanced)
+
+If you prefer console commands or need more control:
+
+```javascript
+// 1. Enable tracing
+zenEnable()
+
+// 2. Interact with app (change values, trigger calculations)
+
+// 3. View discovered dependencies
+zenReport()
+
+// 4. Validate against manual declarations
+zenValidate()
+
+// 5. Export to JSON file for Dependency.js
+zenExportFile()
+
+// 6. Get code snippets for section definitions
+zenExportSections()
+
+// 7. Check current status
+zenStatus()
+
+// 8. Clear all data for fresh trace
+zenReset()
+
+// 9. Disable tracing
+zenDisable()
+```
+
+### Workflow Example
+
+**Goal**: Fix dependencies for Section 10 (Radiant Gains)
+
+1. Click 🧘 Zen button (or run `zenEnable()`)
+2. Open Section 10 in the app
+3. Change orientation values (d_73-d_78)
+4. Adjust building dimensions
+5. Modify gains utilization settings
+6. Click 🧘 Zen ON to disable tracing
+7. Review console output - see what fields were ACTUALLY accessed
+8. Run `zenExportSections()` to get code snippets
+9. Copy corrected dependencies into Section10.js field definitions
+10. Run `zenExportFile()` to save JSON for Dependency.js integration
+
+### Integration with Dependency.js
+
+The exported JSON from `zenExportFile()` can be used to update Dependency.js:
+
+```javascript
+// From ZenMaster export:
+{
+  "nodes": [
+    { "id": "k_32", "label": "∑ Target Emissions", "group": "actualTargetEnergy" },
+    { "id": "k_27", "label": "Electricity Emissions", "group": "actualTargetEnergy" },
+    // ... more nodes
+  ],
+  "links": [
+    { "source": "k_27", "target": "k_32" },
+    { "source": "k_28", "target": "k_32" },
+    // ... actual dependencies discovered
+  ]
+}
+```
+
+This replaces manual guesswork with **runtime truth**.
 
 ---
 

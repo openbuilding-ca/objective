@@ -83,6 +83,8 @@
     <script src="src/core/TooltipManager.js"></script>
     <!-- TooltipManager loads validation tooltips from Excel -->
     <script src="src/core/Dependency.js"></script>
+    <script src="src/core/ZenMaster.js"></script>
+    <!-- ZenMaster: Runtime dependency discovery & validation -->
 
     <!-- Performance Monitoring -->
     <script src="src/core/Clock.js"></script>
@@ -175,6 +177,14 @@
               data-bs-target="#weatherDataModal"
             >
               <i class="bi bi-cloud-sun"></i> More Weather Data
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-success btn-sm me-2"
+              id="zenMasterBtn"
+              title="ZenMaster: Runtime dependency discovery & validation (Phase 4)"
+            >
+              🧘 Zen
             </button>
 
             <div class="btn-group me-2">
@@ -1223,6 +1233,47 @@ Select a province and city to view weather data.</pre
           toggleHelpBtn.addEventListener('click', function() {
             window.TEUI.TooltipManager.toggleTooltips();
             updateButtonState();
+          });
+        }
+
+        // 🧘 ZEN MASTER BUTTON: Toggle dependency tracing on/off
+        const zenMasterBtn = document.getElementById('zenMasterBtn');
+        if (zenMasterBtn && window.TEUI?.zenMaster) {
+          // Set initial button state
+          const updateZenButtonState = () => {
+            const status = window.TEUI.zenMaster.getStatus();
+            if (status.enabled) {
+              zenMasterBtn.classList.remove('btn-outline-success');
+              zenMasterBtn.classList.add('btn-success');
+              zenMasterBtn.innerHTML = '🧘 Zen ON';
+              zenMasterBtn.title = `ZenMaster ACTIVE - Tracking ${status.fieldsTracked} fields, ${status.accessEvents} events`;
+            } else {
+              zenMasterBtn.classList.remove('btn-success');
+              zenMasterBtn.classList.add('btn-outline-success');
+              zenMasterBtn.innerHTML = '🧘 Zen';
+              zenMasterBtn.title = 'ZenMaster: Click to enable runtime dependency discovery';
+            }
+          };
+
+          // Initialize button state
+          updateZenButtonState();
+
+          // Add click handler
+          zenMasterBtn.addEventListener('click', function() {
+            const status = window.TEUI.zenMaster.getStatus();
+            if (status.enabled) {
+              // Disable and show results
+              window.TEUI.zenMaster.disable();
+              console.log('🧘 ZenMaster disabled. Use zenValidate() or zenExportFile() to see results.');
+              if (status.fieldsTracked > 0) {
+                window.TEUI.zenMaster.validateDependencies();
+              }
+            } else {
+              // Enable tracing
+              window.TEUI.zenMaster.enable();
+              console.log('🧘 ZenMaster enabled. Interact with the app to trace dependencies.');
+            }
+            updateZenButtonState();
           });
         }
       });

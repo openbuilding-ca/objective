@@ -1,0 +1,534 @@
+/**
+ * ZenMaster.js - Runtime Dependency Discovery & Validation
+ *
+ * The ZenMaster observes the application during calculations to discover
+ * the TRUE dependency graph based on actual getValue() calls, not manual
+ * declarations. It validates manual dependencies and generates the "graph
+ * of reality" that can be used to optimize Dependency.js.
+ *
+ * Philosophy: Truth over intention. What the code DOES, not what we THINK it does.
+ */
+
+window.TEUI = window.TEUI || {};
+
+window.TEUI.ZenMaster = class ZenMaster {
+  constructor() {
+    this.isTracing = false;
+    this.isEnabled = false;
+    this.currentCalculation = null; // Which field is currently being calculated
+    this.calculationStack = []; // Stack for nested calculations
+    this.dependencies = new Map(); // Map<fieldId, Set<dependencyFieldIds>>
+    this.accessLog = []; // Detailed log of all getValue calls
+    this.validationResults = null;
+
+    // Mode tracking for Target/Reference state isolation
+    this.currentMode = 'target'; // 'target' or 'reference'
+
+    // Track original methods for restoration
+    this.originalGetValue = null;
+    this.originalSetValue = null;
+  }
+
+  /**
+   * Enable the ZenMaster to start observing the application
+   */
+  enable() {
+    if (this.isEnabled) {
+      console.warn('[ZenMaster] Already enabled');
+      return;
+    }
+
+    console.log('🧘 [ZenMaster] Enabling runtime dependency tracing...');
+
+    // Intercept StateManager.getValue to track field accesses
+    this.interceptStateManager();
+
+    this.isEnabled = true;
+    console.log('✅ [ZenMaster] Enabled. All getValue() calls will be traced.');
+  }
+
+  /**
+   * Disable the ZenMaster and restore original methods
+   */
+  disable() {
+    if (!this.isEnabled) {
+      console.warn('[ZenMaster] Not currently enabled');
+      return;
+    }
+
+    console.log('🧘 [ZenMaster] Disabling runtime dependency tracing...');
+
+    // Restore original methods
+    this.restoreStateManager();
+
+    this.isEnabled = false;
+    console.log('✅ [ZenMaster] Disabled. Original methods restored.');
+  }
+
+  /**
+   * Intercept StateManager.getValue to track dependencies
+   */
+  interceptStateManager() {
+    const stateManager = window.TEUI?.StateManager;
+    if (!stateManager) {
+      console.error('[ZenMaster] StateManager not found. Cannot enable tracing.');
+      return;
+    }
+
+    // Store original method
+    this.originalGetValue = stateManager.getValue.bind(stateManager);
+
+    // Replace with tracing version
+    const zenMaster = this;
+    stateManager.getValue = function(fieldId) {
+      // Call original method to get the value
+      const value = zenMaster.originalGetValue(fieldId);
+
+      // Record this access if we're tracing
+      zenMaster.recordAccess(fieldId, value);
+
+      return value;
+    };
+
+    console.log('🔍 [ZenMaster] StateManager.getValue intercepted');
+  }
+
+  /**
+   * Restore original StateManager methods
+   */
+  restoreStateManager() {
+    const stateManager = window.TEUI?.StateManager;
+    if (!stateManager || !this.originalGetValue) {
+      return;
+    }
+
+    stateManager.getValue = this.originalGetValue;
+    this.originalGetValue = null;
+
+    console.log('🔄 [ZenMaster] StateManager.getValue restored');
+  }
+
+  /**
+   * Start tracing dependencies for a specific field calculation
+   * @param {string} fieldId - The field being calculated
+   * @param {string} mode - 'target' or 'reference' calculation mode
+   */
+  startTrace(fieldId, mode = 'target') {
+    this.isTracing = true;
+    this.currentMode = mode;
+    this.currentCalculation = fieldId;
+    this.calculationStack.push({ fieldId, mode, dependencies: new Set() });
+
+    console.log(`🎯 [ZenMaster] START trace: ${fieldId} (${mode} mode)`);
+  }
+
+  /**
+   * Record a field access during calculation
+   * @param {string} accessedFieldId - The field being read
+   * @param {*} value - The value that was read
+   */
+  recordAccess(accessedFieldId, value) {
+    if (!this.isTracing || this.calculationStack.length === 0) {
+      return; // Not currently tracing
+    }
+
+    const currentCalc = this.calculationStack[this.calculationStack.length - 1];
+
+    // Don't record self-references
+    if (accessedFieldId === currentCalc.fieldId) {
+      return;
+    }
+
+    // Record the dependency
+    currentCalc.dependencies.add(accessedFieldId);
+
+    // Log the access for detailed analysis
+    this.accessLog.push({
+      timestamp: Date.now(),
+      calculatingField: currentCalc.fieldId,
+      mode: currentCalc.mode,
+      accessedField: accessedFieldId,
+      value: value,
+      stackDepth: this.calculationStack.length
+    });
+
+    console.log(`  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`);
+  }
+
+  /**
+   * End tracing for the current field calculation
+   * @returns {Set<string>} The discovered dependencies
+   */
+  endTrace() {
+    if (!this.isTracing || this.calculationStack.length === 0) {
+      console.warn('[ZenMaster] endTrace called but not currently tracing');
+      return new Set();
+    }
+
+    const completed = this.calculationStack.pop();
+    const { fieldId, mode, dependencies } = completed;
+
+    // Store the discovered dependencies
+    const key = mode === 'reference' ? `ref_${fieldId}` : fieldId;
+    if (!this.dependencies.has(key)) {
+      this.dependencies.set(key, new Set());
+    }
+
+    // Merge with existing dependencies (in case of multiple traces)
+    const existing = this.dependencies.get(key);
+    dependencies.forEach(dep => existing.add(dep));
+
+    console.log(`✅ [ZenMaster] END trace: ${fieldId} (${mode}) → depends on [${Array.from(dependencies).join(', ')}]`);
+
+    // If stack is empty, we're done tracing
+    if (this.calculationStack.length === 0) {
+      this.isTracing = false;
+      this.currentCalculation = null;
+    }
+
+    return dependencies;
+  }
+
+  /**
+   * Trace a section's calculateAll() function
+   * @param {string} sectionId - Section identifier (e.g., 'sect10')
+   * @param {Function} calculateFn - The calculation function to trace
+   * @param {string} mode - 'target' or 'reference'
+   */
+  traceSection(sectionId, calculateFn, mode = 'target') {
+    console.log(`\n🧘 [ZenMaster] ========== TRACING ${sectionId.toUpperCase()} (${mode} mode) ==========`);
+
+    this.startTrace(`${sectionId}_calculateAll`, mode);
+
+    try {
+      calculateFn();
+    } catch (error) {
+      console.error(`[ZenMaster] Error during ${sectionId} calculation:`, error);
+    } finally {
+      this.endTrace();
+    }
+
+    console.log(`🧘 [ZenMaster] ========== END ${sectionId.toUpperCase()} ==========\n`);
+  }
+
+  /**
+   * Export the discovered dependency graph
+   * @returns {Object} Dependency graph in Dependency.js compatible format
+   */
+  exportDependencyGraph() {
+    const graph = {
+      nodes: [],
+      links: []
+    };
+
+    // Build unique node set
+    const nodeSet = new Set();
+    this.dependencies.forEach((deps, fieldId) => {
+      nodeSet.add(fieldId);
+      deps.forEach(dep => nodeSet.add(dep));
+    });
+
+    // Create nodes
+    graph.nodes = Array.from(nodeSet).map(id => ({
+      id,
+      label: this.getFieldLabel(id),
+      group: this.getFieldSection(id)
+    }));
+
+    // Create links
+    this.dependencies.forEach((deps, fieldId) => {
+      deps.forEach(dep => {
+        graph.links.push({
+          source: dep,
+          target: fieldId
+        });
+      });
+    });
+
+    return graph;
+  }
+
+  /**
+   * Get field label from FieldManager
+   */
+  getFieldLabel(fieldId) {
+    const fieldManager = window.TEUI?.FieldManager;
+    if (!fieldManager) return fieldId;
+
+    const field = fieldManager.getField(fieldId);
+    return field?.label || fieldId;
+  }
+
+  /**
+   * Get field section from FieldManager
+   */
+  getFieldSection(fieldId) {
+    const fieldManager = window.TEUI?.FieldManager;
+    if (!fieldManager) return 'Other';
+
+    const field = fieldManager.getField(fieldId);
+    return field?.section || 'Other';
+  }
+
+  /**
+   * Validate discovered dependencies against manual declarations
+   * @returns {Object} Validation results with phantoms and missing deps
+   */
+  validateDependencies() {
+    console.log('\n🔍 [ZenMaster] ========== DEPENDENCY VALIDATION ==========');
+
+    const results = {
+      sections: {},
+      summary: {
+        totalFields: 0,
+        fieldsWithPhantoms: 0,
+        fieldsWithMissing: 0,
+        totalPhantoms: 0,
+        totalMissing: 0
+      }
+    };
+
+    const fieldManager = window.TEUI?.FieldManager;
+    if (!fieldManager) {
+      console.error('[ZenMaster] FieldManager not found');
+      return results;
+    }
+
+    // Get all field definitions
+    const allFields = fieldManager.getAllFields();
+
+    // For each field with declared dependencies, compare to traced
+    Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
+      if (!fieldDef.dependencies || fieldDef.dependencies.length === 0) {
+        return; // No declared dependencies to validate
+      }
+
+      const declaredDeps = new Set(fieldDef.dependencies);
+      const tracedDeps = this.dependencies.get(fieldId) || new Set();
+
+      // Find phantoms (declared but not actually used)
+      const phantoms = Array.from(declaredDeps).filter(dep => !tracedDeps.has(dep));
+
+      // Find missing (used but not declared)
+      const missing = Array.from(tracedDeps).filter(dep => !declaredDeps.has(dep));
+
+      if (phantoms.length === 0 && missing.length === 0) {
+        return; // Perfect match!
+      }
+
+      // Record issues
+      const section = fieldDef.section || 'unknown';
+      if (!results.sections[section]) {
+        results.sections[section] = [];
+      }
+
+      const issue = {
+        fieldId,
+        label: fieldDef.label || fieldId,
+        declared: Array.from(declaredDeps).sort(),
+        traced: Array.from(tracedDeps).sort(),
+        phantoms,
+        missing
+      };
+
+      results.sections[section].push(issue);
+
+      // Update summary
+      results.summary.totalFields++;
+      if (phantoms.length > 0) {
+        results.summary.fieldsWithPhantoms++;
+        results.summary.totalPhantoms += phantoms.length;
+      }
+      if (missing.length > 0) {
+        results.summary.fieldsWithMissing++;
+        results.summary.totalMissing += missing.length;
+      }
+
+      // Log the issue
+      console.log(`\n⚠️ ${fieldId} (${fieldDef.label || 'unlabeled'})`);
+      if (phantoms.length > 0) {
+        console.log(`  ❌ PHANTOM deps (declared but never used): ${phantoms.join(', ')}`);
+      }
+      if (missing.length > 0) {
+        console.log(`  ✅ MISSING deps (used but not declared): ${missing.join(', ')}`);
+      }
+    });
+
+    this.validationResults = results;
+
+    console.log('\n📊 [ZenMaster] ========== VALIDATION SUMMARY ==========');
+    console.log(`Total fields validated: ${results.summary.totalFields}`);
+    console.log(`Fields with phantom deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} total phantoms)`);
+    console.log(`Fields with missing deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} total missing)`);
+    console.log('==========================================================\n');
+
+    return results;
+  }
+
+  /**
+   * Generate a report of discovered dependencies
+   * @returns {string} Formatted report
+   */
+  generateReport() {
+    const lines = [];
+    lines.push('');
+    lines.push('🧘 ZenMaster Dependency Discovery Report');
+    lines.push('========================================');
+    lines.push('');
+    lines.push(`Total fields traced: ${this.dependencies.size}`);
+    lines.push(`Total access events: ${this.accessLog.length}`);
+    lines.push('');
+    lines.push('Discovered Dependencies:');
+    lines.push('');
+
+    // Sort by field ID
+    const sorted = Array.from(this.dependencies.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+    sorted.forEach(([fieldId, deps]) => {
+      const depsArray = Array.from(deps).sort();
+      lines.push(`${fieldId}:`);
+      lines.push(`  dependencies: [${depsArray.map(d => `"${d}"`).join(', ')}]`);
+      lines.push('');
+    });
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Clear all traced data (useful for fresh traces)
+   */
+  reset() {
+    this.dependencies.clear();
+    this.accessLog = [];
+    this.calculationStack = [];
+    this.validationResults = null;
+    console.log('🧹 [ZenMaster] Trace data cleared');
+  }
+
+  /**
+   * Helper: Wrap a calculation function with automatic tracing
+   * @param {string} fieldId - Field being calculated
+   * @param {Function} calculationFn - The calculation function
+   * @param {string} mode - 'target' or 'reference'
+   * @returns {*} Result of the calculation
+   */
+  trace(fieldId, calculationFn, mode = 'target') {
+    this.startTrace(fieldId, mode);
+    try {
+      const result = calculationFn();
+      return result;
+    } finally {
+      this.endTrace();
+    }
+  }
+
+  /**
+   * Export discovered dependencies to JSON file for Dependency.js
+   * Downloads a JSON file with the true dependency graph
+   */
+  exportToFile() {
+    const graph = this.exportDependencyGraph();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `zen-dependencies-${timestamp}.json`;
+
+    const dataStr = JSON.stringify(graph, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    console.log(`📥 [ZenMaster] Exported ${graph.nodes.length} nodes and ${graph.links.length} links to ${filename}`);
+  }
+
+  /**
+   * Export field dependencies in section definition format
+   * Generates code snippets that can be copied into section files
+   */
+  exportForSections() {
+    const lines = [];
+    lines.push('// ZenMaster Discovered Dependencies');
+    lines.push('// Copy these into your section field definitions\n');
+
+    // Group by section
+    const bySection = new Map();
+
+    this.dependencies.forEach((deps, fieldId) => {
+      const section = this.getFieldSection(fieldId);
+      if (!bySection.has(section)) {
+        bySection.set(section, []);
+      }
+      bySection.get(section).push({ fieldId, deps: Array.from(deps).sort() });
+    });
+
+    // Generate formatted output
+    bySection.forEach((fields, section) => {
+      lines.push(`\n// ${section}`);
+      fields.forEach(({ fieldId, deps }) => {
+        if (deps.length > 0) {
+          lines.push(`  ${fieldId}: {`);
+          lines.push(`    dependencies: [${deps.map(d => `"${d}"`).join(', ')}],`);
+          lines.push(`  },`);
+        }
+      });
+    });
+
+    const output = lines.join('\n');
+    console.log(output);
+    return output;
+  }
+
+  /**
+   * Get tracing status and statistics
+   */
+  getStatus() {
+    return {
+      enabled: this.isEnabled,
+      tracing: this.isTracing,
+      fieldsTracked: this.dependencies.size,
+      accessEvents: this.accessLog.length,
+      currentCalculation: this.currentCalculation,
+      mode: this.currentMode
+    };
+  }
+};
+
+// Create global instance
+window.TEUI.zenMaster = new window.TEUI.ZenMaster();
+
+// Expose convenience methods globally
+window.zenEnable = () => window.TEUI.zenMaster.enable();
+window.zenDisable = () => window.TEUI.zenMaster.disable();
+window.zenReset = () => window.TEUI.zenMaster.reset();
+window.zenReport = () => console.log(window.TEUI.zenMaster.generateReport());
+window.zenValidate = () => window.TEUI.zenMaster.validateDependencies();
+window.zenExport = () => window.TEUI.zenMaster.exportDependencyGraph();
+window.zenExportFile = () => window.TEUI.zenMaster.exportToFile();
+window.zenExportSections = () => window.TEUI.zenMaster.exportForSections();
+window.zenStatus = () => console.table(window.TEUI.zenMaster.getStatus());
+
+console.log(`
+🧘 ZenMaster loaded. Use these commands to discover true dependencies:
+
+  zenEnable()         - Start tracing all getValue() calls
+  zenDisable()        - Stop tracing and restore original methods
+  zenReset()          - Clear all traced data
+  zenReport()         - Print discovered dependencies
+  zenValidate()       - Compare discovered vs declared dependencies
+  zenExport()         - Export dependency graph JSON to console
+  zenExportFile()     - Download dependency graph as JSON file
+  zenExportSections() - Generate code snippets for section definitions
+  zenStatus()         - Show current tracing status
+
+Example workflow:
+  1. zenEnable()
+  2. Interact with the app (change values, trigger calculations)
+  3. zenValidate()
+  4. zenExportFile()    // Download for use in Dependency.js
+  5. zenDisable()
+`);
