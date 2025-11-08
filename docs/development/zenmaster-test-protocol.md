@@ -717,6 +717,27 @@ This comprehensive test protocol ensures ZenMaster captures ALL dependency paths
 
 After completing this protocol, you'll have a **complete runtime dependency graph** that accurately represents your application's TRUE calculation flow, enabling confident dependency cleanup and Calculator.js optimization.
 
+---
+
+## 📝 Test Results & Observations
+
+All test findings, issues, and action items are documented in:
+
+**[Zen-Observations.md](./Zen-Observations.md)**
+
+This living document tracks:
+- ✅ Dependency declaration typos (with TODO checkboxes)
+- ✅ Label quality issues
+- ✅ Validation results per test scenario
+- ✅ Dependency graph statistics
+- ✅ Action items and fixes
+
+Update this document after each test scenario with findings from:
+- `zenValidate()` - Missing/phantom/conditional dependencies
+- `zenLabels()` - Unlabeled or poorly-labeled fields
+- `zenTypos()` - Dependency declaration errors
+- `zenExportFile()` - Graph metrics and coverage
+
 
 +++++
 
