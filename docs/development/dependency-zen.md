@@ -34,6 +34,141 @@
 
 ---
 
+## Understanding Dependencies vs. Precedents
+
+**Critical Distinction**: Dependencies and precedents represent opposite directions in the dependency graph. Understanding this difference is essential for correctly declaring field relationships.
+
+### Dependencies (What This Field NEEDS)
+
+**Direction**: FROM calculated field TO its inputs
+
+**Definition**: The set of fields that a calculated field READS FROM to compute its value.
+
+**Declaration**: Explicitly declared in field definitions using `dependencies`, `conditionalDeps`, or `uiDeps` arrays.
+
+**Example**:
+```javascript
+// d_16 calculates embodied carbon target based on carbon standard selection
+d_16: {
+  fieldId: "d_16",
+  type: "derived",
+  label: "Embodied Carbon Target (kgCO₂e/m²)",
+  section: "buildingInfo",
+  dependencies: ["d_15"],           // Always reads d_15 (carbon standard selector)
+  conditionalDeps: ["i_39", "i_41"], // Reads i_39 when TGS4, i_41 when Self Reported
+}
+```
+
+**Graph Representation**: Arrows point FROM dependencies TO the calculated field
+- `d_15` → `d_16` (d_16 depends on d_15)
+- `i_39` → `d_16` (d_16 conditionally depends on i_39)
+- `i_41` → `d_16` (d_16 conditionally depends on i_41)
+
+### Precedents (What Fields USE This Field)
+
+**Direction**: FROM this field TO fields that depend on it (reverse of dependencies)
+
+**Definition**: The set of fields that READ this field when computing their values.
+
+**Declaration**: NOT declared in field definitions. Discovered through graph analysis (reverse lookup of dependencies).
+
+**Example**:
+```javascript
+// h_15 (Conditioned Area) is used by many fields but has NO dependencies
+h_15: {
+  fieldId: "h_15",
+  type: "editable",
+  label: "Conditioned Area",
+  section: "buildingInfo",
+  // NO dependencies array - this is a user input (SOURCE node)
+}
+
+// Precedents of h_15 (discovered via graph analysis):
+// - h_10, k_10, e_10 (TEUI calculations divide energy by area)
+// - h_8, k_8, e_8 (Annual carbon calculations divide by area)
+// - i_39 (Typology carbon intensity calculation)
+// - d_101, d_102, etc. (Volume calculations)
+```
+
+**Graph Representation**: Arrows point FROM this field TO its precedents
+- `h_15` → `h_10` (h_10 uses h_15)
+- `h_15` → `k_10` (k_10 uses h_15)
+- `h_15` → `e_10` (e_10 uses h_15)
+
+### Key Rule: Input Fields Have NO Dependencies
+
+**User input fields** (dropdowns, sliders, editable text) are **SOURCE nodes** in the dependency graph:
+
+✅ **Correct**: Input fields have NO dependencies (empty or omitted `dependencies` array)
+```javascript
+h_12: {
+  fieldId: "h_12",
+  type: "year_slider",
+  label: "Reporting Period",
+  // NO dependencies - user provides this value directly
+}
+```
+
+❌ **Incorrect**: Adding dependencies to input fields
+```javascript
+h_12: {
+  fieldId: "h_12",
+  type: "year_slider",
+  label: "Reporting Period",
+  dependencies: [???],  // WRONG - input fields don't depend on anything
+}
+```
+
+**Why**: Input fields don't NEED anything to compute their value - the user provides the value. They have many **precedents** (calculated fields that use them), but zero **dependencies**.
+
+### Only Calculated Fields Declare Dependencies
+
+**Calculated/derived fields** (type: `"calculated"`, `"derived"`) are the ONLY fields that should have `dependencies` arrays:
+
+✅ **Correct**: Calculated field declares what it reads
+```javascript
+d_16: {
+  fieldId: "d_16",
+  type: "derived",
+  label: "Embodied Carbon Target (kgCO₂e/m²)",
+  dependencies: ["d_15"],           // Reads d_15 to compute value
+  conditionalDeps: ["i_39", "i_41"], // Conditionally reads i_39/i_41
+}
+```
+
+**Why**: Calculated fields COMPUTE their value by reading other fields. Their `dependencies` array declares which fields they read.
+
+### Practical Implications
+
+1. **When validating S02 dependencies**:
+   - ✅ 14 input fields (dropdowns, sliders, editable) have NO dependencies → **CORRECT**
+   - ✅ 1 calculated field (d_16) has dependencies → **CORRECT**
+   - ❌ Adding dependencies to h_12, h_15, etc. → **WRONG** (they're inputs, not calculated)
+
+2. **When a field "affects calculations"**:
+   - If the field is used BY other calculations → It has **precedents** (not dependencies)
+   - Don't add dependencies to input fields just because they're widely used
+   - Example: h_15 (Conditioned Area) affects 50+ calculations, but has ZERO dependencies
+
+3. **For topological sort**:
+   - Dependencies determine calculation ORDER (must calculate inputs before outputs)
+   - Input fields come first (no dependencies to wait for)
+   - Calculated fields come after their dependencies are ready
+
+### Summary Table
+
+| Aspect | Dependencies | Precedents |
+|--------|-------------|-----------|
+| **Direction** | FROM calculated field TO inputs | FROM this field TO consumers |
+| **Meaning** | What this field NEEDS | What fields USE this field |
+| **Declaration** | Explicit in field definition | Discovered via graph analysis |
+| **Graph arrows** | Point INTO this field | Point OUT OF this field |
+| **Input fields** | None (empty array) | Many (widely used) |
+| **Calculated fields** | One or more | Zero or more |
+| **Used for** | Topological sort, calculation order | Impact analysis, change propagation |
+
+---
+
 ## The Vision: Truth Over Intention
 
 Instead of **declaring** what fields depend on what, we **discover** the actual runtime dependencies by:

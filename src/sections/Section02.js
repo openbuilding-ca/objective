@@ -89,6 +89,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "h_12",
           type: "year_slider",
+          label: "Reporting Period",
           value: "2022",
           min: 2015,
           max: 2041,
@@ -159,6 +160,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "h_13",
           type: "year_slider",
+          label: "Service Life",
           value: "50",
           min: 30,
           max: 100,
@@ -214,6 +216,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "h_14",
           type: "editable",
+          label: "Project Name",
           value: "Three Feathers Terrace",
           classes: ["wide-text", "no-wrap"],
           section: "buildingInfo",
@@ -273,6 +276,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "h_15",
           type: "editable",
+          label: "Conditioned Area",
           value: "1427.20", // ✅ FIXED: Raw value without comma for calculation stability
           classes: ["user-input", "editable"],
           section: "buildingInfo",
@@ -332,6 +336,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "i_16",
           type: "editable",
+          label: "Certifier",
           value: "Thomson Architecture, Inc.",
           section: "buildingInfo",
           tooltip: true, // Certifier
@@ -373,6 +378,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: {
           fieldId: "i_17",
           type: "editable",
+          label: "License Number",
           value: "8154",
           section: "buildingInfo",
           tooltip: true, // License or Authorization
