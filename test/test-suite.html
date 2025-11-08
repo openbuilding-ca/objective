@@ -700,10 +700,14 @@
 
         const results = zenMaster.validateDependencies();
 
+        // Debug: log the results
+        console.log('Test debug - results.summary:', results.summary);
+        console.log('Test debug - totalConditional:', results.summary.totalConditional);
+
         window.TEUI.FieldManager.getAllFields = originalGetAllFields;
         window.TEUI.FieldManager.getField = originalGetField;
 
-        assertGreaterThan(results.summary.totalConditional, 0, 'Should find conditional dependencies');
+        assertEquals(results.summary.totalConditional, 2, 'Should find 2 conditional dependencies (i_39, i_41)');
       });
 
       suite.test('should identify MISSING dependencies', () => {

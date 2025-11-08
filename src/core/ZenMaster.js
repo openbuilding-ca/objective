@@ -481,7 +481,15 @@ window.TEUI.ZenMaster = class ZenMaster {
       // Find missing (used but not declared in any category)
       const missing = Array.from(tracedDeps).filter(dep => !declaredDeps.has(dep));
 
-      // Skip if no issues
+      // Count conditional and UI deps in summary even if there are no other issues
+      if (conditionalPhantoms.length > 0) {
+        results.summary.totalConditional += conditionalPhantoms.length;
+      }
+      if (uiPhantoms.length > 0) {
+        results.summary.totalUIDeps += uiPhantoms.length;
+      }
+
+      // Skip if no issues (but we already counted conditional/UI above)
       if (phantoms.length === 0 && missing.length === 0 && nonExistentDeps.length === 0) {
         // Log conditional/UI deps for awareness but don't flag as issues
         if (conditionalPhantoms.length > 0 || uiPhantoms.length > 0) {
@@ -517,7 +525,7 @@ window.TEUI.ZenMaster = class ZenMaster {
 
       results.sections[section].push(issue);
 
-      // Update summary
+      // Update summary (note: conditionalPhantoms and uiPhantoms already counted above before early return)
       results.summary.totalFields++;
       if (phantoms.length > 0) {
         results.summary.fieldsWithPhantoms++;
@@ -526,12 +534,6 @@ window.TEUI.ZenMaster = class ZenMaster {
       if (missing.length > 0) {
         results.summary.fieldsWithMissing++;
         results.summary.totalMissing += missing.length;
-      }
-      if (conditionalPhantoms.length > 0) {
-        results.summary.totalConditional += conditionalPhantoms.length;
-      }
-      if (uiPhantoms.length > 0) {
-        results.summary.totalUIDeps += uiPhantoms.length;
       }
       if (nonExistentDeps.length > 0) {
         results.summary.totalNonExistent += nonExistentDeps.length;
