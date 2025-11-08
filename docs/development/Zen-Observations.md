@@ -29,57 +29,55 @@ ZenMaster successfully traced **210 unique nodes** and **1,544 dependency links*
   - Was: `dependencies: ["i_73", "h_79"]`
   - Now: `dependencies: ["i_73", "i_79"]`
 
-- [ ] **TODO: Fix j_76**
+- [x] **TODO: Fix j_76** - Already fixed in [Section10.js:1291](../../src/sections/Section10.js#L1291)
+  - ✅ Status: COMPLETE
   - Section: envelopeRadiantGains
-  - Field: Row 76 calculation
-  - Issue: `dependencies: [..., "h_79"]` should be `dependencies: [..., "i_79"]`
-  - File: [Section10.js](../../src/sections/Section10.js)
+  - Was: `dependencies: ["i_76", "h_79"]`
+  - Now: `dependencies: ["i_76", "i_79"]`
 
-- [ ] **TODO: Fix j_77**
+- [x] **TODO: Fix j_77** - Already fixed in [Section10.js:1398](../../src/sections/Section10.js#L1398)
+  - ✅ Status: COMPLETE
   - Section: envelopeRadiantGains
-  - Field: Row 77 calculation
-  - Issue: `dependencies: [..., "h_79"]` should be `dependencies: [..., "i_79"]`
-  - File: [Section10.js](../../src/sections/Section10.js)
+  - Was: `dependencies: ["i_77", "h_79"]`
+  - Now: `dependencies: ["i_77", "i_79"]`
 
-- [ ] **TODO: Fix j_78**
+- [x] **TODO: Fix j_78** - Already fixed in [Section10.js:1505](../../src/sections/Section10.js#L1505)
+  - ✅ Status: COMPLETE
   - Section: envelopeRadiantGains
-  - Field: Row 78 calculation
-  - Issue: `dependencies: [..., "h_79"]` should be `dependencies: [..., "i_79"]`
-  - File: [Section10.js](../../src/sections/Section10.js)
+  - Was: `dependencies: ["i_78", "h_79"]`
+  - Now: `dependencies: ["i_78", "i_79"]`
 
-- [ ] **TODO: Fix e_80**
+- [x] **TODO: Fix e_80** - Already fixed in [Section10.js:1619](../../src/sections/Section10.js#L1619)
+  - ✅ Status: COMPLETE
   - Section: radiantGains
-  - Field: Row 80 calculation (column E)
-  - Issue: `dependencies: [..., "h_79"]` should be `dependencies: [..., "i_79"]`
-  - File: [Section10.js](../../src/sections/Section10.js)
+  - Was: `dependencies: ["h_79", "i_71"]`
+  - Now: `dependencies: ["i_79", "i_71"]`
 
 #### Typo Pattern 2: Mechanical Loads - Wrong Column References
 
 **Context**: d_120 and d_122 each have 2 incorrect column references.
 
-- [ ] **TODO: Fix d_120 - First typo (h_118 → g_118)**
+- [x] **TODO: Fix d_120 - First typo (h_118 → g_118)** - Already fixed in [Section13.js:1324](../../src/sections/Section13.js#L1324)
+  - ✅ Status: COMPLETE
   - Section: mechanicalLoads
-  - Field: d_120 (likely Heating/Cooling load calculation)
-  - Issue: `dependencies: [..., "h_118"]` should be `dependencies: [..., "g_118"]`
-  - File: [Section12.js](../../src/sections/Section12.js)
+  - Was: `dependencies: ["h_118", "d_63", "d_119", "i_63", "j_63", "l_118", "d_105"]`
+  - Now: `dependencies: ["g_118", "d_63", "d_119", "i_63", "l_118", "d_105"]`
 
-- [ ] **TODO: Fix d_120 - Second typo (j_63 → i_63)**
+- [x] **TODO: Fix d_120 - Second typo (j_63 → i_63)** - Already fixed in [Section13.js:1324](../../src/sections/Section13.js#L1324)
+  - ✅ Status: COMPLETE
   - Section: mechanicalLoads
-  - Field: d_120
-  - Issue: `dependencies: [..., "j_63"]` should be `dependencies: [..., "i_63"]`
-  - File: [Section12.js](../../src/sections/Section12.js)
+  - Note: Removed duplicate "j_63" (correct "i_63" already present)
 
-- [ ] **TODO: Fix d_122 - First typo (h_118 → g_118)**
+- [x] **TODO: Fix d_122 - First typo (h_118 → g_118)** - Already fixed in [Section13.js:1443](../../src/sections/Section13.js#L1443)
+  - ✅ Status: COMPLETE
   - Section: mechanicalLoads
-  - Field: d_122 (likely Ventilation energy calculation)
-  - Issue: `dependencies: [..., "h_118"]` should be `dependencies: [..., "g_118"]`
-  - File: [Section12.js](../../src/sections/Section12.js)
+  - Was: `dependencies: ["h_118", "l_119", "d_120", "d_21", "i_63", "j_63", "i_122"]`
+  - Now: `dependencies: ["g_118", "l_119", "d_120", "d_21", "i_63", "i_122"]`
 
-- [ ] **TODO: Fix d_122 - Second typo (j_63 → i_63)**
+- [x] **TODO: Fix d_122 - Second typo (j_63 → i_63)** - Already fixed in [Section13.js:1443](../../src/sections/Section13.js#L1443)
+  - ✅ Status: COMPLETE
   - Section: mechanicalLoads
-  - Field: d_122
-  - Issue: `dependencies: [..., "j_63"]` should be `dependencies: [..., "i_63"]`
-  - File: [Section12.js](../../src/sections/Section12.js)
+  - Note: Removed duplicate "j_63" (correct "i_63" already present)
 
 ### Root Cause Analysis
 
@@ -307,11 +305,11 @@ Most unlabeled fields are in the **envelope section** (unknown section):
 ## 📋 Action Items Summary
 
 ### Immediate (Before Next Test)
-1. [ ] **Fix 10 dependency typos** (Section10.js: j_76, j_77, j_78, e_80; Section12.js: d_120, d_122)
+1. [x] ~~**Fix 10 dependency typos**~~ ✅ **COMPLETE** (Section10.js: j_76, j_77, j_78, e_80; Section13.js: d_120, d_122)
 2. [x] ~~Run `zenLabels()` and document findings~~ ✅ **COMPLETE**
 3. [x] ~~Run `zenValidate()` and document findings~~ ✅ **COMPLETE**
 4. [x] ~~Update this document with validation results~~ ✅ **COMPLETE**
-5. [ ] **Add 11 MISSING dependencies** (Section05.js: i_39, d_40, i_40, d_41)
+5. [ ] **Add 11 MISSING dependencies** (Section05.js: i_39, d_40, i_40, d_41) - User reviewing against Excel
 6. [ ] **Investigate 4 non-existent constants** (ref_d_38, cooling_*, ...)
 
 ### Before Topological Sort Implementation
@@ -361,6 +359,7 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 ---
 
 **Next Steps**:
-1. Fix 10 typos + add 11 MISSING dependencies before Test 2
-2. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
-3. Consider adding labels to envelope fields (139 unlabeled) for S17 graph viz
+1. ✅ ~~Fix 10 typos~~ **COMPLETE** (commit 9bdf86a)
+2. Add 11 MISSING dependencies after user validates against Excel source
+3. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
+4. Interactive Q&A session to add labels to envelope fields (139 unlabeled) for S17 graph viz
