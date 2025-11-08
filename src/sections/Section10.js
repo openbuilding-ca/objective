@@ -1288,7 +1288,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "77.69%",
           section: "envelopeRadiantGains",
-          dependencies: ["i_76", "h_79"],
+          dependencies: ["i_76", "i_79"],
         },
         k: {
           fieldId: "k_76",
@@ -1395,7 +1395,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "17.98%",
           section: "envelopeRadiantGains",
-          dependencies: ["i_77", "h_79"],
+          dependencies: ["i_77", "i_79"],
         },
         k: {
           fieldId: "k_77",
@@ -1502,7 +1502,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "0.00%",
           section: "envelopeRadiantGains",
-          dependencies: ["i_78", "h_79"],
+          dependencies: ["i_78", "i_79"],
         },
         k: {
           fieldId: "k_78",
@@ -1616,7 +1616,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "114,698.37",
           section: "radiantGains",
-          dependencies: ["h_79", "i_71"],
+          dependencies: ["i_79", "i_71"],
         },
         f: { content: "Total Gains" },
         g: {
