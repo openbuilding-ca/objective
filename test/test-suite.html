@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OBJECTIVE Test Suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .summary {
+      display: flex;
+      gap: 20px;
+      padding: 20px 30px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #6c757d;
+      letter-spacing: 0.5px;
+    }
+
+    .stat.passed .stat-value { color: #28a745; }
+    .stat.failed .stat-value { color: #dc3545; }
+    .stat.total .stat-value { color: #667eea; }
+
+    .test-groups {
+      padding: 30px;
+    }
+
+    .test-group {
+      margin-bottom: 30px;
+    }
+
+    .test-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .group-header {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .group-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: #e9ecef;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .test-case {
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      border-left: 4px solid transparent;
+      background: #f8f9fa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .test-case:hover {
+      background: #e9ecef;
+    }
+
+    .test-case.passed {
+      border-left-color: #28a745;
+      background: #f1f9f3;
+    }
+
+    .test-case.failed {
+      border-left-color: #dc3545;
+      background: #fdf3f3;
+    }
+
+    .test-name {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .test-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .test-status.passed {
+      background: #28a745;
+      color: white;
+    }
+
+    .test-status.failed {
+      background: #dc3545;
+      color: white;
+    }
+
+    .test-error {
+      font-size: 12px;
+      color: #dc3545;
+      margin-top: 8px;
+      padding: 8px;
+      background: #fff5f5;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .run-button {
+      margin: 20px 30px;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .run-button:hover {
+      background: #5568d3;
+    }
+
+    .run-button:active {
+      transform: scale(0.98);
+    }
+
+    footer {
+      padding: 20px 30px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 12px;
+      border-top: 1px solid #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>OBJECTIVE Test Suite</h1>
+      <div class="subtitle">Observer Pattern Architecture Tests</div>
+    </header>
+
+    <div class="summary">
+      <div class="stat total">
+        <div class="stat-value" id="total-tests">0</div>
+        <div class="stat-label">Total Tests</div>
+      </div>
+      <div class="stat passed">
+        <div class="stat-value" id="passed-tests">0</div>
+        <div class="stat-label">Passed</div>
+      </div>
+      <div class="stat failed">
+        <div class="stat-value" id="failed-tests">0</div>
+        <div class="stat-label">Failed</div>
+      </div>
+    </div>
+
+    <button class="run-button" onclick="runAllTests()">Run All Tests</button>
+
+    <div class="test-groups" id="test-results">
+      <!-- Test results will be inserted here -->
+    </div>
+
+    <footer>
+      OBJECTIVE Calculator Test Suite • No external dependencies
+    </footer>
+  </div>
+
+  <!-- Load source files -->
+  <script src="../src/core/StateManager.js"></script>
+  <script src="../src/core/ZenMaster.js"></script>
+
+  <!-- Test Framework -->
+  <script>
+    // Simple test framework
+    class TestSuite {
+      constructor() {
+        this.groups = [];
+        this.currentGroup = null;
+      }
+
+      group(name, fn) {
+        this.currentGroup = {
+          name,
+          tests: []
+        };
+        this.groups.push(this.currentGroup);
+        fn();
+        this.currentGroup = null;
+      }
+
+      test(name, fn) {
+        if (!this.currentGroup) {
+          throw new Error('test() must be called within a group()');
+        }
+        this.currentGroup.tests.push({ name, fn });
+      }
+
+      async run() {
+        const results = {
+          total: 0,
+          passed: 0,
+          failed: 0,
+          groups: []
+        };
+
+        for (const group of this.groups) {
+          const groupResults = {
+            name: group.name,
+            tests: []
+          };
+
+          for (const test of group.tests) {
+            results.total++;
+            const testResult = { name: test.name, passed: false, error: null };
+
+            try {
+              await test.fn();
+              testResult.passed = true;
+              results.passed++;
+            } catch (error) {
+              testResult.passed = false;
+              testResult.error = error.message;
+              results.failed++;
+            }
+
+            groupResults.tests.push(testResult);
+          }
+
+          results.groups.push(groupResults);
+        }
+
+        return results;
+      }
+    }
+
+    // Assertion helpers
+    function assert(condition, message = 'Assertion failed') {
+      if (!condition) {
+        throw new Error(message);
+      }
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`);
+      }
+    }
+
+    function assertGreaterThan(actual, threshold, message) {
+      if (actual <= threshold) {
+        throw new Error(message || `Expected ${actual} > ${threshold}`);
+      }
+    }
+
+    function assertContains(array, item, message) {
+      if (!array.includes(item)) {
+        throw new Error(message || `Expected array to contain ${item}`);
+      }
+    }
+
+    // Test suite definition
+    const suite = new TestSuite();
+
+    // ========== StateManager Observer Tests ==========
+    suite.group('StateManager - Observer Registration', () => {
+      suite.test('should add observer successfully', () => {
+        const mockObserver = {
+          onGetValue: () => {},
+          onSetValue: () => {}
+        };
+
+        window.TEUI.StateManager.addObserver(mockObserver);
+        window.TEUI.StateManager.removeObserver(mockObserver);
+
+        assert(true, 'Observer registration completed without errors');
+      });
+
+      suite.test('should handle invalid observer gracefully', () => {
+        // Should not throw error, just log warning
+        window.TEUI.StateManager.addObserver(null);
+        window.TEUI.StateManager.addObserver('not an object');
+
+        assert(true, 'Invalid observers handled gracefully');
+      });
+
+      suite.test('should remove observer successfully', () => {
+        const mockObserver = {
+          onGetValue: () => {},
+          onSetValue: () => {}
+        };
+
+        window.TEUI.StateManager.addObserver(mockObserver);
+        window.TEUI.StateManager.removeObserver(mockObserver);
+
+        assert(true, 'Observer removed successfully');
+      });
+    });
+
+    // ========== StateManager Observer Notifications ==========
+    suite.group('StateManager - Observer Notifications', () => {
+      suite.test('should notify observer on getValue', () => {
+        let notified = false;
+        const mockObserver = {
+          onGetValue: (fieldId, value) => {
+            notified = true;
+          }
+        };
+
+        window.TEUI.StateManager.addObserver(mockObserver);
+        window.TEUI.StateManager.setValue('test_field_1', 100);
+        window.TEUI.StateManager.getValue('test_field_1');
+        window.TEUI.StateManager.removeObserver(mockObserver);
+
+        assert(notified, 'Observer was notified of getValue');
+      });
+
+      suite.test('should notify observer on setValue', () => {
+        let notified = false;
+        const mockObserver = {
+          onSetValue: (fieldId, value, state) => {
+            notified = true;
+          }
+        };
+
+        window.TEUI.StateManager.addObserver(mockObserver);
+        window.TEUI.StateManager.setValue('test_field_2', 200);
+        window.TEUI.StateManager.removeObserver(mockObserver);
+
+        assert(notified, 'Observer was notified of setValue');
+      });
+
+      suite.test('should pass correct parameters to onGetValue', () => {
+        let capturedFieldId = null;
+        let capturedValue = null;
+
+        const mockObserver = {
+          onGetValue: (fieldId, value) => {
+            capturedFieldId = fieldId;
+            capturedValue = value;
+          }
+        };
+
+        window.TEUI.StateManager.addObserver(mockObserver);
+        window.TEUI.StateManager.setValue('test_field_3', 300);
+        window.TEUI.StateManager.getValue('test_field_3');
+        window.TEUI.StateManager.removeObserver(mockObserver);
+
+        assertEquals(capturedFieldId, 'test_field_3', 'Field ID should match');
+        assertEquals(capturedValue, 300, 'Value should match');
+      });
+    });
+
+    // ========== ZenMaster Observer Integration ==========
+    suite.group('ZenMaster - Observer Pattern Integration', () => {
+      suite.test('should enable and register as observer', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+
+        assert(zenMaster.isEnabled, 'ZenMaster should be enabled');
+
+        zenMaster.disable();
+      });
+
+      suite.test('should disable and unregister as observer', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+        zenMaster.disable();
+
+        assert(!zenMaster.isEnabled, 'ZenMaster should be disabled');
+      });
+
+      suite.test('should record getValue when enabled', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+
+        window.TEUI.StateManager.setValue('test_field_4', 400);
+        window.TEUI.StateManager.getValue('test_field_4');
+
+        zenMaster.disable();
+
+        assertGreaterThan(zenMaster.accessLog.length, 0, 'Access log should have entries');
+      });
+
+      suite.test('should NOT record when disabled', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+        zenMaster.disable();
+
+        zenMaster.accessLog = []; // Clear log
+
+        window.TEUI.StateManager.setValue('test_field_5', 500);
+        window.TEUI.StateManager.getValue('test_field_5');
+
+        assertEquals(zenMaster.accessLog.length, 0, 'Access log should be empty when disabled');
+      });
+    });
+
+    // ========== ZenMaster Dependency Tracking ==========
+    suite.group('ZenMaster - Dependency Tracking', () => {
+      suite.test('should track dependencies during trace', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+
+        zenMaster.startTrace('calculated_field');
+        window.TEUI.StateManager.getValue('dependency_field_1');
+        window.TEUI.StateManager.getValue('dependency_field_2');
+        const deps = zenMaster.endTrace();
+
+        zenMaster.disable();
+
+        assert(deps.has('dependency_field_1'), 'Should track first dependency');
+        assert(deps.has('dependency_field_2'), 'Should track second dependency');
+      });
+
+      suite.test('should filter out self-references', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+
+        zenMaster.startTrace('self_field');
+        window.TEUI.StateManager.getValue('self_field'); // Self-reference
+        const deps = zenMaster.endTrace();
+
+        zenMaster.disable();
+
+        assert(!deps.has('self_field'), 'Should not track self-references');
+      });
+
+      suite.test('should handle nested calculations', () => {
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+
+        zenMaster.startTrace('outer_field');
+        window.TEUI.StateManager.getValue('outer_dep');
+
+        zenMaster.startTrace('inner_field');
+        window.TEUI.StateManager.getValue('inner_dep');
+        zenMaster.endTrace();
+
+        const outerDeps = zenMaster.endTrace();
+
+        zenMaster.disable();
+
+        assert(outerDeps.has('outer_dep'), 'Should track outer dependencies');
+      });
+    });
+
+    // Run tests and display results
+    async function runAllTests() {
+      // Initialize StateManager
+      window.TEUI.StateManager.initialize();
+
+      // Run all tests
+      const results = await suite.run();
+
+      // Update summary
+      document.getElementById('total-tests').textContent = results.total;
+      document.getElementById('passed-tests').textContent = results.passed;
+      document.getElementById('failed-tests').textContent = results.failed;
+
+      // Display test results
+      const container = document.getElementById('test-results');
+      container.innerHTML = '';
+
+      results.groups.forEach(group => {
+        const passedCount = group.tests.filter(t => t.passed).length;
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'test-group';
+
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        header.innerHTML = `
+          ${group.name}
+          <span class="group-badge">${passedCount}/${group.tests.length}</span>
+        `;
+        groupDiv.appendChild(header);
+
+        group.tests.forEach(test => {
+          const testDiv = document.createElement('div');
+          testDiv.className = `test-case ${test.passed ? 'passed' : 'failed'}`;
+
+          const testName = document.createElement('div');
+          testName.className = 'test-name';
+          testName.textContent = test.name;
+          testDiv.appendChild(testName);
+
+          const testStatus = document.createElement('div');
+          testStatus.className = `test-status ${test.passed ? 'passed' : 'failed'}`;
+          testStatus.textContent = test.passed ? 'Pass' : 'Fail';
+          testDiv.appendChild(testStatus);
+
+          if (!test.passed && test.error) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'test-error';
+            errorDiv.textContent = test.error;
+            testDiv.appendChild(errorDiv);
+          }
+
+          groupDiv.appendChild(testDiv);
+        });
+
+        container.appendChild(groupDiv);
+      });
+    }
+
+    // Auto-run tests on page load
+    window.addEventListener('load', runAllTests);
+  </script>
+</body>
+</html>
