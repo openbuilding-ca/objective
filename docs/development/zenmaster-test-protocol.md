@@ -297,18 +297,36 @@ DO NOT use it to:
 
 ## Post-Test Analysis
 
-### 1. Disable ZenMaster and Validate
+### 1. Disable ZenMaster and Run Validations
 
 ```javascript
-zenDisable()
+zenDisable()        // Automatically runs zenValidate()
+zenLabels()         // Find unlabeled fields (critical for graph viz)
+zenTypos()          // Detect likely typos in dependency declarations
 ```
 
-This will automatically run `zenValidate()` and show phantom dependencies.
+**What Each Validation Does:**
+
+- **zenValidate()**: Compares declared vs traced dependencies
+  - Focus on **MISSING** deps (usually safe to add)
+  - Note **CONDITIONAL** patterns across tests
+  - Investigate **NON-SM-UKN** and **CHECK-SRC** (don't auto-delete!)
+
+- **zenLabels()**: Finds fields without proper labels
+  - Critical for Section 17 dependency graph visualization
+  - Unlabeled nodes show as field IDs (hard to understand)
+  - Fields with labels matching their ID (poor labeling)
+
+- **zenTypos()**: Detects invalid dependency declarations with smart suggestions
+  - Column typos: h_79 vs i_79 (adjacent columns)
+  - Row typos: d_38 vs d_83 (transposed digits)
+  - Prefix errors: ref_d_38 vs d_38 (missing/extra ref_)
+  - **THESE ARE REAL BUGS** - high-confidence fixes
 
 ### 2. Export Results
 
 ```javascript
-zenExportFile()
+zenExportFile()     // Download JSON for graph analysis
 ```
 
 Saves comprehensive dependency graph as JSON.
@@ -635,8 +653,17 @@ yearSlider.addEventListener("change", function (e) {
 1. `zenReset(); zenEnable();`
 2. Interact with section fields (change dropdowns, adjust sliders, toggle modes)
 3. `zenDisable();` → runs `zenValidate()`
-4. `zenExportFile();`
-5. Analyze output → Update field definitions → Re-test → Commit
+4. `zenLabels();` → finds unlabeled fields
+5. `zenTypos();` → detects dependency typos (HIGH-CONFIDENCE BUGS!)
+6. `zenExportFile();`
+7. Analyze output → Update field definitions → Re-test → Commit
+
+**Priority Order for Fixes:**
+1. **zenTypos()** results → FIX IMMEDIATELY (real bugs with suggestions)
+2. **MISSING** deps from zenValidate() → ADD (usually safe)
+3. **Unlabeled** fields from zenLabels() → ADD LABELS (for graph viz)
+4. **CONDITIONAL** deps → ADD metadata (document conditional logic)
+5. **NON-SM-UKN** / **CHECK-SRC** → INVESTIGATE in source code (don't auto-delete!)
 
 ---
 

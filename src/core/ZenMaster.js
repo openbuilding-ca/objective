@@ -575,6 +575,180 @@ window.TEUI.ZenMaster = class ZenMaster {
   }
 
   /**
+   * Validate field labels for graph visualization and debugging
+   *
+   * PURPOSE: Find fields that exist in DOM/calculations but lack proper labels.
+   * This is critical for:
+   * - Dependency graph visualization (S17) - nodes need descriptive names
+   * - Debugging - unlabeled fields are hard to identify in console output
+   * - Documentation - every field should have a human-readable description
+   *
+   * @returns {Object} Report of unlabeled fields
+   */
+  validateLabels() {
+    console.log('\n🏷️  [ZenMaster] ========== LABEL VALIDATION ==========');
+
+    const fieldManager = window.TEUI?.FieldManager;
+    if (!fieldManager) {
+      console.error('[ZenMaster] FieldManager not found');
+      return { unlabeled: [] };
+    }
+
+    const allFields = fieldManager.getAllFields();
+    const unlabeled = [];
+    const poorLabels = [];
+
+    Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
+      const label = fieldDef.label;
+
+      // Check if label is missing entirely
+      if (!label || label.trim() === '') {
+        unlabeled.push({
+          fieldId,
+          section: fieldDef.section || 'unknown',
+          type: fieldDef.type || 'unknown'
+        });
+        console.log(`  ❌ ${fieldId} [${fieldDef.section || 'unknown'}] - NO LABEL`);
+      }
+      // Check if label is just the field ID (poor labeling)
+      else if (label === fieldId || label.toLowerCase() === fieldId.toLowerCase()) {
+        poorLabels.push({
+          fieldId,
+          label,
+          section: fieldDef.section || 'unknown',
+          type: fieldDef.type || 'unknown'
+        });
+        console.log(`  ⚠️  ${fieldId} [${fieldDef.section || 'unknown'}] - Label is same as field ID: "${label}"`);
+      }
+    });
+
+    console.log('\n📊 [ZenMaster] Label Validation Summary:');
+    console.log(`Fields without labels: ${unlabeled.length}`);
+    console.log(`Fields with poor labels: ${poorLabels.length}`);
+    console.log('==========================================================\n');
+
+    return { unlabeled, poorLabels };
+  }
+
+  /**
+   * Detect potential typos in dependency declarations
+   *
+   * PURPOSE: Find dependencies that reference field IDs that don't exist but
+   * have similar-named fields that DO exist. Common typos:
+   * - h_79 vs i_79 (column letter typo)
+   * - d_38 vs d_83 (row number transposition)
+   * - ref_d_38 vs d_38 (missing/extra ref_ prefix)
+   *
+   * This helps catch bugs like j_73 depending on h_79 (doesn't exist) when
+   * it should depend on i_79 (the actual Sum of Gains field).
+   *
+   * @returns {Object} Report of potential typos with suggestions
+   */
+  detectDependencyTypos() {
+    console.log('\n🔍 [ZenMaster] ========== DEPENDENCY TYPO DETECTION ==========');
+
+    const fieldManager = window.TEUI?.FieldManager;
+    if (!fieldManager) {
+      console.error('[ZenMaster] FieldManager not found');
+      return { typos: [] };
+    }
+
+    const allFields = fieldManager.getAllFields();
+    const allFieldIds = Object.keys(allFields);
+    const typos = [];
+
+    Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
+      const declaredDeps = [
+        ...(fieldDef.dependencies || []),
+        ...(fieldDef.conditionalDeps || []),
+        ...(fieldDef.uiDeps || [])
+      ];
+
+      declaredDeps.forEach(dep => {
+        // Check if dependency field exists
+        if (!fieldManager.getField(dep)) {
+          // Find similar field IDs that DO exist
+          const suggestions = this.findSimilarFieldIds(dep, allFieldIds);
+
+          if (suggestions.length > 0) {
+            typos.push({
+              fieldId,
+              invalidDep: dep,
+              suggestions,
+              section: fieldDef.section || 'unknown'
+            });
+
+            console.log(`  ⚠️  ${fieldId} [${fieldDef.section || 'unknown'}] depends on "${dep}" (NOT FOUND)`);
+            console.log(`      💡 Did you mean: ${suggestions.map(s => `"${s}"`).join(' or ')}?`);
+          }
+        }
+      });
+    });
+
+    console.log('\n📊 [ZenMaster] Typo Detection Summary:');
+    console.log(`Potential typos found: ${typos.length}`);
+    console.log('==========================================================\n');
+
+    return { typos };
+  }
+
+  /**
+   * Find field IDs similar to a given field ID (for typo detection)
+   * Uses simple similarity heuristics:
+   * - Same row, different column (h_79 vs i_79)
+   * - Same column, different row (d_38 vs d_83)
+   * - Missing/extra ref_ prefix (ref_d_38 vs d_38)
+   *
+   * @param {string} targetId - The field ID to find similar matches for
+   * @param {string[]} allFieldIds - All valid field IDs in the system
+   * @returns {string[]} Array of similar field IDs
+   */
+  findSimilarFieldIds(targetId, allFieldIds) {
+    const suggestions = [];
+
+    // Extract components (e.g., "ref_h_79" -> prefix="ref_", col="h", row="79")
+    const match = targetId.match(/^(ref_)?([a-z]+)_(\d+)$/i);
+    if (!match) return suggestions;
+
+    const [, prefix, col, row] = match;
+    const hasRefPrefix = !!prefix;
+
+    allFieldIds.forEach(fieldId => {
+      const fieldMatch = fieldId.match(/^(ref_)?([a-z]+)_(\d+)$/i);
+      if (!fieldMatch) return;
+
+      const [, fieldPrefix, fieldCol, fieldRow] = fieldMatch;
+      const fieldHasRefPrefix = !!fieldPrefix;
+
+      // Check for similar patterns
+
+      // 1. Same row, adjacent column (h_79 -> i_79)
+      if (row === fieldRow && hasRefPrefix === fieldHasRefPrefix) {
+        const colDiff = Math.abs(col.charCodeAt(0) - fieldCol.charCodeAt(0));
+        if (colDiff === 1) {
+          suggestions.push(fieldId);
+        }
+      }
+
+      // 2. Same column, transposed row digits (d_38 -> d_83)
+      if (col === fieldCol && hasRefPrefix === fieldHasRefPrefix) {
+        const rowReversed = row.split('').reverse().join('');
+        if (fieldRow === rowReversed) {
+          suggestions.push(fieldId);
+        }
+      }
+
+      // 3. Missing/extra ref_ prefix (ref_d_38 <-> d_38)
+      if (col === fieldCol && row === fieldRow && hasRefPrefix !== fieldHasRefPrefix) {
+        suggestions.push(fieldId);
+      }
+    });
+
+    // Return top 3 suggestions
+    return suggestions.slice(0, 3);
+  }
+
+  /**
    * Generate a report of discovered dependencies
    * @returns {string} Formatted report
    */
@@ -716,6 +890,8 @@ window.zenDisable = () => window.TEUI.zenMaster.disable();
 window.zenReset = () => window.TEUI.zenMaster.reset();
 window.zenReport = () => console.log(window.TEUI.zenMaster.generateReport());
 window.zenValidate = () => window.TEUI.zenMaster.validateDependencies();
+window.zenLabels = () => window.TEUI.zenMaster.validateLabels();
+window.zenTypos = () => window.TEUI.zenMaster.detectDependencyTypos();
 window.zenExport = () => window.TEUI.zenMaster.exportDependencyGraph();
 window.zenExportFile = () => window.TEUI.zenMaster.exportToFile();
 window.zenExportSections = () => window.TEUI.zenMaster.exportForSections();
@@ -729,6 +905,8 @@ console.log(`
   zenReset()          - Clear all traced data
   zenReport()         - Print discovered dependencies
   zenValidate()       - Compare discovered vs declared dependencies
+  zenLabels()         - Find fields missing labels (for graph viz & debugging)
+  zenTypos()          - Detect potential typos in dependency declarations
   zenExport()         - Export dependency graph JSON to console
   zenExportFile()     - Download dependency graph as JSON file
   zenExportSections() - Generate code snippets for section definitions
@@ -737,7 +915,9 @@ console.log(`
 Example workflow:
   1. zenEnable()
   2. Interact with the app (change values, trigger calculations)
-  3. zenValidate()
-  4. zenExportFile()    // Download for use in Dependency.js
-  5. zenDisable()
+  3. zenValidate()      // Find MISSING deps & conditional patterns
+  4. zenLabels()        // Find unlabeled fields for graph viz
+  5. zenTypos()         // Find likely typos in dependency declarations
+  6. zenExportFile()    // Download for use in Dependency.js
+  7. zenDisable()
 `);
