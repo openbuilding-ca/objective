@@ -22,18 +22,21 @@ window.TEUI.SectionModules.sect01 = (function () {
       label: "Lifetime Carbon Ref",
       defaultValue: "24.4",
       section: "keyValues",
+      dependencies: ["ref_e_6"], // Excel: =REFERENCE!E6
     },
     h_6: {
       type: "calculated",
       label: "Lifetime Carbon Target",
       defaultValue: "11.7",
       section: "keyValues",
+      dependencies: ["i_41", "h_13", "h_8"], // Excel: =I41/H13+H8
     },
     k_6: {
       type: "calculated",
       label: "Lifetime Carbon Actual",
       defaultValue: "11.7",
       section: "keyValues",
+      dependencies: ["d_14", "i_41", "h_13", "k_8"], // Excel: =IF(D14="Utility Bills", I41/H13+K8, "N/A")
     },
     // T.2 Annual Carbon
     e_8: {
@@ -41,24 +44,28 @@ window.TEUI.SectionModules.sect01 = (function () {
       label: "Annual Carbon Ref",
       defaultValue: "17.4",
       section: "keyValues",
+      dependencies: ["ref_e_8"], // Excel: =REFERENCE!E8
     },
     h_8: {
       type: "calculated",
       label: "Annual Carbon Target",
       defaultValue: "4.7",
       section: "keyValues",
+      dependencies: ["k_32", "h_15"], // Excel: =K32/H15
     },
     k_8: {
       type: "calculated",
       label: "Annual Carbon Actual",
       defaultValue: "4.8",
       section: "keyValues",
+      dependencies: ["d_14", "g_32", "h_15"], // Excel: =IF(D14="Utility Bills", G32/H15, "N/A")
     },
     j_8: {
       type: "calculated",
       label: "Annual Carbon %",
       defaultValue: "14%",
       section: "keyValues",
+      dependencies: ["e_8", "h_8"], // Calculated from reduction percentage
     },
     // T.3 TEUI
     e_10: {
@@ -66,36 +73,42 @@ window.TEUI.SectionModules.sect01 = (function () {
       label: "TEUI Ref",
       defaultValue: "341.2",
       section: "keyValues",
+      dependencies: ["ref_e_10"], // Excel: =REFERENCE!E10
     },
     f_10: {
       type: "calculated",
       label: "TEUI Ref Tier",
       defaultValue: "tier1",
       section: "keyValues",
+      dependencies: ["d_13", "d_144"], // Excel: Tier calculation based on d_13 standard and d_144 reduction
     },
     h_10: {
       type: "calculated",
       label: "TEUI Target",
       defaultValue: "93.0",
       section: "keyValues",
+      dependencies: ["j_32", "h_15"], // Excel: =J32/H15
     },
     i_10: {
       type: "calculated",
       label: "TEUI Target Tier",
       defaultValue: "tier3",
       section: "keyValues",
+      dependencies: ["d_13", "d_144"], // Excel: Tier calculation based on d_13 standard and d_144 reduction
     },
     j_10: {
       type: "calculated",
       label: "TEUI %",
       defaultValue: "41%",
       section: "keyValues",
+      dependencies: ["e_10", "h_10"], // Calculated from reduction percentage
     },
     k_10: {
       type: "calculated",
       label: "TEUI Actual",
       defaultValue: "93.1",
       section: "keyValues",
+      dependencies: ["d_14", "f_32", "h_15"], // Excel: =IF(D14="Targeted Use", "N/A", (F32/H15))
     },
     // Inputs (Placeholder definitions for clarity)
     f_32: {
@@ -142,18 +155,21 @@ window.TEUI.SectionModules.sect01 = (function () {
       label: "Lifetime Carbon %",
       defaultValue: "N/A",
       section: "keyValues",
+      dependencies: ["i_40", "d_15", "i_41", "h_13", "k_8", "h_8", "i_39"], // Excel: Complex conditional based on carbon standard
     },
     m_8: {
       type: "calculated",
       label: "Annual Carbon %",
       defaultValue: "14%",
       section: "keyValues",
+      dependencies: ["d_14", "k_8", "e_8", "h_8"], // Calculated as 100% - j_8, depends on use type
     },
     m_10: {
       type: "calculated",
       label: "TEUI %",
       defaultValue: "41%",
       section: "keyValues",
+      dependencies: ["d_14", "k_10", "e_10", "h_10"], // Calculated as 100% - j_10, depends on use type
     },
   };
 

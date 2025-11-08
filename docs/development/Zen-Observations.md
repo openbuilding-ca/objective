@@ -358,8 +358,92 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 
 ---
 
+## 📊 Section-by-Section Dependency Validation (CSV vs Codebase)
+
+### Section 01 (Rows 1-10): Key Values ✅ **DEPENDENCIES COMPLETELY MAPPED**
+
+**Status**: Dependencies added to field definitions for S17 graph visualization and future topological sort.
+
+**Analysis Date**: 2025-11-08
+**Dependencies Added**: 2025-11-08
+
+#### Excel Formula Dependencies (from TEUIv3043.csv)
+
+**Row 6 - T.1 Lifetime Carbon:**
+- `e_6`: `=REFERENCE!E6` → Calculated from: `ref_e_6`
+- `h_6`: `=I41/H13+H8` → Calculated from: `i_41`, `h_13`, `h_8`
+- `k_6`: `=IF(D14="Utility Bills", I41/H13+K8, "N/A")` → Calculated from: `d_14`, `i_41`, `h_13`, `k_8`
+
+**Row 8 - T.2 Annual Carbon:**
+- `e_8`: `=REFERENCE!E8` → Calculated from: `ref_e_8`
+- `h_8`: `=K32/H15` → Calculated from: `k_32`, `h_15`
+- `k_8`: `=IF(D14="Utility Bills", G32/H15, "N/A")` → Calculated from: `d_14`, `g_32`, `h_15`
+
+**Row 10 - T.3 TEUI:**
+- `e_10`: `=REFERENCE!E10` → Calculated from: `ref_e_10`
+- `h_10`: `=J32/H15` → Calculated from: `j_32`, `h_15`
+- `k_10`: `=IF(D14="Targeted Use", "N/A", (F32/H15))` → Calculated from: `d_14`, `f_32`, `h_15`
+
+#### Codebase Implementation Verification
+
+**File**: [Section01.js:1263-1337](../../src/sections/Section01.js#L1263-L1337)
+
+**Pattern**: Section01 uses **StateManager event listeners** instead of field-level `dependencies` arrays:
+
+1. **User Input Listeners** (lines 1268-1274):
+   - `d_14` (Use type), `d_13` (Reference standard), `d_15` (Carbon standard)
+   - ✅ Matches Excel conditionals (`IF(D14=...`)
+
+2. **Upstream Calculated Field Listeners** (lines 1296-1317):
+   - Energy totals: `j_32`, `k_32`, `f_32`, `g_32`, `ref_j_32`, `ref_k_32`
+   - Building info: `h_15`, `ref_h_15`, `h_13`, `ref_h_13`, `i_41`
+   - Reference carbon: `ref_i_39`
+   - ✅ Matches Excel formula inputs
+
+3. **Calculation Logic** (lines 745-989 - `updateTEUIDisplay()`):
+   - Lines 791-804: `e_10 = ref_j_32 / ref_h_15`, `e_8 = ref_k_32 / ref_h_15`, `e_6 = ref_i_39 / ref_h_13 + e_8`
+   - Lines 810-822: `h_10 = j_32 / h_15`, `h_8 = k_32 / h_15`, `h_6 = i_41 / h_13 + h_8`
+   - Lines 832-851: `k_10 = f_32 / h_15`, `k_8 = g_32 / h_15`, `k_6 = i_41 / h_13 + k_8`
+   - ✅ Matches Excel formulas exactly
+
+#### Findings
+
+**No missing dependencies** - Section01.js correctly implements all Excel formula dependencies via:
+1. Event listeners on all upstream calculated fields (`j_32`, `k_32`, `f_32`, `g_32`, `ref_j_32`, `ref_k_32`, `h_15`, `ref_h_15`, `h_13`, `ref_h_13`, `i_41`, `ref_i_39`)
+2. Event listeners on all user input fields (`d_14`, `d_13`, `d_15`)
+3. Direct calculation logic matching Excel formulas
+
+**Dependencies Added to Field Definitions** [Section01.js:20-173](../../src/sections/Section01.js#L20-L173):
+- ✅ `e_6`: `["ref_e_6"]`
+- ✅ `h_6`: `["i_41", "h_13", "h_8"]`
+- ✅ `k_6`: `["d_14", "i_41", "h_13", "k_8"]`
+- ✅ `e_8`: `["ref_e_8"]`
+- ✅ `h_8`: `["k_32", "h_15"]`
+- ✅ `k_8`: `["d_14", "g_32", "h_15"]`
+- ✅ `j_8`: `["e_8", "h_8"]`
+- ✅ `e_10`: `["ref_e_10"]`
+- ✅ `f_10`: `["d_13", "d_144"]`
+- ✅ `h_10`: `["j_32", "h_15"]`
+- ✅ `i_10`: `["d_13", "d_144"]`
+- ✅ `j_10`: `["e_10", "h_10"]`
+- ✅ `k_10`: `["d_14", "f_32", "h_15"]`
+- ✅ `m_6`: `["i_40", "d_15", "i_41", "h_13", "k_8", "h_8", "i_39"]`
+- ✅ `m_8`: `["d_14", "k_8", "e_8", "h_8"]`
+- ✅ `m_10`: `["d_14", "k_10", "e_10", "h_10"]`
+
+**Architectural Pattern**: Section01 is a **Pure Display Consumer** section that:
+- NOW has explicit `dependencies` arrays for S17 graph visualization
+- Uses StateManager listeners to trigger recalculation (unchanged)
+- Calculates values on-the-fly from upstream sources (unchanged)
+- Dependencies won't affect current calculation flow (topological sort not yet implemented)
+
+**Conclusion**: ✅ **Section 01 dependencies are completely mapped, declared in field definitions, and correctly implemented**
+
+---
+
 **Next Steps**:
 1. ✅ ~~Fix 10 typos~~ **COMPLETE** (commit 9bdf86a)
-2. Add 11 MISSING dependencies after user validates against Excel source
-3. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
-4. Interactive Q&A session to add labels to envelope fields (139 unlabeled) for S17 graph viz
+2. ✅ ~~Verify S01 dependencies against Excel CSV~~ **COMPLETE** (All dependencies correctly implemented via event listeners)
+3. Add 11 MISSING dependencies after user validates against Excel source
+4. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
+5. Interactive Q&A session to add labels to envelope fields (139 unlabeled) for S17 graph viz
