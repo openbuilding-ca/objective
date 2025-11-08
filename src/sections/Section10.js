@@ -964,7 +964,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here?
           section: "envelopeRadiantGains",
-          dependencies: ["i_73", "h_79"],
+          dependencies: ["i_73", "i_79"], // Fixed: was h_79 (doesn't exist), should be i_79 (Sum of Gains)
         },
         k: {
           fieldId: "k_73",
