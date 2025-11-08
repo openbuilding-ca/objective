@@ -1321,12 +1321,12 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "3,333.33",
           section: "mechanicalLoads",
           dependencies: [
-            "g_118",
-            "d_63",
-            "d_119",
-            "i_63",
-            "l_118",
-            "d_105",
+            "d_63",   // Occupants
+            "i_63",   // Hrs/Day
+            "d_105",  // Net Interior Volume
+            "g_118",  // Ventilation Method
+            "l_118",  // ACH
+            "d_119",  // Per Person Ventilation Rate
           ],
         },
         e: {
@@ -1440,12 +1440,13 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "30,257.37",
           section: "mechanicalLoads",
           dependencies: [
-            "g_118",
-            "l_119",
-            "d_120",
-            "d_21",
-            "i_63",
-            "i_122",
+            "d_21",   //CDD
+            "i_63",   //Hrs/Day
+            "d_116",  //Mech. Cooling Provided
+            "g_118",  //Ventilation Method
+            "l_119",  //Summer Boost
+            "d_120",  //Volumetric Ventilation Rate
+            "i_122",  //Latent Load Factor (%)
           ],
         },
         e: {
