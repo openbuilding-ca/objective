@@ -169,6 +169,93 @@ d_16: {
 
 ---
 
+## Field Labels for Graph Visualization
+
+**Why Explicit Labels Matter**: In the S17 dependency graph, each field node needs a unique, descriptive label to distinguish its function.
+
+### The Row-Based Label Problem
+
+Some sections use **inherited labels** where multiple fields in the same row share the row's label:
+
+```javascript
+// Section field definition with label inheritance
+fields[cell.fieldId] = {
+  type: cell.type,
+  label: cell.content || row.label,  // Falls back to row label if no cell content
+  defaultValue: cell.value || "",
+};
+```
+
+**Problem**: Multiple fields in the same row get the same non-unique label:
+
+```javascript
+// Row 23: "Coldest Days (Location Specific)"
+d_23: "Coldest Days (Location Specific)"  // Coldest day temp
+e_23: "Coldest Days (Location Specific)"  // Coldest day temp °F
+h_23: "Coldest Days (Location Specific)"  // Heating setpoint
+i_23: "Coldest Days (Location Specific)"  // Heating setpoint °F
+m_23: "Coldest Days (Location Specific)"  // Heating percentage
+```
+
+All five fields have **identical labels** despite completely different functions!
+
+### Solution: Explicit Labels Distinguish Functions
+
+**Explicit labels** identify each field's unique function based on row + column context:
+
+```javascript
+// Row 23 with explicit labels
+d_23: {
+  fieldId: "d_23",
+  type: "derived",
+  label: "Coldest Days °C",  // ✅ Unique: climate lookup
+  dependencies: ["d_19", "h_19", "d_12"],
+}
+
+e_23: {
+  fieldId: "e_23",
+  type: "calculated",
+  label: "Coldest Days °F",  // ✅ Unique: temperature conversion
+  dependencies: ["d_23"],
+}
+
+h_23: {
+  fieldId: "h_23",
+  type: "calculated",
+  label: "Heating Setpoint °C",  // ✅ Unique: occupancy-based setpoint
+  dependencies: ["d_12"],
+}
+
+i_23: {
+  fieldId: "i_23",
+  type: "calculated",
+  label: "Heating Setpoint °F",  // ✅ Unique: temperature conversion
+  dependencies: ["h_23"],
+}
+
+m_23: {
+  fieldId: "m_23",
+  type: "calculated",
+  label: "Heating Setpoint vs Reference %",  // ✅ Unique: comparison calculation
+  dependencies: [...],  // TBD based on comparison logic
+}
+```
+
+### Best Practice
+
+**Always use explicit `label` properties** for S17 graph visualization:
+- ✅ Each field gets a unique, descriptive label
+- ✅ Labels clearly indicate the field's function (temp, conversion, percentage, etc.)
+- ✅ Graph nodes are immediately identifiable without looking up field IDs
+- ✅ Prevents confusion when multiple calculated fields exist in the same row
+
+**Pattern**: Inherit from row label for context, then add column-specific detail:
+- Row context: "Coldest Days"
+- Column function: "°C" (climate data), "°F" (conversion), "Setpoint" (calculation), "%" (comparison)
+- Final label: "Coldest Days °C", "Heating Setpoint °C", "Heating Setpoint vs Reference %"
+
+---
+
 ## The Vision: Truth Over Intention
 
 Instead of **declaring** what fields depend on what, we **discover** the actual runtime dependencies by:

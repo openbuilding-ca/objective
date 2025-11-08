@@ -518,6 +518,182 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 
 ---
 
+### Section 03 (Rows 19-24): Climate Calculations ✅ **DEPENDENCIES COMPLETELY MAPPED, LABELS COMPLETE, OBC COMPLIANCE PATTERN ESTABLISHED**
+
+**Status**: Dependencies verified against Excel. Labels added. M column refactored for regulatory compliance checking.
+
+**Analysis Date**: 2025-11-08
+**Dependencies Fixed**: 2025-11-08
+**Labels Added**: 2025-11-08
+**OBC Compliance Pattern**: 2025-11-08
+
+#### Excel Formula Dependencies (from TEUIv3043.csv)
+
+**Row 19 - Climate Location:**
+- `d_19`: Province (dropdown input) - NO dependencies ✅
+- `h_19`: City (dropdown input) - NO dependencies ✅
+- `j_19`: Climate Zone (derived from city) - Dependencies: `["d_19", "h_19"]` ✅
+- `m_19`: Days Cooling (derived) - Dependencies: `["d_19", "h_19"]` ✅
+
+**Row 20 - Degree Days:**
+- `d_20`: HDD (derived) - Dependencies: `["d_19", "h_19"]` ✅
+- `h_20`: Current/Future toggle (dropdown) - NO dependencies ✅
+- `l_20`: Summer Night °C (derived) - Dependencies: `["d_19", "h_19"]` ✅ NEW field
+
+**Row 21 - Cooling Degree Days:**
+- `d_21`: CDD (derived) - Dependencies: `["d_19", "h_19"]` ✅
+- `h_21`: Capacitance Method (dropdown) - NO dependencies ✅
+- `i_21`: Capacitance % (slider, forced to 0 when h_21="Static") - ✅ **FIXED**: Added `conditionalDeps: ["h_21"]`
+- `l_21`: Summer RH% (derived) - Dependencies: `["d_19", "h_19"]` ✅ NEW field
+
+**Row 22 - Ground Facing Degree Days:**
+- `d_22`: GF HDD (derived) - Dependencies: `["d_19", "h_19"]` ✅
+- `h_22`: GF CDD (derived) - Dependencies: `["d_19", "h_19"]` ✅
+- `l_22`: Elevation ASL (editable, populated from climate lookup) - ✅ **FIXED**: Added `dependencies: ["d_19", "h_19"]`
+
+**Row 23 - Coldest Days & Heating Setpoint:**
+- `d_23`: Coldest Day °C (derived) - Dependencies: `["d_19", "h_19", "d_12"]` ✅
+- `e_23`: Coldest Day °F (calculated) - Dependencies: `["d_23"]` ✅
+- `h_23`: Tset Heating (calculated from OBC or PH) - Dependencies: `["d_12"]` ✅
+- `i_23`: Tset Heating °F (calculated) - Dependencies: `["h_23"]` ✅
+- `m_23`: **REFACTORED** - Now shows OBC compliance (✓/✗) instead of reference % - Dependencies: `["h_23", "d_12"]` ✅
+- `n_23`: **NEW** - OBC Required Setpoint (displays code requirement) - Dependencies: `["d_12"]` ✅
+
+**Row 24 - Hottest Days & Cooling Setpoint:**
+- `d_24`: Hottest Day °C (derived) - Dependencies: `["d_19", "h_19"]` ✅
+- `e_24`: Hottest Day °F (calculated) - Dependencies: `["d_24"]` ✅
+- `h_24`: Tset Cooling (calculated from OBC) - Dependencies: `["d_12"]` ✅
+- `i_24`: Tset Cooling °F (calculated) - Dependencies: `["h_24", "l_24"]` ✅
+- `l_24`: Cooling Override (editable) - NO dependencies ✅
+- `m_24`: **REFACTORED** - Now shows OBC compliance (✓/✗) instead of reference % - Dependencies: `["h_24", "d_12"]` ✅
+- `n_24`: **NEW** - OBC Required Setpoint (displays code requirement) - Dependencies: `["d_12"]` ✅
+
+#### Codebase Implementation Verification
+
+**File**: [Section03.js](../../src/sections/Section03.js)
+
+**S03 Field Inventory**:
+- **10 Input Fields** (NO dependencies - correct):
+  - `d_19`: Province
+  - `h_19`: City
+  - `h_20`: Current or Future Values
+  - `h_21`: Capacitance Method
+  - `i_21`: Capacitance Factor % (slider) - ✅ **NOW has** `conditionalDeps: ["h_21"]`
+  - `d_22`: Ground Facing GF HDD (editable)
+  - `h_22`: Ground Facing CDD (editable)
+  - `l_22`: Elevation (ASL) (editable) - ✅ **NOW has** `dependencies: ["d_19", "h_19"]`
+  - `l_24`: Cooling Override (editable)
+  - Plus fuel prices (l_12-l_16)
+
+- **15 Calculated Fields** (dependencies verified):
+  - `j_19`: Climate Zone ✅
+  - `m_19`: Days Cooling ✅
+  - `d_20`: Heating Degree Days (HDD) ✅
+  - `l_20`: Summer Night ºC ✅ (explicit label added)
+  - `d_21`: Cooling Degree Days (CDD) ✅
+  - `l_21`: Summer RH% ✅ (explicit label added)
+  - `d_23`: Coldest Days °C ✅
+  - `e_23`: Coldest Days °F ✅
+  - `h_23`: Tset Heating ✅
+  - `i_23`: Tset Heating °F ✅
+  - `m_23`: Heating Setpoint Code Compliance ✅ **REFACTORED**
+  - `n_23`: OBC Requirement ✅ **NEW FIELD**
+  - `d_24`: Hottest Days °C ✅
+  - `e_24`: Hottest Days °F ✅
+  - `h_24`: Tset Cooling ✅
+  - `i_24`: Tset Cooling °F ✅
+  - `m_24`: Cooling Setpoint Code Compliance ✅ **REFACTORED**
+  - `n_24`: OBC Requirement ✅ **NEW FIELD**
+
+#### Key Fixes
+
+1. **l_22 (Elevation) - Missing Dependencies** ✅
+   - **Issue**: Editable field that gets initial value from climate data lookup
+   - **Fix**: Added `dependencies: ["d_19", "h_19"]` + explicit label "Elevation (ASL)"
+   - **Rationale**: Lookup-populated fields have dependencies even if user-editable afterward
+
+2. **i_21 (Capacitance %) - Missing Conditional Dependency** ✅
+   - **Issue**: Forced to 0 when h_21="Static"
+   - **Fix**: Added `conditionalDeps: ["h_21"]` + explicit label "Capacitance Factor %"
+   - **Rationale**: UI state changes that force field values are conditional dependencies
+
+3. **M Column - Regulatory Compliance Pattern** ✅
+   - **Issue**: Old formula compared setpoint to chosen Reference Standard, didn't flag OBC violations
+   - **Problem**: h_23 formula allows Passive House (18°C) to override OBC requirement (22°C for many occupancies)
+   - **Fix**: Refactored m_23/m_24 to show code compliance (✓/✗) vs. OBC requirement based on occupancy
+   - **Pattern**:
+     - `m_23` shows ✓ if h_23 >= OBC requirement, ✗ if below
+     - `n_23` displays OBC required setpoint (e.g., "22°C")
+     - Dependencies: `["h_23", "d_12"]` (actual setpoint + occupancy for OBC lookup)
+     - CSS classes: `checkmark` (✓) or `warning` (✗) - matching S11 pattern
+     - Tooltip warning when non-compliant
+   - **Rationale**: OBC is legal requirement, PH is voluntary - M column should flag code violations
+
+#### Labels Added
+
+**15 explicit labels** added for S17 graph visualization (distinguishes functions in multi-field rows):
+- `d_19`: "Province" ✅
+- `h_19`: "City" ✅
+- `j_19`: "Climate Zone" ✅
+- `m_19`: "Days Cooling" ✅
+- `d_20`: "Heating Degree Days (HDD)" ✅
+- `h_20`: "Current or Future Values" ✅
+- `l_20`: "Summer Night ºC" ✅ NEW field
+- `d_21`: "Cooling Degree Days (CDD)" ✅
+- `h_21`: "Capacitance Method" ✅
+- `i_21`: "Capacitance Factor %" ✅
+- `l_21`: "Summer RH%" ✅ NEW field
+- `d_22`: "Ground Facing GF HDD" ✅
+- `h_22`: "Ground Facing CDD" ✅
+- `l_22`: "Elevation (ASL)" ✅
+- `l_24`: "Cooling Override" ✅
+
+**M/N column labels** (new compliance pattern):
+- `m_23`: "Heating Setpoint Code Compliance" ✅
+- `n_23`: "OBC Requirement" ✅
+- `m_24`: "Cooling Setpoint Code Compliance" ✅
+- `n_24`: "OBC Requirement" ✅
+
+#### Regulatory Compliance Insight
+
+**OBC (Ontario Building Code) vs. Passive House (PH)**:
+
+Excel formula for h_23 (Heating Setpoint):
+```excel
+=IF(ISNUMBER(SEARCH("PH", D13)), 18,
+   IF(S2RepStandard='CODE-VALUES'!U2, 20,
+      XLOOKUP(D12, OccType, MinIndoorTemp)))
+```
+
+**Precedence Hierarchy**:
+1. If d_13 contains "PH": Force 18°C ← **Voluntary standard, may violate OBC**
+2. Else if special code match: Force 20°C
+3. Else: Lookup from OBC requirements based on d_12 occupancy ← **Legal requirement (e.g., 22°C)**
+
+**Problem**: PH can override OBC, creating non-compliance that wasn't flagged.
+
+**Solution**: M column now shows compliance vs. OBC mandatory requirement:
+- Compare h_23 to `getMinIndoorTempForOccupancy(d_12)` (ignoring PH override)
+- Visual indicator: ✓ (green) if compliant, ✗ (red) if below code
+- N column shows what OBC requires for this occupancy
+- Tooltip warns when PH value violates code
+
+**Key Learning**: M column percentage fields serve **regulatory compliance notification** purpose, not just reference standard comparison. Legal requirements (OBC) take precedence over voluntary standards (PH).
+
+#### Architectural Pattern
+
+Section03 is a **Climate Foundation Section** that:
+- Provides climate data via lookup-based fields
+- Contains mix of user inputs (10 fields) and derived calculations (15 fields)
+- Uses editable fields with lookup-based initial values (l_22)
+- Uses conditional UI dependencies (i_21 forced to 0)
+- **NEW**: Implements regulatory compliance checking in M column (OBC vs. voluntary standards)
+- Dependencies correctly declared for S17 graph visualization
+
+**Conclusion**: ✅ **Section 03 dependencies are completely mapped, labels are complete, and OBC compliance pattern is established**
+
+---
+
 **Next Steps**:
 1. ✅ ~~Fix 10 typos~~ **COMPLETE** (commit 9bdf86a)
 2. ✅ ~~Verify S01 dependencies against Excel CSV~~ **COMPLETE** (All dependencies correctly implemented via event listeners)
