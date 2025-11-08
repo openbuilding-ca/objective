@@ -506,6 +506,210 @@
       });
     });
 
+    // ========== ZenMaster - Label Validation Tests ==========
+    suite.group('ZenMaster - Label Validation (validateLabels)', () => {
+      suite.test('should find fields without labels', () => {
+        // Mock FieldManager with unlabeled field
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'test_field_unlabeled': {
+            section: 'testSection',
+            type: 'calculated'
+            // label missing
+          },
+          'test_field_labeled': {
+            label: 'Test Field',
+            section: 'testSection',
+            type: 'input'
+          }
+        });
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        const results = zenMaster.validateLabels();
+
+        // Restore
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+
+        assertEquals(results.unlabeled.length, 1, 'Should find 1 unlabeled field');
+        assertEquals(results.unlabeled[0].fieldId, 'test_field_unlabeled', 'Should identify correct field');
+      });
+
+      suite.test('should find fields with poor labels (same as field ID)', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'd_16': {
+            label: 'd_16', // Poor label - same as field ID
+            section: 'buildingInfo',
+            type: 'calculated'
+          }
+        });
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        const results = zenMaster.validateLabels();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+
+        assertEquals(results.poorLabels.length, 1, 'Should find 1 poor label');
+        assertEquals(results.poorLabels[0].fieldId, 'd_16', 'Should identify correct field');
+      });
+
+      suite.test('should NOT flag well-labeled fields', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'd_16': {
+            label: 'Embodied Carbon Target (kgCO₂e/m²)',
+            section: 'buildingInfo',
+            type: 'calculated'
+          },
+          'l_16': {
+            label: 'Oil Price/litre',
+            section: 'buildingInfo',
+            type: 'input'
+          }
+        });
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        const results = zenMaster.validateLabels();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+
+        assertEquals(results.unlabeled.length, 0, 'Should find no unlabeled fields');
+        assertEquals(results.poorLabels.length, 0, 'Should find no poor labels');
+      });
+    });
+
+    // ========== ZenMaster - Typo Detection Tests ==========
+    suite.group('ZenMaster - Typo Detection (detectDependencyTypos)', () => {
+      suite.test('should detect adjacent column typo (h_79 vs i_79)', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        const originalGetField = window.TEUI.FieldManager.getField;
+
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'j_73': {
+            label: 'Heating Season Radiant Gain %',
+            section: 'envelopeRadiantGains',
+            dependencies: ['i_73', 'h_79'] // h_79 doesn't exist, i_79 does
+          },
+          'i_73': { label: 'Doors', section: 'envelopeRadiantGains' },
+          'i_79': { label: 'Sum of Gains', section: 'envelopeRadiantGains' }
+        });
+
+        window.TEUI.FieldManager.getField = (fieldId) => {
+          const fields = window.TEUI.FieldManager.getAllFields();
+          return fields[fieldId] || null;
+        };
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        const results = zenMaster.detectDependencyTypos();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+        window.TEUI.FieldManager.getField = originalGetField;
+
+        assertEquals(results.typos.length, 1, 'Should find 1 typo');
+        assertEquals(results.typos[0].invalidDep, 'h_79', 'Should identify h_79 as invalid');
+        assertContains(results.typos[0].suggestions, 'i_79', 'Should suggest i_79');
+      });
+
+      suite.test('should NOT flag valid dependencies', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        const originalGetField = window.TEUI.FieldManager.getField;
+
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'd_16': {
+            label: 'Embodied Carbon Target',
+            section: 'buildingInfo',
+            dependencies: ['i_39', 'i_41'] // Both exist
+          },
+          'i_39': { label: 'Typology Carbon Intensity', section: 'emissions' },
+          'i_41': { label: 'Lifetime Avoided Emissions', section: 'emissions' }
+        });
+
+        window.TEUI.FieldManager.getField = (fieldId) => {
+          const fields = window.TEUI.FieldManager.getAllFields();
+          return fields[fieldId] || null;
+        };
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        const results = zenMaster.detectDependencyTypos();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+        window.TEUI.FieldManager.getField = originalGetField;
+
+        assertEquals(results.typos.length, 0, 'Should find no typos for valid dependencies');
+      });
+    });
+
+    // ========== ZenMaster - Validation Terminology Tests ==========
+    suite.group('ZenMaster - Validation Terminology (NON-SM-UKN)', () => {
+      suite.test('should categorize CONDITIONAL dependencies correctly', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        const originalGetField = window.TEUI.FieldManager.getField;
+
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'd_16': {
+            label: 'Embodied Carbon Target',
+            section: 'buildingInfo',
+            dependencies: ['d_15'],
+            conditionalDeps: ['i_39', 'i_41'] // These are conditional
+          },
+          'd_15': { label: 'Carbon Benchmarking Standard', section: 'buildingInfo' },
+          'i_39': { label: 'Typology Carbon Intensity', section: 'emissions' },
+          'i_41': { label: 'Lifetime Avoided Emissions', section: 'emissions' }
+        });
+
+        window.TEUI.FieldManager.getField = (fieldId) => {
+          const fields = window.TEUI.FieldManager.getAllFields();
+          return fields[fieldId] || null;
+        };
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+        // Simulate tracing d_15 but not i_39, i_41
+        zenMaster.dependencies.set('d_16', new Set(['d_15']));
+        zenMaster.disable();
+
+        const results = zenMaster.validateDependencies();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+        window.TEUI.FieldManager.getField = originalGetField;
+
+        assertGreaterThan(results.summary.totalConditional, 0, 'Should find conditional dependencies');
+      });
+
+      suite.test('should identify MISSING dependencies', () => {
+        const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
+        const originalGetField = window.TEUI.FieldManager.getField;
+
+        window.TEUI.FieldManager.getAllFields = () => ({
+          'd_16': {
+            label: 'Embodied Carbon Target',
+            section: 'buildingInfo',
+            dependencies: ['d_15'] // Missing i_41 which is traced
+          },
+          'd_15': { label: 'Carbon Benchmarking Standard', section: 'buildingInfo' },
+          'i_41': { label: 'Lifetime Avoided Emissions', section: 'emissions' }
+        });
+
+        window.TEUI.FieldManager.getField = (fieldId) => {
+          const fields = window.TEUI.FieldManager.getAllFields();
+          return fields[fieldId] || null;
+        };
+
+        const zenMaster = new window.TEUI.ZenMaster();
+        zenMaster.enable();
+        // Simulate tracing both d_15 AND i_41
+        zenMaster.dependencies.set('d_16', new Set(['d_15', 'i_41']));
+        zenMaster.disable();
+
+        const results = zenMaster.validateDependencies();
+
+        window.TEUI.FieldManager.getAllFields = originalGetAllFields;
+        window.TEUI.FieldManager.getField = originalGetField;
+
+        assertGreaterThan(results.summary.totalMissing, 0, 'Should find missing dependencies');
+      });
+    });
+
     // Run tests and display results
     async function runAllTests() {
       // Initialize StateManager
