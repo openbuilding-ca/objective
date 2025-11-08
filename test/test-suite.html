@@ -509,6 +509,11 @@
     // ========== ZenMaster - Label Validation Tests ==========
     suite.group('ZenMaster - Label Validation (validateLabels)', () => {
       suite.test('should find fields without labels', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         // Mock FieldManager with unlabeled field
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         window.TEUI.FieldManager.getAllFields = () => ({
@@ -535,6 +540,11 @@
       });
 
       suite.test('should find fields with poor labels (same as field ID)', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         window.TEUI.FieldManager.getAllFields = () => ({
           'd_16': {
@@ -554,6 +564,11 @@
       });
 
       suite.test('should NOT flag well-labeled fields', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         window.TEUI.FieldManager.getAllFields = () => ({
           'd_16': {
@@ -581,6 +596,11 @@
     // ========== ZenMaster - Typo Detection Tests ==========
     suite.group('ZenMaster - Typo Detection (detectDependencyTypos)', () => {
       suite.test('should detect adjacent column typo (h_79 vs i_79)', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         const originalGetField = window.TEUI.FieldManager.getField;
 
@@ -611,6 +631,11 @@
       });
 
       suite.test('should NOT flag valid dependencies', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         const originalGetField = window.TEUI.FieldManager.getField;
 
@@ -642,6 +667,11 @@
     // ========== ZenMaster - Validation Terminology Tests ==========
     suite.group('ZenMaster - Validation Terminology (NON-SM-UKN)', () => {
       suite.test('should categorize CONDITIONAL dependencies correctly', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         const originalGetField = window.TEUI.FieldManager.getField;
 
@@ -677,6 +707,11 @@
       });
 
       suite.test('should identify MISSING dependencies', () => {
+        // Create mock FieldManager if it doesn't exist
+        if (!window.TEUI.FieldManager) {
+          window.TEUI.FieldManager = {};
+        }
+
         const originalGetAllFields = window.TEUI.FieldManager.getAllFields;
         const originalGetField = window.TEUI.FieldManager.getField;
 
