@@ -6,6 +6,42 @@
 
 ---
 
+## ⚠️ CRITICAL LIMITATIONS - READ FIRST
+
+**ZenMaster ONLY traces dependencies accessed via `StateManager.getValue()`**
+
+### What ZenMaster CAN See:
+✅ Dependencies accessed through `StateManager.getValue(fieldId)`
+✅ Dependencies in sections using standard state management
+
+### What ZenMaster CANNOT See (INVISIBLE):
+❌ **Dual-state storage** (Section02: `ReferenceState.getValue`, `TargetState.getValue`)
+❌ **Direct DOM reads** (`dropdown.value`, `input.value`)
+❌ **Local object storage** (`this.data[fieldId]`)
+❌ **Mode-aware helpers** (`ModeManager.getValue` wrapping local state)
+
+### Validation Terminology:
+- **🤔 NON-SM-UKN** (Non-StateManager/Unknown): Not traced via StateManager - may use dual-state/DOM/local storage
+- **🔍 CHECK-SRC**: Not found in FieldManager - verify source code (may be ref_ field, typo, or legacy)
+- **🔀 CONDITIONAL**: Not triggered in this test scenario (expected for scenario-specific dependencies)
+- **🎨 UI deps**: For dropdown/validation logic (not calculation dependencies)
+- **➕ MISSING**: Traced via StateManager but not declared (should be added)
+
+### ⛔ GOLDEN RULE:
+**NEVER delete dependencies based solely on ZenMaster output!**
+**ALWAYS verify against source code (Section*.js files) before making ANY changes.**
+
+ZenMaster is a DISCOVERY tool, not a SOURCE OF TRUTH. Use it to:
+- Find MISSING dependencies (these are usually safe to add)
+- Identify CONDITIONAL dependencies across test scenarios
+- Question dependencies, search source code, verify formulas
+
+DO NOT use it to:
+- Automatically delete "NON-SM-UKN" dependencies (may be valid dual-state deps)
+- Assume "CHECK-SRC" fields don't exist (may be ref_ fields or calculated elsewhere)
+
+---
+
 ## Pre-Test Setup
 
 1. **Clear Previous Data:**

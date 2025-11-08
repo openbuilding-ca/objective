@@ -383,6 +383,24 @@ window.TEUI.ZenMaster = class ZenMaster {
   /**
    * Validate discovered dependencies against manual declarations
    *
+   * ⚠️ CRITICAL LIMITATIONS:
+   * ZenMaster ONLY traces dependencies accessed via StateManager.getValue().
+   * Dependencies accessed through the following methods are INVISIBLE:
+   * - Dual-state storage (ReferenceState.getValue, TargetState.getValue)
+   * - Direct DOM reads (dropdown.value, input.value)
+   * - Local object storage (this.data[fieldId])
+   * - Mode-aware helpers (ModeManager.getValue wrapping local state)
+   *
+   * TERMINOLOGY:
+   * - NON-SM-UKN: Not traced via StateManager - Unknown if used (may use dual-state/DOM)
+   * - CHECK-SRC: Not found in FieldManager - Verify source code (may be ref_ field, typo, or legacy)
+   * - CONDITIONAL: Not triggered in this test scenario (expected)
+   * - UI deps: For dropdown/validation logic (not calculation dependencies)
+   * - MISSING: Traced via StateManager but not declared (should be added)
+   *
+   * ⛔ NEVER delete dependencies based solely on ZenMaster output!
+   * ✅ ALWAYS verify against source code before making changes.
+   *
    * ✅ ENHANCED: Now handles conditionalDeps and uiDeps metadata
    * - conditionalDeps: Dependencies used only in specific scenarios (not phantoms if unused)
    * - uiDeps: Dependencies for UI behavior (dropdown options, validation) - skip phantom check
@@ -522,10 +540,10 @@ window.TEUI.ZenMaster = class ZenMaster {
       // Log the issue with categorization
       console.log(`\n⚠️ ${fieldId} (${fieldDef.label || 'unlabeled'}) [type: ${fieldDef.type || 'unknown'}]`);
       if (nonExistentDeps.length > 0) {
-        console.log(`  🚫 NON-EXISTENT deps (field doesn't exist): ${nonExistentDeps.join(', ')}`);
+        console.log(`  🔍 CHECK-SRC deps (not found in FieldManager - verify source code): ${nonExistentDeps.join(', ')}`);
       }
       if (phantoms.length > 0) {
-        console.log(`  ❌ TRUE PHANTOM deps (declared but never used): ${phantoms.join(', ')}`);
+        console.log(`  🤔 NON-SM-UKN deps (not traced via StateManager - may use dual-state/DOM/local storage): ${phantoms.join(', ')}`);
       }
       if (conditionalPhantoms.length > 0) {
         console.log(`  🔀 CONDITIONAL deps (not triggered in this test): ${conditionalPhantoms.join(', ')}`);
@@ -534,19 +552,23 @@ window.TEUI.ZenMaster = class ZenMaster {
         console.log(`  🎨 UI deps (for dropdown/validation, not calculation): ${uiPhantoms.join(', ')}`);
       }
       if (missing.length > 0) {
-        console.log(`  ➕ MISSING deps (used but not declared): ${missing.join(', ')}`);
+        console.log(`  ➕ MISSING deps (traced via StateManager but not declared): ${missing.join(', ')}`);
       }
     });
 
     this.validationResults = results;
 
     console.log('\n📊 [ZenMaster] ========== VALIDATION SUMMARY ==========');
+    console.log('⚠️  WARNING: ZenMaster only traces StateManager.getValue() calls!');
+    console.log('⚠️  Dependencies via dual-state/DOM/local storage are NOT visible.');
+    console.log('⚠️  ALWAYS verify findings against source code before changes!');
+    console.log('==========================================================');
     console.log(`Total fields validated: ${results.summary.totalFields}`);
-    console.log(`Fields with TRUE phantom deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} phantoms)`);
-    console.log(`Fields with missing deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} missing)`);
+    console.log(`Fields with NON-SM-UKN deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} deps)`);
+    console.log(`Fields with MISSING deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} missing)`);
     console.log(`Conditional deps not triggered: ${results.summary.totalConditional}`);
     console.log(`UI-only deps (expected): ${results.summary.totalUIDeps}`);
-    console.log(`Non-existent dependency fields: ${results.summary.totalNonExistent} ⚠️`);
+    console.log(`CHECK-SRC dependency fields: ${results.summary.totalNonExistent} 🔍`);
     console.log('==========================================================\n');
 
     return results;
