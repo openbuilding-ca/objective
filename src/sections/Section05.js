@@ -712,7 +712,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           // Create field definition with all relevant properties
           fields[cell.fieldId] = {
             type: cell.type,
-            label: cell.content || row.label,
+            label: cell.label || cell.content || row.label,
             defaultValue: cell.value || "",
             section: cell.section || "emissions",
           };
