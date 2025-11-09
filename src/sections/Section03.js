@@ -947,7 +947,8 @@ window.TEUI.SectionModules.sect03 = (function () {
           label: "OBC Required Heating Setpoint",
           value: "22",
           section: "climateCalculations",
-          dependencies: ["d_12"], // Pure OBC lookup, NO PH exception
+          dependencies: ["d_12"], // Excel: =XLOOKUP(D12, OccType, MinIndoorTemp)
+          tooltip: true,
         },
         n: {
           fieldId: "n_23",
@@ -955,7 +956,8 @@ window.TEUI.SectionModules.sect03 = (function () {
           label: "Heating Setpoint Compliance",
           value: "✓",
           section: "climateCalculations",
-          dependencies: ["h_23", "m_23"], // Compare actual vs OBC requirement
+          dependencies: ["h_23", "m_23"], // ✓ if h_23 >= m_23, ✗ if h_23 < m_23
+          tooltip: true,
         },
       },
     },
@@ -1009,10 +1011,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: {
           fieldId: "m_24",
           type: "calculated",
-          label: "OBC Required Cooling Setpoint",
-          value: "24",
+          label: "ASHRAE 90.1 Upper Limit",
+          value: "26",
           section: "climateCalculations",
-          dependencies: ["d_12"], // Pure OBC lookup, mirrors h_24 formula without any overrides
+          // Static value - ASHRAE 90.1 acceptable upper limit for cooling
+          tooltip: true,
         },
         n: {
           fieldId: "n_24",
@@ -1020,7 +1023,8 @@ window.TEUI.SectionModules.sect03 = (function () {
           label: "Cooling Setpoint Compliance",
           value: "✓",
           section: "climateCalculations",
-          dependencies: ["h_24", "m_24"], // Compare actual vs OBC requirement
+          dependencies: ["h_24", "m_24"], // ✓ if h_24 <= m_24, ✗ if h_24 > m_24
+          tooltip: true,
         },
       },
     },
@@ -1818,6 +1822,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
+      calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
@@ -1887,6 +1892,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
+      calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
@@ -1995,7 +2001,8 @@ window.TEUI.SectionModules.sect03 = (function () {
     let heatingSetpoint;
 
     // Check if the reference standard indicates a Passive House related standard
-    if (referenceStandard.toUpperCase().includes("PH")) {
+    // Defensive: Check if referenceStandard exists and is a string before calling methods
+    if (referenceStandard && typeof referenceStandard === 'string' && referenceStandard.toUpperCase().includes("PH")) {
       // Case-insensitive check for "PH"
       heatingSetpoint = 18;
     } else {
@@ -2016,6 +2023,32 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     setFieldValue("h_23", heatingSetpoint); // Update state and DOM via S03 local helper
     return heatingSetpoint; // Return value for potential chaining
+  }
+
+  /**
+   * Calculate OBC Required Heating Setpoint (m_23) based on Occupancy Type (d_12)
+   * This is the building code baseline - identical to h_23 but WITHOUT PH override
+   * Uses same occupancy logic: 22°C for Residential/Care, 18°C for others
+   */
+  function calculateOBCHeatingSetpoint() {
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    let obcHeatingSetpoint;
+
+    // OBC baseline logic (no PH override - that's only for h_23)
+    // 22°C for Residential or Care occupancies, else 18°C
+    if (
+      occupancyType === "C-Residential" ||
+      occupancyType === "B2-Care and Treatment" ||
+      occupancyType === "B3-Detention Care & Treatment" ||
+      occupancyType.includes("Care")
+    ) {
+      obcHeatingSetpoint = 22;
+    } else {
+      obcHeatingSetpoint = 18; // Default for other occupancies
+    }
+
+    setFieldValue("m_23", obcHeatingSetpoint); // Update state and DOM via S03 local helper
+    return obcHeatingSetpoint; // Return value for potential chaining
   }
 
   /**
@@ -2397,6 +2430,30 @@ window.TEUI.SectionModules.sect03 = (function () {
 
           // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
           updateCriticalOccupancyFlag();
+        },
+      );
+
+      // ✅ NEW: Listener for d_13 (Target Reference Standard) changes
+      // Required for PH override logic in h_23 calculation
+      window.TEUI.StateManager.addListener(
+        "d_13",
+        function (newStandardValue) {
+          console.log(`[S03] 🎯 Target reference standard changed: ${newStandardValue}`);
+
+          // Trigger full recalculation to update h_23 based on PH override logic
+          calculateAll();
+        },
+      );
+
+      // ✅ NEW: Listener for ref_d_13 (Reference Reference Standard) changes
+      // Required for PH override logic in Reference mode h_23 calculation
+      window.TEUI.StateManager.addListener(
+        "ref_d_13",
+        function (newRefStandardValue) {
+          console.log(`[S03] 🔵 Reference reference standard changed: ${newRefStandardValue}`);
+
+          // Trigger full recalculation to update ref_h_23 based on PH override logic
+          calculateAll();
         },
       );
 
