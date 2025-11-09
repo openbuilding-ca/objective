@@ -1974,9 +1974,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     });
 
-    console.log(
-      "[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)",
-    );
+    // console.log("[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)");
   }
 
   /**
@@ -2004,9 +2002,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     });
 
-    console.log(
-      "[S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)",
-    );
+    // console.log("[S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)");
   }
 
   // --- New Calculation Functions ---
@@ -2508,9 +2504,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Required for PH override logic in h_23 calculation
       window.TEUI.StateManager.addListener(
         "d_13",
-        function (newStandardValue) {
-          console.log(`[S03] 🎯 Target reference standard changed: ${newStandardValue}`);
-
+        function () {
           // Trigger full recalculation to update h_23 based on PH override logic
           calculateAll();
         },
@@ -2520,9 +2514,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Required for PH override logic in Reference mode h_23 calculation
       window.TEUI.StateManager.addListener(
         "ref_d_13",
-        function (newRefStandardValue) {
-          console.log(`[S03] 🔵 Reference reference standard changed: ${newRefStandardValue}`);
-
+        function () {
           // Trigger full recalculation to update ref_h_23 based on PH override logic
           calculateAll();
         },
