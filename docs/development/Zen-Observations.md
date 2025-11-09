@@ -779,11 +779,28 @@ Section03 is a **Climate Foundation Section** that:
 - 8d3f37e: Feat: Add unique field labels to all S04 calculated fields
 - ae7d915: Fix: Add kgCO2/yr units to all emissions field labels
 - d496dd7: Docs: Update Zen-Observations.md + move REF-SWITCH.md to history
-- [pending]: Feat: S05 complete dependency mapping + L/M/N refactor + labels
+- f86e78f: Feat: S05 complete dependency mapping + L/M/N refactor + labels
+
+#### Section 06: Renewable Energy
+**Status**: ✅ **COMPLETE** (2025-11-09)
+- **Dependencies**: All 3 calculated fields mapped (rows 43-46, TEUIv3043.csv)
+  - d_43: Onsite Energy Subtotal = SUM(d_44, d_45, d_46, i_46)
+  - i_43: Offsite Renewable Subtotal = i_44 + i_46
+  - i_45: Green Natural Gas Energy = k_45 * 10.3321 (m³ to kWh conversion)
+  - **Formula Fix**: Corrected d_43 to include i_46 (Reserved Removals) per Excel
+- **Labels**: All 10 fields with unique, descriptive labels
+  - Calculated fields: d_43, i_43, i_45
+  - Editable fields: d_44, d_45, d_46, i_44, i_46, k_45, m_43
+  - Example: "Onsite Energy Subtotal: kWh/yr"
+  - Example: "Reserved Removals (Special Cases): kWh/yr"
+- **Special Case Handling**: i_46 is for loads to exclude (e.g., adjacent data centres)
+  - Not semantically "offsite" - just layout efficiency (avoids adding DOM row)
+  - Correctly adds to d_43 to increase total renewable/removal offset
+- **No M/N Compliance**: Section has no compliance fields (simple energy accounting)
 
 ### 🔄 In Progress
 
-- Remaining sections (S06-S18) pending dependency mapping per workplan
+- Remaining sections (S07-S18) pending dependency mapping per workplan
 
 ### 📝 Key Patterns Established
 

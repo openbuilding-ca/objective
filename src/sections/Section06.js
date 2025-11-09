@@ -334,11 +334,23 @@ window.TEUI.SectionModules.sect06 = (function () {
       label: "Onsite Energy Subtotals",
       cells: {
         c: { label: "Onsite Energy Subtotals" },
-        d: { fieldId: "d_43", type: "calculated", value: "0.00" },
+        d: {
+          fieldId: "d_43",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_44", "d_45", "d_46", "i_46"],
+          label: "Onsite Energy Subtotal: kWh/yr",
+        },
         f: { content: "R.5", classes: ["label-prefix"] },
         g: { content: "Offsite Renewable (REC)", classes: ["label-main"] },
         h: {},
-        i: { fieldId: "i_43", type: "calculated", value: "0.00" },
+        i: {
+          fieldId: "i_43",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["i_44", "i_46"],
+          label: "Offsite Renewable (REC) Subtotal: kWh/yr",
+        },
         j: { content: "P.5", classes: ["label-prefix"] },
         k: { content: "Exterior/Site/Other Loads", classes: ["label-main"] },
         m: {
@@ -347,6 +359,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Default is 0
+          label: "Exterior/Site/Other Loads: kWh/yr",
         },
       },
     },
@@ -362,6 +375,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Photovoltaics (no tooltip data available in TooltipManager)
+          label: "Photovoltaics: kWh/yr",
         },
         f: { content: "R.6", classes: ["label-prefix"] },
         g: { content: "WWS Electricity", classes: ["label-main"] },
@@ -372,6 +386,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // WWS Electricity (no tooltip data available)
+          label: "WWS Electricity (Offsite REC): kWh/yr",
         },
       },
     },
@@ -387,11 +402,18 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Wind (no tooltip data available)
+          label: "Wind Energy: kWh/yr",
         },
         f: { content: "R.7", classes: ["label-prefix"] },
         g: { content: "Green Natural Gas", classes: ["label-main"] },
         h: {},
-        i: { fieldId: "i_45", type: "calculated", value: "0.00" },
+        i: {
+          fieldId: "i_45",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["k_45"],
+          label: "Green Natural Gas (ekWh): kWh/yr",
+        },
         j: { content: "ekWh/yr" },
         k: {
           fieldId: "k_45",
@@ -399,6 +421,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Green Natural Gas (no tooltip data available)
+          label: "Green Natural Gas: m³",
         },
         l: { content: "m³" },
       },
@@ -415,6 +438,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Remove EV Charging (no tooltip data available)
+          label: "Remove EV Charging from TEUI: kWh/yr",
         },
         f: { content: "R.8", classes: ["label-prefix"] },
         g: { content: "Reserved (other removals)", classes: ["label-main"] },
@@ -425,6 +449,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           value: "0.00",
           classes: ["user-input"],
           tooltip: true, // Reserved other removals (no tooltip data available)
+          label: "Reserved Removals (Special Cases): kWh/yr",
         },
       },
     },
@@ -511,7 +536,7 @@ window.TEUI.SectionModules.sect06 = (function () {
   //==========================================================================
 
   /**
-   * ✅ EXCEL FORMULA PRESERVED: d_43 = d_44 + d_45 + d_46 (Onsite Energy Subtotal)
+   * ✅ EXCEL FORMULA PRESERVED: d_43 = SUM(D44:D46) + I46
    */
   function calculateOnSiteSubtotal(isReferenceCalculation = false) {
     const d_44_value =
@@ -526,18 +551,22 @@ window.TEUI.SectionModules.sect06 = (function () {
       window.TEUI.parseNumeric(
         getSectionValue("d_46", isReferenceCalculation),
       ) || 0;
+    const i_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_46", isReferenceCalculation),
+      ) || 0;
 
-    // ✅ EXACT EXCEL FORMULA: Sum of all onsite renewable inputs
-    const d_43_result = d_44_value + d_45_value + d_46_value;
+    // ✅ EXACT EXCEL FORMULA: Sum of all onsite renewable inputs plus reserved removals
+    const d_43_result = d_44_value + d_45_value + d_46_value + i_46_value;
 
     if (isReferenceCalculation) {
       console.log(
-        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
+        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`,
       );
       window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
     } else {
       console.log(
-        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
+        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`,
       );
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
