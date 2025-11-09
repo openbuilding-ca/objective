@@ -802,6 +802,50 @@ Section03 is a **Climate Foundation Section** that:
 
 - Remaining sections (S07-S18) pending dependency mapping per workplan
 
+### 📋 Upcoming Workplan (Nov 9-10, 2025)
+
+**Priority Queue for Dependency Mapping**:
+
+#### S07: DHW & SHW Energy (Tonight - Nov 9)
+- **Scope**: Rows 49-54 in TEUIv3043.csv
+- **Tasks**:
+  1. Read CSV formulas and verify dependencies
+  2. Add dependency declarations to calculated fields
+  3. Add unique field labels for graph visualization
+  4. **Implement simplified M/N compliance system**
+- **M/N Compliance Approach** (Key Decision):
+  - **ABANDON** ReferenceValues.js lookup complexity (too complicated for users)
+  - **NEW PATTERN**: Simple Target vs Reference comparison
+    - User sets `d_13` in Reference model as their baseline standard (e.g., OBC, NBC)
+    - M column calculates: `target_field / ref_field` as percentage
+    - N column shows ✓/✗ using `setElementClass()` helper
+  - **Rationale**: Easy to code, easy to explain to new users
+  - **Example**: If target d_13 = 350 and ref d_13 = 650, then m_13 = 54%
+
+#### S08: Similar Section (Tonight - Nov 9)
+- **Scope**: TBD rows in TEUIv3043.csv
+- **Tasks**: Same as S07
+- **Expected Difficulty**: Easy/straightforward
+- **M/N Compliance**: Same simplified Target/Reference comparison pattern as S07
+- **Note**: Should go quickly since S07 establishes the pattern
+
+#### S09: Heating & Cooling Loads (Tomorrow - Nov 10)
+- **Scope**: Rows 69-71 in TEUIv3043.csv
+- **Complexity**: ⚠️ **HIGH** - Complex conditionals with cross-section dependencies
+- **Known Dependencies**: S07, S13, and potentially others
+- **Tasks**:
+  1. Careful formula analysis (IF/IFS logic)
+  2. Use `conditionalDeps` array for conditional field reads
+  3. Map all cross-section dependencies
+  4. Add unique field labels
+- **Caution**: Don't rush this one - needs careful analysis to avoid breaking conditional logic
+
+**Architectural Decisions**:
+- **ReferenceValues.js Deprecation**: Moving away from hardcoded building code values
+- **User-Driven Baselines**: Users set their own reference standard in Reference model
+- **Self-Comparison**: Target model compares against Reference model (same field IDs with/without `ref_` prefix)
+- **Education Approach**: "Set your Reference standard in d_13, and we'll compare your Target design against it"
+
 ### 📝 Key Patterns Established
 
 1. **Label Resolution**: Section-level `getFields()` with `cell.label || cell.content || row.label`

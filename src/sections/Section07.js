@@ -471,6 +471,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           dropdownId: "d_49",
           value: "User Defined",
           tooltip: true, // DHW/SHW Use Method (lpppd)
+          label: "Water Use Method",
           options: [
             "User Defined",
             "By Engineer",
@@ -486,15 +487,42 @@ window.TEUI.SectionModules.sect07 = (function () {
           value: "40.00",
           classes: ["user-input"],
           tooltip: true, // Litres/Per-Person/Day
+          label: "User Defined Water Use: l/pp/day",
         },
         f: { content: "lpppd (User Defined)", classes: ["text-left"] },
-        h: { fieldId: "h_49", type: "calculated", value: "40.00" },
-        i: { fieldId: "i_49", type: "calculated", value: "1,839,600" },
+        h: {
+          fieldId: "h_49",
+          type: "calculated",
+          value: "40.00",
+          dependencies: ["d_49", "e_49", "j_50", "d_63"],
+          conditionalDeps: ["j_50", "d_63"], // Only used in "By Engineer" mode
+          label: "Total Water Use: l/pp/day",
+        },
+        i: {
+          fieldId: "i_49",
+          type: "calculated",
+          value: "1,839,600",
+          dependencies: ["d_63", "h_49"],
+          label: "Annual Water Use: litres/yr",
+        },
         j: { content: "Net Emissions", classes: ["text-left"] },
-        k: { fieldId: "k_49", type: "calculated", value: "0.00" },
+        k: {
+          fieldId: "k_49",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_51", "k_54", "l_30", "e_51", "l_28"],
+          conditionalDeps: ["k_54", "l_30", "e_51", "l_28"], // Conditional on d_51 system type
+          label: "DHW Net Emissions: kgCO2e/yr",
+        },
         l: { content: "kgCO2e/yr", classes: ["text-left"] },
         m: { content: "✓", classes: ["checkmark"] },
-        n: { fieldId: "n_49", type: "calculated", value: "15%" },
+        n: {
+          fieldId: "n_49",
+          type: "calculated",
+          value: "15%",
+          dependencies: ["h_49", "ref_h_49"],
+          label: "Water Use Compliance: %",
+        },
       },
     },
     50: {
@@ -509,13 +537,39 @@ window.TEUI.SectionModules.sect07 = (function () {
           value: "10,000.00",
           classes: ["user-input"],
           tooltip: true, // Occupancy-Dependent Calculation
+          label: "Engineer DHW Energy: kWh/yr",
         },
         f: { content: "kWh/yr (IF By Engineer)", classes: ["text-left"] },
-        h: { fieldId: "h_50", type: "calculated", value: "16.00" },
-        i: { fieldId: "i_50", type: "calculated", value: "735,840" },
-        j: { fieldId: "j_50", type: "calculated", value: "38,484.43" },
+        h: {
+          fieldId: "h_50",
+          type: "calculated",
+          value: "16.00",
+          dependencies: ["h_49"],
+          label: "DHW Use: l/pp/day",
+        },
+        i: {
+          fieldId: "i_50",
+          type: "calculated",
+          value: "735,840",
+          dependencies: ["d_63", "h_50"],
+          label: "Annual DHW Use: litres/yr",
+        },
+        j: {
+          fieldId: "j_50",
+          type: "calculated",
+          value: "38,484.43",
+          dependencies: ["d_49", "e_50", "h_50", "d_63"],
+          conditionalDeps: ["e_50"], // Only used in "By Engineer" mode
+          label: "DHW Energy Demand: kWh/yr",
+        },
         m: { content: "✓", classes: ["checkmark"] },
-        n: { fieldId: "n_50", type: "calculated", value: "15%" },
+        n: {
+          fieldId: "n_50",
+          type: "calculated",
+          value: "15%",
+          dependencies: ["h_50", "ref_h_50"],
+          label: "DHW Use Compliance: %",
+        },
       },
     },
     51: {
@@ -529,14 +583,36 @@ window.TEUI.SectionModules.sect07 = (function () {
           dropdownId: "d_51",
           value: "Heatpump",
           tooltip: true, // DHW/SHW Heating Source
+          label: "DHW/SHW Energy Source",
           options: ["Heatpump", "Gas", "Oil", "Electric"],
         },
-        e: { fieldId: "e_51", type: "calculated", value: "0.00" },
+        e: {
+          fieldId: "e_51",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_51", "j_52", "d_53", "k_52"],
+          conditionalDeps: ["j_52", "d_53", "k_52"], // Only used when d_51="Gas"
+          label: "Gas Volume: m³/yr",
+        },
         f: { content: "Gas m³/yr", classes: ["text-left"] },
         g: { content: "W.3.2", classes: ["text-left"] },
         h: { content: "Net Thermal Demand", classes: ["text-left"] },
-        j: { fieldId: "j_51", type: "calculated", value: "12,828.14" },
-        k: { fieldId: "k_51", type: "calculated", value: "12,828.14" },
+        j: {
+          fieldId: "j_51",
+          type: "calculated",
+          value: "12,828.14",
+          dependencies: ["d_51", "j_50", "d_52", "k_52"],
+          conditionalDeps: ["d_52", "k_52"], // Conditionally use d_52 or k_52 based on d_51
+          label: "Net Thermal Demand: kWh/yr",
+        },
+        k: {
+          fieldId: "k_51",
+          type: "calculated",
+          value: "12,828.14",
+          dependencies: ["d_51", "j_52"],
+          conditionalDeps: ["j_52"], // Only non-zero when d_51="Heatpump" or "Electric"
+          label: "Net Electrical Demand: kWh/yr",
+        },
         l: { content: "W.3.3 Net Elect. Demand", classes: ["text-left"] },
       },
     },
@@ -554,22 +630,42 @@ window.TEUI.SectionModules.sect07 = (function () {
           step: 2,
           classes: ["user-input"],
           tooltip: true, // If Heatpump Selected
+          label: "DHW/SHW Efficiency Factor: %",
         },
-        e: { fieldId: "e_52", type: "calculated", value: "3.00" },
+        e: {
+          fieldId: "e_52",
+          type: "calculated",
+          value: "3.00",
+          dependencies: ["d_52"],
+          label: "DHW/SHW COP",
+        },
         f: { content: "COPdhw", classes: ["text-left"] },
         g: { content: "W.5.2", classes: ["text-left"] },
         h: { content: "Net Demand-Recovered", classes: ["text-left"] },
-        j: { fieldId: "j_52", type: "calculated", value: "12,828.14" },
+        j: {
+          fieldId: "j_52",
+          type: "calculated",
+          value: "12,828.14",
+          dependencies: ["j_51", "e_53"],
+          label: "Net Demand After Recovery: kWh/yr",
+        },
         k: {
           fieldId: "k_52",
           type: "editable",
           value: "0.90",
           classes: ["user-input"],
           tooltip: true, // AFUE
+          label: "AFUE (Gas/Oil Efficiency)",
         },
         l: { content: "W.4.2 AFUE", classes: ["text-left"] },
         m: { content: "✓", classes: ["checkmark"] },
-        n: { fieldId: "n_52", type: "calculated", value: "100%" },
+        n: {
+          fieldId: "n_52",
+          type: "calculated",
+          value: "100%",
+          dependencies: ["d_52", "ref_d_52"],
+          label: "Efficiency Compliance: %",
+        },
       },
     },
     53: {
@@ -586,14 +682,34 @@ window.TEUI.SectionModules.sect07 = (function () {
           step: 1,
           classes: ["user-input"],
           tooltip: true, // Range of DWHR Efficiency
+          label: "DWHR Efficiency: %",
         },
-        e: { fieldId: "e_53", type: "calculated", value: "0.00" },
+        e: {
+          fieldId: "e_53",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["j_51", "d_53"],
+          label: "Energy Recovered: kWh/yr",
+        },
         f: { content: "kWh/yr", classes: ["text-left"] },
         g: { content: "W.5.3", classes: ["text-left"] },
         h: { content: "(W.2.W) SHW Wasted", classes: ["text-left"] },
-        j: { fieldId: "j_53", type: "calculated", value: "12,828.14" },
+        j: {
+          fieldId: "j_53",
+          type: "calculated",
+          value: "12,828.14",
+          dependencies: ["j_51", "e_53"],
+          label: "SHW Wasted: kWh/yr",
+        },
         m: { content: "!", classes: ["warning"] },
-        n: { fieldId: "n_53", type: "calculated", value: "0%" },
+        n: {
+          fieldId: "n_53",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_53", "ref_d_53"],
+          conditionalDeps: ["ref_d_53"], // N/A if ref_d_53=0
+          label: "DWHR Compliance: %",
+        },
       },
     },
     54: {
@@ -601,12 +717,33 @@ window.TEUI.SectionModules.sect07 = (function () {
       label: "System Losses (% → W.1.3 Eqpt Gains)",
       cells: {
         c: { label: "System Losses (% → W.1.3 Eqpt Gains)" },
-        d: { fieldId: "d_54", type: "calculated", value: "0.00" },
+        d: {
+          fieldId: "d_54",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_52", "d_49", "j_50"],
+          conditionalDeps: ["d_49", "j_50"], // d_49 and j_50 only used conditionally
+          label: "System Losses (Equipment Gains): kWh/yr",
+        },
         f: { content: "kWh/yr", classes: ["text-left"] },
         g: { content: "W.X", classes: ["text-right"] },
         h: { content: "Exhaust (if Gas or Oil)", classes: ["text-left"] },
-        j: { fieldId: "j_54", type: "calculated", value: "0.00" },
-        k: { fieldId: "k_54", type: "calculated", value: "0.00" },
+        j: {
+          fieldId: "j_54",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_51", "j_52", "k_52"],
+          conditionalDeps: ["j_52", "k_52"], // Only used when d_51="Gas" or "Oil"
+          label: "Exhaust Losses: kWh/yr",
+        },
+        k: {
+          fieldId: "k_54",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_51", "j_52", "d_53", "k_52"],
+          conditionalDeps: ["j_52", "d_53", "k_52"], // Only used when d_51="Oil"
+          label: "Net Oil Demand: litres",
+        },
         l: { content: "W.3.4 Net Oil Demand Ltrs", classes: ["text-left"] },
         m: { content: "", classes: ["text-left"] },
       },
@@ -624,7 +761,7 @@ window.TEUI.SectionModules.sect07 = (function () {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
-            label: cell.label || row.label,
+            label: cell.label || cell.content || row.label, // ✅ Standard label resolution pattern
             defaultValue: cell.value || "",
             section: "waterUse",
           };
@@ -635,6 +772,11 @@ window.TEUI.SectionModules.sect07 = (function () {
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
           if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
+          // ✅ Add dependency arrays for ZenMaster tracing
+          if (cell.dependencies)
+            fields[cell.fieldId].dependencies = cell.dependencies;
+          if (cell.conditionalDeps)
+            fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
         }
       });
     });
@@ -1016,52 +1158,75 @@ window.TEUI.SectionModules.sect07 = (function () {
   }
 
   function calculateCompliance(isReferenceCalculation = false) {
-    // ✅ PATTERN A: Explicit state access while preserving Excel formulas
-    const litersPerPersonDay = getSectionNumericValue(
-      "h_49",
-      0,
-      isReferenceCalculation,
-    );
-    const hotWaterLitersPerDay = getSectionNumericValue(
-      "h_50",
-      0,
-      isReferenceCalculation,
-    );
-    const efficiency = getSectionNumericValue(
-      "e_52",
-      1,
-      isReferenceCalculation,
-    );
-    const recoveryPercent =
-      getSectionNumericValue("d_53", 0, isReferenceCalculation) / 100;
+    // ✅ NEW PATTERN: Target/Reference comparison (simplified M/N compliance)
+    // ALWAYS use Target numerators and Reference denominators (lower is better for water/energy)
 
-    // ✅ PRESERVE: Exact Excel calculation formulas unchanged
-    // ESLint: These appear as constant conditions but preserve Excel formula structure
-    const waterUsePercentRaw = litersPerPersonDay / 275; // 275 is Excel constant
-    const dhwUsePercentRaw = hotWaterLitersPerDay / 110; // 110 is Excel constant
-    const efficiencyPercentRaw = efficiency / 0.9; // 0.9 is Excel constant
+    // Target values (numerators)
+    const target_h_49 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_49")) || 0;
+    const target_h_50 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_50")) || 0;
+    const target_d_52 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_52")) || 100;
+    const target_d_53 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_53")) || 0;
 
-    setSectionValue(
-      "n_49",
-      window.TEUI?.formatNumber?.(waterUsePercentRaw, "percent-0dp") ?? "0%",
-      isReferenceCalculation,
-    );
-    setSectionValue(
-      "n_50",
-      window.TEUI?.formatNumber?.(dhwUsePercentRaw, "percent-0dp") ?? "0%",
-      isReferenceCalculation,
-    );
-    setSectionValue(
-      "n_52",
-      window.TEUI?.formatNumber?.(efficiencyPercentRaw, "percent-0dp") ??
-        "100%",
-      isReferenceCalculation,
-    );
-    setSectionValue(
-      "n_53",
-      window.TEUI?.formatNumber?.(recoveryPercent, "percent-0dp") ?? "0%",
-      isReferenceCalculation,
-    );
+    // Reference values (denominators)
+    const ref_h_49 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_h_49")) || 275;
+    const ref_h_50 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_h_50")) || 110;
+    const ref_d_52 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_52")) || 90;
+    const ref_d_53 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_53")) || 0;
+
+    // Calculate percentages: Target / Reference (lower is better - passing means <100%)
+    const n_49_percent = ref_h_49 !== 0 ? target_h_49 / ref_h_49 : 0;
+    const n_50_percent = ref_h_50 !== 0 ? target_h_50 / ref_h_50 : 0;
+    const n_52_percent = ref_d_52 !== 0 ? target_d_52 / ref_d_52 : 1;
+    const n_53_percent = ref_d_53 !== 0 ? target_d_53 / ref_d_53 : 0;
+
+    // Format and store percentage results
+    const n_49_formatted = window.TEUI?.formatNumber?.(n_49_percent, "percent-0dp") ?? "0%";
+    const n_50_formatted = window.TEUI?.formatNumber?.(n_50_percent, "percent-0dp") ?? "0%";
+    const n_52_formatted = window.TEUI?.formatNumber?.(n_52_percent, "percent-0dp") ?? "100%";
+    const n_53_formatted = ref_d_53 === 0 ? "N/A" : (window.TEUI?.formatNumber?.(n_53_percent, "percent-0dp") ?? "0%");
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_n_49", n_49_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_n_50", n_50_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_n_52", n_52_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_n_53", n_53_formatted, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("n_49", n_49_formatted, "calculated");
+      window.TEUI.StateManager.setValue("n_50", n_50_formatted, "calculated");
+      window.TEUI.StateManager.setValue("n_52", n_52_formatted, "calculated");
+      window.TEUI.StateManager.setValue("n_53", n_53_formatted, "calculated");
+
+      // ✅ Apply CSS classes for visual compliance indicators (only in Target mode)
+      setComplianceClass("n_49", n_49_percent <= 1.0);
+      setComplianceClass("n_50", n_50_percent <= 1.0);
+      setComplianceClass("n_52", n_52_percent >= 1.0); // Higher efficiency is better
+      if (ref_d_53 !== 0) {
+        setComplianceClass("n_53", n_53_percent >= 0); // Any recovery is good
+      }
+    }
+
+    // Also store to local state for display
+    setSectionValue("n_49", n_49_formatted, isReferenceCalculation);
+    setSectionValue("n_50", n_50_formatted, isReferenceCalculation);
+    setSectionValue("n_52", n_52_formatted, isReferenceCalculation);
+    setSectionValue("n_53", n_53_formatted, isReferenceCalculation);
+  }
+
+  /**
+   * Apply CSS class to DOM element for compliance indicators (following S05 M-N-COMPLIANCE.md pattern)
+   * Only applies in Target mode - Reference mode should not override Target's visual indicators
+   * @param {string} fieldId - The field ID to target
+   * @param {boolean} isCompliant - True for checkmark (green), false for warning (red)
+   */
+  function setComplianceClass(fieldId, isCompliant) {
+    // ⚠️ CRITICAL: Only apply styling in Target mode
+    if (ModeManager.currentMode !== "target") return;
+
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      element.classList.add(isCompliant ? "checkmark" : "warning");
+    }
   }
 
   // ✅ PATTERN A: Dual-engine calculations with explicit state access
