@@ -3,7 +3,7 @@
  * Manages validation tooltips from Excel for TEUI Calculator fields
  *
  * Tooltip data extracted from TEUIv3042.xlsx REPORT sheet Data Validation
- * Last updated: Oct 8, 2025
+ * Last updated: Nov 8, 2025
  * Source: extract-validation.py script
  */
 
@@ -437,6 +437,18 @@
       title: "Cooling Guidance",
       message:
         "ASHRAE may permit 26°C, where NBC 2025 may require 24°C. Residents will often set lower. Use 24°C as Default for design. ",
+    },
+    m_23: {
+      cell: "M23",
+      title: "OBC Required Heating Setpoint",
+      message:
+        "Thermostat Setpoint: This compares the Tset value determined by Major Occupancy, against the value set by the selected Reference Standard (ie. PH Classic). A fail/X just means there is a difference between the Building Code and the Reference Standard's Modelled value.",
+    },
+    m_24: {
+      cell: "M24",
+      title: "NBC Upper Cooling Limit",
+      message:
+        "NECB/NBC now establish an upper limit for Tset Cooling of 26ºC. Users often will set lower values in practice. A realistic value of 22ºC-24ºC as a typical cooling setpoint should be considered. Users can over-ride these values.",
     },
     h_35: {
       cell: "H35",

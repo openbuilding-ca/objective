@@ -484,6 +484,23 @@ window.TEUI.SectionModules.sect03 = (function () {
     // for reading from StateManager and updating the UI, ensuring a single source of truth.
   }
 
+  /**
+   * Apply CSS class to DOM element for compliance indicators (S08 pattern)
+   * Only applies in Target mode - Reference mode should not override Target's visual indicators
+   * @param {string} fieldId - The field ID to target
+   * @param {string} className - The class name to add ("checkmark" or "warning")
+   */
+  function setElementClass(fieldId, className) {
+    // Only apply styling in Target mode (S08 pattern)
+    if (ModeManager.currentMode !== "target") return;
+
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      if (className) element.classList.add(className);
+    }
+  }
+
   //==========================================================================
   // CLIMATE DATA SERVICE - Direct ClimateValues.js Access
   //==========================================================================
@@ -1823,6 +1840,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
       calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
+      calculateHeatingCompliance(); // n_23: Check h_23 >= m_23 compliance
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
@@ -1893,6 +1911,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
       calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
+      calculateHeatingCompliance(); // n_23: Check h_23 >= m_23 compliance
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
@@ -2097,6 +2116,48 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
+   * Calculate Heating Setpoint Compliance (n_23)
+   * Compares h_23 (actual heating setpoint) against m_23 (OBC requirement)
+   * Pass (✓) if h_23 >= m_23, Fail (✗) if h_23 < m_23
+   */
+  function calculateHeatingCompliance() {
+    const actualSetpoint = getNumericValue("h_23");
+    const obcRequirement = getNumericValue("m_23");
+
+    // Pass if actual >= required, fail if actual < required
+    const isCompliant = actualSetpoint >= obcRequirement;
+
+    // Set the symbol as text (S08 pattern)
+    setFieldValue("n_23", isCompliant ? "✓" : "✗");
+
+    // Apply CSS class directly to DOM element (S08 pattern)
+    setElementClass("n_23", isCompliant ? "checkmark" : "warning");
+
+    return isCompliant;
+  }
+
+  /**
+   * Calculate Cooling Setpoint Compliance (n_24)
+   * Compares h_24 (actual cooling setpoint) against m_24 (NBC upper limit)
+   * Pass (✓) if h_24 <= m_24, Fail (✗) if h_24 > m_24
+   */
+  function calculateCoolingCompliance() {
+    const actualSetpoint = getNumericValue("h_24");
+    const nbcUpperLimit = getNumericValue("m_24");
+
+    // Pass if actual <= limit, fail if actual > limit
+    const isCompliant = actualSetpoint <= nbcUpperLimit;
+
+    // Set the symbol as text (S08 pattern)
+    setFieldValue("n_24", isCompliant ? "✓" : "✗");
+
+    // Apply CSS class directly to DOM element (S08 pattern)
+    setElementClass("n_24", isCompliant ? "checkmark" : "warning");
+
+    return isCompliant;
+  }
+
+  /**
    * Update fields dependent on the effective cooling setpoint (i_24)
    */
   function updateCoolingDependents() {
@@ -2110,6 +2171,9 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Update m_24 (NBC upper limit - static value)
     calculateNBCCoolingLimit();
+
+    // Update n_24 (cooling compliance check)
+    calculateCoolingCompliance();
   }
 
   /**
