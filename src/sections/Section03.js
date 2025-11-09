@@ -1011,10 +1011,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: {
           fieldId: "m_24",
           type: "calculated",
-          label: "ASHRAE 90.1 Upper Limit",
+          label: "NBC Upper Limit",
           value: "26",
           section: "climateCalculations",
-          // Static value - ASHRAE 90.1 acceptable upper limit for cooling
+          // Static value - NBC acceptable upper limit for cooling (replaces ASHRAE 90.1)
           tooltip: true,
         },
         n: {
@@ -2086,7 +2086,18 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Update fields dependent on the effective cooling setpoint (i_24, m_24)
+   * Calculate NBC Cooling Upper Limit (m_24)
+   * Static value - NBC (National Building Code) acceptable upper limit for cooling setpoint
+   * Canada has adopted this standard, replacing previous ASHRAE 90.1 reference
+   */
+  function calculateNBCCoolingLimit() {
+    const nbcUpperLimit = 26; // NBC standard upper limit in °C
+    setFieldValue("m_24", nbcUpperLimit);
+    return nbcUpperLimit;
+  }
+
+  /**
+   * Update fields dependent on the effective cooling setpoint (i_24)
    */
   function updateCoolingDependents() {
     const effectiveSetpointC = determineEffectiveCoolingSetpoint();
@@ -2097,12 +2108,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       setFieldValue("i_24", effectiveSetpointF);
     }
 
-    // Update m_24 (Percentage calculation - Placeholder logic)
-    // Add the actual calculation logic for m_24 here when known
-    // Example placeholder:
-    const someBaseValueForM24 = 100; // Replace with actual dependency value
-    const m24Value = Math.round((effectiveSetpointC / 22) * 100); // Example calc
-    setFieldValue("m_24", `${m24Value}%`);
+    // Update m_24 (NBC upper limit - static value)
+    calculateNBCCoolingLimit();
   }
 
   /**

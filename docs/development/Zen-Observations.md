@@ -556,8 +556,8 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 - `e_23`: Coldest Day °F (calculated) - Dependencies: `["d_23"]` ✅
 - `h_23`: Tset Heating (calculated from OBC or PH) - Dependencies: `["d_12"]` ✅
 - `i_23`: Tset Heating °F (calculated) - Dependencies: `["h_23"]` ✅
-- `m_23`: **REFACTORED** - Now shows OBC compliance (✓/✗) instead of reference % - Dependencies: `["h_23", "d_12"]` ✅
-- `n_23`: **NEW** - OBC Required Setpoint (displays code requirement) - Dependencies: `["d_12"]` ✅
+- `m_23`: **REFACTORED** - OBC required heating setpoint (pure occupancy lookup, NO PH exception) - Dependencies: `["d_12"]` ✅
+- `n_23`: **NEW** - Heating setpoint compliance indicator (✓/✗) - Dependencies: `["h_23", "m_23"]` ✅
 
 **Row 24 - Hottest Days & Cooling Setpoint:**
 - `d_24`: Hottest Day °C (derived) - Dependencies: `["d_19", "h_19"]` ✅
@@ -565,8 +565,8 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 - `h_24`: Tset Cooling (calculated from OBC) - Dependencies: `["d_12"]` ✅
 - `i_24`: Tset Cooling °F (calculated) - Dependencies: `["h_24", "l_24"]` ✅
 - `l_24`: Cooling Override (editable) - NO dependencies ✅
-- `m_24`: **REFACTORED** - Now shows OBC compliance (✓/✗) instead of reference % - Dependencies: `["h_24", "d_12"]` ✅
-- `n_24`: **NEW** - OBC Required Setpoint (displays code requirement) - Dependencies: `["d_12"]` ✅
+- `m_24`: **REFACTORED** - OBC required cooling setpoint (pure occupancy lookup) - Dependencies: `["d_12"]` ✅
+- `n_24`: **NEW** - Cooling setpoint compliance indicator (✓/✗) - Dependencies: `["h_24", "m_24"]` ✅
 
 #### Codebase Implementation Verification
 
@@ -596,14 +596,14 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
   - `e_23`: Coldest Days °F ✅
   - `h_23`: Tset Heating ✅
   - `i_23`: Tset Heating °F ✅
-  - `m_23`: Heating Setpoint Code Compliance ✅ **REFACTORED**
-  - `n_23`: OBC Requirement ✅ **NEW FIELD**
+  - `m_23`: OBC Required Heating Setpoint ✅ **REFACTORED**
+  - `n_23`: Heating Compliance Indicator ✅ **NEW FIELD**
   - `d_24`: Hottest Days °C ✅
   - `e_24`: Hottest Days °F ✅
   - `h_24`: Tset Cooling ✅
   - `i_24`: Tset Cooling °F ✅
-  - `m_24`: Cooling Setpoint Code Compliance ✅ **REFACTORED**
-  - `n_24`: OBC Requirement ✅ **NEW FIELD**
+  - `m_24`: OBC Required Cooling Setpoint ✅ **REFACTORED**
+  - `n_24`: Cooling Compliance Indicator ✅ **NEW FIELD**
 
 #### Key Fixes
 
@@ -617,17 +617,22 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
    - **Fix**: Added `conditionalDeps: ["h_21"]` + explicit label "Capacitance Factor %"
    - **Rationale**: UI state changes that force field values are conditional dependencies
 
-3. **M Column - Regulatory Compliance Pattern** ✅
+3. **M/N Column - Regulatory Compliance Pattern** ✅
    - **Issue**: Old formula compared setpoint to chosen Reference Standard, didn't flag OBC violations
    - **Problem**: h_23 formula allows Passive House (18°C) to override OBC requirement (22°C for many occupancies)
-   - **Fix**: Refactored m_23/m_24 to show code compliance (✓/✗) vs. OBC requirement based on occupancy
+   - **Fix**: Refactored M/N columns to mirror S11 pattern (M=value, N=indicator)
    - **Pattern**:
-     - `m_23` shows ✓ if h_23 >= OBC requirement, ✗ if below
-     - `n_23` displays OBC required setpoint (e.g., "22°C")
-     - Dependencies: `["h_23", "d_12"]` (actual setpoint + occupancy for OBC lookup)
-     - CSS classes: `checkmark` (✓) or `warning` (✗) - matching S11 pattern
-     - Tooltip warning when non-compliant
-   - **Rationale**: OBC is legal requirement, PH is voluntary - M column should flag code violations
+     - **M column** (m_23/m_24): Shows OBC required setpoint value
+       - Mirrors h_23/h_24 formula logic but WITHOUT PH exception
+       - Pure occupancy-based lookup (e.g., "22" for residential)
+       - Dependencies: `["d_12"]` only (occupancy)
+     - **N column** (n_23/n_24): Shows compliance indicator
+       - Compares h_23/h_24 (actual) vs m_23/m_24 (OBC requirement)
+       - Displays ✓ (compliant) or ✗ (below code)
+       - Dependencies: `["h_23", "m_23"]` or `["h_24", "m_24"]`
+       - Uses global styles.css: green ✓ / red ✗
+       - Tooltip warns when PH value violates code
+   - **Rationale**: OBC is legal requirement, PH is voluntary - M/N columns flag code violations
 
 #### Labels Added
 
@@ -649,10 +654,10 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 - `l_24`: "Cooling Override" ✅
 
 **M/N column labels** (new compliance pattern):
-- `m_23`: "Heating Setpoint Code Compliance" ✅
-- `n_23`: "OBC Requirement" ✅
-- `m_24`: "Cooling Setpoint Code Compliance" ✅
-- `n_24`: "OBC Requirement" ✅
+- `m_23`: "OBC Required Heating Setpoint" ✅
+- `n_23`: "Heating Setpoint Compliance" ✅
+- `m_24`: "OBC Required Cooling Setpoint" ✅
+- `n_24`: "Cooling Setpoint Compliance" ✅
 
 #### Regulatory Compliance Insight
 
@@ -672,13 +677,17 @@ Excel formula for h_23 (Heating Setpoint):
 
 **Problem**: PH can override OBC, creating non-compliance that wasn't flagged.
 
-**Solution**: M column now shows compliance vs. OBC mandatory requirement:
-- Compare h_23 to `getMinIndoorTempForOccupancy(d_12)` (ignoring PH override)
-- Visual indicator: ✓ (green) if compliant, ✗ (red) if below code
-- N column shows what OBC requires for this occupancy
-- Tooltip warns when PH value violates code
+**Solution**: M/N columns now show OBC compliance following S11 pattern (M=value, N=indicator):
+- **M column**: Shows OBC requirement via pure occupancy lookup (e.g., "22" °C)
+  - Formula mirrors h_23 logic but WITHOUT `IF(ISNUMBER(SEARCH("PH", D13))...)` exception
+  - Dependencies: `["d_12"]` only
+- **N column**: Compares h_23 (actual) vs m_23 (OBC requirement)
+  - Visual indicator: ✓ (green, global styles.css) if h_23 >= m_23
+  - Visual indicator: ✗ (red, global styles.css) if h_23 < m_23
+  - Dependencies: `["h_23", "m_23"]`
+  - Tooltip warns when PH value violates code
 
-**Key Learning**: M column percentage fields serve **regulatory compliance notification** purpose, not just reference standard comparison. Legal requirements (OBC) take precedence over voluntary standards (PH).
+**Key Learning**: M/N columns serve **regulatory compliance notification** purpose. Legal requirements (OBC) take precedence over voluntary standards (PH). Pattern matches S11: M=required value, N=compliance indicator.
 
 #### Architectural Pattern
 
