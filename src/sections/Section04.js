@@ -82,6 +82,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_27",
           type: "calculated",
+          label: "Actual Total Electricity Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_27", "d_43", "i_43"], // Excel: =D27-D43-I43 (actual minus renewables)
@@ -89,6 +90,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_27",
           type: "calculated",
+          label: "Actual Total Electricity Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["f_27", "l_27"], // Excel: =F27*L27/1000 (actual emissions)
@@ -96,6 +98,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_27",
           type: "calculated",
+          label: "Target Electricity Design Value",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_136"], // Excel: =D136 (from S15 target electricity)
@@ -104,6 +107,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_27",
           type: "calculated",
+          label: "Target Total Electricity Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_27", "d_43", "i_43"], // Excel: =H27-D43-I43 (target minus renewables)
@@ -111,6 +115,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_27",
           type: "calculated",
+          label: "Target Total Electricity Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["j_27", "l_27"], // Excel: =J27*L27/1000 (target emissions)
@@ -118,6 +123,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         l: {
           fieldId: "l_27",
           type: "calculated",
+          label: "Grid Intensity Factor",
           value: "51",
           section: "actualTargetEnergy",
           dependencies: ["d_19", "h_12"], // Excel: XLOOKUP(H12, AEFYear, AEFvalues) - Province + year lookup
@@ -146,6 +152,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_28",
           type: "calculated",
+          label: "Actual Total Fossil Gas Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_28"], // Excel: =D28*0.0373*277.7778 (gas to ekWh)
@@ -153,6 +160,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_28",
           type: "calculated",
+          label: "Actual Total Fossil Gas Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_28", "l_28"], // Excel: =D28*L28/1000 (gas emissions)
@@ -160,6 +168,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_28",
           type: "calculated",
+          label: "Target Total Fossil Gas Use: m³/yr (Combined S07+S13)",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_113", "d_51"], // Excel: IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
@@ -169,6 +178,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_28",
           type: "calculated",
+          label: "Target Total Fossil Gas Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_28"], // Excel: =H28*0.0373*277.7778 (target gas to ekWh)
@@ -176,6 +186,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_28",
           type: "calculated",
+          label: "Target Total Fossil Gas Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_28", "l_28"], // Excel: =H28*L28/1000 (target gas emissions)
@@ -212,6 +223,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_29",
           type: "calculated",
+          label: "Actual Total Propane Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_29"], // Excel: =D29*14.019 (propane to ekWh)
@@ -219,6 +231,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_29",
           type: "calculated",
+          label: "Actual Total Propane Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_29", "l_29"], // Excel: =D29*L29/1000 (propane emissions)
@@ -226,6 +239,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_29",
           type: "calculated",
+          label: "Target Total Propane Use: kg/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_29"], // Excel: =D29 (target mirrors actual for user-controlled fuel)
@@ -234,6 +248,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_29",
           type: "calculated",
+          label: "Target Total Propane Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_29"], // Excel: =H29*14.019 (target propane to ekWh)
@@ -241,6 +256,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_29",
           type: "calculated",
+          label: "Target Total Propane Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_29", "l_29"], // Excel: =H29*L29/1000 (target propane emissions)
@@ -277,6 +293,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_30",
           type: "calculated",
+          label: "Actual Total Oil Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_30"], // Excel: =D30*36.72*0.2777778 (oil to ekWh)
@@ -284,6 +301,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_30",
           type: "calculated",
+          label: "Actual Total Oil Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_30", "l_30"], // Excel: =D30*L30/1000 (oil emissions)
@@ -291,6 +309,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_30",
           type: "calculated",
+          label: "Target Total Oil Use: litres/yr (Combined S07+S13)",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_113", "d_51"], // Excel: IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
@@ -300,6 +319,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_30",
           type: "calculated",
+          label: "Target Total Oil Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_30"], // Excel: =H30*36.72*0.2777778 (target oil to ekWh)
@@ -307,6 +327,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_30",
           type: "calculated",
+          label: "Target Total Oil Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_30", "l_30"], // Excel: =H30*L30/1000 (target oil emissions)
@@ -343,6 +364,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_31",
           type: "calculated",
+          label: "Actual Total Wood Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_31"], // Excel: =D31*1000 (wood to ekWh)
@@ -350,6 +372,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_31",
           type: "calculated",
+          label: "Actual Total Wood Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_31", "l_31"], // Excel: =H31*L31 (wood emissions - already kgCO2e)
@@ -357,6 +380,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_31",
           type: "calculated",
+          label: "Target Total Wood Use: m³/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_31"], // Excel: =D31 (target mirrors actual for user-controlled fuel)
@@ -365,6 +389,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_31",
           type: "calculated",
+          label: "Target Total Wood Use: ekWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_31"], // Excel: =H31*1000 (target wood to ekWh)
@@ -372,6 +397,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_31",
           type: "calculated",
+          label: "Target Total Wood Use: Emissions",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_31", "l_31"], // Excel: =H31*L31 (target wood emissions)
@@ -452,6 +478,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         d: {
           fieldId: "d_33",
           type: "calculated",
+          label: "Actual Total Net Energy",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["f_32", "d_43", "i_43"], // Excel: =(SUM(F27:F31)-D43-I43)/277.7777 (actual to GJ, uses f_32 sum)
@@ -462,6 +489,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_33",
           type: "calculated",
+          label: "Target Total Net Energy",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["j_32", "d_43", "i_43"], // Excel: =(SUM(J27:J31)-I43-D43)/277.7777 (target to GJ, uses j_32 sum)
@@ -485,6 +513,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         d: {
           fieldId: "d_34",
           type: "calculated",
+          label: "Actual Annual Percapita Energy: kWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["f_32", "d_63"], // Excel: =F32/D63 (actual energy per person)
@@ -493,6 +522,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_34",
           type: "calculated",
+          label: "Actual Annual Percapita Energy: GJ",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_33", "d_63"], // Excel: =D33/D63 (actual GJ per person)
@@ -501,6 +531,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_34",
           type: "calculated",
+          label: "Target Annual Percapita Energy: kWh",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["j_32", "d_63"], // Excel: =J32/D63 (target energy per person)
@@ -509,6 +540,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_34",
           type: "calculated",
+          label: "Target Annual Percapita Energy: GJ",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_33", "d_63"], // Excel: =H33/D63 (target GJ per person)
@@ -530,6 +562,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         d: {
           fieldId: "d_35",
           type: "calculated",
+          label: "Primary Energy: kWh/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_14", "h_35"], // Excel: =IF(D14="Targeted Use", J27*H35, F27*H35) - Mode selector
@@ -539,6 +572,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_35",
           type: "calculated",
+          label: "Actual Primary TEUI: kWh/m²/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_35", "h_15"], // Excel: =D35/H15 (primary energy intensity)
@@ -547,6 +581,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_35",
           type: "editable",
+          label: "PER Factor",
           value: "1.0", // User input: PER Factor
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
