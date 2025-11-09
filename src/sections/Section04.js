@@ -90,7 +90,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_27",
           type: "calculated",
-          label: "Actual Total Electricity Use: Emissions",
+          label: "Actual Total Electricity Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["f_27", "l_27"], // Excel: =F27*L27/1000 (actual emissions)
@@ -115,7 +115,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_27",
           type: "calculated",
-          label: "Target Total Electricity Use: Emissions",
+          label: "Target Total Electricity Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["j_27", "l_27"], // Excel: =J27*L27/1000 (target emissions)
@@ -160,7 +160,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_28",
           type: "calculated",
-          label: "Actual Total Fossil Gas Use: Emissions",
+          label: "Actual Total Fossil Gas Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_28", "l_28"], // Excel: =D28*L28/1000 (gas emissions)
@@ -186,7 +186,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_28",
           type: "calculated",
-          label: "Target Total Fossil Gas Use: Emissions",
+          label: "Target Total Fossil Gas Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_28", "l_28"], // Excel: =H28*L28/1000 (target gas emissions)
@@ -231,7 +231,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_29",
           type: "calculated",
-          label: "Actual Total Propane Use: Emissions",
+          label: "Actual Total Propane Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_29", "l_29"], // Excel: =D29*L29/1000 (propane emissions)
@@ -256,7 +256,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_29",
           type: "calculated",
-          label: "Target Total Propane Use: Emissions",
+          label: "Target Total Propane Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_29", "l_29"], // Excel: =H29*L29/1000 (target propane emissions)
@@ -301,7 +301,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_30",
           type: "calculated",
-          label: "Actual Total Oil Use: Emissions",
+          label: "Actual Total Oil Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["d_30", "l_30"], // Excel: =D30*L30/1000 (oil emissions)
@@ -327,7 +327,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_30",
           type: "calculated",
-          label: "Target Total Oil Use: Emissions",
+          label: "Target Total Oil Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_30", "l_30"], // Excel: =H30*L30/1000 (target oil emissions)
@@ -372,7 +372,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_31",
           type: "calculated",
-          label: "Actual Total Wood Use: Emissions",
+          label: "Actual Total Wood Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_31", "l_31"], // Excel: =H31*L31 (wood emissions - already kgCO2e)
@@ -397,7 +397,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         k: {
           fieldId: "k_31",
           type: "calculated",
-          label: "Target Total Wood Use: Emissions",
+          label: "Target Total Wood Use: Emissions: kgCO2/yr",
           value: "0",
           section: "actualTargetEnergy",
           dependencies: ["h_31", "l_31"], // Excel: =H31*L31 (target wood emissions)
