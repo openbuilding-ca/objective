@@ -1031,7 +1031,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           label: "NBC Upper Limit",
           value: "26",
           section: "climateCalculations",
-          // Static value - NBC acceptable upper limit for cooling (replaces ASHRAE 90.1)
+          dependencies: [], // Static value - NBC acceptable upper limit for cooling (replaces ASHRAE 90.1)
           tooltip: true,
         },
         n: {

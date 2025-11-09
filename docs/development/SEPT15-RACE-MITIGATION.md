@@ -1378,6 +1378,145 @@ Formula Source: FORMULAE.csv + Section 15 registerDependencies()
 
 This enhancement would make the dependency graph a **comprehensive calculation reference** tool, perfect for CTO review and developer understanding.
 
+### **🎨 DEPENDENCY GRAPH VISUALIZATION VS. ORCHESTRATION**
+
+**Issue Identified**: November 2025 - M/N Compliance Pattern Implementation
+
+**Context**: When implementing OBC/NBC compliance indicators (m_23, n_23, m_24, n_24 in S03), a design tension emerged between dependency graph visualization (S17) and calculation orchestration (future Orchestrator.js).
+
+**The Dual-Purpose Problem**:
+
+1. **Visual Dependency Graph (Section 17)**
+   - **Goal**: Help energy modelers understand energy flow logic
+   - **Audience**: Building designers, energy consultants
+   - **Need**: Clean, readable graph showing core energy calculations
+   - **Issue**: M/N compliance fields add visual noise without energy modeling insight
+
+2. **Calculation Orchestration (Orchestrator.js)**
+   - **Goal**: Topological sort for correct execution order
+   - **Audience**: Code execution engine
+   - **Need**: Complete, accurate dependency metadata for ALL calculated fields
+   - **Issue**: Missing M/N dependencies will break topological sort
+
+**Solution: Metadata Categorization + Filtering**
+
+**Field Categories** (implemented via `category` property):
+```javascript
+// Energy model core calculations
+category: "energy"        // d_20, h_23, h_24, d_21, etc.
+
+// Building code compliance checks (M/N columns)
+category: "compliance"    // m_23, n_23, m_24, n_24, etc.
+
+// Carbon calculations
+category: "carbon"        // h_8, k_8, i_39, etc.
+
+// UI/visualization only
+category: "visualization" // chart_data, graph_nodes, etc.
+```
+
+**Implementation Pattern**:
+
+```javascript
+// Section03.js - ALWAYS declare complete dependencies
+m_23: {
+  fieldId: "m_23",
+  type: "calculated",
+  dependencies: ["d_12"],      // ✅ Complete for topological sort
+  category: "compliance",      // 🎨 Tag for S17 filtering
+  label: "OBC Required Heating Setpoint",
+}
+
+m_24: {
+  fieldId: "m_24",
+  type: "calculated",
+  dependencies: [],            // ✅ Explicit empty - static value
+  category: "compliance",      // 🎨 Tag for S17 filtering
+  label: "NBC Upper Limit",
+}
+
+n_23: {
+  fieldId: "n_23",
+  type: "calculated",
+  dependencies: ["h_23", "m_23"], // ✅ Complete for orchestration
+  category: "compliance",         // 🎨 Tag for S17 filtering
+  label: "Heating Setpoint Compliance",
+}
+```
+
+**Section 17 Visualization** (filters by category):
+```javascript
+// Add UI toggle: "Show Compliance Indicators"
+const showCompliance = userPreference || false;
+
+const visibleNodes = allNodes.filter(node => {
+  if (node.category === "compliance" && !showCompliance) {
+    return false; // Hide M/N fields by default for clean energy model view
+  }
+  return true;
+});
+
+renderGraph(visibleNodes); // Clean graph for energy modelers
+```
+
+**Orchestrator.js Calculation** (uses complete data):
+```javascript
+// ALWAYS use complete dependency graph (no filtering)
+const allNodes = collectAllFields(); // Includes energy + compliance + carbon + viz
+const executionOrder = topologicalSort(allNodes); // Correct calculation order
+
+executionOrder.forEach(fieldId => {
+  calculateField(fieldId); // Each field runs once in dependency order
+});
+```
+
+**Key Architectural Principles**:
+
+1. ✅ **Dependencies MUST be complete** in field definitions (source of truth)
+2. ✅ **Visualization can filter** for clarity (presentation layer)
+3. ✅ **Orchestration uses everything** for correctness (execution layer)
+4. ✅ **Categories enable flexibility** (show/hide by purpose)
+
+**Related Work**:
+
+- **ZenMaster.js** (dependency2 branch): Runtime dependency validation tool
+  - Detects typos in dependency declarations (h_79 → i_79 corrections)
+  - Validates dependency completeness before topological sort implementation
+  - Exports dependency graph for analysis: `zen-dependencies-2025-11-08.json`
+
+- **Zen-Observations.md**: Documents ZenMaster findings
+  - 11 dependency typos fixed across S10, S13 (all were adjacent column errors)
+  - 210 nodes, 1544 dependency links traced
+  - M/N compliance fields documented with correct dependencies
+
+- **dependency-zen.md**: Dependency declaration standards
+  - Defines dependencies (what field READS) vs precedents (what fields USE this)
+  - Input fields have NO dependencies (source nodes)
+  - Only calculated fields declare dependencies
+  - Empty array (`dependencies: []`) explicitly marks "calculated but reads nothing"
+
+- **M-N-COMPLIANCE.md**: Implementation pattern guide
+  - 4 compliance patterns with examples
+  - Field definition requirements
+  - Tooltip guidelines
+  - Troubleshooting (e.g., "green X" issue from mode check)
+
+**Status**:
+- ✅ **S03 m_23/n_23/m_24/n_24** implemented with correct dependencies (Nov 2025)
+- 🔄 **ZenMaster validation** ongoing (dependency2 branch)
+- ⏸️ **Category tagging** deferred until Orchestrator.js implementation
+- ⏸️ **S17 filtering** deferred until category schema finalized
+
+**Future Implementation Priority**:
+
+1. ✅ **Fix remaining dependency typos** (ZenMaster findings)
+2. ✅ **Add empty arrays** to static value fields (m_24, etc.)
+3. 🔄 **Validate all dependencies** before topological sort
+4. ⏸️ **Add category property** when implementing Orchestrator.js
+5. ⏸️ **Implement S17 filtering** for clean visualization
+
+**Critical Insight**: This separation of concerns (complete metadata + presentation filtering) enables both human-readable graphs AND machine-executable orchestration without compromising either goal.
+
 ---
 
 **🎯 This document now serves as the authoritative guide for both race condition mitigation AND performance optimization. The 4012-PERFORMANCE-OPTIMIZATION.md guide can be retired.**

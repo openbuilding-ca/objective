@@ -565,7 +565,7 @@ These limitations are **expected and documented**. The GOLDEN RULE applies:
 - `h_24`: Tset Cooling (calculated from OBC) - Dependencies: `["d_12"]` ✅
 - `i_24`: Tset Cooling °F (calculated) - Dependencies: `["h_24", "l_24"]` ✅
 - `l_24`: Cooling Override (editable) - NO dependencies ✅
-- `m_24`: **REFACTORED** - OBC required cooling setpoint (pure occupancy lookup) - Dependencies: `["d_12"]` ✅
+- `m_24`: **REFACTORED** - NBC upper cooling limit (static 26°C) - Dependencies: `[]` ✅
 - `n_24`: **NEW** - Cooling setpoint compliance indicator (✓/✗) - Dependencies: `["h_24", "m_24"]` ✅
 
 #### Codebase Implementation Verification
