@@ -703,6 +703,71 @@ Section03 is a **Climate Foundation Section** that:
 
 ---
 
+## 📋 Section Dependency Mapping Progress (2025-01-09 Update)
+
+### ✅ Completed Sections
+
+#### Section 01: Totals (Dashboard)
+**Status**: ✅ **COMPLETE**
+- Dependencies: Correctly implemented via event listeners
+- All fields consume outputs from S03, S05, S14, S15
+- No changes required - event-driven architecture verified
+
+#### Section 02: Building Information
+**Status**: ✅ **COMPLETE** (2025-01-09)
+- Dependencies: 1 calculated field verified (i_39), 14 user inputs correct
+- Labels: 6 unique labels added for graph visualization
+- All cross-section dependencies properly declared
+
+#### Section 03: Climate Calculations
+**Status**: ✅ **COMPLETE** (2025-01-09)
+- **Dependencies**: All 25+ fields verified against TEUIv3043.csv
+- **Labels**: Complete with unique field labels
+  - m_23: "OBC Required Heating Setpoint"
+  - n_23: "Heating Setpoint Compliance"
+  - m_24: "NBC Upper Limit"
+  - n_24: "Cooling Setpoint Compliance"
+- **Label Pattern Fix**: `cell.label || cell.content || row.label` (Section03.js:1070)
+- **Documentation**: Best practice guide added to dependency-zen.md (lines 257-371)
+- **OBC/NBC Compliance**: M/N column pattern established for regulatory checking
+
+#### Section 04: Actual vs. Target Energy & Carbon
+**Status**: ✅ **COMPLETE** (2025-01-09)
+- **Dependencies**: All 34 calculated fields mapped (rows 27-35, TEUIv3043.csv)
+  - Standard dependencies: 30 fields
+  - Conditional dependencies: 3 fields (h_28, h_30, d_35) using `conditionalDeps`
+  - Dual-fuel logic: h_28 (gas), h_30 (oil) with S07+S13 combination
+  - Mode-aware: d_35 (primary energy) conditional on d_14 utility bills mode
+- **Labels**: All 34 fields with unique, descriptive labels
+  - Column F: "Actual [Fuel] Use: ekWh"
+  - Column G: "Actual [Fuel] Use: Emissions: kgCO2/yr"
+  - Column H: "Target [Fuel] Design Value" or "[Fuel] Use: [units]"
+  - Column J: "Target [Fuel] Use: ekWh"
+  - Column K: "Target [Fuel] Use: Emissions: kgCO2/yr"
+  - Column L: Emission factors (l_27: "Grid Intensity Factor")
+- **Cross-Section Dependencies**: Mapped from S02, S06, S07, S08, S09, S13, S15
+- **getFields() Updated**: Now copies `dependencies` and `conditionalDeps` arrays (Section04.js:1285-1286)
+
+**Commits on dependency2 branch:**
+- d4c245d: Docs: Fix S03 field label pattern + document best practice
+- c2356e5: Feat: Add complete dependency declarations to Section04
+- 8d3f37e: Feat: Add unique field labels to all S04 calculated fields
+- ae7d915: Fix: Add kgCO2/yr units to all emissions field labels
+
+### 🔄 In Progress
+
+- Remaining sections (S05-S18) pending dependency mapping per workplan
+
+### 📝 Key Patterns Established
+
+1. **Label Resolution**: Section-level `getFields()` with `cell.label || cell.content || row.label`
+2. **Conditional Dependencies**: Use `conditionalDeps` array for IF/IFS/XLOOKUP logic
+3. **Cross-Section Links**: Explicitly declare all upstream dependencies
+4. **Dual-State Support**: Include both Target and Reference variants in listeners
+5. **Emissions Units**: Always include "kgCO2/yr" in emission field labels
+
+---
+
 **Next Steps**:
 1. ✅ ~~Fix 10 typos~~ **COMPLETE** (commit 9bdf86a)
 2. ✅ ~~Verify S01 dependencies against Excel CSV~~ **COMPLETE** (All dependencies correctly implemented via event listeners)
