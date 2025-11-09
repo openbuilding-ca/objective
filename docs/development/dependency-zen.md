@@ -254,6 +254,121 @@ m_23: {
 - Column function: "°C" (climate data), "°F" (conversion), "Setpoint" (calculation), "%" (comparison)
 - Final label: "Coldest Days °C", "Heating Setpoint °C", "Heating Setpoint vs Reference %"
 
+### Implementation: Section-Level getFields() Pattern
+
+**ARCHITECTURAL DECISION**: Field labels are resolved at the **section level** during initialization, not at runtime.
+
+**Why Section-Level?**
+- ✅ **Zero runtime overhead** - Label resolution happens once when FieldManager initializes sections
+- ✅ **Correct architectural layer** - Sections own their field definitions
+- ✅ **No core system changes** - Works with existing FieldManager/StateManager
+- ✅ **Simple rollout** - Fix sections incrementally without breaking existing code
+
+**Standard Pattern for All Sections:**
+
+```javascript
+function getFields() {
+  const fields = {};
+
+  Object.values(sectionRows).forEach((row) => {
+    if (!row.cells) return;
+
+    Object.values(row.cells).forEach((cell) => {
+      if (cell.fieldId && cell.type) {
+        fields[cell.fieldId] = {
+          type: cell.type,
+          // ✅ CORRECT: Check cell.label first, then cell.content, finally row.label
+          label: cell.label || cell.content || row.label,
+          defaultValue: cell.value || "",
+          section: cell.section || "sectionName",
+        };
+
+        // Copy additional properties...
+        if (cell.dependencies) fields[cell.fieldId].dependencies = cell.dependencies;
+      }
+    });
+  });
+
+  return fields;
+}
+```
+
+**Label Resolution Priority:**
+1. **`cell.label`** - Use if field has explicit unique label (e.g., m_24: "NBC Upper Limit")
+2. **`cell.content`** - Use if cell is a label cell with display text
+3. **`row.label`** - Fallback to row's inherited label (e.g., "Hottest Days (Location Specific)")
+
+**Example: Row 24 in Section 03**
+
+```javascript
+24: {
+  id: "L.3.2",
+  label: "Hottest Days (Location Specific)",  // Row-level label
+  cells: {
+    m: {
+      fieldId: "m_24",
+      type: "calculated",
+      label: "NBC Upper Limit",  // ✅ Explicit unique label
+      value: "26",
+      dependencies: [],  // Static NBC cooling limit
+    },
+    n: {
+      fieldId: "n_24",
+      type: "calculated",
+      label: "Cooling Setpoint Compliance",  // ✅ Explicit unique label
+      value: "✓",
+      dependencies: ["h_24", "m_24"],
+    },
+  },
+}
+```
+
+**Result in Dependency Graph:**
+- m_24 displays as: **"NBC Upper Limit: 26.00"**
+- n_24 displays as: **"Cooling Setpoint Compliance: ✓"**
+
+NOT the row label "Hottest Days (Location Specific)"!
+
+**Pattern Status by Section (as of 2025-01-09):**
+
+| Section | Pattern | Status |
+|---------|---------|--------|
+| Section02 | `cell.label \|\| row.label` | ✅ Good |
+| Section03 | `cell.label \|\| cell.content \|\| row.label` | ✅ Fixed (2025-01-09) |
+| Section04 | `cell.label \|\| row.label` | ✅ Good |
+| Section05 | `cell.content \|\| row.label` | ⚠️ Buggy - missing cell.label |
+| Section06 | `cell.label \|\| row.label` | ✅ Good |
+| Section07 | `cell.label \|\| row.label` | ✅ Good |
+| Section08 | `cell.label \|\| row.label` | ✅ Good |
+| Section09 | `cell.label \|\| row.label` | ✅ Good |
+| Section10 | `cell.label \|\| row.label` | ✅ Good |
+| Section12 | `cell.label \|\| row.label` | ✅ Good |
+| Section13 | `cell.label \|\| row.label` | ✅ Good |
+| Section14 | `cell.label \|\| row.label` | ✅ Good |
+| Section15 | `cell.label \|\| row.label` | ✅ Good |
+
+**TODO**: Fix Section05 to use the standard pattern: `cell.label || cell.content || row.label`
+
+**Why NOT FieldManager or StateManager?**
+
+❌ **FieldManager-level** would require:
+- Extra iteration through all fields (performance overhead)
+- FieldManager fixing section data (violates separation of concerns)
+- Harder debugging (label source becomes opaque)
+
+❌ **StateManager-level** would require:
+- Running on every graph refresh (runtime performance cost)
+- Only fixes dependency graph, not UI labels used elsewhere
+- Wrong architectural layer (StateManager shouldn't handle display labels)
+
+**The section-level approach is optimal** because field definitions flow through the system once at initialization:
+1. Section `getFields()` → returns field definitions with resolved labels
+2. FieldManager collects all section fields into `allFields`
+3. StateManager's `exportDependencyGraph()` uses `FieldManager.getField(id).label`
+4. Dependency.js displays nodes using `node.label`
+
+No runtime cost, no architectural violations, clean separation of concerns.
+
 ---
 
 ## The Vision: Truth Over Intention
