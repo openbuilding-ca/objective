@@ -275,12 +275,13 @@ window.TEUI.SectionModules.sect05 = (function () {
         "d_40",
         "d_41",
         "m_38",
-        "l_39",
-        "l_40",
-        "l_41",
+        "m_39",
+        "m_40",
+        "m_41", // M column: compliance percentages
+        "n_38",
         "n_39",
         "n_40",
-        "n_41", // L/M percentage and status columns
+        "n_41", // N column: status checkmarks
       ];
       console.log(
         `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`,
@@ -307,8 +308,8 @@ window.TEUI.SectionModules.sect05 = (function () {
           if (value !== null && value !== undefined) {
             // Use appropriate formatting - percentages and checkmarks don't need number formatting
             let formattedValue;
-            if (fieldId.startsWith("l_")) {
-              // Percentage fields - value should already be formatted
+            if (fieldId.startsWith("m_")) {
+              // Percentage fields in column M - value should already be formatted
               formattedValue = value;
             } else if (fieldId.startsWith("n_")) {
               // Status checkmark fields
@@ -393,6 +394,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           type: "calculated",
           value: "0.00",
           section: "emissions",
+          label: "GHGI Operational (B6) Emissions: MT CO2e/yr",
         },
         e: { content: "MT CO2e/yr" }, // Unit for d_38
         f: { content: "E.1.4", classes: ["label-prefix"] }, // Label for i_38 based on Excel G38 position
@@ -401,6 +403,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           type: "calculated",
           value: "0.00",
           section: "emissions",
+          label: "GHGI Annual (B6) Intensity: kgCO2e/m²/yr",
         },
         h: { content: "" }, // Unit for g_38 removed, now spacer
         i: {
@@ -408,6 +411,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           type: "calculated",
           value: "0.00",
           section: "emissions",
+          label: "GHGI Lifetime (B6) Intensity: kgCO2e/m²",
         },
         j: {
           // Changed from calculated field to static text label, matching Excel J38
@@ -415,14 +419,24 @@ window.TEUI.SectionModules.sect05 = (function () {
           classes: ["descriptive-text", "text-center"], // Added text-center for potential better fit
         },
         k: { content: "" }, // Previously "(Lifetime Emissions)", now covered by j_38 label
-        l: { content: "", classes: ["spacer"] }, // Keep as spacer or remove if not needed
+        l: { content: "", classes: ["spacer"] },
         m: {
           fieldId: "m_38",
           type: "calculated",
           value: "N/A",
           section: "emissions",
+          dependencies: [], // Currently returns hardcoded "N/A" or "100%"
+          label: "Operational (B6) Compliance: %",
         },
-        // n: {} // Column N can be omitted if empty
+        n: {
+          fieldId: "n_38",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+          section: "emissions",
+          dependencies: ["m_38"],
+          label: "Operational Compliance Status",
+        },
       },
     },
 
@@ -437,6 +451,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           fieldId: "d_39",
           type: "dropdown",
           dropdownId: "dd_d_39",
+          label: "Typology Selector",
           value: "Pt.3 Mass Timber",
           section: "emissions",
           tooltip: true, // Building Typology
@@ -459,25 +474,30 @@ window.TEUI.SectionModules.sect05 = (function () {
           type: "calculated",
           value: "350.00",
           section: "emissions",
-          dependencies: ["d_39", "i_41"], // i_41 is needed if d_39 is "Modelled Value"
+          dependencies: ["d_39"],
+          conditionalDeps: ["i_41"], // Only read when d_39="Modelled Value"
+          label: "Typology-Based Cap (A1-3): kgCO2e/m²",
         },
         j: { content: "" }, // Unit for i_39 removed, now spacer
         k: { content: "", classes: ["spacer"] }, // Spacer
-        l: {
-          fieldId: "l_39",
-          type: "calculated",
-          value: "0%",
-          section: "emissions",
-          dependencies: ["i_39", "i_40", "d_40", "i_41"], // Broad dependencies for percentage
-        },
+        l: { content: "", classes: ["spacer"] },
         m: {
+          fieldId: "m_39",
+          type: "calculated",
+          value: "N/A",
+          section: "emissions",
+          dependencies: ["i_39", "ref_i_39"], // Target / Reference ratio
+          label: "Typology (A1-3) Compliance: %",
+        },
+        n: {
           fieldId: "n_39",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
           section: "emissions",
-          dependencies: ["l_39"],
-        }, // Status checkmark in M
+          dependencies: ["m_39"],
+          label: "Typology Compliance Status",
+        },
       },
     },
 
@@ -494,6 +514,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           value: "0.00",
           section: "emissions",
           dependencies: ["i_41", "d_106"],
+          label: "Total Embedded Carbon (A1-3): MT CO2e",
         },
         e: { content: "MT CO2e/Service Life" },
         f: { content: "S.4", classes: ["label-prefix"] },
@@ -505,23 +526,27 @@ window.TEUI.SectionModules.sect05 = (function () {
           value: "0.00",
           section: "emissions",
           dependencies: ["d_16"],
+          label: "Embodied Carbon Target (A1-3): kgCO2e/m²",
         },
         j: { content: "" }, // Unit for i_40 removed, now spacer
         k: { content: "", classes: ["spacer"] },
-        l: {
-          fieldId: "l_40",
-          type: "calculated",
-          value: "0%",
-          section: "emissions",
-          dependencies: ["i_39", "i_40", "d_40", "i_41"],
-        },
+        l: { content: "", classes: ["spacer"] },
         m: {
+          fieldId: "m_40",
+          type: "calculated",
+          value: "N/A",
+          section: "emissions",
+          dependencies: ["d_40", "ref_d_40"], // Target / Reference ratio
+          label: "Embedded (A1-3) Compliance: %",
+        },
+        n: {
           fieldId: "n_40",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
           section: "emissions",
-          dependencies: ["l_40"],
+          dependencies: ["m_40"],
+          label: "Embedded Compliance Status",
         },
       },
     },
@@ -539,6 +564,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           value: "0.00",
           section: "emissions",
           dependencies: ["ref_d_38", "d_38", "h_13"], // ref_d_38 is a placeholder concept
+          label: "Lifetime Avoided (B6) Emissions: MT CO2e",
         },
         e: { content: "MT CO2e" },
         f: { content: "E.3.4", classes: ["label-prefix"] },
@@ -551,25 +577,29 @@ window.TEUI.SectionModules.sect05 = (function () {
           section: "emissions",
           classes: ["user-input"],
           tooltip: true, // Externally Defined Value
+          label: "Modelled Embodied Carbon (A1-3): kgCO2e/m²",
           // ✅ IMPLEMENTED (Oct 1, 2025): Reference mode i_41 = i_39 (typology-based cap)
           // Target mode: User-defined modelled value (345.82 default)
           // Reference mode: Calculated from typology (Steel/Mass Timber/Concrete)
           // Field automatically ghosts in Reference mode (updateCalculatedDisplayValues)
         },
-        l: {
-          fieldId: "l_41",
-          type: "calculated",
-          value: "0%",
-          section: "emissions",
-          dependencies: ["i_39", "i_40", "d_40", "i_41"],
-        },
+        l: { content: "", classes: ["spacer"] },
         m: {
+          fieldId: "m_41",
+          type: "calculated",
+          value: "N/A",
+          section: "emissions",
+          dependencies: ["i_41", "ref_i_41"], // Target / Reference ratio
+          label: "Modelled (A1-3) Compliance: %",
+        },
+        n: {
           fieldId: "n_41",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
           section: "emissions",
-          dependencies: ["l_41"],
+          dependencies: ["m_41"],
+          label: "Modelled Compliance Status",
         },
       },
     },
@@ -924,39 +954,31 @@ window.TEUI.SectionModules.sect05 = (function () {
   }
 
   /**
-   * Calculate percentage compliance (L columns) and status (M columns)
+   * Calculate percentage compliance (M columns) comparing Target vs Reference
+   * M columns show: Target value / Reference value (as percentage)
    */
   function calculatePercentages(isReferenceCalculation = false) {
-    // Get values for percentage calculations
-    const i_39_value = isReferenceCalculation
-      ? window.TEUI.StateManager.getValue("ref_i_39") || 0
-      : window.TEUI.StateManager.getValue("i_39") || 0;
-    const i_40_value = isReferenceCalculation
-      ? window.TEUI.StateManager.getValue("ref_i_40") || 0
-      : window.TEUI.StateManager.getValue("i_40") || 0;
-    const d_40_value = isReferenceCalculation
-      ? window.TEUI.StateManager.getValue("ref_d_40") || 0
-      : window.TEUI.StateManager.getValue("d_40") || 0;
-    const i_41_value = getSectionValue("i_41", isReferenceCalculation);
+    // ALWAYS use Target numerators and Reference denominators
+    // Target values (numerators)
+    const target_i_39 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_39")) || 350;
+    const target_i_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_40"));
+    const target_d_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_40")) || 0;
+    const target_i_41 = window.TEUI.parseNumeric(getSectionValue("i_41", false)) || 0;
 
-    // Parse numeric values
-    const typologyCap = window.TEUI.parseNumeric(i_39_value) || 350;
-    const carbonTarget = window.TEUI.parseNumeric(i_40_value);
-    const totalEmitted = window.TEUI.parseNumeric(d_40_value) || 0;
-    const modelledValue = window.TEUI.parseNumeric(i_41_value) || 0;
+    // Reference values (denominators)
+    const ref_i_39 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_39")) || 650;
+    const ref_i_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_40"));
+    const ref_d_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_40")) || 0;
+    const ref_i_41 = window.TEUI.parseNumeric(getSectionValue("i_41", true)) || 0;
 
-    // Handle N/A case
-    if (carbonTarget === "N/A" || isNaN(carbonTarget)) {
-      const naFields = ["l_39", "l_40", "l_41"];
-      const okFields = ["n_39", "n_40", "n_41"];
+    // Handle N/A case for i_40 (carbonTarget)
+    if (target_i_40 === "N/A" || isNaN(target_i_40)) {
+      const naFields = ["m_39", "m_40", "m_41"];
+      const okFields = ["n_38", "n_39", "n_40", "n_41"];
 
       naFields.forEach((fieldId) => {
         if (isReferenceCalculation) {
-          window.TEUI.StateManager.setValue(
-            `ref_${fieldId}`,
-            "N/A",
-            "calculated",
-          );
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "N/A", "calculated");
         } else {
           window.TEUI.StateManager.setValue(fieldId, "N/A", "calculated");
         }
@@ -964,29 +986,37 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       okFields.forEach((fieldId) => {
         if (isReferenceCalculation) {
-          window.TEUI.StateManager.setValue(
-            `ref_${fieldId}`,
-            "✓",
-            "calculated",
-          );
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "✓", "calculated");
         } else {
           window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
         }
       });
+
+      // m_38 when N/A
+      const m_38_result = isReferenceCalculation ? "100%" : "N/A";
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue("ref_m_38", m_38_result, "calculated");
+      } else {
+        window.TEUI.StateManager.setValue("m_38", m_38_result, "calculated");
+      }
       return;
     }
 
-    // Calculate percentages (as fractions for proper formatting)
-    const typologyPercent = typologyCap !== 0 ? carbonTarget / typologyCap : 0;
-    const targetPercent = totalEmitted !== 0 ? carbonTarget / totalEmitted : 0;
-    const modelledPercent =
-      carbonTarget !== 0 ? modelledValue / carbonTarget : 0;
+    // Calculate percentages: Target / Reference (lower is better for carbon)
+    // m_39: target_i_39 / ref_i_39 (Typology Cap compliance)
+    const m_39_percent = ref_i_39 !== 0 ? target_i_39 / ref_i_39 : 0;
 
-    // Store percentage results
+    // m_40: target_d_40 / ref_d_40 (Total Emitted compliance)
+    const m_40_percent = ref_d_40 !== 0 ? target_d_40 / ref_d_40 : 0;
+
+    // m_41: target_i_41 / ref_i_41 (Modelled Value compliance)
+    const m_41_percent = ref_i_41 !== 0 ? target_i_41 / ref_i_41 : 0;
+
+    // Store percentage results in M column
     const percentFields = [
-      { field: "l_39", value: typologyPercent },
-      { field: "l_40", value: targetPercent },
-      { field: "l_41", value: modelledPercent },
+      { field: "m_39", value: m_39_percent },
+      { field: "m_40", value: m_40_percent },
+      { field: "m_41", value: m_41_percent },
     ];
 
     percentFields.forEach(({ field, value }) => {
@@ -995,32 +1025,72 @@ window.TEUI.SectionModules.sect05 = (function () {
         : Math.round(value * 100) + "%";
 
       if (isReferenceCalculation) {
-        window.TEUI.StateManager.setValue(
-          `ref_${field}`,
-          formattedValue,
-          "calculated",
-        );
+        window.TEUI.StateManager.setValue(`ref_${field}`, formattedValue, "calculated");
       } else {
         window.TEUI.StateManager.setValue(field, formattedValue, "calculated");
       }
     });
 
-    // Set checkmarks for status columns
-    const statusFields = ["n_39", "n_40", "n_41"];
-    statusFields.forEach((fieldId) => {
-      if (isReferenceCalculation) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, "✓", "calculated");
-      } else {
-        window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
-      }
-    });
-
-    // Simple m_38 compliance
+    // m_38 compliance (still hardcoded for now)
     const m_38_result = isReferenceCalculation ? "100%" : "N/A";
     if (isReferenceCalculation) {
       window.TEUI.StateManager.setValue("ref_m_38", m_38_result, "calculated");
     } else {
       window.TEUI.StateManager.setValue("m_38", m_38_result, "calculated");
+    }
+
+    // Set checkmarks/X for status columns (N column) with CSS styling
+    // ✓ (pass) if ≤100%, ✗ (fail) if >100%
+    const statusChecks = [
+      { field: "n_38", percentField: "m_38" },
+      { field: "n_39", percentField: "m_39" },
+      { field: "n_40", percentField: "m_40" },
+      { field: "n_41", percentField: "m_41" },
+    ];
+
+    statusChecks.forEach(({ field, percentField }) => {
+      // Get the percentage field value to check pass/fail
+      const percentValue = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue(`ref_${percentField}`)
+        : window.TEUI.StateManager.getValue(percentField);
+
+      // Determine pass/fail based on percentage
+      let status, isCompliant;
+      if (percentValue === "N/A" || percentValue === null || percentValue === undefined) {
+        status = "✓"; // Pass by default if N/A
+        isCompliant = true;
+      } else {
+        // Parse percentage (remove % sign and convert to number)
+        const numericPercent = parseFloat(String(percentValue).replace("%", ""));
+        isCompliant = numericPercent <= 100;
+        status = isCompliant ? "✓" : "✗";
+      }
+
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(`ref_${field}`, status, "calculated");
+      } else {
+        window.TEUI.StateManager.setValue(field, status, "calculated");
+        // Apply CSS class for visual styling (only in Target mode per M-N-COMPLIANCE.md)
+        setElementClass(field, isCompliant);
+      }
+    });
+  }
+
+  /**
+   * Apply CSS class to DOM element for compliance indicators (M-N-COMPLIANCE.md pattern)
+   * Only applies in Target mode - Reference mode should not override Target's visual indicators
+   * @param {string} fieldId - The field ID to target
+   * @param {boolean} isCompliant - True for checkmark (green), false for warning (red)
+   */
+  function setElementClass(fieldId, isCompliant) {
+    // ⚠️ CRITICAL: Only apply styling in Target mode
+    // Without this check, Reference calculations will overwrite Target's compliance styling
+    if (ModeManager.currentMode !== "target") return;
+
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      element.classList.add(isCompliant ? "checkmark" : "warning");
     }
   }
 

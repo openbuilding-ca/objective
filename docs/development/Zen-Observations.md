@@ -748,15 +748,42 @@ Section03 is a **Climate Foundation Section** that:
 - **Cross-Section Dependencies**: Mapped from S02, S06, S07, S08, S09, S13, S15
 - **getFields() Updated**: Now copies `dependencies` and `conditionalDeps` arrays (Section04.js:1285-1286)
 
+#### Section 05: CO2e Emissions
+**Status**: ✅ **COMPLETE** (2025-11-09)
+- **Dependencies**: All 15 calculated fields mapped (rows 38-41, TEUIv3043.csv)
+  - Core emissions: d_38, g_38, i_38 (GHGI B6 operational)
+  - Typology caps: d_39, i_39 (A1-3 embodied carbon)
+  - Embedded carbon: d_40, i_40 (A1-3)
+  - Avoided emissions: d_41, i_41
+  - Compliance percentages: m_38, m_39, m_40, m_41 (Target/Reference ratios)
+  - Compliance status: n_38, n_39, n_40, n_41 (✓/✗ with CSS styling)
+  - **conditionalDeps**: i_39 reads i_41 only when d_39="Modelled Value"
+- **Labels**: All 15 fields with unique, descriptive labels including scope indicators
+  - (B6) scope for operational emissions
+  - (A1-3) scope for embodied carbon
+  - Example: "GHGI Operational (B6) Emissions: MT CO2e/yr"
+  - Example: "Typology-Based Cap (A1-3): kgCO2e/m²"
+- **Column Refactor**: L/M/N columns now match standard pattern
+  - Column L: Empty spacers (removed old l_39/l_40/l_41)
+  - Column M: Compliance percentages using Target/Reference ratios
+  - Column N: Pass/fail indicators with `.checkmark`/`.warning` CSS classes
+- **M-N Compliance Pattern**: Follows M-N-COMPLIANCE.md guide
+  - `setElementClass()` helper with critical mode check
+  - ✓ (green) for ≤100%, ✗ (red) for >100%
+  - Target/Reference comparison (e.g., 350/650 = 54%)
+- **Cross-State Dependencies**: Uses both Target and Reference values (e.g., `["i_39", "ref_i_39"]`)
+
 **Commits on dependency2 branch:**
 - d4c245d: Docs: Fix S03 field label pattern + document best practice
 - c2356e5: Feat: Add complete dependency declarations to Section04
 - 8d3f37e: Feat: Add unique field labels to all S04 calculated fields
 - ae7d915: Fix: Add kgCO2/yr units to all emissions field labels
+- d496dd7: Docs: Update Zen-Observations.md + move REF-SWITCH.md to history
+- [pending]: Feat: S05 complete dependency mapping + L/M/N refactor + labels
 
 ### 🔄 In Progress
 
-- Remaining sections (S05-S18) pending dependency mapping per workplan
+- Remaining sections (S06-S18) pending dependency mapping per workplan
 
 ### 📝 Key Patterns Established
 
