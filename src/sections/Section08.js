@@ -293,6 +293,7 @@ window.TEUI.SectionModules.sect08 = (function () {
   function calculateAll() {
     calculateWoodOffset();
     calculateAirQualityStatus();
+    ModeManager.updateCalculatedDisplayValues(); // ✅ Update DOM after calculations
   }
 
   function calculateWoodOffset() {
@@ -796,12 +797,12 @@ window.TEUI.SectionModules.sect08 = (function () {
     if (window.TEUI?.StateManager) {
       // Listen for S04's actual wood use (d_31)
       window.TEUI.StateManager.addListener("d_31", () => {
-        setTimeout(() => calculateWoodOffset(), 100); // Small delay to ensure S04 calculations complete
+        setTimeout(() => calculateAll(), 100); // Small delay to ensure S04 calculations complete
       });
 
       // Listen for S04's target wood emissions (k_31)
       window.TEUI.StateManager.addListener("k_31", () => {
-        setTimeout(() => calculateWoodOffset(), 100); // Small delay to ensure S04 calculations complete
+        setTimeout(() => calculateAll(), 100); // Small delay to ensure S04 calculations complete
       });
 
       console.log("[S08] S04 listeners setup complete");
