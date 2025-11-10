@@ -2400,20 +2400,14 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // 4. Reference Standard (d_13 / ref_d_13)
     sm.addListener("d_13", () => {
-      // Update Reference State with new standard values
-      const newStandard = sm.getValue("d_13");
-      if (newStandard && ReferenceState.onReferenceStandardChange) {
-        ReferenceState.onReferenceStandardChange(newStandard);
-        if (ModeManager.currentMode === "reference") {
-          ModeManager.refreshUI();
-        }
-      }
+      // Target standard changed - only affects Target model calculations
+      // DO NOT contaminate ReferenceState here!
       calculateTargetModel();
       updateAllReferenceIndicators();
       ModeManager.updateCalculatedDisplayValues();
     });
     sm.addListener("ref_d_13", () => {
-      // Reference standard changes
+      // Reference standard changed - update ReferenceState with new ReferenceValues
       const newStandard = sm.getValue("ref_d_13");
       if (newStandard && ReferenceState.onReferenceStandardChange) {
         ReferenceState.onReferenceStandardChange(newStandard);
