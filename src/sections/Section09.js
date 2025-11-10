@@ -320,7 +320,7 @@ window.TEUI.SectionModules.sect09 = (function () {
 
       // Update calculated fields: Show Reference results in Reference mode, Target results in Target mode
       const calculatedFields = [
-        "f_64",
+        "g_64",
         "i_63",
         "h_64",
         "i_64",
@@ -391,7 +391,7 @@ window.TEUI.SectionModules.sect09 = (function () {
 
       // All calculated fields that need DOM updates
       const calculatedFields = [
-        "f_64",
+        "g_64",
         "i_63",
         "h_64",
         "i_64",
@@ -582,7 +582,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       "d_63",
       "g_63",
       "d_64",
-      "f_64",
+      "g_64",
       "i_63",
       "d_65",
       "d_66",
@@ -911,7 +911,7 @@ window.TEUI.SectionModules.sect09 = (function () {
         e: { content: "G.1.4", classes: ["label-prefix"] },
         f: { content: "Watts/pp (S+L)", classes: ["label-main"] },
         g: {
-          fieldId: "f_64",
+          fieldId: "g_64",
           type: "calculated",
           value: "117",
           section: "occupantInternalGains",
@@ -922,14 +922,14 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "64,696.02",
           section: "occupantInternalGains",
-          dependencies: ["f_64", "d_63", "g_63"],
+          dependencies: ["g_64", "d_63", "g_63"],
         },
         i: {
           fieldId: "i_64",
           type: "calculated",
           value: "43,426.10",
           section: "occupantInternalGains",
-          dependencies: ["h_64"],
+          dependencies: ["h_64", "m_19"],
         },
         j: {
           fieldId: "j_64",
@@ -943,7 +943,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "21,269.93",
           section: "occupantInternalGains",
-          dependencies: ["h_64"],
+          dependencies: ["h_64", "m_19"],
         },
         l: {
           fieldId: "l_64",
@@ -968,20 +968,21 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "7",
           section: "occupantInternalGains",
           tooltip: true, // Default determined by Occupancy
+          conditionalDeps: ["d_13", "d_12"],
         },
         h: {
           fieldId: "h_65",
           type: "calculated",
           value: "43,757.95",
           section: "occupantInternalGains",
-          dependencies: ["d_65", "h_15"],
+          dependencies: ["i_65", "k_65"],
         },
         i: {
           fieldId: "i_65",
           type: "calculated",
           value: "29,371.78",
           section: "occupantInternalGains",
-          dependencies: ["h_65"],
+          dependencies: ["d_65", "i_63", "h_15", "m_19"],
         },
         j: {
           fieldId: "j_65",
@@ -995,7 +996,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "14,386.18",
           section: "occupantInternalGains",
-          dependencies: ["h_65"],
+          dependencies: ["d_65", "i_63", "h_15", "m_19"],
         },
         l: {
           fieldId: "l_65",
@@ -1009,6 +1010,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "100%",
           section: "occupantInternalGains",
+          dependencies: ["d_65", "ref_d_65"],
         },
         n: {
           fieldId: "n_65",
@@ -1016,6 +1018,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "✓",
           section: "occupantInternalGains",
           classes: ["checkmark"],
+          dependencies: ["m_65"],
         },
       },
     },
@@ -1040,14 +1043,14 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "9,376.70",
           section: "occupantInternalGains",
-          dependencies: ["d_66", "h_15"],
+          dependencies: ["i_66", "k_66"],
         },
         i: {
           fieldId: "i_66",
           type: "calculated",
           value: "6,293.95",
           section: "occupantInternalGains",
-          dependencies: ["h_66"],
+          dependencies: ["d_66", "i_63", "h_15", "m_19"],
         },
         j: {
           fieldId: "j_66",
@@ -1061,7 +1064,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "3,082.75",
           section: "occupantInternalGains",
-          dependencies: ["h_66"],
+          dependencies: ["d_66", "i_63", "h_15", "m_19"],
         },
         l: {
           fieldId: "l_66",
@@ -1075,6 +1078,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "133%",
           section: "occupantInternalGains",
+          dependencies: ["d_66", "ref_d_66"],
         },
         n: {
           fieldId: "n_66",
@@ -1082,6 +1086,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "✓",
           section: "occupantInternalGains",
           classes: ["checkmark"],
+          dependencies: ["m_66"],
         },
       },
     },
@@ -1099,6 +1104,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "5.00",
           section: "occupantInternalGains",
           tooltip: true, // Default Determined by Occupancy
+          conditionalDeps: ["d_12", "g_67", "d_68"],
         },
         e: { content: "P.3.3", classes: ["label-prefix"] },
         f: { content: "Equipment Spec", classes: ["label-main"] },
@@ -1119,14 +1125,14 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "31,255.68",
           section: "occupantInternalGains",
-          dependencies: ["d_67", "g_67", "h_15"],
+          dependencies: ["d_67", "i_63", "h_15"],
         },
         i: {
           fieldId: "i_67",
           type: "calculated",
           value: "20,979.84",
           section: "occupantInternalGains",
-          dependencies: ["h_67"],
+          dependencies: ["h_67", "m_19"],
         },
         j: {
           fieldId: "j_67",
@@ -1140,7 +1146,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "10,275.84",
           section: "occupantInternalGains",
-          dependencies: ["h_67"],
+          dependencies: ["h_67", "m_19"],
         },
         l: {
           fieldId: "l_67",
@@ -1154,6 +1160,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "100%",
           section: "occupantInternalGains",
+          dependencies: ["g_67", "ref_g_67"],
         },
         n: {
           fieldId: "n_67",
@@ -1161,6 +1168,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "✓",
           section: "occupantInternalGains",
           classes: ["checkmark"],
+          dependencies: ["m_67"],
         },
       },
     },
@@ -1543,7 +1551,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Get values using parseNumeric
     const occupants = window.TEUI.parseNumeric(getFieldValueModeAware("d_63"));
     const dailyHours = window.TEUI.parseNumeric(getFieldValueModeAware("g_63"));
-    const watts = window.TEUI.parseNumeric(getFieldValueModeAware("f_64"));
+    const watts = window.TEUI.parseNumeric(getFieldValueModeAware("g_64"));
 
     // Calculate annual energy
     const annualHours = dailyHours * 365;
@@ -2046,7 +2054,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     // console.log(`[S09DB] calculateModel: annualHours = ${dailyHours} * 365 = ${annualHours}`);
 
     // Store these preliminary results back into the state object
-    state.setValue("f_64", activityWatts.toString());
+    state.setValue("g_64", activityWatts.toString());
     state.setValue("i_63", annualHours.toString());
 
     // --- Main Energy Calculations ---
@@ -2114,7 +2122,7 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // --- Assemble All Results ---
     const results = {
-      f_64: activityWatts,
+      g_64: activityWatts,
       i_63: annualHours,
       h_64: occupantEnergy,
       i_64: occupantEnergy * heatingRatio,

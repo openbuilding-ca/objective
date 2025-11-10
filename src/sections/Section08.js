@@ -712,7 +712,7 @@ window.TEUI.SectionModules.sect08 = (function () {
           fieldId: "m_59",
           type: "calculated",
           value: "0%",
-          dependencies: ["d_59"],
+          dependencies: ["d_59", "i_59"],
           label: "RH Compliance: %",
         },
         n: {
