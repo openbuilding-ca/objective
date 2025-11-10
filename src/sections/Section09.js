@@ -856,6 +856,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           classes: ["user-input"],
           tooltip: true, // Occupants
+          label: "Occupant Count",
         },
         e: { content: "G.1.3", classes: ["label-prefix"] },
         f: { content: "Occupied Hrs/Day", classes: ["label-main"] },
@@ -866,6 +867,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "12",
           section: "occupantInternalGains",
           tooltip: true, // Occupied Hours
+          label: "Occupied Hours/Day",
           options: [
             { value: "0", name: "0" },
             { value: "8", name: "8" },
@@ -882,6 +884,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           dependencies: ["g_63"],
           classes: ["text-right"],
+          label: "Annual Occupied Hours",
         },
         j: { content: "/ 8760", classes: ["text-left"] },
       },
@@ -901,6 +904,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "Normal",
           section: "occupantInternalGains",
           tooltip: true, // Average Daily Metabolic Rate
+          label: "Occupant Activity Level",
           options: [
             { value: "Relaxed", name: "Relaxed" },
             { value: "Normal", name: "Normal" },
@@ -916,6 +920,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "117",
           section: "occupantInternalGains",
           dependencies: ["d_64"],
+          label: "Occupant Heat Output: W/person",
         },
         h: {
           fieldId: "h_64",
@@ -923,6 +928,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "64,696.02",
           section: "occupantInternalGains",
           dependencies: ["g_64", "d_63", "g_63"],
+          label: "Total Occupant Energy: kWh/yr",
         },
         i: {
           fieldId: "i_64",
@@ -930,6 +936,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "43,426.10",
           section: "occupantInternalGains",
           dependencies: ["h_64", "m_19"],
+          label: "Occupant Heating Gain: kWh/yr",
         },
         j: {
           fieldId: "j_64",
@@ -937,6 +944,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "43.39%",
           section: "occupantInternalGains",
           dependencies: ["i_64", "i_71"],
+          label: "Occupant Heating Gain: %",
         },
         k: {
           fieldId: "k_64",
@@ -944,6 +952,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "21,269.93",
           section: "occupantInternalGains",
           dependencies: ["h_64", "m_19"],
+          label: "Occupant Cooling Gain: kWh/yr",
         },
         l: {
           fieldId: "l_64",
@@ -951,6 +960,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "43.39%",
           section: "occupantInternalGains",
           dependencies: ["k_64", "k_71"],
+          label: "Occupant Cooling Gain: %",
         },
       },
     },
@@ -969,6 +979,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           tooltip: true, // Default determined by Occupancy
           conditionalDeps: ["d_13", "d_12"],
+          label: "Plug Load Density: W/m²",
         },
         h: {
           fieldId: "h_65",
@@ -976,6 +987,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "43,757.95",
           section: "occupantInternalGains",
           dependencies: ["i_65", "k_65"],
+          label: "Plug Load Energy: kWh/yr",
         },
         i: {
           fieldId: "i_65",
@@ -983,6 +995,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "29,371.78",
           section: "occupantInternalGains",
           dependencies: ["d_65", "i_63", "h_15", "m_19"],
+          label: "Plug Load Heating Gain: kWh/yr",
         },
         j: {
           fieldId: "j_65",
@@ -990,6 +1003,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "29.35%",
           section: "occupantInternalGains",
           dependencies: ["i_65", "i_71"],
+          label: "Plug Load Heating Gain: %",
         },
         k: {
           fieldId: "k_65",
@@ -997,6 +1011,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "14,386.18",
           section: "occupantInternalGains",
           dependencies: ["d_65", "i_63", "h_15", "m_19"],
+          label: "Plug Load Cooling Gain: kWh/yr",
         },
         l: {
           fieldId: "l_65",
@@ -1004,6 +1019,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "29.35%",
           section: "occupantInternalGains",
           dependencies: ["k_65", "k_71"],
+          label: "Plug Load Cooling Gain: %",
         },
         m: {
           fieldId: "m_65",
@@ -1011,6 +1027,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "100%",
           section: "occupantInternalGains",
           dependencies: ["d_65", "ref_d_65"],
+          label: "Plug Load Compliance: %",
         },
         n: {
           fieldId: "n_65",
@@ -1019,6 +1036,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           classes: ["checkmark"],
           dependencies: ["m_65"],
+          label: "Plug Load Compliance Status",
         },
       },
     },
@@ -1037,6 +1055,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           classes: ["user-input"],
           tooltip: true, // Default is 1.5
+          label: "Lighting Density: W/m²",
         },
         h: {
           fieldId: "h_66",
@@ -1044,6 +1063,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "9,376.70",
           section: "occupantInternalGains",
           dependencies: ["i_66", "k_66"],
+          label: "Lighting Energy: kWh/yr",
         },
         i: {
           fieldId: "i_66",
@@ -1051,6 +1071,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "6,293.95",
           section: "occupantInternalGains",
           dependencies: ["d_66", "i_63", "h_15", "m_19"],
+          label: "Lighting Heating Gain: kWh/yr",
         },
         j: {
           fieldId: "j_66",
@@ -1058,6 +1079,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "6.29%",
           section: "occupantInternalGains",
           dependencies: ["i_66", "i_71"],
+          label: "Lighting Heating Gain: %",
         },
         k: {
           fieldId: "k_66",
@@ -1065,6 +1087,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "3,082.75",
           section: "occupantInternalGains",
           dependencies: ["d_66", "i_63", "h_15", "m_19"],
+          label: "Lighting Cooling Gain: kWh/yr",
         },
         l: {
           fieldId: "l_66",
@@ -1072,6 +1095,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "6.29%",
           section: "occupantInternalGains",
           dependencies: ["k_66", "k_71"],
+          label: "Lighting Cooling Gain: %",
         },
         m: {
           fieldId: "m_66",
@@ -1079,6 +1103,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "133%",
           section: "occupantInternalGains",
           dependencies: ["d_66", "ref_d_66"],
+          label: "Lighting Compliance: %",
         },
         n: {
           fieldId: "n_66",
@@ -1087,6 +1112,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           classes: ["checkmark"],
           dependencies: ["m_66"],
+          label: "Lighting Compliance Status",
         },
       },
     },
@@ -1105,6 +1131,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           tooltip: true, // Default Determined by Occupancy
           conditionalDeps: ["d_12", "g_67", "d_68"],
+          label: "Equipment Density: W/m²",
         },
         e: { content: "P.3.3", classes: ["label-prefix"] },
         f: { content: "Equipment Spec", classes: ["label-main"] },
@@ -1115,6 +1142,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "Efficient",
           section: "occupantInternalGains",
           tooltip: true, // Efficient or Regular Energy Spec
+          label: "Equipment Efficiency Spec",
           options: [
             { value: "Regular", name: "Regular" },
             { value: "Efficient", name: "Efficient" },
@@ -1126,6 +1154,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "31,255.68",
           section: "occupantInternalGains",
           dependencies: ["d_67", "i_63", "h_15"],
+          label: "Equipment Energy: kWh/yr",
         },
         i: {
           fieldId: "i_67",
@@ -1133,6 +1162,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "20,979.84",
           section: "occupantInternalGains",
           dependencies: ["h_67", "m_19"],
+          label: "Equipment Heating Gain: kWh/yr",
         },
         j: {
           fieldId: "j_67",
@@ -1140,6 +1170,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "20.96%",
           section: "occupantInternalGains",
           dependencies: ["i_67", "i_71"],
+          label: "Equipment Heating Gain: %",
         },
         k: {
           fieldId: "k_67",
@@ -1147,6 +1178,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "10,275.84",
           section: "occupantInternalGains",
           dependencies: ["h_67", "m_19"],
+          label: "Equipment Cooling Gain: kWh/yr",
         },
         l: {
           fieldId: "l_67",
@@ -1154,6 +1186,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "20.96%",
           section: "occupantInternalGains",
           dependencies: ["k_67", "k_71"],
+          label: "Equipment Cooling Gain: %",
         },
         m: {
           fieldId: "m_67",
@@ -1161,6 +1194,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "100%",
           section: "occupantInternalGains",
           dependencies: ["g_67", "ref_g_67"],
+          label: "Equipment Compliance: %",
         },
         n: {
           fieldId: "n_67",
@@ -1169,6 +1203,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           section: "occupantInternalGains",
           classes: ["checkmark"],
           dependencies: ["m_67"],
+          label: "Equipment Compliance Status",
         },
       },
     },
@@ -1187,6 +1222,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "No Elevators",
           section: "occupantInternalGains",
           tooltip: true, // Include Elevator Load
+          label: "Elevator Status",
           options: [
             { value: "Elevators", name: "Elevators" },
             { value: "No Elevators", name: "No Elevators" },
@@ -1208,6 +1244,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "0.00",
           section: "occupantInternalGains",
           dependencies: ["d_54"],
+          label: "DHW System Losses: kWh/yr",
         },
         i: {
           fieldId: "i_69",
@@ -1215,6 +1252,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "0.00",
           section: "occupantInternalGains",
           dependencies: ["h_69", "m_19"],
+          label: "DHW Heating Gain: kWh/yr",
         },
         j: {
           fieldId: "j_69",
@@ -1222,6 +1260,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "0.00%",
           section: "occupantInternalGains",
           dependencies: ["i_69", "i_71"],
+          label: "DHW Heating Gain: %",
         },
         k: {
           fieldId: "k_69",
@@ -1229,6 +1268,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "0.00",
           section: "occupantInternalGains",
           dependencies: ["h_69", "m_19"],
+          label: "DHW Cooling Gain: kWh/yr",
         },
         l: {
           fieldId: "l_69",
@@ -1236,6 +1276,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "0.00%",
           section: "occupantInternalGains",
           dependencies: ["k_69", "k_71"],
+          label: "DHW Cooling Gain: %",
         },
       },
     },
@@ -1253,6 +1294,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "84,390.34",
           section: "occupantInternalGains",
           dependencies: ["h_65", "h_66", "h_67"],
+          label: "Plug/Light/Eqpt Subtotal: kWh/yr",
         },
         i: {
           fieldId: "i_70",
@@ -1260,6 +1302,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "56,645.57",
           section: "occupantInternalGains",
           dependencies: ["i_65", "i_66", "i_67"],
+          label: "Plug/Light/Eqpt Heating Subtotal: kWh/yr",
         },
         k: {
           fieldId: "k_70",
@@ -1267,6 +1310,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "27,744.77",
           section: "occupantInternalGains",
           dependencies: ["k_65", "k_66", "k_67"],
+          label: "Plug/Light/Eqpt Cooling Subtotal: kWh/yr",
         },
       },
     },
@@ -1284,6 +1328,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "149,086.36",
           section: "occupantInternalGains",
           dependencies: ["h_64", "h_70", "h_69"],
+          label: "Total Internal Gains: kWh/yr",
         },
         i: {
           fieldId: "i_71",
@@ -1291,6 +1336,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "100,071.67",
           section: "occupantInternalGains",
           dependencies: ["i_64", "i_70", "i_69"],
+          label: "Total Heating Gains: kWh/yr",
         },
         j: {
           fieldId: "j_71",
@@ -1298,6 +1344,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "100%",
           section: "occupantInternalGains",
           dependencies: ["j_64", "j_65", "j_66", "j_67", "j_69"],
+          label: "Total Heating Gains: %",
         },
         k: {
           fieldId: "k_71",
@@ -1305,6 +1352,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "49,014.69",
           section: "occupantInternalGains",
           dependencies: ["k_64", "k_70", "k_69"],
+          label: "Total Cooling Gains: kWh/yr",
         },
         l: {
           fieldId: "l_71",
@@ -1312,6 +1360,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "100%",
           section: "occupantInternalGains",
           dependencies: ["l_64", "l_65", "l_66", "l_67", "l_69"],
+          label: "Total Cooling Gains: %",
         },
       },
     },
