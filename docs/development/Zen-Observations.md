@@ -854,6 +854,64 @@ Section03 is a **Climate Foundation Section** that:
 4. **Dual-State Support**: Include both Target and Reference variants in listeners
 5. **Emissions Units**: Always include "kgCO2/yr" in emission field labels
 
+#### Section 07: DHW & SHW Energy
+**Status**: ✅ **COMPLETE** (2025-11-09)
+- **Dependencies**: All 31 calculated fields mapped (rows 49-54, TEUIv3043.csv)
+  - M columns (m_49, m_50, m_52, m_53): Compliance percentages (Target/Reference ratios)
+  - N columns (n_49, n_50, n_52, n_53): Pass/fail status (✓/✗)
+  - Dual-state architecture: TargetState and ReferenceState
+- **Labels**: 25 unique, descriptive labels added
+  - Example: "Water Use Compliance: %"
+  - Example: "Water Use Compliance Status"
+- **M/N Compliance Pattern**: Successfully implemented per M-N-COMPLIANCE.md
+  - higherIsBetter logic: water/energy metrics (≤100% = pass), efficiency metrics (≥100% = pass)
+  - Comma parsing fix: `replace(/,/g, "")` for formatted percentages like "1,600%"
+  - CSS classes applied only in Target mode via `setElementClass()` helper
+- **Critical Fixes**:
+  - ref_d_63 fallback: Changed from 0 to 126 (S09's default occupancy) for correct DHW calculations
+  - Vertical alignment: Attempted `vertical-align: middle` for checkmarks (minimal improvement, documented for future)
+
+**Commits on dependency2 branch:**
+- 06eded8: Fix: S07 ref_d_63 fallback to 126 (S09 default occupancy)
+- c3f5dbc: Feat: S07 M/N compliance columns with pass/fail indicators
+
+#### Section 08: Indoor Air Quality
+**Status**: ⚠️ **INCOMPLETE** - M/N calculations work, N column display issue (2025-11-09)
+- **Dependencies**: 15 total fields mapped (rows 56-60, TEUIv3043.csv)
+  - M columns (m_56-m_59): Compliance percentages (d_56/k_56, etc.)
+  - N columns (n_56-n_59): Pass/fail status (✓/✗)
+  - d_60: Wood emissions offset (depends on S04 d_31, k_31)
+- **Labels**: 15 unique, descriptive labels added
+  - Example: "Radon Compliance: %"
+  - Example: "Radon Compliance Status"
+  - Example: "Atmospheric Offsets: MT/yr CO2e"
+- **Architecture**: Dual-engine pattern (calculates BOTH Target and Reference during initialization)
+- **Known Issues** (to resolve Nov 10, 2025):
+  1. **N columns show "N/A" instead of ✓/✗ symbols**
+     - M columns display correct percentages (33%, 55%, 25%, 100%)
+     - Reference mode shows 100% correctly (d_56=150, d_57=1000, d_58=400, d_59=45)
+     - Suspect: formatNumber() might be returning "N/A" for "raw" type fields
+     - Already attempted fix: Skip formatting for "raw" type fields (line 206-208)
+  2. **m_59 should show 45% not 100%**
+     - Current: Shows 100% (average/45 where average=45)
+     - Expected: Should directly show d_59 value as percentage (45%)
+     - Need to clarify calculation logic for humidity compliance
+- **Successful Fixes Applied**:
+  - ✅ d_60 wood offset calculation: Added DOM update to calculateAll() + listeners call calculateAll()
+  - ✅ Dual-engine pattern: calculateAll() now computes BOTH Target and Reference values
+  - ✅ Store raw ratios (0.333) not formatted strings ("33%") for proper formatting pipeline
+  - ✅ "raw" type fields skip formatNumber() to preserve symbols
+
+**Next Session Tasks (Nov 10)**:
+1. Debug N column "N/A" display issue (values stored correctly in state but not rendering)
+2. Review m_59 calculation logic (should it be d_59 value directly or average/45?)
+3. Verify CSS classes applying correctly for pass/fail indicators
+4. Test mode switching (Target ↔ Reference) to ensure pre-computed values display
+
+**Commits on dependency2 branch:**
+- 82a2665: Fix: S08 d_60 wood offset calculation DOM update
+- [pending]: Feat: S08 M/N compliance implementation (incomplete)
+
 ---
 
 **Next Steps**:
@@ -861,6 +919,9 @@ Section03 is a **Climate Foundation Section** that:
 2. ✅ ~~Verify S01 dependencies against Excel CSV~~ **COMPLETE** (All dependencies correctly implemented via event listeners)
 3. ✅ ~~Verify S02 dependencies against Excel CSV~~ **COMPLETE** (1 calculated field verified, 14 inputs correct)
 4. ✅ ~~Review S02 labels~~ **COMPLETE** (6 labels added)
-5. Add 11 MISSING dependencies after user validates against Excel source
-6. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
-7. Interactive Q&A session to add labels to envelope fields (139 unlabeled) for S17 graph viz
+5. ✅ ~~S07 complete dependency mapping + M/N compliance~~ **COMPLETE** (commit c3f5dbc)
+6. 🔄 **S08 dependency mapping + M/N compliance** **IN PROGRESS** (N column display issue)
+7. Add 11 MISSING dependencies after user validates against Excel source
+8. Investigate 4 non-existent constants (may need to remove from dependencies or add as fields)
+9. Interactive Q&A session to add labels to envelope fields (139 unlabeled) for S17 graph viz
+10. Complete S09-S15 dependency mapping per workplan
