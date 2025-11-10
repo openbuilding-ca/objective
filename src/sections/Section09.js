@@ -1645,29 +1645,37 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("i_65", energy * heatingRatio, "number"); // Use dynamic heating ratio
     setCalculatedValue("k_65", energy * coolingRatio, "number"); // Use dynamic cooling ratio
 
-    // Calculate percentage against reference value
-    // Reference is 5 W/m² for residential/care or 7 W/m² for others
-    const referenceStandard = getFieldValueModeAware("d_13") || "";
-    const buildingType = getFieldValueModeAware("d_12") || "";
+    // Calculate M/N compliance (Option 3: Reference mode always 100%)
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Always 100% compliant (it IS the reference)
+      setCalculatedValue("m_65", 1.0, "percent-auto"); // 100%
+      setCalculatedValue("n_65", "✓", "raw");
 
-    const isResidentialOrCare =
-      buildingType === "C - Residential" ||
-      buildingType === "B1 - Detention" ||
-      buildingType === "B2 - Care and Treatment" ||
-      buildingType === "B3 - Detention Care & Treatment";
-
-    const referencePlugLoad = isResidentialOrCare ? 5 : 7;
-
-    const percentOfReference = (plugLoadDensity / referencePlugLoad) * 100;
-    setCalculatedValue("m_65", percentOfReference, "percent-auto");
-
-    // Set checkmark or X based on whether it's below reference
-    if (plugLoadDensity <= referencePlugLoad) {
-      setCalculatedValue("n_65", "✓", "raw"); // Store raw checkmark
-      setElementClass("n_65", "checkmark"); // Keep direct class manipulation for this specific UI
+      // Reapply class for dual-mode styling
+      const element = document.querySelector('[data-field-id="n_65"]');
+      if (element) {
+        element.classList.remove("checkmark", "warning");
+        element.classList.add("checkmark");
+      }
     } else {
-      setCalculatedValue("n_65", "✗", "raw"); // Store raw X
-      setElementClass("n_65", "warning"); // Keep direct class manipulation
+      // Target mode: Compare against Reference model value
+      const refPlugLoad = window.TEUI.parseNumeric(
+        ReferenceState.getValue("d_65")
+      ) || 5.0;
+
+      const percentOfReference = (plugLoadDensity / refPlugLoad) * 100;
+      setCalculatedValue("m_65", percentOfReference, "percent-auto");
+
+      // Lower is better for plug loads
+      const isCompliant = plugLoadDensity <= refPlugLoad;
+      setCalculatedValue("n_65", isCompliant ? "✓" : "✗", "raw");
+
+      // Apply class
+      const element = document.querySelector('[data-field-id="n_65"]');
+      if (element) {
+        element.classList.remove("checkmark", "warning");
+        element.classList.add(isCompliant ? "checkmark" : "warning");
+      }
     }
 
     return energy;
@@ -1699,20 +1707,37 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("i_66", energy * heatingRatio, "number"); // Use dynamic heating ratio
     setCalculatedValue("k_66", energy * coolingRatio, "number"); // Use dynamic cooling ratio
 
-    // Calculate percentage against reference value
-    // Use dynamic reference value from ReferenceState
-    const referenceLightingLoad =
-      window.TEUI.parseNumeric(ReferenceState.getValue("d_66")) || 2.0;
-    const percentOfReference = (lightingDensity / referenceLightingLoad) * 100;
-    setCalculatedValue("m_66", percentOfReference, "percent-auto");
-
-    // Set checkmark or X based on standard comparison
-    if (percentOfReference <= 133) {
+    // Calculate M/N compliance (Option 3: Reference mode always 100%)
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Always 100% compliant (it IS the reference)
+      setCalculatedValue("m_66", 1.0, "percent-auto"); // 100%
       setCalculatedValue("n_66", "✓", "raw");
-      setElementClass("n_66", "checkmark");
+
+      // Reapply class for dual-mode styling
+      const element = document.querySelector('[data-field-id="n_66"]');
+      if (element) {
+        element.classList.remove("checkmark", "warning");
+        element.classList.add("checkmark");
+      }
     } else {
-      setCalculatedValue("n_66", "✗", "raw");
-      setElementClass("n_66", "warning");
+      // Target mode: Compare against Reference model value
+      const refLightingLoad = window.TEUI.parseNumeric(
+        ReferenceState.getValue("d_66")
+      ) || 1.5;
+
+      const percentOfReference = (lightingDensity / refLightingLoad) * 100;
+      setCalculatedValue("m_66", percentOfReference, "percent-auto");
+
+      // Lower is better for lighting loads
+      const isCompliant = lightingDensity <= refLightingLoad;
+      setCalculatedValue("n_66", isCompliant ? "✓" : "✗", "raw");
+
+      // Apply class
+      const element = document.querySelector('[data-field-id="n_66"]');
+      if (element) {
+        element.classList.remove("checkmark", "warning");
+        element.classList.add(isCompliant ? "checkmark" : "warning");
+      }
     }
 
     return energy;
@@ -1773,10 +1798,40 @@ window.TEUI.SectionModules.sect09 = (function () {
       setCalculatedValue("i_67", heatingPortion, "number");
       setCalculatedValue("k_67", coolingPortion, "number");
 
-      // Equipment loads typically show 100% compliance since they're from lookup tables
-      setCalculatedValue("m_67", 100, "percent-auto");
-      setCalculatedValue("n_67", "✓", "raw");
-      setElementClass("n_67", "checkmark");
+      // Calculate M/N compliance (Option 3: Reference mode always 100%)
+      if (ModeManager.currentMode === "reference") {
+        // Reference mode: Always 100% compliant (it IS the reference)
+        setCalculatedValue("m_67", 1.0, "percent-auto"); // 100%
+        setCalculatedValue("n_67", "✓", "raw");
+
+        // Reapply class for dual-mode styling
+        const element = document.querySelector('[data-field-id="n_67"]');
+        if (element) {
+          element.classList.remove("checkmark", "warning");
+          element.classList.add("checkmark");
+        }
+      } else {
+        // Target mode: Compare efficiency specs
+        const targetEfficiency = getFieldValueModeAware("g_67") || "Efficient";
+        const refEfficiency = ReferenceState.getValue("g_67") || "Efficient";
+
+        // "Efficient" is better than "Regular"
+        // If target matches or exceeds reference, pass
+        const isCompliant =
+          targetEfficiency === "Efficient" ||
+          (targetEfficiency === "Regular" && refEfficiency === "Regular");
+
+        // Show 100% if compliant, otherwise show as failing
+        setCalculatedValue("m_67", isCompliant ? 1.0 : 0.5, "percent-auto");
+        setCalculatedValue("n_67", isCompliant ? "✓" : "✗", "raw");
+
+        // Apply class
+        const element = document.querySelector('[data-field-id="n_67"]');
+        if (element) {
+          element.classList.remove("checkmark", "warning");
+          element.classList.add(isCompliant ? "checkmark" : "warning");
+        }
+      }
 
       // Update percentages and totals
       calculateTotals();
