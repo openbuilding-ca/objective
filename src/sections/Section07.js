@@ -371,9 +371,14 @@ window.TEUI.SectionModules.sect07 = (function () {
         "e_52",
         "e_53",
         "d_54",
-        "n_49",
+        "m_49", // M column: percentage compliance
+        "m_50",
+        "m_52",
+        "m_53",
+        "n_49", // N column: checkmark status
         "n_50",
         "n_52",
+        "n_53",
       ];
 
       calculatedFields.forEach((fieldId) => {
@@ -391,10 +396,16 @@ window.TEUI.SectionModules.sect07 = (function () {
 
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-          const formatType = getFieldFormat(fieldId);
-          const formattedValue =
-            window.TEUI?.formatNumber?.(displayValue, formatType) ??
-            displayValue;
+          // M and N columns are already formatted, don't re-format
+          let formattedValue;
+          if (fieldId.startsWith("m_") || fieldId.startsWith("n_")) {
+            formattedValue = displayValue; // Already formatted percentages or checkmarks
+          } else {
+            const formatType = getFieldFormat(fieldId);
+            formattedValue =
+              window.TEUI?.formatNumber?.(displayValue, formatType) ??
+              displayValue;
+          }
           element.textContent = formattedValue;
           element.classList.toggle("negative-value", Number(displayValue) < 0);
         }
@@ -515,13 +526,20 @@ window.TEUI.SectionModules.sect07 = (function () {
           label: "DHW Net Emissions: kgCO2e/yr",
         },
         l: { content: "kgCO2e/yr", classes: ["text-left"] },
-        m: { content: "✓", classes: ["checkmark"] },
-        n: {
-          fieldId: "n_49",
+        m: {
+          fieldId: "m_49",
           type: "calculated",
           value: "15%",
           dependencies: ["h_49", "ref_h_49"],
           label: "Water Use Compliance: %",
+        },
+        n: {
+          fieldId: "n_49",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+          dependencies: ["m_49"],
+          label: "Water Use Compliance Status",
         },
       },
     },
@@ -562,13 +580,20 @@ window.TEUI.SectionModules.sect07 = (function () {
           conditionalDeps: ["e_50"], // Only used in "By Engineer" mode
           label: "DHW Energy Demand: kWh/yr",
         },
-        m: { content: "✓", classes: ["checkmark"] },
-        n: {
-          fieldId: "n_50",
+        m: {
+          fieldId: "m_50",
           type: "calculated",
           value: "15%",
           dependencies: ["h_50", "ref_h_50"],
           label: "DHW Use Compliance: %",
+        },
+        n: {
+          fieldId: "n_50",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+          dependencies: ["m_50"],
+          label: "DHW Use Compliance Status",
         },
       },
     },
@@ -658,13 +683,20 @@ window.TEUI.SectionModules.sect07 = (function () {
           label: "AFUE (Gas/Oil Efficiency)",
         },
         l: { content: "W.4.2 AFUE", classes: ["text-left"] },
-        m: { content: "✓", classes: ["checkmark"] },
-        n: {
-          fieldId: "n_52",
+        m: {
+          fieldId: "m_52",
           type: "calculated",
           value: "100%",
           dependencies: ["d_52", "ref_d_52"],
           label: "Efficiency Compliance: %",
+        },
+        n: {
+          fieldId: "n_52",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+          dependencies: ["m_52"],
+          label: "Efficiency Compliance Status",
         },
       },
     },
@@ -701,14 +733,21 @@ window.TEUI.SectionModules.sect07 = (function () {
           dependencies: ["j_51", "e_53"],
           label: "SHW Wasted: kWh/yr",
         },
-        m: { content: "!", classes: ["warning"] },
-        n: {
-          fieldId: "n_53",
+        m: {
+          fieldId: "m_53",
           type: "calculated",
           value: "0%",
           dependencies: ["d_53", "ref_d_53"],
           conditionalDeps: ["ref_d_53"], // N/A if ref_d_53=0
           label: "DWHR Compliance: %",
+        },
+        n: {
+          fieldId: "n_53",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+          dependencies: ["m_53"],
+          label: "DWHR Compliance Status",
         },
       },
     },
@@ -888,8 +927,6 @@ window.TEUI.SectionModules.sect07 = (function () {
       h_50: "number-2dp",
       i_50: "integer-comma",
       j_50: "number-2dp-comma",
-      n_49: "percent-0dp",
-      n_50: "percent-0dp",
       e_52: "number-2dp",
       j_51: "number-2dp-comma",
       e_53: "number-2dp-comma",
@@ -901,6 +938,16 @@ window.TEUI.SectionModules.sect07 = (function () {
       j_54: "number-2dp-comma",
       k_54: "number-2dp-comma",
       k_49: "number-2dp-comma",
+      // M columns: already formatted as percentages, return as-is
+      m_49: "raw",
+      m_50: "raw",
+      m_52: "raw",
+      m_53: "raw",
+      // N columns: checkmarks/warnings, no formatting needed
+      n_49: "raw",
+      n_50: "raw",
+      n_52: "raw",
+      n_53: "raw",
     };
     return formatMap[fieldId] || "number-2dp-comma";
   }
@@ -1158,7 +1205,7 @@ window.TEUI.SectionModules.sect07 = (function () {
   }
 
   function calculateCompliance(isReferenceCalculation = false) {
-    // ✅ NEW PATTERN: Target/Reference comparison (simplified M/N compliance)
+    // ✅ S05 PATTERN: Target/Reference comparison with M (percentage) and N (checkmark) columns
     // ALWAYS use Target numerators and Reference denominators (lower is better for water/energy)
 
     // Target values (numerators)
@@ -1174,51 +1221,85 @@ window.TEUI.SectionModules.sect07 = (function () {
     const ref_d_53 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_53")) || 0;
 
     // Calculate percentages: Target / Reference (lower is better - passing means <100%)
-    const n_49_percent = ref_h_49 !== 0 ? target_h_49 / ref_h_49 : 0;
-    const n_50_percent = ref_h_50 !== 0 ? target_h_50 / ref_h_50 : 0;
-    const n_52_percent = ref_d_52 !== 0 ? target_d_52 / ref_d_52 : 1;
-    const n_53_percent = ref_d_53 !== 0 ? target_d_53 / ref_d_53 : 0;
+    const m_49_percent = ref_h_49 !== 0 ? target_h_49 / ref_h_49 : 0;
+    const m_50_percent = ref_h_50 !== 0 ? target_h_50 / ref_h_50 : 0;
+    const m_52_percent = ref_d_52 !== 0 ? target_d_52 / ref_d_52 : 1;
+    const m_53_percent = ref_d_53 !== 0 ? target_d_53 / ref_d_53 : 0;
 
-    // Format and store percentage results
-    const n_49_formatted = window.TEUI?.formatNumber?.(n_49_percent, "percent-0dp") ?? "0%";
-    const n_50_formatted = window.TEUI?.formatNumber?.(n_50_percent, "percent-0dp") ?? "0%";
-    const n_52_formatted = window.TEUI?.formatNumber?.(n_52_percent, "percent-0dp") ?? "100%";
-    const n_53_formatted = ref_d_53 === 0 ? "N/A" : (window.TEUI?.formatNumber?.(n_53_percent, "percent-0dp") ?? "0%");
+    // Format percentage results for M columns
+    const m_49_formatted = window.TEUI?.formatNumber?.(m_49_percent, "percent-0dp") ?? "0%";
+    const m_50_formatted = window.TEUI?.formatNumber?.(m_50_percent, "percent-0dp") ?? "0%";
+    const m_52_formatted = window.TEUI?.formatNumber?.(m_52_percent, "percent-0dp") ?? "100%";
+    const m_53_formatted = ref_d_53 === 0 ? "N/A" : (window.TEUI?.formatNumber?.(m_53_percent, "percent-0dp") ?? "0%");
 
+    // Store M column percentages (to both StateManager and local state)
     if (isReferenceCalculation) {
-      window.TEUI.StateManager.setValue("ref_n_49", n_49_formatted, "calculated");
-      window.TEUI.StateManager.setValue("ref_n_50", n_50_formatted, "calculated");
-      window.TEUI.StateManager.setValue("ref_n_52", n_52_formatted, "calculated");
-      window.TEUI.StateManager.setValue("ref_n_53", n_53_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_m_49", m_49_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_m_50", m_50_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_m_52", m_52_formatted, "calculated");
+      window.TEUI.StateManager.setValue("ref_m_53", m_53_formatted, "calculated");
     } else {
-      window.TEUI.StateManager.setValue("n_49", n_49_formatted, "calculated");
-      window.TEUI.StateManager.setValue("n_50", n_50_formatted, "calculated");
-      window.TEUI.StateManager.setValue("n_52", n_52_formatted, "calculated");
-      window.TEUI.StateManager.setValue("n_53", n_53_formatted, "calculated");
-
-      // ✅ Apply CSS classes for visual compliance indicators (only in Target mode)
-      setComplianceClass("n_49", n_49_percent <= 1.0);
-      setComplianceClass("n_50", n_50_percent <= 1.0);
-      setComplianceClass("n_52", n_52_percent >= 1.0); // Higher efficiency is better
-      if (ref_d_53 !== 0) {
-        setComplianceClass("n_53", n_53_percent >= 0); // Any recovery is good
-      }
+      window.TEUI.StateManager.setValue("m_49", m_49_formatted, "calculated");
+      window.TEUI.StateManager.setValue("m_50", m_50_formatted, "calculated");
+      window.TEUI.StateManager.setValue("m_52", m_52_formatted, "calculated");
+      window.TEUI.StateManager.setValue("m_53", m_53_formatted, "calculated");
     }
+    setSectionValue("m_49", m_49_formatted, isReferenceCalculation);
+    setSectionValue("m_50", m_50_formatted, isReferenceCalculation);
+    setSectionValue("m_52", m_52_formatted, isReferenceCalculation);
+    setSectionValue("m_53", m_53_formatted, isReferenceCalculation);
 
-    // Also store to local state for display
-    setSectionValue("n_49", n_49_formatted, isReferenceCalculation);
-    setSectionValue("n_50", n_50_formatted, isReferenceCalculation);
-    setSectionValue("n_52", n_52_formatted, isReferenceCalculation);
-    setSectionValue("n_53", n_53_formatted, isReferenceCalculation);
+    // Set checkmarks/warnings for N columns based on M column percentages
+    // ✓ (pass) if ≤100%, ✗ (fail) if >100% (for water/energy, lower is better)
+    const statusChecks = [
+      { field: "n_49", percentField: "m_49", higherIsBetter: false },
+      { field: "n_50", percentField: "m_50", higherIsBetter: false },
+      { field: "n_52", percentField: "m_52", higherIsBetter: true }, // Efficiency: higher is better
+      { field: "n_53", percentField: "m_53", higherIsBetter: true }, // DWHR: any recovery is good
+    ];
+
+    statusChecks.forEach(({ field, percentField, higherIsBetter }) => {
+      // Get the percentage field value to check pass/fail
+      const percentValue = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue(`ref_${percentField}`)
+        : window.TEUI.StateManager.getValue(percentField);
+
+      // Determine pass/fail based on percentage
+      let status, isCompliant;
+      if (percentValue === "N/A" || percentValue === null || percentValue === undefined) {
+        status = "✓"; // Pass by default if N/A
+        isCompliant = true;
+      } else {
+        // Parse percentage (remove % sign AND commas, then convert to number)
+        const numericPercent = parseFloat(String(percentValue).replace("%", "").replace(/,/g, ""));
+        if (higherIsBetter) {
+          isCompliant = numericPercent >= 100; // For efficiency, ≥100% is good
+        } else {
+          isCompliant = numericPercent <= 100; // For water/energy use, ≤100% is good
+        }
+        status = isCompliant ? "✓" : "✗";
+      }
+
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(`ref_${field}`, status, "calculated");
+      } else {
+        window.TEUI.StateManager.setValue(field, status, "calculated");
+        // Apply CSS class for visual styling (only in Target mode per M-N-COMPLIANCE.md)
+        setElementClass(field, isCompliant);
+      }
+
+      // Also store to local state for display
+      setSectionValue(field, status, isReferenceCalculation);
+    });
   }
 
   /**
-   * Apply CSS class to DOM element for compliance indicators (following S05 M-N-COMPLIANCE.md pattern)
+   * Apply CSS class to DOM element for compliance indicators (M-N-COMPLIANCE.md pattern)
    * Only applies in Target mode - Reference mode should not override Target's visual indicators
    * @param {string} fieldId - The field ID to target
    * @param {boolean} isCompliant - True for checkmark (green), false for warning (red)
    */
-  function setComplianceClass(fieldId, isCompliant) {
+  function setElementClass(fieldId, isCompliant) {
     // ⚠️ CRITICAL: Only apply styling in Target mode
     if (ModeManager.currentMode !== "target") return;
 

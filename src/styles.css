@@ -2096,12 +2096,21 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 
 /* =============== GLOBAL PASS/FAIL INDICATORS =============== */
 /* Standard checkmark/warning styles used across all sections */
+/*
+ * Vertical alignment note (Nov 9, 2025):
+ * Added vertical-align: middle to improve centering in table cells,
+ * particularly for rows with dropdowns (which are taller).
+ * Minimal improvement observed - checkmarks still appear slightly raised.
+ * TODO: Investigate if removing/adjusting padding would improve centering.
+ * For now, deferred for future investigation.
+ */
 .checkmark {
   color: #28a745;
   font-weight: bold;
   font-size: 1.2rem;
   margin-right: 5px;
   display: inline-block;
+  vertical-align: middle;
 }
 .warning {
   color: #dc3545;
@@ -2109,6 +2118,7 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   font-size: 1.2rem;
   margin-right: 5px;
   display: inline-block;
+  vertical-align: middle;
 }
 
 /* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
