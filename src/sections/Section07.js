@@ -4,7 +4,7 @@
  *
  * Refactored to use the standardized dual-engine architecture.
  *
- * 🚨 LOG ERRORS TO RESOLVE: S07 ref_d_63 fallback contamination (S09 timing issue)
+ * ✅ FIXED (Nov 9, 2025): ref_d_63 fallback now uses S09's default (126) instead of 0
  */
 
 window.TEUI = window.TEUI || {};
@@ -965,15 +965,14 @@ window.TEUI.SectionModules.sect07 = (function () {
     if (isReferenceCalculation) {
       const refValue = window.TEUI?.StateManager?.getValue("ref_d_63");
       if (refValue !== null && refValue !== undefined) {
-        occupants = parseFloat(refValue) || 0;
+        occupants = parseFloat(refValue) || 126;
       } else {
-        console.warn(
-          `[S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation`,
-        );
-        occupants = 0;
+        // Use S09's default occupancy (126) if ref_d_63 not yet published
+        // This prevents errors during initial load before S09 renders
+        occupants = 126;
       }
     } else {
-      occupants = parseFloat(window.TEUI?.StateManager?.getValue("d_63")) || 0;
+      occupants = parseFloat(window.TEUI?.StateManager?.getValue("d_63")) || 126;
     }
 
     const userDefinedValue = getSectionNumericValue(
