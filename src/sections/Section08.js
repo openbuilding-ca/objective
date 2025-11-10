@@ -207,6 +207,12 @@ window.TEUI.SectionModules.sect08 = (function () {
             ? value
             : (window.TEUI?.formatNumber?.(value, formatType) ?? value);
           element.textContent = formattedValue;
+
+          // ✅ FIX: Reapply CSS classes for status fields (n_56, n_57, n_58, n_59)
+          if (fieldId.startsWith("n_") && formatType === "raw") {
+            element.classList.remove("checkmark", "warning");
+            element.classList.add(value === "✓" ? "checkmark" : "warning");
+          }
         }
       });
     },
@@ -244,7 +250,19 @@ window.TEUI.SectionModules.sect08 = (function () {
   }
 
   function setCalculatedValue(fieldId, rawValue) {
-    const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
+    // ✅ FIX: Allow non-numeric values (like "✓" and "✗" symbols) to pass through
+    // Only use "N/A" for truly invalid numeric calculations (undefined, null, NaN)
+    let valueToStore;
+    if (typeof rawValue === "string") {
+      // String values (symbols, text) pass through as-is
+      valueToStore = rawValue;
+    } else if (rawValue == null || (typeof rawValue === "number" && !isFinite(rawValue))) {
+      // Only null/undefined/NaN/Infinity become "N/A"
+      valueToStore = "N/A";
+    } else {
+      // Valid numbers get converted to strings
+      valueToStore = rawValue.toString();
+    }
 
     // The calculation functions will be run for both models, so we need to know
     // which state to write to. We'll check the current UI mode for simplicity,
@@ -281,8 +299,7 @@ window.TEUI.SectionModules.sect08 = (function () {
   }
 
   function setElementClass(fieldId, isCompliant) {
-    // Only apply styling in Target mode (per M-N-COMPLIANCE.md pattern)
-    if (ModeManager.currentMode !== "target") return;
+    // Apply styling in both Target and Reference modes for S08
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
       element.classList.remove("checkmark", "warning");
@@ -372,10 +389,9 @@ window.TEUI.SectionModules.sect08 = (function () {
     setCalculatedValue("n_58", tvocPass ? "✓" : "✗");
     setElementClass("n_58", tvocPass);
 
-    // Row 59: Humidity (m_59 = average/45, pass if 30-60 range for BOTH heating and cooling)
-    const averageHumidity = (heatingHumidity + coolingHumidity) / 2;
-    const humidityPercent = averageHumidity / 45;
-    setCalculatedValue("m_59", humidityPercent);
+    // Row 59: Humidity (m_59 = d_59/100, pass if 30-60 range for BOTH heating and cooling)
+    // Store as decimal ratio so percent-0dp formatter displays correctly (45 → 0.45 → 45%)
+    setCalculatedValue("m_59", heatingHumidity / 100);
     const isInRange =
       heatingHumidity >= 30 &&
       heatingHumidity <= 60 &&

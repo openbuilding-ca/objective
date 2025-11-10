@@ -483,6 +483,73 @@ When implementing M-N compliance:
 
 ---
 
-**Last Updated**: 2025-11-08
-**Sections Using Pattern**: S03, S08, S11
+## Implementation Status
+
+### ✅ Completed Sections
+- **S03** (Climate Calculations): Code-based comparison (m_23/n_23, m_24/n_24)
+- **S05** (Envelope): Component performance comparison
+- **S07** (Lighting): Lighting performance comparison
+- **S08** (Indoor Air Quality): Health threshold comparison (m_56-59/n_56-59)
+
+### 🚧 Pending Implementation
+- **S09** (Renewables): M/N compliance not yet implemented
+- **S11** (Embodied Carbon): Reference model comparison (m_85-95/n_85-95) - partial implementation
+- **S13** (Costs): Cost comparison - not yet implemented
+
+### ❌ Not Applicable
+- **S01, S02, S04, S06, S10, S12**: Do not require M/N compliance fields
+
+---
+
+## Advanced Pattern: Dual-Mode Styling (Target + Reference)
+
+### Issue: Styling Disappears When Switching Modes
+
+**Symptoms**: In sections with dual-state architecture (Target/Reference modes), the checkmark/warning colors work in one mode but not the other when switching.
+
+**Root Cause**: The `setElementClass()` function only applies styling during calculation. When switching modes, `updateCalculatedDisplayValues()` updates the text content (✓/✗ symbols) but doesn't reapply the CSS classes.
+
+**Solution Pattern** (S08 Implementation - Nov 2025):
+
+```javascript
+updateCalculatedDisplayValues: function () {
+  const calculatedFields = ["n_56", "n_57", "n_58", "n_59", /* ... */];
+
+  calculatedFields.forEach((fieldId) => {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      // Get value from current mode's state
+      let value;
+      if (this.currentMode === "reference") {
+        value = ReferenceState.getValue(fieldId) || "0";
+      } else {
+        value = TargetState.getValue(fieldId) || "0";
+      }
+
+      const formatType = getFieldFormat(fieldId);
+      const formattedValue = formatType === "raw"
+        ? value
+        : (window.TEUI?.formatNumber?.(value, formatType) ?? value);
+      element.textContent = formattedValue;
+
+      // ✅ CRITICAL: Reapply CSS classes for status fields after updating text
+      if (fieldId.startsWith("n_") && formatType === "raw") {
+        element.classList.remove("checkmark", "warning");
+        element.classList.add(value === "✓" ? "checkmark" : "warning");
+      }
+    }
+  });
+}
+```
+
+**Key Points**:
+1. **DO** reapply classes in `updateCalculatedDisplayValues()` for dual-mode sections
+2. **DO** remove the mode check from `setElementClass()` if using this pattern
+3. **DO** check the symbol value (✓ vs ✗) to determine the correct class
+4. This ensures styling persists when switching between Target and Reference modes
+
+---
+
+**Last Updated**: 2025-11-10
+**Sections Using Pattern**: S03, S05, S07, S08
 **Global CSS Defined**: src/styles.css lines 2097-2112
