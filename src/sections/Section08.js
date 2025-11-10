@@ -525,16 +525,30 @@ window.TEUI.SectionModules.sect08 = (function () {
           type: "editable",
           value: "50",
           classes: ["user-input"],
+          label: "Radon Target: Bq/m³",
         },
         e: { content: "Bq/m³" },
-        k: { fieldId: "k_56", type: "calculated", value: "150" },
+        k: {
+          fieldId: "k_56",
+          type: "calculated",
+          value: "150",
+          label: "Radon Reference Limit: Bq/m³",
+        },
         l: { content: "Bq/m³" },
-        m: { fieldId: "m_56", type: "calculated", value: "0%" },
+        m: {
+          fieldId: "m_56",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_56", "k_56"],
+          label: "Radon Compliance: %",
+        },
         n: {
           fieldId: "n_56",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
+          dependencies: ["m_56"],
+          label: "Radon Compliance Status",
         },
       },
     },
@@ -548,16 +562,30 @@ window.TEUI.SectionModules.sect08 = (function () {
           type: "editable",
           value: "550",
           classes: ["user-input"],
+          label: "CO2 Target: ppm",
         },
         e: { content: "ppm" },
-        k: { fieldId: "k_57", type: "calculated", value: "1000" },
+        k: {
+          fieldId: "k_57",
+          type: "calculated",
+          value: "1000",
+          label: "CO2 Reference Limit: ppm",
+        },
         l: { content: "ppm" },
-        m: { fieldId: "m_57", type: "calculated", value: "0%" },
+        m: {
+          fieldId: "m_57",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_57", "k_57"],
+          label: "CO2 Compliance: %",
+        },
         n: {
           fieldId: "n_57",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
+          dependencies: ["m_57"],
+          label: "CO2 Compliance Status",
         },
       },
     },
@@ -571,16 +599,30 @@ window.TEUI.SectionModules.sect08 = (function () {
           type: "editable",
           value: "100",
           classes: ["user-input"],
+          label: "TVOC Target: ppm",
         },
         e: { content: "ppm" },
-        k: { fieldId: "k_58", type: "calculated", value: "400" },
+        k: {
+          fieldId: "k_58",
+          type: "calculated",
+          value: "400",
+          label: "TVOC Reference Limit: ppm",
+        },
         l: { content: "ppm" },
-        m: { fieldId: "m_58", type: "calculated", value: "0%" },
+        m: {
+          fieldId: "m_58",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_58", "k_58"],
+          label: "TVOC Compliance: %",
+        },
         n: {
           fieldId: "n_58",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
+          dependencies: ["m_58"],
+          label: "TVOC Compliance Status",
         },
       },
     },
@@ -598,6 +640,7 @@ window.TEUI.SectionModules.sect08 = (function () {
           step: 1,
           classes: ["user-input"],
           tooltip: true, // RH% Annual Average
+          label: "RH Heating Season Target: %",
         },
         e: { content: "% RH" },
         f: { content: "A.5.2" },
@@ -612,16 +655,30 @@ window.TEUI.SectionModules.sect08 = (function () {
           step: 1,
           classes: ["user-input"],
           tooltip: true, // RH% Annual Average
+          label: "RH Cooling Season Target: %",
         },
         j: { content: "% RH" },
-        k: { fieldId: "k_59", type: "calculated", value: "30-60" },
+        k: {
+          fieldId: "k_59",
+          type: "calculated",
+          value: "30-60",
+          label: "RH Reference Range: %",
+        },
         l: { content: "%" },
-        m: { fieldId: "m_59", type: "calculated", value: "0%" },
+        m: {
+          fieldId: "m_59",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_59"],
+          label: "RH Compliance: %",
+        },
         n: {
           fieldId: "n_59",
           type: "calculated",
           value: "✓",
           classes: ["checkmark"],
+          dependencies: ["m_59"],
+          label: "RH Compliance Status",
         },
       },
     },
@@ -635,6 +692,9 @@ window.TEUI.SectionModules.sect08 = (function () {
           type: "calculated",
           value: "0.00",
           tooltip: true,
+          dependencies: ["d_31", "k_31"],
+          conditionalDeps: ["k_31"], // Only read k_31 when d_31 > 0
+          label: "Atmospheric Offsets: MT/yr CO2e",
         },
         e: { content: "MT/yr CO2e" },
       },
@@ -649,10 +709,17 @@ window.TEUI.SectionModules.sect08 = (function () {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
-            label: cell.label || row.label,
+            label: cell.label || cell.content || row.label, // ✅ Proper label resolution
             defaultValue: cell.value || "",
             section: "indoorAirQuality",
           };
+          // Copy dependencies if present
+          if (cell.dependencies) {
+            fields[cell.fieldId].dependencies = cell.dependencies;
+          }
+          if (cell.conditionalDeps) {
+            fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
+          }
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
           if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
