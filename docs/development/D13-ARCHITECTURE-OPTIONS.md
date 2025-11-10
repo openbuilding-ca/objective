@@ -8,9 +8,9 @@
 
 ## Current Symptom
 
-**Test Case**: Set d_13 to "PH Classic" (d_65 baseline = 2.1 W/m²)
+**Test Case**: Set Target AND Reference d_13 to "PH Classic" (d_65 baseline = 2.1 W/m²)
 - **Expected**: m_65 = 100% when d_65 = 2.1 (perfect compliance)
-- **Actual**: m_65 = 238% (incorrect)
+- **Actual**: Reference model m_65 = 238% (incorrect)
 
 **Root Issue**: Unclear whether d_13 and ref_d_13 should be independent or synchronized.
 
@@ -66,20 +66,20 @@ window.TEUI.StateManager.addListener("ref_d_13", () => {
 ### Pros
 
 ✅ **Perfect state isolation** - aligns with dual-state architecture principles
-✅ **Flexibility** - Target and Reference can use different standards
+✅ **Flexibility** - Target and Reference can use different standards (ie SB12 C4 for Heatpump in Target, SB12 A3 in Reference for Gas Furnace)
 ✅ **Clear separation** - no synchronization complexity
 ✅ **Architectural purity** - follows established patterns from other sections
 
 ### Cons
 
-❌ **Unclear Target usage** - Does Target model actually use d_13 for anything?
-❌ **User confusion** - Why have two separate reference standard dropdowns?
+❌ **Unclear Target usage** - Does Target model actually use d_13 for anything? (Yes, M/N code compliance IN Target mode)
+❌ **User confusion** - Why have two separate reference standard dropdowns? !IMPORTANT! This has been historically difficult to explain. 
 ❌ **Extra UI complexity** - Need to manage two dropdown selections
-❌ **Comparison scenarios** - Hard to compare same standard across models
+❌ **Comparison scenarios** - Hard to compare same standard across models, M-N Compliance requires double Reference-Values.js lookup instead of just value/ref_value for % comparisons. 
 
 ### Current Status
 
-**Currently BROKEN in sections 05, 06, 11, 12, 13, 14**:
+**Currently BROKEN (or synchronized, depending on how you think of it) in sections 05, 06, 11, 12, 13, 14**:
 - ReferenceState.setDefaults() reads `d_13` (wrong field)
 - d_13 listener calls ReferenceState.onReferenceStandardChange() (contamination)
 
@@ -90,11 +90,11 @@ window.TEUI.StateManager.addListener("ref_d_13", () => {
 
 ---
 
-## OPTION 2: "One D13 Setting" (Synchronized Reference Standard)
+## OPTION 2: "One D13 Setting" (Synchronized Reference Standard - current best candidate)
 
 ### Architectural Principle
 
-**d_13 is the single source of truth for BOTH models' reference standard**
+**d_13 is the single source of truth for BOTH models' reference standard** Reference Standard sets Reference model. Easy to explain. 
 
 - d_13 = Primary control for reference standard
 - ref_d_13 = Mirror field that displays same value as d_13
@@ -117,7 +117,7 @@ Compliance: m_65 = (d_65 / ref_d_65) * 100
            = (2.1 / 3.2) * 100 = 65.6% (PHIUS 2021)
 ```
 
-### Implementation Requirements
+### Implementation Requirements (pretty much what we have now)
 
 **ReferenceState.setDefaults()**: Reads from `d_13` (current implementation ✅)
 ```javascript
@@ -151,15 +151,15 @@ window.TEUI.StateManager.addListener("d_13", (newValue) => {
 ### Pros
 
 ✅ **Simplicity** - One reference standard control for entire application
-✅ **Maintainability** - No complex T-Cell or ReferenceValue lookups in M/N calcs
+✅ **Maintainability** - No complex T-Cell or ReferenceValue lookups in M/N calcs, is just value/ref_value = XXX% pass/fail.
 ✅ **User experience** - Intuitive: "What code am I designing to?"
 ✅ **Teaching** - Easier to explain to users
 ✅ **Mostly working** - Current implementation 90% there, just needs ref_d_13 sync
 
 ### Cons
 
-❌ **Less flexibility** - Can't compare Target against different reference standard
-❌ **Violates dual-state purity** - Target setting affects Reference model
+❌ **Less flexibility** - Can't compare Target against different reference standard, ie PH Classive vs. PH EnerPHit
+❌ **Violates dual-state purity** - Target setting affects Reference model - but intentional
 ❌ **Architectural debt** - Diverges from established dual-state patterns
 ❌ **Cheatsheet conflict** - Contradicts Anti-Pattern 6 guidance
 
