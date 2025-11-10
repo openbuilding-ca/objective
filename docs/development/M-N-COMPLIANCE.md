@@ -550,6 +550,171 @@ updateCalculatedDisplayValues: function () {
 
 ---
 
+## Advanced Pattern: Reference Mode User Overrides (S09 Challenge)
+
+### The Problem
+
+**Context**: Section 09 (Internal Gains) allows users to override Reference model defaults:
+- d_65 (Plug Load Density): Can override ReferenceValues.js default
+- d_66 (Lighting Density): Can override 1.5 W/m² default
+- g_67 (Equipment Efficiency): Can override "Efficient" default
+
+**Reference Model Philosophy**: Should always show 100% compliance (the baseline by definition)
+
+**The Challenge**: When user overrides Reference defaults, what should M-column show?
+- Original philosophy: ref_d_66 / d_66 in Target mode
+- Edge case: User changes ref_d_66 from 1.5 → 2.0 in Reference mode
+- Question: Compare against original 1.5 or edited 2.0?
+
+### Solution Options (For Future Implementation)
+
+#### Option 1: "Original Reference" State Snapshot (Most Complete)
+
+**Concept**: Store the original ReferenceValues.js defaults separately from user-editable Reference state.
+
+```javascript
+// On Reference mode initialization:
+ReferenceState.setDefaults(); // Sets d_66 = 1.5 from ReferenceValues.js
+ReferenceState.captureOriginalDefaults(); // NEW: Store ref_original_d_66 = 1.5
+
+// M-column calculation (Target mode):
+const compliance = ref_d_66 / d_66; // Compare Target vs current Reference
+
+// M-column calculation (Reference mode):
+const compliance = ref_d_66 / ref_original_d_66; // Compare edited Reference vs original Reference
+```
+
+**Pros**:
+- Pure implementation of "comparison against code baseline"
+- Shows when user has deviated from ReferenceValues.js defaults
+- Handles all edge cases consistently
+- Clear semantic meaning: "How far from original reference?"
+
+**Cons**:
+- Requires storing `ref_original_*` values (small memory overhead)
+- Adds complexity to state management
+- Need to decide: Should editing Reference mode update "original" or not?
+
+**When to Use**: When it's important to track deviations from code-prescribed baselines.
+
+---
+
+#### Option 2: Trust ReferenceValues.js as Source of Truth (Always Fetch)
+
+**Concept**: Always fetch reference values directly from ReferenceValues.js, never from state.
+
+```javascript
+// Import at top of section:
+import { ReferenceValues } from '../core/ReferenceValues.js';
+
+// M-column calculation:
+const buildingType = getModeAwareGlobalValue("d_12");
+const referenceStandard = getModeAwareGlobalValue("d_13");
+
+// Always fetch fresh from ReferenceValues.js (authoritative source)
+const referencePlugLoad = ReferenceValues.getPlugLoadDensity(buildingType, referenceStandard);
+
+// Get current value from appropriate state
+const currentValue = ModeManager.currentMode === "reference"
+  ? ReferenceState.getValue("d_65")
+  : TargetState.getValue("d_65");
+
+const compliance = referencePlugLoad / currentValue;
+setCalculatedValue("m_65", compliance, "percent-auto");
+```
+
+**Pros**:
+- No additional state storage needed
+- ReferenceValues.js remains single source of truth
+- Works correctly even if user overrides Reference defaults
+- Clear: "Compliance always measured against code values"
+
+**Cons**:
+- Duplicates lookup logic already in Reference initialization
+- Couples compliance calculation to ReferenceValues.js API
+- Slightly more computation (re-fetches on every calculation)
+
+**When to Use**: When code compliance must always reference authoritative standards, regardless of user edits.
+
+---
+
+#### Option 3: Force 100% in Reference Mode (Pragmatic - Recommended)
+
+**Concept**: Reference mode always shows 100% compliance. Target mode compares against Reference state.
+
+```javascript
+// In calculatePlugLoadCompliance() or similar:
+if (ModeManager.currentMode === "reference") {
+  // Reference mode: Always 100% compliant (it IS the reference)
+  setCalculatedValue("m_65", 1.0, "percent-auto"); // 100%
+  setCalculatedValue("n_65", "✓", "raw");
+
+  // Reapply class for dual-mode styling (S08 pattern)
+  const element = document.querySelector('[data-field-id="n_65"]');
+  if (element) {
+    element.classList.remove("checkmark", "warning");
+    element.classList.add("checkmark");
+  }
+} else {
+  // Target mode: Compare against Reference values
+  const refValue = window.TEUI.parseNumeric(ReferenceState.getValue("d_65")) || 7;
+  const targetValue = window.TEUI.parseNumeric(TargetState.getValue("d_65")) || 7;
+  const compliance = targetValue > 0 ? refValue / targetValue : 0;
+
+  setCalculatedValue("m_65", compliance, "percent-auto");
+  setCalculatedValue("n_65", compliance >= 1.0 ? "✓" : "✗", "raw");
+
+  // Apply class
+  const element = document.querySelector('[data-field-id="n_65"]');
+  if (element) {
+    element.classList.remove("checkmark", "warning");
+    element.classList.add(compliance >= 1.0 ? "checkmark" : "warning");
+  }
+}
+```
+
+**Pros**:
+- **Zero bloat**: Simple mode check, no new storage or lookups
+- **Philosophy match**: "Reference model IS 100% by definition"
+- **User intent respect**: If user overrides, they're saying "this IS my reference now"
+- **Target mode accuracy**: Still shows accurate ref_d_65/d_65 comparison
+- **Simplest implementation**: Minimal code, easy to understand
+
+**Cons**:
+- Doesn't explicitly show when user has overridden Reference defaults
+- Could be confusing if user expects to see "compliance against original code values"
+- Reference mode M-column becomes somewhat redundant (always 100%)
+
+**When to Use**: When Reference mode represents "the user's chosen baseline" rather than strictly "code minimum". Best for scenarios where informed users may legitimately want to use stricter-than-code reference values.
+
+---
+
+### Implementation Recommendation
+
+**For Section 09 (and similar user-editable Reference sections)**:
+
+Start with **Option 3 (Force 100%)** because:
+
+1. **Matches existing philosophy**: Other sections treat Reference mode as "the baseline = 100%"
+2. **Minimal complexity**: No state management changes needed
+3. **User empowerment**: Allows informed users to set their own reference standards
+4. **Target mode clarity**: Target vs Reference comparison remains meaningful
+
+**Future consideration**: If code compliance tracking becomes critical (e.g., for official plan reviews), consider implementing **Option 1 (Original Snapshot)** or **Option 2 (Always Fetch)** to distinguish between:
+- Code-prescribed reference values (from ReferenceValues.js)
+- User-modified reference values (edited in Reference mode)
+
+### Related Sections
+
+This pattern applies to any section where:
+- Reference mode values can be user-edited (not just display-only)
+- Compliance is measured as a ratio/percentage (not absolute thresholds)
+- Both Target and Reference modes need M/N compliance indicators
+
+**Current applicability**: S09 (Internal Gains) - d_65, d_66, g_67
+
+---
+
 **Last Updated**: 2025-11-10
 **Sections Using Pattern**: S03, S05, S07, S08
 **Global CSS Defined**: src/styles.css lines 2097-2112
