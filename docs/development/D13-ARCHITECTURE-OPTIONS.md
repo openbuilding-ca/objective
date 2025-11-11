@@ -214,15 +214,23 @@ M/N Compliance Calculation (Simple):
 
 ### Implementation Requirements
 
-**1. Remove automatic d_13 listener in all sections** (S05, S06, S09, S11, S12, S13, S14):
+**EFFICIENCY NOTE**: Rather than removing existing listeners, we **rewire** them to the button. The current d_13 listeners already call the correct `ReferenceState.onReferenceStandardChange()` logic - we just need to move that trigger from automatic → explicit button click.
+
+**1. Rewire existing d_13 listener logic to button** (S05, S06, S09, S11, S12, S13, S14):
 ```javascript
-// ❌ REMOVE THIS:
+// ❌ CHANGE FROM (automatic trigger):
 window.TEUI.StateManager.addListener("d_13", () => {
-  ReferenceState.onReferenceStandardChange();
+  ReferenceState.onReferenceStandardChange();  // This logic is correct!
+});
+
+// ✅ CHANGE TO (passive listener - no automatic overlay):
+window.TEUI.StateManager.addListener("d_13", () => {
+  // Just store the selection - overlay applied by button click
+  // No automatic ReferenceState update
 });
 ```
 
-**2. Add ref_d_13 listener only** (clean separation):
+**2. Add ref_d_13 listener** (passive, stores selection only):
 ```javascript
 // ✅ ADD THIS:
 window.TEUI.StateManager.addListener("ref_d_13", () => {
@@ -231,7 +239,7 @@ window.TEUI.StateManager.addListener("ref_d_13", () => {
 });
 ```
 
-**3. Wire "Set Values" button in S02 (DUAL-PURPOSE)**:
+**3. Wire "Set Values" button in S02 (DUAL-PURPOSE - rewires existing logic)**:
 ```javascript
 // In Section02.js initializeEventHandlers()
 const setValuesBtn = document.getElementById("setValuesBtn");
@@ -285,10 +293,10 @@ function applyReferenceValuesOverlay(targetMode) {
 applyReferenceValues: function(standard) {
   const referenceValues = window.TEUI?.ReferenceValues?.[standard] || {};
 
-  // Overwrite Target fields with code-minimum values
+  // ⚠️ STATE ISOLATION SAFEGUARD: Only write to unprefixed fields (Target model)
   Object.keys(referenceValues).forEach(fieldId => {
     if (referenceValues[fieldId] !== undefined) {
-      this.state[fieldId] = referenceValues[fieldId];
+      this.state[fieldId] = referenceValues[fieldId];  // ✅ Writes to d_65, NOT ref_d_65
       console.log(`[TargetState] Applied ${fieldId} = ${referenceValues[fieldId]} from ${standard}`);
     }
   });
@@ -304,16 +312,31 @@ const currentStandard =
   window.TEUI?.StateManager?.getValue?.("ref_d_13") || "OBC SB10 5.5-6 Z6";
 ```
 
-**5. Mode-aware button visibility**:
+**5. ReferenceState.onReferenceStandardChange()**: Verify state isolation safeguard:
+```javascript
+// ⚠️ STATE ISOLATION SAFEGUARD: Must ONLY write to ref_ prefixed fields
+onReferenceStandardChange: function() {
+  const standard = window.TEUI?.StateManager?.getValue?.("ref_d_13") || "OBC SB10 5.5-6 Z6";
+  const referenceValues = window.TEUI?.ReferenceValues?.[standard] || {};
+
+  Object.keys(referenceValues).forEach(fieldId => {
+    const refFieldId = `ref_${fieldId}`;  // ✅ ALWAYS prefix with ref_
+    if (referenceValues[fieldId] !== undefined) {
+      this.state[refFieldId] = referenceValues[fieldId];  // ✅ Writes to ref_d_65, NOT d_65
+    }
+  });
+
+  this.saveState();
+}
+```
+
+**6. Mode-aware button visibility**:
 ```javascript
 // In S02 ModeManager.switchMode()
 const setValuesBtn = document.getElementById("setValuesBtn");
 if (setValuesBtn) {
-  if (mode === "reference") {
-    setValuesBtn.style.display = "inline-block";
-  } else {
-    setValuesBtn.style.display = "none";
-  }
+  // Button visible in BOTH modes (dual-purpose)
+  setValuesBtn.style.display = "inline-block";
 }
 ```
 
@@ -343,32 +366,53 @@ if (setValuesBtn) {
 - No functionality wired yet
 
 **Architecture changes needed**:
-1. Remove d_13 listeners from 6 sections (S05, S06, S11, S12, S13, S14)
-2. Add ref_d_13 listeners (passive, no overlay trigger)
-3. Wire button click handler to trigger overlay
-4. Add mode-aware button visibility
-5. Update ReferenceState.setDefaults() to read ref_d_13
-6. Test thoroughly across all sections
+1. **Rewire** d_13 listeners in 7 sections (S05, S06, S09, S11, S12, S13, S14) - make them passive (no automatic overlay)
+2. Add ref_d_13 listeners (passive, store selection only)
+3. Wire button click handler to trigger overlay (rewires existing `ReferenceState.onReferenceStandardChange()` logic)
+4. Add new `TargetState.applyReferenceValues()` method to each section
+5. Update `ReferenceState.setDefaults()` to read ref_d_13 (not d_13)
+6. Verify `ReferenceState.onReferenceStandardChange()` only writes to ref_ prefixed fields
+7. Button visible in BOTH modes (dual-purpose functionality)
+8. Test thoroughly across all sections
+
+**State Mixing Prevention Safeguards**:
+- `ReferenceState` methods MUST ONLY write to `ref_` prefixed fields (ref_d_65, ref_d_113, etc.)
+- `TargetState` methods MUST ONLY write to unprefixed fields (d_65, d_113, etc.)
+- `ReferenceState.setDefaults()` MUST read from `ref_d_13` (not d_13)
+- `TargetState.applyReferenceValues()` MUST read from `d_13` (not ref_d_13)
+- M/N compliance calculation: `m_65 = (d_65 / ref_d_65) * 100` - simple value/ref_value (no cross-contamination possible)
 
 ### User Experience Flow
 
-**Scenario A: User working in Target mode**
-1. User sees d_13 dropdown (for M/N compliance labels)
-2. Changes d_13 → Updates Target M/N compliance display only
-3. "Set Values" button hidden (not applicable in Target mode)
+**Scenario A: User working in Target mode (Code-Minimum Population)**
+1. User sees d_13 dropdown (selects reference standard for M/N compliance)
+2. Changes d_13 → Stores selection only, no immediate effect on Target values
+3. "Set Values" button visible and enabled
+4. Clicks "Set Values" button → Target model populated with code-minimum baseline values from ReferenceValues.js
+5. Target now shows "what if we just built to code minimum?"
+6. M/N compliance: `m_65 = (d_65 / ref_d_65) * 100` uses Target/Reference values
 
-**Scenario B: User working in Reference mode**
-1. User sees ref_d_13 dropdown
+**Scenario B: User working in Reference mode (Code Baseline)**
+1. User sees ref_d_13 dropdown (selects code baseline standard)
 2. Changes ref_d_13 → Stores selection only, no immediate effect
-3. Clicks "Set Values" button → All sections receive Reference overlay
-4. Reference calculations update with code baseline values
+3. "Set Values" button visible and enabled
+4. Clicks "Set Values" button → Reference model receives code baseline values from ReferenceValues.js
+5. Reference calculations update with selected code baseline
+6. Target model unaffected - perfect isolation maintained
 
 **Scenario C: User switching between modes**
-1. Target mode: d_13 = "PH Classic" (for M/N labels)
-2. Switch to Reference mode: ref_d_13 = "PHIUS 2021" (independent)
-3. Click "Set Values" → Reference uses PHIUS baseline
-4. Switch back to Target: Still shows PH Classic M/N labels
-5. Perfect isolation maintained
+1. Target mode: d_13 = "PH Classic", clicks "Set Values" → Target gets PH Classic baseline (d_65 = 2.1)
+2. Switch to Reference mode: ref_d_13 = "PHIUS 2021", clicks "Set Values" → Reference gets PHIUS baseline (ref_d_65 = 3.2)
+3. M/N compliance: m_65 = (2.1 / 3.2) * 100 = 65.6%
+4. Switch back to Target: Still shows PH Classic values (d_65 = 2.1)
+5. Perfect isolation maintained - each model has independent values
+
+**Scenario D: Why the 238% bug disappears with Option 3**
+- Target: d_65 = 2.1 (from d_13 "PH Classic" overlay)
+- Reference: ref_d_65 = 2.1 (from ref_d_13 "PH Classic" overlay)
+- M/N compliance: m_65 = (2.1 / 2.1) * 100 = 100% ✅
+- No cross-contamination possible because each model explicitly sets its own values
+- No automatic listeners that could write to wrong fields
 
 ---
 
@@ -391,15 +435,35 @@ if (setValuesBtn) {
 
 ## Investigation Required (Before Decision)
 
+⚠️ **NOTE**: If Option 3 is chosen, most of this investigation becomes **irrelevant** because:
+- The 238% bug disappears (perfect state isolation prevents cross-contamination)
+- M/N compliance uses simple `value/ref_value` calculation (no complex lookups)
+- Each model explicitly sets its own values via button click (no automatic listeners)
+
 ### Question 1: Does Target Model Use d_13?
 
-**Search for**: Target model calculations that reference d_13
-- If YES → Option 1 makes sense (Target needs its own standard)
-- If NO → Option 2 makes sense (d_13 only for Reference baseline)
+**Answer**: YES - Target uses d_13 for M/N compliance labels in Target mode.
+
+**Option 3 impact**:
+- Target mode: d_13 selects which ReferenceValues to populate Target with (code-minimum scenario)
+- Reference mode: ref_d_13 selects which ReferenceValues to populate Reference with (code baseline)
+- Both models remain completely independent
 
 ### Question 2: What's Causing 238%?
 
-Debug compliance calculation:
+**Current diagnosis**:
+- Likely state mixing - ReferenceState methods writing to unprefixed fields, or vice versa
+- OR ref_d_13 not synchronized with d_13 in Option 2 architecture
+- OR inverted calculation (ref_d_65 / d_65 instead of d_65 / ref_d_65)
+
+**Option 3 impact**:
+- **238% bug becomes impossible** because:
+  - Each model has explicit, separate overlay trigger
+  - State isolation safeguards prevent cross-writes
+  - M/N compliance: `m_65 = (d_65 / ref_d_65) * 100` - simple, no lookups
+  - No automatic listeners that could contaminate wrong model
+
+Debug compliance calculation (if investigating Options 1 or 2):
 ```javascript
 console.log('d_13 =', window.TEUI.StateManager.getValue('d_13'));
 console.log('ref_d_13 =', window.TEUI.StateManager.getValue('ref_d_13'));
@@ -411,10 +475,17 @@ console.log('m_65 = (d_65 / ref_d_65) * 100');
 ### Question 3: User Workflow Expectations?
 
 **Scenario A**: User wants to design to PH Classic, compare against PH Classic
-- Option 2 is perfect: One dropdown, simple
+- Option 2: One dropdown, simple (but 238% bug risk)
+- Option 3: Select d_13="PH Classic", click "Set Values" in Target mode → d_65=2.1; Select ref_d_13="PH Classic", click "Set Values" in Reference mode → ref_d_65=2.1; m_65 = 100% ✅
 
 **Scenario B**: User wants to design to PH Classic, but compare against PHIUS 2021
-- Option 1 required: Need independent standards
+- Option 1: Two independent dropdowns (architectural complexity)
+- Option 3: Select d_13="PH Classic", click "Set Values" in Target → d_65=2.1; Select ref_d_13="PHIUS 2021", click "Set Values" in Reference → ref_d_65=3.2; m_65 = 65.6% ✅
+
+**Scenario C**: User wants code-minimum scenario in Target mode (NEW - OAA meeting Nov 11)
+- Option 1: Not supported
+- Option 2: Not supported
+- Option 3: Select d_13="PHIUS 2021", click "Set Values" in Target → Target populated with PHIUS code-minimum values; user can see "what if we just built to code?" ✅
 
 ---
 
