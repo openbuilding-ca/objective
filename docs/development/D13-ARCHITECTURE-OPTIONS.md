@@ -177,17 +177,215 @@ window.TEUI.StateManager.addListener("d_13", (newValue) => {
 
 ---
 
+## OPTION 3: "Explicit Set Values Button" (Perfect Isolation + User Control)
+
+### Architectural Principle
+
+**Complete state isolation with explicit user action for Reference overlay**
+
+- d_13 = Target model's reference standard (for M/N compliance display in Target mode)
+- ref_d_13 = Reference model's reference standard (independent control)
+- NO automatic synchronization between d_13 and ref_d_13
+- Reference model values from ReferenceValues.js ONLY applied when:
+  1. User is in Reference mode
+  2. User explicitly clicks "Set Values" button
+
+### How It Works
+
+```
+Target Mode:
+├─ User changes d_13 dropdown → Updates d_13 value for M/N compliance calculation
+├─ "Set Values" button VISIBLE and enabled (NEW: dual-purpose button!)
+├─ User clicks "Set Values" → TargetState receives values from ReferenceValues.js
+├─ Target model populated with code-minimum baseline values
+└─ User can see "what if we just built to code minimum?"
+
+Reference Mode:
+├─ User changes ref_d_13 dropdown → Updates ref_d_13 value only
+├─ "Set Values" button visible and enabled
+├─ User clicks "Set Values" → ReferenceState receives overlay from ReferenceValues.js
+└─ Reference model receives code baseline values
+
+M/N Compliance Calculation (Simple):
+├─ m_65 = (d_65 / ref_d_65) * 100
+├─ Just value/ref_value - no complex lookups
+└─ Works consistently regardless of how values were set
+```
+
+### Implementation Requirements
+
+**1. Remove automatic d_13 listener in all sections** (S05, S06, S09, S11, S12, S13, S14):
+```javascript
+// ❌ REMOVE THIS:
+window.TEUI.StateManager.addListener("d_13", () => {
+  ReferenceState.onReferenceStandardChange();
+});
+```
+
+**2. Add ref_d_13 listener only** (clean separation):
+```javascript
+// ✅ ADD THIS:
+window.TEUI.StateManager.addListener("ref_d_13", () => {
+  // NO automatic overlay - wait for "Set Values" button click
+  // Just store the selection
+});
+```
+
+**3. Wire "Set Values" button in S02 (DUAL-PURPOSE)**:
+```javascript
+// In Section02.js initializeEventHandlers()
+const setValuesBtn = document.getElementById("setValuesBtn");
+if (setValuesBtn) {
+  setValuesBtn.addEventListener("click", () => {
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Apply ReferenceValues overlay to Reference model
+      applyReferenceValuesOverlay("reference");
+    } else {
+      // Target mode: Apply ReferenceValues to Target model (code-minimum scenario)
+      applyReferenceValuesOverlay("target");
+    }
+  });
+}
+
+function applyReferenceValuesOverlay(targetMode) {
+  // Get the selected standard
+  const standard = targetMode === "reference"
+    ? window.TEUI.StateManager.getValue("ref_d_13")
+    : window.TEUI.StateManager.getValue("d_13");
+
+  // Apply to all sections with ReferenceValues
+  [5, 6, 9, 11, 12, 13, 14].forEach(sectionNum => {
+    const sectionModule = window.TEUI.SectionModules[`sect${String(sectionNum).padStart(2, '0')}`];
+
+    if (targetMode === "reference") {
+      // Apply to Reference model
+      if (sectionModule?.ReferenceState?.onReferenceStandardChange) {
+        sectionModule.ReferenceState.onReferenceStandardChange();
+      }
+    } else {
+      // Apply to Target model (populate with code-minimum values)
+      if (sectionModule?.TargetState?.applyReferenceValues) {
+        sectionModule.TargetState.applyReferenceValues(standard);
+      }
+    }
+  });
+
+  console.log(`[S02] ReferenceValues from "${standard}" applied to ${targetMode.toUpperCase()} model`);
+
+  // Recalculate and refresh UI
+  if (typeof calculateAll === 'function') calculateAll();
+  ModeManager.refreshUI();
+  ModeManager.updateCalculatedDisplayValues();
+}
+```
+
+**NEW: TargetState.applyReferenceValues() method** (add to each section):
+```javascript
+// In each section's TargetState object
+applyReferenceValues: function(standard) {
+  const referenceValues = window.TEUI?.ReferenceValues?.[standard] || {};
+
+  // Overwrite Target fields with code-minimum values
+  Object.keys(referenceValues).forEach(fieldId => {
+    if (referenceValues[fieldId] !== undefined) {
+      this.state[fieldId] = referenceValues[fieldId];
+      console.log(`[TargetState] Applied ${fieldId} = ${referenceValues[fieldId]} from ${standard}`);
+    }
+  });
+
+  this.saveState();
+  console.log(`[TargetState] Code-minimum values from ${standard} applied`);
+}
+```
+
+**4. ReferenceState.setDefaults()**: Read from `ref_d_13`:
+```javascript
+const currentStandard =
+  window.TEUI?.StateManager?.getValue?.("ref_d_13") || "OBC SB10 5.5-6 Z6";
+```
+
+**5. Mode-aware button visibility**:
+```javascript
+// In S02 ModeManager.switchMode()
+const setValuesBtn = document.getElementById("setValuesBtn");
+if (setValuesBtn) {
+  if (mode === "reference") {
+    setValuesBtn.style.display = "inline-block";
+  } else {
+    setValuesBtn.style.display = "none";
+  }
+}
+```
+
+### Pros
+
+✅ **Perfect state isolation** - d_13 and ref_d_13 are completely independent
+✅ **User control** - Explicit action required to apply Reference overlay
+✅ **Clear workflow** - User selects standard, then clicks button to apply
+✅ **No accidental contamination** - Target changes never affect Reference
+✅ **Architectural purity** - Follows dual-state principles perfectly
+✅ **Flexibility** - Can select different standards for Target vs Reference
+✅ **Teaching opportunity** - Button action makes ReferenceValues overlay explicit and understandable
+
+### Cons
+
+❌ **Extra step** - User must click button after selecting ref_d_13
+❌ **Potential confusion** - Some users may not understand why button is needed
+❌ **Implementation effort** - Need to wire button to trigger overlay across 7 sections
+⚠️ **Initial learning curve** - Users need to understand the two-step process
+
+### Current Status
+
+**Button infrastructure**: ✅ Complete (just added in commit 305f52f)
+- Button exists in S02 row 13, column E
+- Styled to match dropdowns
+- Tooltip support enabled (e_13)
+- No functionality wired yet
+
+**Architecture changes needed**:
+1. Remove d_13 listeners from 6 sections (S05, S06, S11, S12, S13, S14)
+2. Add ref_d_13 listeners (passive, no overlay trigger)
+3. Wire button click handler to trigger overlay
+4. Add mode-aware button visibility
+5. Update ReferenceState.setDefaults() to read ref_d_13
+6. Test thoroughly across all sections
+
+### User Experience Flow
+
+**Scenario A: User working in Target mode**
+1. User sees d_13 dropdown (for M/N compliance labels)
+2. Changes d_13 → Updates Target M/N compliance display only
+3. "Set Values" button hidden (not applicable in Target mode)
+
+**Scenario B: User working in Reference mode**
+1. User sees ref_d_13 dropdown
+2. Changes ref_d_13 → Stores selection only, no immediate effect
+3. Clicks "Set Values" button → All sections receive Reference overlay
+4. Reference calculations update with code baseline values
+
+**Scenario C: User switching between modes**
+1. Target mode: d_13 = "PH Classic" (for M/N labels)
+2. Switch to Reference mode: ref_d_13 = "PHIUS 2021" (independent)
+3. Click "Set Values" → Reference uses PHIUS baseline
+4. Switch back to Target: Still shows PH Classic M/N labels
+5. Perfect isolation maintained
+
+---
+
 ## Comparison Matrix
 
-| Aspect | Option 1: No State Mix | Option 2: One D13 Setting |
-|--------|----------------------|-------------------------|
-| **State Isolation** | ✅ Perfect | ⚠️ Intentional coupling |
-| **Implementation Effort** | ❌ Fix 6 sections | ✅ Add sync logic only |
-| **User Experience** | ❌ Two dropdowns | ✅ One dropdown |
-| **Flexibility** | ✅ Independent standards | ❌ Locked together |
-| **Maintenance** | ⚠️ Complex M/N calcs | ✅ Simple M/N calcs |
-| **Architecture Alignment** | ✅ Follows cheatsheet | ❌ Diverges from patterns |
-| **Teaching/Learning** | ❌ More complex | ✅ Easier to explain |
+| Aspect | Option 1: No State Mix | Option 2: One D13 Setting | Option 3: Explicit Button |
+|--------|----------------------|-------------------------|--------------------------|
+| **State Isolation** | ✅ Perfect | ⚠️ Intentional coupling | ✅ Perfect |
+| **Implementation Effort** | ❌ Fix 6 sections | ✅ Add sync logic only | ⚠️ Moderate - wire button + remove listeners |
+| **User Experience** | ❌ Two dropdowns (confusing) | ✅ One dropdown (simple) | ✅ Two dropdowns + explicit button |
+| **Flexibility** | ✅ Independent standards | ❌ Locked together | ✅ Independent standards |
+| **Maintenance** | ⚠️ Complex M/N calcs | ✅ Simple M/N calcs | ✅ Simple M/N calcs |
+| **Architecture Alignment** | ✅ Follows cheatsheet | ❌ Diverges from patterns | ✅ Perfect alignment |
+| **Teaching/Learning** | ❌ More complex | ✅ Easier to explain | ✅ Educational - makes overlay explicit |
+| **User Control** | ⚠️ Implicit (automatic) | ⚠️ Implicit (automatic) | ✅ Explicit (button click) |
+| **Accidental Changes** | ⚠️ Possible if confused | ⚠️ Target affects Reference | ✅ Impossible - explicit action required |
+| **Button Infrastructure** | ❌ Not needed | ❌ Not needed | ✅ Already built (commit 305f52f) |
 
 ---
 
