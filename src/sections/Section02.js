@@ -148,7 +148,14 @@ window.TEUI.SectionModules.sect02 = (function () {
             { value: "ADD YOUR OWN HERE", name: "ADD YOUR OWN HERE" },
           ],
         },
-        e: { content: "" }, // Empty but needed for alignment
+        e: {
+          type: "button",
+          buttonId: "setValuesBtn",
+          fieldId: "e_13", // Field ID for tooltip support
+          content: "Set Values",
+          classes: ["btn", "btn-sm", "btn-danger"],
+          tooltip: true, // Enable tooltip support
+        }, // Set Values button
         f: {
           content: "D.2",
           classes: ["label-prefix", "text-right", "no-wrap"],

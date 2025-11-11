@@ -697,6 +697,27 @@ TEUI.FieldManager = (function () {
 
                 cellElement.appendChild(inputElement);
                 cellElement.classList.add("number-input-cell");
+              } else if (cellDef.type === "button") {
+                // Create a button element
+                const buttonElement = document.createElement("button");
+                buttonElement.type = "button";
+                buttonElement.textContent = cellDef.content || "Button";
+
+                // Add button ID if specified
+                if (cellDef.buttonId) {
+                  buttonElement.id = cellDef.buttonId;
+                  buttonElement.setAttribute("data-button-id", cellDef.buttonId);
+                }
+
+                // Apply button classes
+                if (cellDef.classes && Array.isArray(cellDef.classes)) {
+                  cellDef.classes.forEach((className) => {
+                    buttonElement.classList.add(className);
+                  });
+                }
+
+                cellElement.appendChild(buttonElement);
+                cellElement.classList.add("button-cell");
               }
 
               // Handle other data attributes
@@ -714,6 +735,27 @@ TEUI.FieldManager = (function () {
                   cellElement.classList.add(className);
                 });
               }
+            } else if (cellDef.type === "button") {
+              // Create a button element
+              const buttonElement = document.createElement("button");
+              buttonElement.type = "button";
+              buttonElement.textContent = cellDef.content || "Button";
+
+              // Add button ID if specified
+              if (cellDef.buttonId) {
+                buttonElement.id = cellDef.buttonId;
+                buttonElement.setAttribute("data-button-id", cellDef.buttonId);
+              }
+
+              // Apply button classes
+              if (cellDef.classes && Array.isArray(cellDef.classes)) {
+                cellDef.classes.forEach((className) => {
+                  buttonElement.classList.add(className);
+                });
+              }
+
+              cellElement.appendChild(buttonElement);
+              cellElement.classList.add("button-cell");
             } else if (cellDef.content) {
               // Use innerHTML if htmlContent flag is set, otherwise textContent for safety
               if (cellDef.htmlContent) {
