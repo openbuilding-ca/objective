@@ -831,4 +831,53 @@ if (ModeManager.currentMode === "reference") {
 - This mimics what `syncAreasFromS10()` does (calculate S11, then trigger S12)
 - e_10 will update immediately on d_13 change
 
+### Test Results: Revised Fix (REVERTED - 2025-11-11)
+
+**Fix applied**: Added explicit S12.calculateAll() trigger after S11 calculation
+
+**Results**:
+- ❌ Original bug persists: e_10 still doesn't update on d_13 change
+- ❌ NEW BUG: Calculation drift introduced (e_10 = 195.4 instead of 197.6)
+- ❌ Root cause: Manually triggering S12 bypasses listener architecture and breaks calculation ordering
+- ❌ Cooling logic affected: Complex cascade dependencies disrupted
+
+**Decision**: REVERTED to baseline (commit 1b23dac)
+
+**Reason for revert**:
+1. Fix approach is architectural hack, not proper solution
+2. Introduced new calculation drift bug
+3. Manual S12 trigger breaks existing calculation dependencies
+4. Proper fix requires architectural change (Option 3: explicit button trigger)
+
+**Status**: Code reverted to safe baseline, documentation preserved
+
+---
+
+## Conclusion
+
+### Root Cause Summary
+
+The d_13 bug is **architectural**, not a simple logic fix:
+
+1. S11's `onReferenceStandardChange()` correctly calculates and publishes values
+2. BUT downstream sections (S12, S13, S01) don't listen to ref_i_97 changes
+3. The cascade only happens when something ELSE triggers S12 (like area changes)
+4. Manually triggering S12 breaks calculation ordering and creates new bugs
+
+### Recommended Path Forward
+
+**Do NOT attempt further fixes to current architecture!**
+
+The proper solution is **Option 3** from [D13-ARCHITECTURE-OPTIONS.md](D13-ARCHITECTURE-OPTIONS.md):
+- Remove automatic d_13 listeners from ReferenceState
+- Make ReferenceValues overlay explicit via "Set Values" button
+- Perfect state isolation eliminates this entire class of bugs
+- User has explicit control over when overlays apply
+
+**Current Status**:
+- Section11.js: SAFE (reverted to baseline)
+- Documentation: COMPLETE (diagnostic findings preserved)
+- Bug: UNDERSTOOD (architectural issue, not logic bug)
+- Next: Implement Option 3 architecture on new branch
+
 ---
