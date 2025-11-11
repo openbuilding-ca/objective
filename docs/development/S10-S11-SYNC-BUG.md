@@ -452,6 +452,278 @@ Under Option 3:
 
 | Date | Status | Notes |
 |------|--------|-------|
-| 2025-11-11 | INVESTIGATING | Document created, root cause identified |
-| TBD | FIX_APPLIED | Option A fix implemented |
+| 2025-11-11 | INVESTIGATING | Document created, initial root cause identified |
+| 2025-11-11 | FIX_ATTEMPTED | Applied Option A fix - REVERTED due to deeper issues |
+| 2025-11-11 | DEEPER_ANALYSIS | Discovered dual-sync contamination in syncAreasFromS10() |
+| TBD | FIX_REVISED | New fix targeting needsDualSync condition |
 | TBD | RESOLVED | Fix validated, ready for Option 3 |
+
+---
+
+## TEST RESULTS: Option A Fix (REVERTED - 2025-11-11)
+
+### Test Execution
+
+**Baseline commit**: `91c607b` (before fix)
+
+**Fix applied**:
+1. Removed mode check from `onReferenceStandardChange()` (always call `calculateAll()`)
+2. Removed `syncAreasFromS10()` from `switchMode()`
+
+### Issue 1 Discovered: State Bleed in Area Sync
+
+**Test scenario**:
+1. S11 in Target mode
+2. Change d_88 (Doors area) in S10 from 7.5 → 10
+3. Switch S11 to Reference mode
+
+**Expected**: Reference mode shows d_88 = 7.5 (original Reference default)
+**Actual**: Reference mode shows d_88 = 10 ❌ (contaminated by Target edit)
+
+**Root cause**: `syncAreasFromS10()` has flawed `needsDualSync` logic at [Section11.js:1220-1228](../../src/sections/Section11.js#L1220-L1228):
+
+```javascript
+const needsDualSync =
+  (isInitializationPhase || isImportActive) && // Intended: only during init/import
+  currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea); // ❌ BUG HERE
+```
+
+**The problem**: The condition `refArea_d88 !== stateManager_refArea` evaluates `true` during normal user edits when:
+- User edits Target area in S10
+- S10 publishes new `d_73 = 10` to StateManager
+- S11's Reference still has `d_88 = 7.5`
+- StateManager's `ref_d_73` might be stale or undefined
+- Condition triggers: `7.5 !== undefined` or `7.5 !== 10`
+- **Result**: Dual-sync runs during user edit, contaminating Reference state with Target values
+
+### Issue 2 Discovered: e_10 Doesn't Restore After d_13 Round-Trip
+
+**Test scenario**:
+1. Start with default d_13 → e_10 = X
+2. Change d_13 to different standard → e_10 = Y ✅
+3. Change d_13 back to default → e_10 doesn't restore to X ❌
+
+**Root cause**: Contaminated Reference areas from Issue 1:
+- d_13 change applies correct RSI/U-values from ReferenceValues
+- BUT Reference areas remain contaminated with Target values
+- Calculation: contaminated_area × correct_RSI = wrong_result
+- e_10 uses wrong Reference transmission loss values
+
+### Why Fix Failed
+
+The original analysis missed the **fundamental state contamination** in `syncAreasFromS10()`:
+- Mode switch anti-pattern was a symptom, not the root cause
+- Real problem: `needsDualSync` triggers during user edits, not just init/import
+- This causes Target edits to contaminate Reference state
+- All downstream calculations inherit this contamination
+
+**Conclusion**: Cannot fix mode switch issue without first fixing dual-sync contamination.
+
+---
+
+## REVISED Root Cause Analysis
+
+### Primary Issue: Dual-Sync Contamination
+
+**Location**: [Section11.js:1220-1266](../../src/sections/Section11.js#L1220-L1266)
+
+The `needsDualSync` condition is **too permissive**:
+
+```javascript
+// Current (BROKEN) logic:
+const refArea_d88 = ReferenceState.getValue("d_88");
+const stateManager_refArea = window.TEUI.StateManager.getValue("ref_d_73");
+
+const needsDualSync =
+  (isInitializationPhase || isImportActive) &&  // ✅ Correct: only init/import
+  currentMode === "target" &&                    // ✅ Correct: only when showing Target
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea); // ❌ BUG!
+```
+
+**Why the third condition is wrong**:
+
+1. **During initialization**:
+   - `refArea_d88 === undefined` ✅ (ReferenceState not yet populated)
+   - Dual-sync needed ✅
+
+2. **During import**:
+   - `refArea_d88 !== stateManager_refArea` ✅ (stale ReferenceState values)
+   - Dual-sync needed ✅
+
+3. **During user edit** (THE BUG):
+   - User edits Target area in S10: d_73 = 7.5 → 10
+   - S10 publishes: `d_73 = 10`, `ref_d_73 = 7.5` (unchanged)
+   - S11's ReferenceState: `d_88 = 7.5` (correct, unchanged)
+   - StateManager: `ref_d_73 = 7.5` (correct)
+   - Condition check: `refArea_d88 (7.5) !== stateManager_refArea (7.5)` = `false` ✅
+   - **WAIT** - but if StateManager's `ref_d_73` is undefined or stale...
+   - Condition check: `refArea_d88 (7.5) !== stateManager_refArea (undefined)` = `true` ❌
+   - **Dual-sync runs inappropriately!**
+
+**The contamination sequence**:
+1. User edits Target d_88 in S10 (Target mode)
+2. S10 publishes `d_73 = 10`
+3. S11 listener fires `syncAreasFromS10()`
+4. `needsDualSync` evaluates `true` (because `stateManager_refArea` is undefined/stale)
+5. Dual-sync writes Target value (10) to BOTH Target AND Reference states
+6. Reference state contaminated ❌
+
+### Secondary Issue: Mode Switch Anti-Pattern
+
+**Location**: [Section11.js:405](../../src/sections/Section11.js#L405)
+
+This is a **symptom** of the dual-sync contamination:
+- Mode switch calls `syncAreasFromS10()`
+- Which calls `calculateAll()`
+- User discovers this "unlocks" e_10 update
+- But it's masking the contamination issue
+
+---
+
+## REVISED Proposed Fixes
+
+### Fix Option B: Stricter Dual-Sync Condition (Recommended)
+
+**Problem**: `needsDualSync` runs during user edits, contaminating Reference state
+
+**Solution**: Make condition more restrictive - only run during actual init/import phases
+
+**Location**: [Section11.js:1220-1228](../../src/sections/Section11.js#L1220-L1228)
+
+**Change**:
+```javascript
+// ❌ CURRENT (BROKEN):
+const needsDualSync =
+  (isInitializationPhase || isImportActive) &&
+  currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+
+// ✅ FIXED (OPTION B1 - Simplest):
+const needsDualSync =
+  (isInitializationPhase || isImportActive) &&
+  currentMode === "target" &&
+  refArea_d88 === undefined; // Only if ReferenceState never populated
+
+// ✅ FIXED (OPTION B2 - More explicit):
+const needsDualSync =
+  (isInitializationPhase || isImportActive) && // Guard flags explicitly set
+  currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 === null); // Only truly unpopulated
+```
+
+**Rationale**:
+- During init/import: ReferenceState is unpopulated (`undefined`)
+- During user edit: ReferenceState has values (even if different from Target)
+- Checking only for `undefined` prevents dual-sync during user edits
+- Reference state remains isolated from Target edits
+
+**Alternative (OPTION B3 - Most defensive)**:
+```javascript
+// Disable dual-sync after initialization completes
+const needsDualSync =
+  isInitializationPhase && // Only during actual initialization
+  !isImportActive &&        // Import has its own explicit sync call
+  currentMode === "target" &&
+  refArea_d88 === undefined;
+```
+
+### Fix Option C: Remove Dual-Sync Entirely
+
+**Problem**: Dual-sync logic is complex and error-prone
+
+**Solution**: Always sync mode-specific state, handle init/import explicitly
+
+**Change**:
+```javascript
+// Remove needsDualSync logic entirely (lines 1220-1266)
+// Always sync only the current mode's state:
+
+Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
+  // Determine source field based on current mode
+  const sourceFieldId = currentMode === "reference"
+    ? `ref_${s10Field}`
+    : s10Field;
+
+  const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+
+  if (areaValue !== null && areaValue !== undefined) {
+    // Write to current mode's state only
+    if (currentMode === "target") {
+      TargetState.setValue(s11Field, areaValue);
+    } else {
+      ReferenceState.setValue(s11Field, areaValue);
+    }
+
+    // Update display
+    setCalculatedValue(s11Field, areaValue, "number");
+
+    console.log(`[S11 Area Sync] ${s11Field} = ${areaValue} (${currentMode} mode)`);
+  }
+});
+```
+
+**Rationale**:
+- Simpler logic: always sync current mode only
+- No special cases for init/import
+- FileHandler explicitly calls sync after import completes
+- Perfect state isolation by design
+
+---
+
+## REVISED Implementation Plan
+
+### Phase 1: Fix Dual-Sync Contamination (Critical)
+
+**Goal**: Prevent Target edits from contaminating Reference state
+
+**Option B1 (Recommended - Minimal Change)**:
+1. Change `needsDualSync` condition to only check `refArea_d88 === undefined`
+2. Test: Edit Target area → verify Reference state unchanged
+3. Test: Import file → verify both states populated correctly
+
+**Time estimate**: 15 minutes (change + basic test)
+
+### Phase 2: Fix Mode Switch Anti-Pattern (Clean-up)
+
+**Goal**: Remove `syncAreasFromS10()` call from `switchMode()`
+
+**Changes**:
+1. Comment out `syncAreasFromS10()` at line 405
+2. Add comment explaining why removed
+3. Test: Mode switch is UI-only (no calculations)
+
+**Time estimate**: 10 minutes
+
+### Phase 3: Fix d_13 Calculation Trigger (Original Issue)
+
+**Goal**: Ensure Reference engine runs when d_13 changes (regardless of S11's mode)
+
+**Changes**:
+1. Remove mode check from `onReferenceStandardChange()` (line 315-321)
+2. Always call `calculateAll()` for d_13 changes
+3. Keep UI refresh conditional on mode
+
+**Time estimate**: 10 minutes
+
+### Phase 4: Comprehensive Testing (Validation)
+
+**Test scenarios**:
+1. **State isolation**: Edit Target area → Reference unchanged ✅
+2. **d_13 update**: Change d_13 → e_10 updates immediately ✅
+3. **d_13 round-trip**: default → other → default → e_10 restores ✅
+4. **Mode switch**: UI-only, no calculations ✅
+5. **S10 sync**: Area changes sync correctly in both modes ✅
+6. **Import**: File import populates both states correctly ✅
+
+**Time estimate**: 1 hour
+
+### Phase 5: Documentation Update (Closure)
+
+1. Update this document with test results
+2. Commit fix to `dependency2` branch
+3. Update status to RESOLVED
+
+**Time estimate**: 15 minutes
+
+**Total revised time**: ~2 hours (reduced from 2.75 hours)
