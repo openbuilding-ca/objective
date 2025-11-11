@@ -528,3 +528,81 @@ console.log('m_65 = (d_65 / ref_d_65) * 100');
 3. **Implement chosen option**: Systematic fixes with testing
 4. **Update documentation**: Reflect chosen architecture in cheatsheet
 5. **Test thoroughly**: Verify compliance calculations work correctly
+
+---
+
+## Nov 11 Bug Investigation: d_13 Cascade Failure
+
+**Date**: 2025-11-11
+**Branch**: `dependency2`
+**Status**: Bug is **architectural**, requires Option 3 implementation
+
+### Summary
+
+During dependency mapping work on S11, discovered that changing d_13 (Reference Standard dropdown) in Reference mode does not trigger downstream cascade to update e_10 (TEUI) without manual mode switch. Investigation revealed this is not a simple logic bug but an architectural issue with how ReferenceValues overlays propagate through the calculation chain.
+
+### Related Commits
+
+- **1b23dac**: Safe baseline (reverted to this after fix attempts failed)
+- **c981154**: Revert commit documenting fix attempts and conclusion
+
+### Documentation
+
+- [S10-S11-SYNC-BUG.md](S10-S11-SYNC-BUG.md) - Complete diagnostic investigation and test results
+- [d13-cascade-diagnostic-2025-11-11T20-31-55.md](d13-cascade-diagnostic-2025-11-11T20-31-55.md) - Browser console diagnostic output
+
+### Root Cause Analysis
+
+**What happens**:
+1. User changes d_13 dropdown in Reference mode (e.g., Z6 → Z5)
+2. S11's `onReferenceStandardChange()` correctly loads new ReferenceValues and recalculates
+3. S11 publishes updated values (ref_i_97, ref_k_97) via StateManager
+4. **BUT**: Downstream sections (S12, S13, S14, S01) don't react - no cascade triggered
+5. e_10 (TEUI) does not update until user manually switches modes
+6. Mode switch triggers S12 via area changes, which then cascades normally
+
+**Why it happens**:
+- S11's local `calculateAll()` publishes values but doesn't trigger downstream listeners
+- S12/S13/S14 don't listen to ref_i_97/ref_k_97 changes directly
+- They only listen to climate data and area changes
+- The cascade architecture expects area changes as the primary trigger
+- ReferenceValues overlay change is a "silent" data update with no automatic propagation
+
+**Why simple fixes fail**:
+- Attempted fix: Manually trigger `S12.calculateAll()` after S11 calculation
+- Result: Breaks calculation ordering, introduces drift (195.4 vs 197.6)
+- This approach is an architectural hack that bypasses proper listener patterns
+- Cooling logic and other complex interdependencies break with forced cascade
+
+### Conclusion
+
+The bug is **architectural** and cannot be fixed with simple logic patches. The dual-state system was designed with implicit coupling between d_13 and Reference overlay application. Attempts to fix the cascade without addressing the underlying architecture create new bugs.
+
+**Recommended Solution**: **Option 3 implementation** (Explicit "Set Values" button)
+
+Option 3 solves this by:
+1. Removing automatic ReferenceValues overlay on d_13/ref_d_13 change
+2. Making overlay application explicit via button click
+3. Perfect state isolation - no implicit triggers
+4. User control - explicit action required for overlay
+5. No cascade complexity - button triggers full recalculation cleanly
+
+### Strategic Decision Required
+
+**Context**: Dependency mapping work (S01-S09 complete) was purpose of `dependency2` branch. Stopped at S09 due to M/N complexity related to d_13 issues.
+
+**Two paths forward**:
+
+**Path A: Continue Dependency Mapping (S10-S14)**
+- Work is independent of d_13 cascade bug
+- Will benefit future development regardless
+- Process: map dependencies → explicit field labels → complete M/N per section
+- Can complete S10-S14 with known d_13 limitation
+
+**Path B: Shift to Option 3 Implementation**
+- Fixes d_13 cascade bug architecturally
+- Will "radically simplify" M/N compliance work afterward
+- Button infrastructure already built (commit 305f52f)
+- Clean state isolation makes all dependency work easier
+
+**Recommendation**: Consider shifting to Option 3 implementation first, then returning to finish dependency mapping (S10-S14) with simplified architecture.
