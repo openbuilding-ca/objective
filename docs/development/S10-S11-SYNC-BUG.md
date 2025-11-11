@@ -727,3 +727,108 @@ Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
 **Time estimate**: 15 minutes
 
 **Total revised time**: ~2 hours (reduced from 2.75 hours)
+
+---
+
+## TEST RESULTS: Phase 3 Fix Diagnostic (2025-11-11)
+
+### Test Execution
+
+**Fix applied**: Phase 3 only - moved `calculateAll()` outside mode check in `onReferenceStandardChange()`
+
+**Diagnostic tool**: Browser console script capturing:
+- d_13 changes
+- S11 calculateAll() calls
+- S11 StateManager publishes
+- S01 e_10 updates
+
+**Test file**: [d13-cascade-diagnostic-2025-11-11T20-31-55.md](d13-cascade-diagnostic-2025-11-11T20-31-55.md)
+
+### Key Findings
+
+**Summary**:
+- ✅ S11 calculations ARE running (240 publishes recorded)
+- ✅ ref_i_97 values ARE changing (59532 → 31694 → 59532)
+- ❌ S01 e_10 updates: **0** (never triggered)
+- ❌ e_10 remained stuck at 197
+
+**Timeline Analysis**:
+
+1. **First d_13 change** (+26434ms: Z6 → Z5):
+   - d_13 changes
+   - S11 publishes new values immediately (+26447ms)
+   - ref_i_97: 59532 → 31694 (NEW VALUE from Z5 standard) ✅
+   - **BUT** S01 never recalculates ❌
+   - e_10 remains 197 (old value)
+
+2. **Second d_13 change** (+30060ms: Z5 → Z6):
+   - d_13 changes back to default
+   - S11 publishes immediately (+30072ms)
+   - ref_i_97: 31694 → 59532 (restored to Z6 default) ✅
+   - **BUT** S01 never recalculates ❌
+   - e_10 still 197 (never updated)
+
+3. **Mode switch** (not in diagnostic, but observed separately):
+   - User manually switches S11 mode
+   - Massive cascade triggers
+   - e_10 FINALLY updates ✅
+
+### Root Cause Identified
+
+**The Phase 3 fix is incomplete!**
+
+S11's local `calculateAll()` function:
+1. ✅ Calculates S11's values correctly
+2. ✅ Publishes ref_i_97, ref_k_97 to StateManager
+3. ❌ **Does NOT trigger downstream cascade** (S12 → S13 → S01)
+
+**Why mode switch "works"**:
+- `switchMode()` → `syncAreasFromS10()` → writes areas to StateManager
+- Area changes trigger S12 listeners
+- S12 cascades to S13 → S14 → S01
+- S01 reads the fresh ref_i_97 values (published earlier but ignored)
+- e_10 finally updates
+
+**The missing piece**: S12 doesn't listen to ref_i_97 changes! It listens to:
+- Climate data (d_20, d_21, d_22, h_22)
+- d_13 changes
+- Area changes from S10
+
+When S11 publishes ref_i_97, nothing downstream reacts. The cascade only happens when something triggers S12 independently.
+
+### Revised Fix Required
+
+**Problem**: S11's local `calculateAll()` doesn't trigger downstream cascade
+
+**Solution**: After S11 calculates, explicitly trigger S12's calculateAll() which will cascade properly
+
+**Location**: [Section11.js:314-323](../../src/sections/Section11.js#L314-L323)
+
+**Change**:
+```javascript
+console.log(
+  "S11: Reference standard updated, areas preserved, performance values updated",
+);
+
+// ✅ FIX: Call S11's local calculateAll() to update S11's values
+calculateAll();
+
+// ✅ FIX: Trigger downstream cascade via S12
+// S12 → S13 → S14 → Cooling → S01 (e_10 update)
+if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
+  window.TEUI.SectionModules.sect12.calculateAll();
+}
+
+// Only refresh UI if currently in reference mode
+if (ModeManager.currentMode === "reference") {
+  ModeManager.refreshUI();
+}
+```
+
+**Rationale**:
+- S11's local `calculateAll()` updates S11's values and publishes them
+- S12's `calculateAll()` triggers the full application cascade
+- This mimics what `syncAreasFromS10()` does (calculate S11, then trigger S12)
+- e_10 will update immediately on d_13 change
+
+---
