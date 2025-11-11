@@ -10,6 +10,10 @@
  * which were previously formula-based, have been intentionally omitted from this structure.
  * A revised calculation method for dependent cells (e.g., M10) no longer requires
  * these complex lookups to be resolved here.
+ * 
+ * 
+ * Need to establish a cascading method to apply to unprefixed Target model, AND reference model, AND T-Cells (helper) as required, ie d_52, ref_d_52, t_52
+ * 
  */
 
 window.TEUI = window.TEUI || {};
@@ -26,7 +30,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -64,7 +68,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -102,7 +106,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -123,6 +127,7 @@ TEUI.ReferenceValues = {
     f_94: "3.72", // Min. Permissible RSI
     f_95: "1.96", // Min. Permissible RSI Slab
     d_97: "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    d_113: "Gas", // The ONLY Reference Fuel Type for this Standard
     j_115: "0.92", // Min. AFUE if Gas or Oil
     j_116: "3.3", // Min. COPc if Dedicated Cooling
     f_113: "7.1", // Min. HSPF if Heatpump
@@ -139,7 +144,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     i_59: "45", // Ideal RH% averaged annually
-    g_67: "Regular", // Required Eppt Efficienct Spec.
+    g_67: "Regular", // Default Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
@@ -177,7 +182,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
-    g_67: "Regular", // Required Eppt Efficienct Spec.
+    g_67: "Regular", // Default Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
@@ -215,7 +220,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
-    g_67: "Regular", // Required Eppt Efficienct Spec.
+    g_67: "Regular", // Default Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
@@ -253,7 +258,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
-    g_67: "Regular", // Required Eppt Efficienct Spec.
+    g_67: "Regular", // Default Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
@@ -291,7 +296,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
-    g_67: "Regular", // Required Eppt Efficienct Spec.
+    g_67: "Regular", // Default Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
@@ -330,7 +335,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    t_65: "7.0", // Reference Occupant Load (W/m²)
+    t_65: "7.0", // Reference Plug Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -368,8 +373,8 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     d_66: "1.1", // Max. Permissible Lighting Load
-    g_67: "Efficient", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    g_67: "Efficient", // Default Eppt Efficienct Spec.
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "1.1", // Reference Lighting Load (W/m²)
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -408,8 +413,8 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     d_66: "1.1", // Max. Permissible Lighting Load
-    g_67: "Efficient", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    g_67: "Efficient", // Default Eppt Efficienct Spec.
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "1.1", // Reference Lighting Load (W/m²)
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -448,10 +453,10 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     d_66: "1.1", // Max. Permissible Lighting Load
-    g_67: "Efficient", // Required Eppt Efficienct Spec.
-    t_65: "5.0", // Reference Occupant Load (W/m²)
+    g_67: "Efficient", // Default Eppt Efficienct Spec.
+    t_65: "5.0", // Reference Plug Load (W/m²)
     t_66: "1.1", // Reference Lighting Load (W/m²)
-    t_67: "5.0", // Reference Equipment Load (W/m²)
+    // t_67: "5.0", // Reference Equipment Load (W/m²) - THIS IS ESTABLISHED BY OCCUPANCY AT D13
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
     f_75: "0.50", // SHGC of Glazing Max.
@@ -492,7 +497,7 @@ TEUI.ReferenceValues = {
     g_67: "Efficient", // Required Eppt Efficienct Spec.
     t_65: "5.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²)
-    t_67: "2.0", // Reference Equipment Load (W/m²)
+    // t_67: "2.0", // Reference Equipment Load (W/m²) THIS IS ESTABLISHED BY OCCUPANCY AT D13
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
     f_75: "0.50", // SHGC of Glazing Max.
@@ -533,7 +538,7 @@ TEUI.ReferenceValues = {
     g_67: "Efficient", // Required Eppt Efficienct Spec.
     t_65: "5.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²)
-    t_67: "2.0", // Reference Equipment Load (W/m²)
+    // t_67: "2.0", // Reference Equipment Load (W/m²) THIS IS ESTABLISHED BY OCCUPANCY AT D13
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
     f_75: "0.50", // SHGC of Glazing Max.

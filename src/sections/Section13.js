@@ -133,8 +133,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (!this.state.j_115_userModified) {
         this.state.j_115 = referenceValues.j_115 || "0.90";
       }
-      // Always update system type (this determines calculation methodology)
-      this.state.d_113 = referenceValues.d_113 || "Gas";
+      // Update system type: use reference value if defined, otherwise revert to default
+      this.state.d_113 = referenceValues.d_113 || "Heatpump";
 
       this.saveState();
 
@@ -862,7 +862,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           fieldId: "d_113",
           type: "dropdown",
           dropdownId: "dd_d_113",
-          value: "Heatpump",
+          value: "Heatpump", // Default value - Should govern during Initialization
           section: "mechanicalLoads",
           tooltip: true, // Select Primary Heating System
           options: [

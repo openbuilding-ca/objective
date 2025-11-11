@@ -2124,11 +2124,15 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     let plugLoadDensity;
 
-    // Priority 1: Check for Passive House standards (contains "PH") → 2.1 W/m²
-    if (buildingStandard.includes("PH")) {
+    // Priority 1: Check for Passive House standards with 2.1 W/m² requirement
+    if (["PH Classic", "PH Plus", "PH Premium"].some(std => buildingStandard.includes(std))) {
       plugLoadDensity = 2.1;
     }
-    // Priority 2: Check for residential/care occupancies → 5 W/m²
+    // Priority 2: Check for Passive House standards with 5 W/m² requirement
+    else if (["PHIUS", "EnerPHit", "PH Low Energy"].some(std => buildingStandard.includes(std))) {
+      plugLoadDensity = 5;
+    }
+    // Priority 3: Check for residential/care occupancies → 5 W/m²
     else {
       const isResidentialOrCare =
         buildingType === "C-Residential" ||
