@@ -530,6 +530,7 @@ class ExcelMapper {
             extractedValue = "Efficient";
           }
           // Normalize d_118 (HRV/ERV SRE %) value from Excel
+          // ✅ FIX: Now editable 2dp field (was integer slider) - preserve decimals
           if (fieldId === "d_118") {
             let numVal;
             if (typeof extractedValue === "string") {
@@ -543,16 +544,15 @@ class ExcelMapper {
             }
 
             if (!isNaN(numVal)) {
-              // If numVal is a decimal (e.g., 0.89 for 89%), convert to whole percentage.
-              // Heuristic: if it's <= 1 (and non-negative), assume it's a decimal factor.
+              // If numVal is a decimal (0-1 range like 0.048 for 4.80%), convert to percentage
               if (numVal >= 0 && numVal <= 1) {
-                extractedValue = Math.round(numVal * 100).toString(); // Use Math.round for safety
+                extractedValue = (numVal * 100).toFixed(2); // 0.048 → "4.80"
               } else {
-                // Otherwise, assume it's already a whole percentage (e.g., 89)
-                extractedValue = Math.round(numVal).toString(); // Round to handle potential decimals if any
+                // Already a percentage (like 4.80 or 89.40)
+                extractedValue = numVal.toFixed(2); // Preserve 2dp: 4.80 → "4.80"
               }
             } else {
-              extractedValue = "0"; // Default if parsing failed
+              extractedValue = "89.00"; // Default if parsing failed
             }
           }
           // Normalize d_97 (Thermal Bridge Penalty %) value from Excel
