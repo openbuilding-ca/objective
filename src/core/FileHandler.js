@@ -857,7 +857,35 @@
 
         // Get values for each field in the explicit list
         userEditableFieldIds.forEach((fieldId) => {
-          // Get target/application value
+          // ✅ CONDITIONAL EXPORT: Skip j_116 when d_113="Heatpump"
+          // When Heatpump, j_116 is calculated from j_113, not user-editable
+          // Exporting empty string ensures import won't overwrite calculated value
+          if (fieldId === "j_116") {
+            const d113Value = this.stateManager.getValue("d_113");
+            if (d113Value === "Heatpump") {
+              targetValues.push(""); // Export empty - j_116 is calculated
+              console.log("[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)");
+            } else {
+              const targetValue = this.stateManager.getValue(fieldId) ?? "";
+              const formattedTarget = formatExportValue(fieldId, targetValue);
+              targetValues.push(escapeCSV(formattedTarget));
+            }
+
+            // Same logic for Reference mode
+            const refD113Value = this.stateManager.getValue("ref_d_113");
+            if (refD113Value === "Heatpump") {
+              referenceValues.push(""); // Export empty - ref_j_116 is calculated
+              console.log("[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)");
+            } else {
+              const refFieldId = `ref_${fieldId}`;
+              const referenceValue = this.stateManager.getValue(refFieldId) ?? "";
+              const formattedReference = formatExportValue(fieldId, referenceValue);
+              referenceValues.push(escapeCSV(formattedReference));
+            }
+            return; // Skip normal export logic for j_116
+          }
+
+          // Normal export for all other fields
           const targetValue = this.stateManager.getValue(fieldId) ?? "";
           const formattedTarget = formatExportValue(fieldId, targetValue);
           targetValues.push(escapeCSV(formattedTarget));
