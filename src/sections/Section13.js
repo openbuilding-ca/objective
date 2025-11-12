@@ -2072,6 +2072,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
         }
+        if (fieldId === "d_118") {
+          calculateAll(); // HRV/ERV efficiency affects ventilation energy calcs
+          ModeManager.updateCalculatedDisplayValues();
+        }
         if (fieldId === "l_118") {
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
