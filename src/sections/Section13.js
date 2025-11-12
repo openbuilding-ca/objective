@@ -54,7 +54,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // ✅ Mark fields as user-modified to preserve during d_13 changes
       if (
         source === "user-modified" &&
-        (fieldId === "f_113" || fieldId === "j_115")
+        (fieldId === "f_113" || fieldId === "j_115" || fieldId === "j_116")
       ) {
         this.state[`${fieldId}_userModified`] = true;
       }
@@ -184,7 +184,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Mark fields as user-modified to preserve during d_13 changes
       if (
         source === "user-modified" &&
-        (fieldId === "f_113" || fieldId === "j_115")
+        (fieldId === "f_113" || fieldId === "j_115" || fieldId === "j_116")
       ) {
         this.state[`${fieldId}_userModified`] = true;
       }
@@ -3616,9 +3616,13 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // When switching TO non-Heatpump with Cooling active, ensure j_116 has user default
     if (!isHP && isCoolingActive) {
+      // ✅ FIX: Check if user has modified j_116 - preserve user value if so
+      const currentState = window.TEUI?.sect13?.ModeManager?.getCurrentState();
+      const isUserModified = currentState?.state?.j_116_userModified;
+
       const currentJ116 = ModeManager.getValue("j_116");
-      if (!currentJ116 || currentJ116 === "0") {
-        // Reset to field definition default if empty or 0
+      if ((!currentJ116 || currentJ116 === "0") && !isUserModified) {
+        // Reset to field definition default if empty or 0 AND not user-modified
         const defaultJ116 = getFieldDefault("j_116") || "2.66";
         ModeManager.setValue("j_116", defaultJ116, "system-update");
         const j116Element = document.querySelector('[data-field-id="j_116"]');
