@@ -689,6 +689,13 @@
           console.log(`[FileHandler] Syncing ${name} ReferenceState...`);
           section.ReferenceState.syncFromGlobalState();
         }
+
+        // ✅ CRITICAL: Refresh DOM after syncing state from imported values
+        // This updates editable fields (j_115, j_116, etc.) to show imported values
+        if (section?.ModeManager?.refreshUI) {
+          section.ModeManager.refreshUI();
+          console.log(`[FileHandler] ${name} DOM refreshed after sync`);
+        }
       });
 
       console.log("[FileHandler] ✅ PHASE 2: Pattern A section sync complete");
