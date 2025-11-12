@@ -182,18 +182,70 @@ l: {
 **IMPORTANT:** Complete each phase fully and test before proceeding to next phase.
 
 1. ✅ **Phase 1** - Analysis & Documentation (COMPLETE)
-2. ⏸️ **Phase 2** - Fix d_118 field definition + add event handler → **TEST d_118 input/calculations**
-3. ⏸️ **Phase 3** - Array-based normalization in ExcelMapper → **TEST Excel import precision**
-4. ⏸️ **Phase 4** - Add j_116 to CSV export/import → **TEST j_116 conditional logic**
-5. ⏸️ **Phase 5** - Update l_118 default + run full test suite → **TEST all precision**
-6. ⏸️ **Phase 6** - Apply to Reference sheet → **TEST Reference import**
+2. ✅ **Phase 2** - Fix d_118 field definition + add event handler (COMPLETE - **PARTIAL ISSUES REMAIN**)
+3. ✅ **Phase 2.5** - Fix j_115 mode switch override bug (COMPLETE)
+4. ✅ **Phase 2.6** - Fix refreshUI() display formatting (COMPLETE)
+5. ⏸️ **Phase 2.7** - Fix j_116 userModified + ghosting (IN PROGRESS)
+6. ⏸️ **Phase 3** - Fix d_118 import rounding (4.80 → 5.00) (CRITICAL BUG)
+7. ⏸️ **Phase 4** - Array-based normalization in ExcelMapper
+8. ⏸️ **Phase 5** - Add j_116 to ExcelMapper with conditional logic
+9. ⏸️ **Phase 6** - Test full CSV export/import precision cycle
+10. ⏸️ **Phase 7** - Apply to Reference sheet
 
-**Testing Between Phases:**
-- After Phase 2: Verify d_118 editable field accepts input and triggers calculations
-- After Phase 3: Import Excel file, verify all 2dp fields preserve precision
-- After Phase 4: Test j_116 import with both Heatpump and non-Heatpump systems
-- After Phase 5: Run full CSV export→import cycle, verify no drift
-- After Phase 6: Test Reference sheet import
+---
+
+## 🚨 CURRENT STATUS - November 12, 2025 (Session 2)
+
+### ✅ FIXES COMPLETED (Commits: d6a10dd, 205879d, bb99e35)
+
+**1. j_115 Mode Switch Override Bug (Commits: d6a10dd, 205879d)**
+- **Problem:** j_115 imported correctly as "0.92" but reverted to "0.90" after mode switch (Target ↔ Reference)
+- **Root Cause:** `handleHeatingSystemChangeForGhosting()` at line 3669 unconditionally overwrote j_115 with default "0.90" during `switchMode() → updateConditionalUI()`
+- **Fix 1:** Added `j_115_userModified` flag tracking to TargetState.setValue() (lines 54-60)
+- **Fix 2:** Added check in ghosting handler to skip j_115 update if `isUserModified` flag is true (lines 3629-3634)
+- **Status:** ✅ j_115 now preserves user values across mode switches
+
+**2. Display Precision Loss (Commit: bb99e35)**
+- **Problem:** Fields displayed as "0.9", "89", "3" instead of "0.90", "89.00", "3.00" - made imported precision invisible
+- **Root Cause:** refreshUI() line 486 used raw `element.textContent = stateValue` without formatting
+- **Fix:** Applied `formatNumber(value, "number-2dp")` to all contenteditable fields (lines 487-492)
+- **Also Fixed:** Updated l_118 default from "3" to "3.00" (line 1252)
+- **Status:** ✅ All editable fields now display with 2dp precision
+
+### ❌ REMAINING CRITICAL BUGS
+
+**3. j_116 Mode Switch Override Bug (SAME AS j_115)**
+- **Problem:** j_116 (Cooling COP) user edits reset to "2.66" after mode switch
+- **Only Active When:** d_113 ≠ "Heatpump" AND d_116 = "Cooling" (otherwise ghosted)
+- **Root Cause:** j_116 NOT in userModified flag tracking (lines 54-60, 176-180)
+- **Required Fix:** Add j_116 to userModified tracking in both TargetState and ReferenceState
+- **Status:** ⏸️ NOT FIXED YET - Same pattern as j_115
+
+**4. d_118 Import Rounding Bug (CRITICAL - HIGH PRIORITY)**
+- **Problem:** Imported value "4.80" becomes "5.00" after import
+- **Expected:** 4.80 should remain 4.80
+- **Observed:** After import, d_118 displays "5.00" (rounded)
+- **j_115 Works:** Correctly shows "0.92" after same import
+- **Location:** Either FileHandler.js CSV parsing OR ExcelMapper.js normalization
+- **Status:** 🚨 NOT INVESTIGATED YET - BLOCKING CSV IMPORT PRECISION
+
+**5. j_115 Still Reverts After Mode Switch**
+- **Problem:** Despite fixes, j_115 still reverts to "0.90" after mode switch in some scenarios
+- **Reported:** "Fine on import, mode switch sets it back to default/fallback"
+- **Hypothesis:** May be additional code path triggering override beyond `handleHeatingSystemChangeForGhosting()`
+- **Status:** ⚠️ PARTIAL FIX - May need additional investigation
+
+### 📊 Test Results So Far
+
+**Working:**
+- ✅ j_115 imports correctly as "0.92"
+- ✅ Display shows "0.90", "0.92", "3.00" with 2dp precision
+- ✅ l_118 now has correct "3.00" default
+
+**Broken:**
+- ❌ d_118 imports "4.80" but displays "5.00" (rounded)
+- ❌ j_116 user edits reset on mode switch
+- ⚠️ j_115 may still revert in some mode switch scenarios
 
 ---
 
