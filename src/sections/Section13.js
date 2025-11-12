@@ -52,8 +52,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.state[fieldId] = value;
 
       // ✅ Mark fields as user-modified to preserve during d_13 changes
+      // CRITICAL: Treat "imported" values as user-modified to preserve them across mode switches
       if (
-        source === "user-modified" &&
+        (source === "user-modified" || source === "imported") &&
         (fieldId === "f_113" || fieldId === "j_115" || fieldId === "j_116")
       ) {
         this.state[`${fieldId}_userModified`] = true;
@@ -182,8 +183,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.state[fieldId] = value;
 
       // Mark fields as user-modified to preserve during d_13 changes
+      // CRITICAL: Treat "imported" values as user-modified to preserve them across mode switches
       if (
-        source === "user-modified" &&
+        (source === "user-modified" || source === "imported") &&
         (fieldId === "f_113" || fieldId === "j_115" || fieldId === "j_116")
       ) {
         this.state[`${fieldId}_userModified`] = true;
