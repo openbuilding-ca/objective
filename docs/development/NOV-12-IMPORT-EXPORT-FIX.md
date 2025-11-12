@@ -222,19 +222,31 @@ l: {
 - **Fix:** Changed to `.toFixed(2)` for decimal preservation in lines 549/552
 - **Status:** ✅ FIXED - d_118 now imports and displays "4.80" correctly
 
-**5. Section13.js fieldFormats Verbosity Reduction (Commit: [pending])**
+**5. Section13.js fieldFormats Verbosity Reduction (Commit: b7207ae)**
 - **Problem:** fieldFormats object was 47 lines with verbose inline comments
 - **Fix:** Condensed to 19 lines by grouping fields on same line, keeping only category comments
 - **Status:** ✅ FIXED - Code is more maintainable and easier to scan
 
+**6. j_116 Export with Precision Formatting (Commit: 273aa19, cf150c7)**
+- **Problem:** j_116 not exported at all, and U-values (g_88-g_93) needed 3dp precision
+- **Fix (273aa19):** Added j_116 to FileHandler export list (line 809)
+- **Fix (cf150c7):** Added export formatting - j_116 exports with 2dp (2.66, 3.30), U-values with 3dp
+- **Status:** ✅ FIXED - j_116 exports correctly, U-values maintain thermal accuracy
+
+**7. Import UserModified Flag Not Set (Commit: 719b909)**
+- **Problem:** After importing j_115=0.92, mode switch reset it to default 0.90
+- **Root Cause:** Import uses source="imported" but userModified flag only set for source="user-modified"
+- **Fix:** Modified TargetState/ReferenceState setValue() to treat "imported" same as "user-modified"
+- **Status:** ✅ FIXED - Imported j_115/j_116/f_113 values persist across mode switches
+
 ### ❌ REMAINING CRITICAL ISSUES
 
-**6. j_116 NOT in ExcelMapper (HIGH PRIORITY)**
-- **Problem:** j_116 is not mapped or exported in ExcelMapper.js
+**8. j_116 NOT in ExcelMapper Import (HIGH PRIORITY)**
+- **Problem:** j_116 exports but does NOT import (not in ExcelMapper mappings)
 - **Complexity:** Must conditionally import - skip if d_113="Heatpump" (j_116 is calculated), otherwise import user value
-- **Status:** 🚨 NOT STARTED - Requires conditional import logic
+- **Status:** 🚨 NOT STARTED - Requires ExcelMapper mappings + conditional import logic
 
-**7. Import Calculation Order Bug - d_113 Dependency (CRITICAL - NEW DISCOVERY)**
+**9. Import Calculation Order Bug - d_113 Dependency (CRITICAL - NEW DISCOVERY)**
 - **Problem:** When importing file with d_113="Gas", Reference e_10 calculates incorrectly (>900 instead of 838.0)
 - **Expected Behavior:** If manually set d_113="Gas" in both modes THEN import, e_10 calculates correctly to 838.0
 - **Root Cause Hypothesis:** Import sets d_113 AFTER other fields, but calculations depend on d_113 being set FIRST
@@ -246,14 +258,17 @@ l: {
 ### 📊 Test Results - Session 3
 
 **Working:**
-- ✅ j_115 imports correctly as "0.92" and persists across mode switches
+- ✅ j_115 imports correctly as "0.92" and persists across mode switches (Fix: commit 719b909)
 - ✅ j_116 user edits persist across mode switches (when d_113 ≠ Heatpump)
+- ✅ j_116 exports with 2dp precision (2.66, 3.30) instead of 16+ decimals (Fix: commit cf150c7)
+- ✅ U-values (g_88-g_93) export with 3dp precision for thermal accuracy (Fix: commit cf150c7)
 - ✅ d_118 imports and displays "4.80" correctly (no rounding)
 - ✅ Display shows "0.90", "0.92", "3.00", "4.80" with 2dp precision
 - ✅ l_118 has correct "3.00" default
+- ✅ Array-based normalization reduces ExcelMapper code duplication (commit 32a632e)
 
 **Broken:**
-- ❌ j_116 not exported/imported at all (not in ExcelMapper)
+- ❌ j_116 not in ExcelMapper import mappings (exports but doesn't import)
 - ❌ e_10 (Reference total) miscalculates when d_113="Gas" is imported (>900 vs expected 838.0)
 - ⚠️ Import order issue: d_113 must be set BEFORE other S13 fields for correct calculations
 
@@ -906,14 +921,18 @@ const section13Fields = [
 
 ## ✅ Definition of Done
 
-- [x] Fix j_115 userModified flag and ghosting handler
-- [x] Fix refreshUI() display formatting for 2dp precision
-- [x] Fix j_116 userModified flag and ghosting handler
-- [x] Fix d_118 import rounding (4.80 → 5.00)
-- [x] Reduce Section13.js fieldFormats verbosity
+- [x] Fix j_115 userModified flag and ghosting handler (commits d6a10dd, 205879d)
+- [x] Fix refreshUI() display formatting for 2dp precision (commit bb99e35)
+- [x] Fix j_116 userModified flag and ghosting handler (commit 06fe634)
+- [x] Fix d_118 import rounding (4.80 → 5.00) (commit ea7651b)
+- [x] Reduce Section13.js fieldFormats verbosity (commit b7207ae)
+- [x] Array-based normalization in ExcelMapper (commit 32a632e)
+- [x] Add j_116 to FileHandler export list (commit 273aa19)
+- [x] Export precision formatting: j_116 2dp, U-values 3dp (commit cf150c7)
+- [x] Fix imported values not persisting across mode switches (commit 719b909)
+- [ ] Add j_116 to ExcelMapper import mappings (NEXT STEP)
+- [ ] Implement conditional j_116 import logic
 - [ ] Implement d_113 priority field import (two-phase import)
-- [ ] Add j_116 to ExcelMapper with conditional import logic
-- [ ] Add j_116 to FileHandler export list
 - [ ] Test import with d_113="Gas" → verify e_10 calculates to 838.0
 - [ ] Test j_116 conditional import (skip for Heatpump, import for Gas/Oil/Electric)
 - [ ] Test full CSV export/import precision cycle (all 4 fields with 2dp)
