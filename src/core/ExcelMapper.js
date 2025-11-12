@@ -529,13 +529,13 @@ class ExcelMapper {
           ) {
             extractedValue = "Efficient";
           }
-          // Normalize d_118 (HRV/ERV SRE %) value from Excel
-          // ✅ FIX: Now editable 2dp field (was integer slider) - preserve decimals
-          if (fieldId === "d_118") {
+          // ✅ ARRAY-BASED NORMALIZATION: Decimal Coefficient Fields (0-1 range, store as "0.90")
+          const decimalCoefficientFields = ["k_52", "j_115"];
+          if (decimalCoefficientFields.includes(fieldId)) {
             let numVal;
             if (typeof extractedValue === "string") {
               if (extractedValue.endsWith("%")) {
-                numVal = parseFloat(extractedValue.replace("%", ""));
+                numVal = parseFloat(extractedValue.replace("%", "")) / 100; // 90% → 0.90
               } else {
                 numVal = parseFloat(extractedValue);
               }
@@ -544,98 +544,71 @@ class ExcelMapper {
             }
 
             if (!isNaN(numVal)) {
-              // If numVal is a decimal (0-1 range like 0.048 for 4.80%), convert to percentage
-              if (numVal >= 0 && numVal <= 1) {
-                extractedValue = (numVal * 100).toFixed(2); // 0.048 → "4.80"
-              } else {
-                // Already a percentage (like 4.80 or 89.40)
-                extractedValue = numVal.toFixed(2); // Preserve 2dp: 4.80 → "4.80"
-              }
-            } else {
-              extractedValue = "89.00"; // Default if parsing failed
-            }
-          }
-          // Normalize d_97 (Thermal Bridge Penalty %) value from Excel
-          if (fieldId === "d_97") {
-            if (
-              typeof extractedValue === "number" &&
-              extractedValue >= 0 &&
-              extractedValue <= 1
-            ) {
-              // If Excel stores 30% as 0.3, convert to 30
-              extractedValue = (extractedValue * 100).toString();
-            } else if (
-              typeof extractedValue === "string" &&
-              extractedValue.endsWith("%")
-            ) {
-              // If Excel stores "30%"
-              extractedValue = parseFloat(
-                extractedValue.replace("%", ""),
-              ).toString();
-            } else if (typeof extractedValue === "number") {
-              // If Excel stores just the number 30 for 30%
-              extractedValue = extractedValue.toString();
-            }
-            // Ensure it's a string for consistency, defaulting to "0" if parsing failed
-            if (isNaN(parseFloat(extractedValue))) {
-              extractedValue = "0"; // Or a more appropriate default like "5"
-            }
-          }
-          // Normalize k_52 (SHW AFUE) value from Excel
-          if (fieldId === "k_52") {
-            let numVal;
-            if (typeof extractedValue === "string") {
-              if (extractedValue.endsWith("%")) {
-                numVal = parseFloat(extractedValue.replace("%", ""));
-                // Convert percentage to decimal (e.g., 90% → 0.90)
-                numVal = numVal / 100;
-              } else {
-                numVal = parseFloat(extractedValue);
-              }
-            } else if (typeof extractedValue === "number") {
-              numVal = extractedValue;
-            }
-
-            if (!isNaN(numVal)) {
-              // If numVal is > 1, assume it's a percentage that needs conversion to decimal
               if (numVal > 1) {
-                extractedValue = (numVal / 100).toFixed(2);
+                extractedValue = (numVal / 100).toFixed(2); // 90 → "0.90"
               } else {
-                // Assume it's already a decimal factor (e.g., 0.90)
-                extractedValue = numVal.toFixed(2);
+                extractedValue = numVal.toFixed(2); // 0.90 → "0.90"
               }
             } else {
-              extractedValue = "0.90"; // Default AFUE if parsing failed
+              const defaults = { k_52: "0.90", j_115: "0.90" };
+              extractedValue = defaults[fieldId] || "0.90";
             }
           }
-          // Normalize k_120 (Unoccupied Setback %) value from Excel
-          if (fieldId === "k_120") {
+
+          // ✅ ARRAY-BASED NORMALIZATION: Standard 2dp Numeric Fields (store as "3.50")
+          const standard2dpFields = ["l_118", "d_119"];
+          if (standard2dpFields.includes(fieldId)) {
+            const numVal = parseFloat(extractedValue);
+            if (!isNaN(numVal)) {
+              extractedValue = numVal.toFixed(2); // 3.5 → "3.50"
+            } else {
+              const defaults = { l_118: "3.00", d_119: "14.00" };
+              extractedValue = defaults[fieldId] || "0.00";
+            }
+          }
+
+          // ✅ ARRAY-BASED NORMALIZATION: Percentage 2dp Fields (0-100 range, store as "89.40")
+          const percentage2dpFields = ["d_118"];
+          if (percentage2dpFields.includes(fieldId)) {
             let numVal;
-            if (typeof extractedValue === "string") {
-              if (extractedValue.endsWith("%")) {
-                numVal = parseFloat(extractedValue.replace("%", ""));
-              } else {
-                numVal = parseFloat(extractedValue);
-              }
+            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+              numVal = parseFloat(extractedValue.replace("%", ""));
             } else if (typeof extractedValue === "number") {
-              numVal = extractedValue;
+              numVal = (extractedValue >= 0 && extractedValue <= 1)
+                ? extractedValue * 100 // 0.048 → 4.80
+                : extractedValue;
+            } else {
+              numVal = parseFloat(extractedValue);
             }
 
             if (!isNaN(numVal)) {
-              // If numVal is a decimal (e.g., 0.10 for 10%), convert to whole percentage.
-              // Heuristic: if it's <= 1 (and non-negative), assume it's a decimal factor.
-              if (numVal >= 0 && numVal <= 1) {
-                extractedValue = Math.round(numVal * 100).toString();
-              } else {
-                // Otherwise, assume it's already a whole percentage (e.g., 10 for 10%)
-                // Ensure it's within the slider's typical 0-100 range if it's a percentage
-                extractedValue = Math.min(
-                  Math.max(Math.round(numVal), 0),
-                  100,
-                ).toString();
-              }
+              extractedValue = numVal.toFixed(2); // 4.80 → "4.80"
             } else {
-              extractedValue = "0"; // Default if parsing failed (slider min is 0)
+              const defaults = { d_118: "89.00" };
+              extractedValue = defaults[fieldId] || "0.00";
+            }
+          }
+
+          // ✅ LEGACY NORMALIZATION: Integer percentage sliders (no decimal precision)
+          const integerPercentageFields = ["d_97", "k_120"];
+          if (integerPercentageFields.includes(fieldId)) {
+            let numVal;
+            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+              numVal = parseFloat(extractedValue.replace("%", ""));
+            } else if (typeof extractedValue === "number") {
+              numVal = (extractedValue >= 0 && extractedValue <= 1)
+                ? extractedValue * 100 // 0.3 → 30
+                : extractedValue;
+            } else {
+              numVal = parseFloat(extractedValue);
+            }
+
+            if (!isNaN(numVal)) {
+              // Clamp to 0-100 range and round to integer
+              extractedValue = Math.min(Math.max(Math.round(numVal), 0), 100).toString();
+            } else {
+              const defaults = { d_97: "5", k_120: "0" };
+              extractedValue = defaults[fieldId] || "0";
             }
           }
           importedData[fieldId] = extractedValue;
@@ -873,8 +846,9 @@ class ExcelMapper {
             extractedValue = "Efficient";
           }
 
-          // Normalize k_52 (SHW AFUE)
-          if (baseFieldId === "k_52") {
+          // ✅ ARRAY-BASED NORMALIZATION for Reference sheet (same logic as Report sheet)
+          const decimalCoefficientFields = ["k_52", "j_115"];
+          if (decimalCoefficientFields.includes(baseFieldId)) {
             let numVal;
             if (typeof extractedValue === "string") {
               if (extractedValue.endsWith("%")) {
@@ -885,6 +859,7 @@ class ExcelMapper {
             } else if (typeof extractedValue === "number") {
               numVal = extractedValue;
             }
+
             if (!isNaN(numVal)) {
               if (numVal > 1) {
                 extractedValue = (numVal / 100).toFixed(2);
@@ -892,7 +867,61 @@ class ExcelMapper {
                 extractedValue = numVal.toFixed(2);
               }
             } else {
-              extractedValue = "0.90";
+              const defaults = { k_52: "0.90", j_115: "0.90" };
+              extractedValue = defaults[baseFieldId] || "0.90";
+            }
+          }
+
+          const standard2dpFields = ["l_118", "d_119"];
+          if (standard2dpFields.includes(baseFieldId)) {
+            const numVal = parseFloat(extractedValue);
+            if (!isNaN(numVal)) {
+              extractedValue = numVal.toFixed(2);
+            } else {
+              const defaults = { l_118: "3.00", d_119: "14.00" };
+              extractedValue = defaults[baseFieldId] || "0.00";
+            }
+          }
+
+          const percentage2dpFields = ["d_118"];
+          if (percentage2dpFields.includes(baseFieldId)) {
+            let numVal;
+            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+              numVal = parseFloat(extractedValue.replace("%", ""));
+            } else if (typeof extractedValue === "number") {
+              numVal = (extractedValue >= 0 && extractedValue <= 1)
+                ? extractedValue * 100
+                : extractedValue;
+            } else {
+              numVal = parseFloat(extractedValue);
+            }
+
+            if (!isNaN(numVal)) {
+              extractedValue = numVal.toFixed(2);
+            } else {
+              const defaults = { d_118: "89.00" };
+              extractedValue = defaults[baseFieldId] || "0.00";
+            }
+          }
+
+          const integerPercentageFields = ["d_97", "k_120"];
+          if (integerPercentageFields.includes(baseFieldId)) {
+            let numVal;
+            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+              numVal = parseFloat(extractedValue.replace("%", ""));
+            } else if (typeof extractedValue === "number") {
+              numVal = (extractedValue >= 0 && extractedValue <= 1)
+                ? extractedValue * 100
+                : extractedValue;
+            } else {
+              numVal = parseFloat(extractedValue);
+            }
+
+            if (!isNaN(numVal)) {
+              extractedValue = Math.min(Math.max(Math.round(numVal), 0), 100).toString();
+            } else {
+              const defaults = { d_97: "5", k_120: "0" };
+              extractedValue = defaults[baseFieldId] || "0";
             }
           }
 
