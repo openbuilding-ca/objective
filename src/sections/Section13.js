@@ -472,10 +472,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else if (dropdown) {
           // Update dropdown selections for mode persistence
           dropdown.value = stateValue;
-        } else if (element.getAttribute("contenteditable") === "true") {
-          // Update editable fields for mode persistence (d_119, j_115, j_116, l_118)
-          element.textContent = stateValue;
         }
+        // ✅ REMOVED: Editable field updates during refreshUI()
+        // Editable fields (d_119, j_115, j_116, l_118, d_118) maintain their own values
+        // They should NOT be overwritten during mode switches - this was causing j_115 to revert to 0.90
+        // Pattern: Editable fields update via handleEditableBlur → ModeManager.setValue → StateManager
+        // They read their own textContent, not state, so refreshUI should skip them
       });
 
       this.updateCalculatedDisplayValues();
