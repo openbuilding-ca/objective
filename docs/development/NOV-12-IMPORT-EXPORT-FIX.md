@@ -968,3 +968,366 @@ const section13Fields = [
 **Priority:** HIGH - Affects calculation accuracy for large buildings
 **Risk:** MEDIUM - Import order changes affect calculation cascade
 **Estimated Remaining Effort:** 2-3 hours (import order + j_116 mapping + testing)
+
+---
+
+## 🔍 ARCHITECTURAL ANALYSIS: e_50 vs j_115/j_116 (Session 3 - Nov 12)
+
+### Problem Statement
+
+After implementing S07 ghosting pattern (commit 3d8e3a6), DOM refreshUI remains buggy for j_115/j_116:
+- Entered values don't "take" immediately (show after mode switch)
+- Values entered after import show Target value on blur
+- Mode switch required to see entered values
+- State isolation appears broken despite following S07 pattern
+
+### Root Cause Hypothesis
+
+**Anti-Pattern 7 violation**: Section 13 likely has StateManager listeners for its **own input fields** (j_115, j_116), causing double calculations that interfere with normal DOM update flow.
+
+Reference: `docs/development/history (completed)/4012-CHEATSHEET.md` Lines 211-295
+
+### What e_50 Gets RIGHT (Section 07 Pattern)
+
+**1. Clean Event Handler (handleEditableBlur - S07:1462-1490)**
+```javascript
+function handleEditableBlur(event) {
+  const fieldElement = this;
+  const fieldId = fieldElement.getAttribute("data-field-id");
+  if (!fieldId) return;
+
+  let rawTextValue = fieldElement.textContent.trim();
+  let numericValue = window.TEUI?.parseNumeric?.(rawTextValue, NaN) ?? parseFloat(rawTextValue.replace(/[$,%]/g, ""));
+
+  if (isNaN(numericValue)) {
+    const previousValue = ModeManager.getValue(fieldId) || "0";
+    numericValue = window.TEUI?.parseNumeric?.(previousValue, 0) ?? 0;
+  }
+
+  const formatType = fieldId === "k_52" ? "number-2dp" : "number-2dp-comma";
+  const valueToStore = numericValue.toString();
+  const formattedDisplay = window.TEUI?.formatNumber?.(numericValue, formatType) ?? valueToStore;
+  fieldElement.textContent = formattedDisplay; // ✅ IMMEDIATE DOM UPDATE
+
+  // ✅ PATTERN A: Use ModeManager.setValue for proper state separation
+  const currentValue = ModeManager.getValue(fieldId);
+  if (currentValue !== valueToStore) {
+    ModeManager.setValue(fieldId, valueToStore, "user-modified"); // ✅ Publishes ref_e_50 in Reference mode
+    calculateAll(); // ✅ Single calculation pass
+    ModeManager.updateCalculatedDisplayValues(); // ✅ DOM update for calculated fields only
+  }
+}
+```
+
+**Key Success Factors:**
+- ✅ Immediate `textContent` update (line 1481) - instant visual feedback
+- ✅ `ModeManager.setValue()` publishes correct prefixed value to StateManager
+- ✅ Single `calculateAll()` call - no listener interference
+- ✅ `updateCalculatedDisplayValues()` only updates calculated fields, not editable ones
+
+**2. NO Self-Listening (S07:1655-1702)**
+```javascript
+function initializeEventHandlers() {
+  const sectionElement = document.getElementById("waterUse");
+  if (!sectionElement) return;
+
+  // ✅ Setup editable field handlers - NO StateManager listeners!
+  const editableFields = ["e_49", "e_50", "k_52"];
+  editableFields.forEach((fieldId) => {
+    const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+    if (field && field.classList.contains("editable") && !field.hasEditableListeners) {
+      field.setAttribute("contenteditable", "true");
+      field.classList.add("user-input");
+      field.addEventListener("blur", handleEditableBlur); // ✅ DOM listener only
+      field.hasEditableListeners = true;
+    }
+  });
+}
+```
+
+**Critical Insight:** S07 does NOT add StateManager listeners for `e_49`, `e_50`, or `k_52`. User edits trigger calculations via `handleEditableBlur` directly.
+
+**3. External Dependencies Only (S07: StateManager Listeners)**
+Section 07 ONLY listens to external dependencies (not shown in grep, but per architecture):
+- Listens to `d_20` and `ref_d_20` from Section 03 (climate)
+- Does NOT listen to its own input fields
+
+### What j_115/j_116 Get WRONG (Section 13 - Suspected)
+
+**1. handleEditableBlur Appears Correct (S13:2038-2088)**
+```javascript
+function handleEditableBlur(event) {
+  const fieldId = this.getAttribute("data-field-id");
+  if (!fieldId) return;
+
+  const newValue = this.textContent.trim();
+  const numericValue = window.TEUI.parseNumeric(newValue, NaN);
+
+  if (!isNaN(numericValue)) {
+    const formatType = fieldId === "j_115" || fieldId === "l_118" ? "number-2dp" : "number-2dp";
+    const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+    this.textContent = formattedDisplay; // ✅ Sets formatted display
+
+    if (ModeManager && typeof ModeManager.setValue === "function") {
+      ModeManager.setValue(fieldId, valueToStore, "user-modified"); // ✅ Uses ModeManager
+    }
+
+    if (fieldId === "j_115") {
+      calculateAll(); // ✅ Triggers recalculation
+      ModeManager.updateCalculatedDisplayValues();
+    }
+  }
+}
+```
+
+**Handler logic looks correct!** So why doesn't it work?
+
+**2. Suspected Anti-Pattern 7 Violation: Self-Listening**
+
+**HYPOTHESIS:** Section 13 likely has StateManager listeners for j_115/j_116, causing:
+
+```javascript
+// ❌ SUSPECTED: Section 13 might have this anti-pattern
+window.TEUI.StateManager.addListener("j_115", () => {
+  calculateAll(); // Double calculation!
+});
+window.TEUI.StateManager.addListener("ref_j_115", () => {
+  calculateAll(); // Double calculation!
+});
+```
+
+**The Problem Chain (if this exists):**
+1. User edits j_115 in Reference mode
+2. `handleEditableBlur` → sets `this.textContent` to formatted value ✅
+3. `handleEditableBlur` → `ModeManager.setValue("j_115", value)` → publishes `ref_j_115` ✅
+4. `handleEditableBlur` → `calculateAll()` (first pass) ✅
+5. ❌ **Self-listener fires** → `calculateAll()` (second pass) - interferes with DOM!
+6. Second calculation or subsequent `refreshUI()` overwrites the DOM value
+7. User sees wrong value until mode switch forces refreshUI
+
+**3. Potential Issue: Ghosting Handler Still Interfering?**
+
+Even after commit 3d8e3a6 removed DOM writes from `handleHeatingSystemChangeForGhosting()`, the ghosting handler is still called during:
+- User dropdown changes (d_113)
+- Mode switches (via `updateConditionalUI()`)
+
+**Question:** Does the ghosting handler call `refreshUI()` or trigger DOM updates that overwrite user input?
+
+### Debugging Action Items
+
+**Priority 1: Check for Self-Listening Anti-Pattern**
+```bash
+# Search for StateManager listeners in Section 13
+grep -n "StateManager.addListener.*j_115" src/sections/Section13.js
+grep -n "StateManager.addListener.*j_116" src/sections/Section13.js
+grep -n "StateManager.addListener.*ref_j_115" src/sections/Section13.js
+grep -n "StateManager.addListener.*ref_j_116" src/sections/Section13.js
+```
+
+**Expected Result:** NO listeners for these fields (they are Section 13's own inputs)
+
+**Priority 2: Verify switchMode Flow**
+```javascript
+// S13 switchMode (lines 281-301)
+switchMode: function (mode) {
+  this.currentMode = mode;
+  this.refreshUI(); // ← Does this overwrite user input?
+  this.updateConditionalUI(); // ← Does ghosting handler interfere?
+  this.updateCalculatedDisplayValues();
+  this.syncToggleUI(mode);
+}
+```
+
+**Question:** Does `refreshUI()` read from TargetState/ReferenceState and overwrite DOM, even for fields the user just edited?
+
+**Priority 3: Verify refreshUI Respects User Edits**
+
+In S07, `refreshUI()` updates ALL fields from state. This works because:
+1. User edit → immediate `textContent` update
+2. User edit → `ModeManager.setValue()` → updates TargetState/ReferenceState
+3. User edit → `calculateAll()` runs once
+4. No self-listeners to trigger additional refreshUI
+
+In S13, if there are self-listeners:
+1. User edit → immediate `textContent` update ✅
+2. User edit → `ModeManager.setValue()` → updates TargetState/ReferenceState ✅
+3. User edit → `calculateAll()` runs ✅
+4. ❌ Self-listener fires → `calculateAll()` or `refreshUI()` runs again
+5. ❌ Second update overwrites DOM with stale value
+
+### Recommended Fix (Do NOT implement yet - verify hypothesis first)
+
+1. **Remove self-listeners for j_115, j_116, f_113, d_119, l_118** (all S13 editable inputs)
+2. **Keep external dependency listeners** (e.g., d_20 from climate, f_15 from envelope)
+3. **Verify handleEditableBlur calls calculateAll() directly** (already does)
+4. **Ensure ModeManager.setValue() publishes to StateManager** (already does)
+
+### Architecture Compliance Checklist (Per 4012-CHEATSHEET.md)
+
+- [ ] Anti-Pattern 6: NO cross-section DOM listeners (S13 only listens to own fields)
+- [ ] Anti-Pattern 7: NO self-listening (S13 should NOT listen to j_115/j_116/etc via StateManager)
+- [ ] Editable fields trigger calculations via handleEditableBlur directly
+- [ ] ModeManager.setValue() publishes to StateManager for cross-section communication
+- [ ] External dependencies use StateManager listeners (d_20, ref_d_20, etc.)
+- [ ] Own input fields use DOM listeners only (blur, change events)
+
+### Findings from Section 13 Investigation
+
+**✅ NO Self-Listeners Found (Nov 12, 2025)**
+
+```bash
+$ grep -n "StateManager.addListener.*j_115\|j_116\|ref_j_115\|ref_j_116" Section13.js
+# No results - Anti-Pattern 7 NOT present
+```
+
+**Section 13 StateManager Listeners (Correct Pattern)**
+```bash
+$ grep -n "StateManager.addListener" Section13.js
+276:        window.TEUI.StateManager.addListener("d_13", () => {
+```
+
+Only listens to `d_13` (Reference standard from Section 02) - external dependency. ✅ CORRECT per architecture.
+
+**Anti-Pattern 7 is NOT the root cause.** Something else is wrong.
+
+### Alternative Hypothesis: refreshUI/updateCalculatedDisplayValues Interference
+
+**Issue:** Section 13's `updateCalculatedDisplayValues()` might be updating editable fields, not just calculated ones.
+
+**Evidence from user report:**
+> "A value entered after import shows the Target value on blur"
+
+**Potential Flow:**
+1. User types j_116 = "3.31" in Reference mode
+2. `handleEditableBlur` → sets `this.textContent = "3.31"` ✅
+3. `handleEditableBlur` → `ModeManager.setValue("j_116", "3.31")` → publishes `ref_j_116` ✅
+4. `handleEditableBlur` → `calculateAll()` → runs both engines ✅
+5. `handleEditableBlur` → `ModeManager.updateCalculatedDisplayValues()` ← **SUSPECT**
+6. ❌ Does `updateCalculatedDisplayValues()` include j_116 in its fieldFormats and overwrite it?
+
+**Check Required:** Does S13's `calculatedFields` array incorrectly include editable fields (j_115, j_116)?
+
+### Next Investigation Steps
+
+1. **Examine S13 `updateCalculatedDisplayValues()` function** (lines ~304-380)
+   - Check if `fieldFormats` or `calculatedFields` includes j_115/j_116
+   - These should ONLY include calculated fields, not editable ones
+
+2. **Examine S13 `refreshUI()` function** (lines 397-478)
+   - Check if `fieldsToSync` includes j_115/j_116
+   - These ARE editable inputs, so they should be in refreshUI
+   - But refreshUI should read from TargetState/ReferenceState, not overwrite with defaults
+
+3. **Compare to S07 pattern:**
+   - S07's `updateCalculatedDisplayValues()` only updates calculated fields
+   - S07's `refreshUI()` updates all fields (dropdowns, editables, sliders)
+   - These two functions have distinct responsibilities
+
+### Suspected Root Cause
+
+**S13's `updateCalculatedDisplayValues()` might include j_116 in its field list**, causing it to overwrite the user's DOM edit with a stale StateManager value.
+
+**Why this would cause the reported bugs:**
+- User edit → immediate DOM update ✅
+- calculateAll() → engines compute correct values ✅
+- `updateCalculatedDisplayValues()` → overwrites j_116 DOM with stale value ❌
+- Mode switch → `refreshUI()` reads correct value from state → displays correctly ✅
+
+This would explain why values "show after mode switch" - because refreshUI correctly reads from state, but updateCalculatedDisplayValues incorrectly overwrites during the blur handler.
+
+### CONFIRMED: j_116 in updateCalculatedDisplayValues() (Line 323)
+
+```javascript
+// S13 updateCalculatedDisplayValues() - Line 308-326
+const fieldFormats = {
+  // Percentages (0dp)
+  m_115: "percent-0dp", m_116: "percent-0dp", m_117: "percent-0dp",
+
+  // Large numbers with commas (2dp)
+  d_114: "number-2dp-comma", l_113: "number-2dp-comma", ...
+
+  // Small numbers without commas (2dp)
+  h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
+  j_116: "number-2dp",  // ❌ PROBLEM: j_116 is conditionally editable!
+  f_117: "number-2dp", j_117: "number-2dp", ...
+};
+```
+
+**The Issue:** j_116 is included in `fieldFormats`, which means `updateCalculatedDisplayValues()` tries to update it.
+
+**The Protection (Line 348):**
+```javascript
+if (element && !element.hasAttribute("contenteditable")) {
+  // Only update if NOT contenteditable
+  element.textContent = formattedValue;
+}
+```
+
+**Why protection might fail:**
+1. **Timing issue**: contenteditable attribute might not be set when updateCalculatedDisplayValues() runs
+2. **Ghosting interference**: After unghosting, contenteditable might be "false" (string) not false (boolean)
+3. **Conditional state**: j_116 switches between calculated (Heatpump) and editable (Gas/Oil)
+
+### Root Cause Identified
+
+**j_116 should NOT be in fieldFormats** when d_113 != "Heatpump". It's conditionally calculated/editable:
+- **d_113="Heatpump"**: j_116 is calculated from j_113 (COP) - SHOULD be in fieldFormats ✅
+- **d_113="Gas/Oil/Electricity"**: j_116 is user-editable - should NOT be in fieldFormats ❌
+
+**Current behavior:** j_116 is ALWAYS in fieldFormats, regardless of d_113 value.
+
+**Impact:**
+- Gas/Oil mode: User edits j_116 → blur handler updates DOM → calculateAll() runs → updateCalculatedDisplayValues() overwrites j_116 with StateManager value (might be stale or from wrong mode)
+- Heatpump mode: j_116 calculated from j_113 → updateCalculatedDisplayValues() correctly updates it ✅
+
+### Comparison to j_115
+
+Let me check if j_115 has the same problem:
+
+```javascript
+// S13 fieldFormats (line 323)
+h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp", j_116: "number-2dp",
+```
+
+j_115 is **NOT** in fieldFormats! ✅ This is correct because j_115 is always editable (never calculated).
+
+### The Fix (User needs to verify/test before implementing)
+
+**Option A: Remove j_116 from fieldFormats entirely**
+- PRO: Simple, j_116 never updated by updateCalculatedDisplayValues()
+- CON: In Heatpump mode, j_116 won't display calculated value correctly
+
+**Option B: Conditional inclusion based on d_113**
+- PRO: Correct behavior for both modes
+- CON: More complex, needs mode-aware field list
+
+**Option C: Strengthen contenteditable check**
+- Keep j_116 in fieldFormats but improve the protection
+- Check if element is truly editable (not ghosted)
+
+### Recommended Approach (S07 Pattern)
+
+Looking at S07, **e_50 is NEVER in fieldFormats** because it's an editable input field, even though it's conditionally ghosted based on d_49 (water use method).
+
+**S07 Pattern:**
+- Editable fields (e_49, e_50, k_52) → NOT in fieldFormats
+- Calculated fields (h_49, j_50, etc.) → IN fieldFormats
+- Ghosting only controls visual state, not whether field is in update list
+
+**Apply to S13:**
+- j_115 (AFUE) → editable → NOT in fieldFormats ✅ (already correct)
+- j_116 (COP) → conditionally editable → should NOT be in fieldFormats
+- j_113, h_113, j_114 → calculated → IN fieldFormats ✅ (correct)
+
+**For Heatpump mode** (j_116 calculated from j_113):
+- The calculation engine (calculateCoolingSystem) updates j_116
+- But the DOM update should happen through refreshUI or direct write, not updateCalculatedDisplayValues
+- Or: Only include j_116 in fieldFormats when d_113="Heatpump"
+
+### Action Required
+
+User should test removing j_116 from fieldFormats (line 323) and see if:
+1. ✅ Editable behavior works (Gas/Oil mode)
+2. ❌ Calculated display broken (Heatpump mode)?
+
+If Heatpump mode display breaks, need conditional approach.
