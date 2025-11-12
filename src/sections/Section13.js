@@ -50,20 +50,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-
-      // ✅ USER-MODIFIED FLAG: Mirror ReferenceState pattern (lines 175-181)
-      // Mark fields as user-modified to preserve during any future resets/imports
-      if (
-        source === "user-modified" &&
-        (fieldId === "f_113" || fieldId === "j_115")
-      ) {
-        this.state[`${fieldId}_userModified`] = true;
-      }
-
       if (source === "user" || source === "user-modified") {
         this.saveState();
 
-        // ✅ CONVERGENCE FIX: Mirror ReferenceState pattern (lines 189-205)
+        // ✅ CONVERGENCE FIX: Mirror ReferenceState pattern (lines 168-184)
         // Trigger recalculations when key Target fields change in target mode
         // This provides the second calculation pass needed for convergence
         const criticalFields = [
