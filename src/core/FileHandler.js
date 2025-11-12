@@ -815,16 +815,51 @@
         const targetValues = [];
         const referenceValues = [];
 
+        // ✅ FIELD PRECISION FORMATTING: Apply specific decimal precision during export
+        // U-values (g_88-g_93): Minimum 3dp for thermal accuracy
+        const uValueFields = ["g_88", "g_89", "g_90", "g_91", "g_92", "g_93"];
+
+        // Coefficient fields that need 2dp precision
+        const coefficient2dpFields = ["j_115", "j_116", "k_52"];
+
+        // Format value based on field type
+        const formatExportValue = (fieldId, rawValue) => {
+          if (rawValue === "" || rawValue === null || rawValue === undefined) {
+            return "";
+          }
+
+          // Parse numeric value
+          const numVal = parseFloat(rawValue);
+          if (isNaN(numVal)) {
+            return rawValue; // Return as-is if not numeric
+          }
+
+          // U-values: 3dp minimum (e.g., "0.180", "0.250")
+          if (uValueFields.includes(fieldId)) {
+            return numVal.toFixed(3);
+          }
+
+          // Coefficients: 2dp (e.g., "0.90", "2.66")
+          if (coefficient2dpFields.includes(fieldId)) {
+            return numVal.toFixed(2);
+          }
+
+          // Default: return as-is (preserves existing precision)
+          return rawValue;
+        };
+
         // Get values for each field in the explicit list
         userEditableFieldIds.forEach((fieldId) => {
           // Get target/application value
           const targetValue = this.stateManager.getValue(fieldId) ?? "";
-          targetValues.push(escapeCSV(targetValue));
+          const formattedTarget = formatExportValue(fieldId, targetValue);
+          targetValues.push(escapeCSV(formattedTarget));
 
           // Get reference value (with ref_ prefix)
           const refFieldId = `ref_${fieldId}`;
           const referenceValue = this.stateManager.getValue(refFieldId) ?? "";
-          referenceValues.push(escapeCSV(referenceValue));
+          const formattedReference = formatExportValue(fieldId, referenceValue); // Use base fieldId for formatting rules
+          referenceValues.push(escapeCSV(formattedReference));
         });
 
         // Construct CSV content:
