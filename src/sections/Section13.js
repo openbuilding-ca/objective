@@ -3603,10 +3603,16 @@ window.TEUI.SectionModules.sect13 = (function () {
         // Reset to field definition default if empty or 0 AND not user-modified
         const defaultJ116 = getFieldDefault("j_116") || "2.66";
         ModeManager.setValue("j_116", defaultJ116, "system-update");
-
-        // ✅ FIX: Don't write to DOM here - let refreshUI() handle it
-        // The DOM update should happen through refreshUI() which reads from the correct mode's state
-        // Direct DOM manipulation here causes ref_j_116 to show wrong value on first mode switch
+        const j116Element = document.querySelector('[data-field-id="j_116"]');
+        if (
+          j116Element &&
+          j116Element.getAttribute("contenteditable") === "true"
+        ) {
+          j116Element.textContent = window.TEUI.formatNumber(
+            parseFloat(defaultJ116),
+            "number-2dp",
+          );
+        }
       }
     }
 
