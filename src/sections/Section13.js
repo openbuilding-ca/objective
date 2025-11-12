@@ -52,6 +52,27 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.state[fieldId] = value;
       if (source === "user" || source === "user-modified") {
         this.saveState();
+
+        // ✅ CONVERGENCE FIX: Mirror ReferenceState pattern (lines 168-184)
+        // Trigger recalculations when key Target fields change in target mode
+        // This provides the second calculation pass needed for convergence
+        const criticalFields = [
+          "d_113",
+          "d_116",
+          "f_113",
+          "d_118",
+          "g_118",
+          "d_119",
+          "j_115",
+          "l_118",
+        ];
+        if (
+          criticalFields.includes(fieldId) &&
+          ModeManager.currentMode === "target"
+        ) {
+          calculateAll(); // Runs both models - efficient and keeps both current
+          ModeManager.updateCalculatedDisplayValues();
+        }
       }
     },
     getValue: function (fieldId) {
