@@ -3625,74 +3625,82 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     if (isFossilFuel) {
       const afueField = "j_115";
-      let newAFUEString = "0.90"; // Fallback default
 
-      if (
-        window.TEUI &&
-        window.TEUI.StateManager &&
-        window.TEUI.ReferenceValues
-      ) {
-        const currentD13 = window.TEUI.StateManager.getValue("d_13");
-        // Attempt to get AFUE from ReferenceValues based on d_13
-        // This assumes a structure like: ReferenceValues.getStandardData(standardKey).j_115
-        // Or ReferenceValues.getSpecificReferenceValue(standardKey, fieldId)
-        let referenceAFUE = undefined;
-        if (typeof window.TEUI.ReferenceValues.getStandardData === "function") {
-          const standardData =
-            window.TEUI.ReferenceValues.getStandardData(currentD13);
-          if (standardData && standardData.j_115) {
-            referenceAFUE = standardData.j_115;
-          }
-        } else if (
-          typeof window.TEUI.ReferenceValues.getSpecificReferenceValue ===
-          "function"
-        ) {
-          referenceAFUE = window.TEUI.ReferenceValues.getSpecificReferenceValue(
-            currentD13,
-            "j_115",
-          );
-        } else if (window.TEUI.ReferenceValues[currentD13]) {
-          // Direct access pattern
-          referenceAFUE = window.TEUI.ReferenceValues[currentD13].j_115;
-        }
+      // ✅ FIX: Check if user has modified j_115 - preserve user value if so
+      const currentState = window.TEUI?.sect13?.ModeManager?.getCurrentState();
+      const isUserModified = currentState?.state?.j_115_userModified;
 
-        if (referenceAFUE !== undefined) {
-          newAFUEString = referenceAFUE.toString();
-        } else {
-        }
+      // Only update j_115 if NOT user-modified (respects user edits during mode switches)
+      if (!isUserModified) {
+        let newAFUEString = "0.90"; // Fallback default
 
-        // For now, this prioritizes ReferenceValue for the standard, then 0.90.
-      }
-
-      // ✅ MODE-AWARE: Set AFUE value using ModeManager instead of global StateManager
-      if (window.TEUI?.sect13?.ModeManager) {
-        window.TEUI.sect13.ModeManager.setValue(
-          afueField,
-          newAFUEString,
-          "system-update",
-        );
-
-        const afueElement = document.querySelector(
-          `[data-field-id="${afueField}"]`,
-        );
         if (
-          afueElement &&
-          afueElement.getAttribute("contenteditable") === "true"
+          window.TEUI &&
+          window.TEUI.StateManager &&
+          window.TEUI.ReferenceValues
         ) {
-          // Ensure newAFUEString is parsed as a number for formatting
-          afueElement.textContent = window.TEUI.formatNumber(
-            parseFloat(newAFUEString),
-            "number-2dp",
+          const currentD13 = window.TEUI.StateManager.getValue("d_13");
+          // Attempt to get AFUE from ReferenceValues based on d_13
+          // This assumes a structure like: ReferenceValues.getStandardData(standardKey).j_115
+          // Or ReferenceValues.getSpecificReferenceValue(standardKey, fieldId)
+          let referenceAFUE = undefined;
+          if (typeof window.TEUI.ReferenceValues.getStandardData === "function") {
+            const standardData =
+              window.TEUI.ReferenceValues.getStandardData(currentD13);
+            if (standardData && standardData.j_115) {
+              referenceAFUE = standardData.j_115;
+            }
+          } else if (
+            typeof window.TEUI.ReferenceValues.getSpecificReferenceValue ===
+            "function"
+          ) {
+            referenceAFUE = window.TEUI.ReferenceValues.getSpecificReferenceValue(
+              currentD13,
+              "j_115",
+            );
+          } else if (window.TEUI.ReferenceValues[currentD13]) {
+            // Direct access pattern
+            referenceAFUE = window.TEUI.ReferenceValues[currentD13].j_115;
+          }
+
+          if (referenceAFUE !== undefined) {
+            newAFUEString = referenceAFUE.toString();
+          } else {
+          }
+
+          // For now, this prioritizes ReferenceValue for the standard, then 0.90.
+        }
+
+        // ✅ MODE-AWARE: Set AFUE value using ModeManager instead of global StateManager
+        if (window.TEUI?.sect13?.ModeManager) {
+          window.TEUI.sect13.ModeManager.setValue(
+            afueField,
+            newAFUEString,
+            "system-update",
+          );
+
+          const afueElement = document.querySelector(
+            `[data-field-id="${afueField}"]`,
+          );
+          if (
+            afueElement &&
+            afueElement.getAttribute("contenteditable") === "true"
+          ) {
+            // Ensure newAFUEString is parsed as a number for formatting
+            afueElement.textContent = window.TEUI.formatNumber(
+              parseFloat(newAFUEString),
+              "number-2dp",
+            );
+          }
+        } else if (window.TEUI?.StateManager?.setValue) {
+          // Fallback to global StateManager
+          window.TEUI.StateManager.setValue(
+            afueField,
+            newAFUEString,
+            "system-update",
           );
         }
-      } else if (window.TEUI?.StateManager?.setValue) {
-        // Fallback to global StateManager
-        window.TEUI.StateManager.setValue(
-          afueField,
-          newAFUEString,
-          "system-update",
-        );
-      }
+      } // End if (!isUserModified)
     }
     // --- END ADDED / MODIFIED ---
 
