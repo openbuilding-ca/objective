@@ -287,8 +287,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.currentMode = mode;
 
       this.refreshUI();
-      // CRITICAL: Update ghosting for new mode's system
+      // ✅ S07 PATTERN: Update ghosting classes to match new mode's d_113/d_116 values
+      // After fixing handleHeatingSystemChangeForGhosting to ONLY set visual classes (no value writes),
+      // it's safe to call during mode switch to update ghosting based on the new mode's system type
       this.updateConditionalUI();
+
       // UI toggle is for DISPLAY ONLY - values are already calculated
       // Removed calculateAll() - mode switch should only update display, not trigger calculations
       this.updateCalculatedDisplayValues();
@@ -3592,113 +3595,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     const shouldGhostJ116 = !isCoolingActive || isHP; // Ghost if No Cooling OR Heatpump
     setFieldGhosted("j_116", shouldGhostJ116);
 
-    // When switching TO non-Heatpump with Cooling active, ensure j_116 has user default
-    if (!isHP && isCoolingActive) {
-      // ✅ FIX: Check if user has modified j_116 - preserve user value if so
-      const currentState = window.TEUI?.sect13?.ModeManager?.getCurrentState();
-      const isUserModified = currentState?.state?.j_116_userModified;
-
-      const currentJ116 = ModeManager.getValue("j_116");
-      if ((!currentJ116 || currentJ116 === "0") && !isUserModified) {
-        // Reset to field definition default if empty or 0 AND not user-modified
-        const defaultJ116 = getFieldDefault("j_116") || "2.66";
-        ModeManager.setValue("j_116", defaultJ116, "system-update");
-        const j116Element = document.querySelector('[data-field-id="j_116"]');
-        if (
-          j116Element &&
-          j116Element.getAttribute("contenteditable") === "true"
-        ) {
-          j116Element.textContent = window.TEUI.formatNumber(
-            parseFloat(defaultJ116),
-            "number-2dp",
-          );
-        }
-      }
-    }
+    // ✅ S07 PATTERN: Ghosting handler only sets visual ghosting classes, never writes values
+    // Values are set by d_113 dropdown change handler, NOT by ghosting function
+    // This prevents overwriting ref_j_116 during mode switches
 
     // Row 116 other fields: Ghost only when "No Cooling"
     setFieldGhosted("l_116", !isCoolingActive); // Sink - ghost when No Cooling
     setFieldGhosted("m_116", !isCoolingActive); // Reference % - ghost when No Cooling
 
-    if (isFossilFuel) {
-      const afueField = "j_115";
-
-      // ✅ FIX: Check if user has modified j_115 - preserve user value if so
-      const currentState = window.TEUI?.sect13?.ModeManager?.getCurrentState();
-      const isUserModified = currentState?.state?.j_115_userModified;
-
-      // Only update j_115 if NOT user-modified (respects user edits during mode switches)
-      if (!isUserModified) {
-        let newAFUEString = "0.90"; // Fallback default
-
-        if (
-          window.TEUI &&
-          window.TEUI.StateManager &&
-          window.TEUI.ReferenceValues
-        ) {
-          const currentD13 = window.TEUI.StateManager.getValue("d_13");
-          // Attempt to get AFUE from ReferenceValues based on d_13
-          // This assumes a structure like: ReferenceValues.getStandardData(standardKey).j_115
-          // Or ReferenceValues.getSpecificReferenceValue(standardKey, fieldId)
-          let referenceAFUE = undefined;
-          if (typeof window.TEUI.ReferenceValues.getStandardData === "function") {
-            const standardData =
-              window.TEUI.ReferenceValues.getStandardData(currentD13);
-            if (standardData && standardData.j_115) {
-              referenceAFUE = standardData.j_115;
-            }
-          } else if (
-            typeof window.TEUI.ReferenceValues.getSpecificReferenceValue ===
-            "function"
-          ) {
-            referenceAFUE = window.TEUI.ReferenceValues.getSpecificReferenceValue(
-              currentD13,
-              "j_115",
-            );
-          } else if (window.TEUI.ReferenceValues[currentD13]) {
-            // Direct access pattern
-            referenceAFUE = window.TEUI.ReferenceValues[currentD13].j_115;
-          }
-
-          if (referenceAFUE !== undefined) {
-            newAFUEString = referenceAFUE.toString();
-          } else {
-          }
-
-          // For now, this prioritizes ReferenceValue for the standard, then 0.90.
-        }
-
-        // ✅ MODE-AWARE: Set AFUE value using ModeManager instead of global StateManager
-        if (window.TEUI?.sect13?.ModeManager) {
-          window.TEUI.sect13.ModeManager.setValue(
-            afueField,
-            newAFUEString,
-            "system-update",
-          );
-
-          const afueElement = document.querySelector(
-            `[data-field-id="${afueField}"]`,
-          );
-          if (
-            afueElement &&
-            afueElement.getAttribute("contenteditable") === "true"
-          ) {
-            // Ensure newAFUEString is parsed as a number for formatting
-            afueElement.textContent = window.TEUI.formatNumber(
-              parseFloat(newAFUEString),
-              "number-2dp",
-            );
-          }
-        } else if (window.TEUI?.StateManager?.setValue) {
-          // Fallback to global StateManager
-          window.TEUI.StateManager.setValue(
-            afueField,
-            newAFUEString,
-            "system-update",
-          );
-        }
-      } // End if (!isUserModified)
-    }
+    // ✅ S07 PATTERN: j_115 ghosting - ONLY set visual state, never write values
+    // The j_115 AFUE field is active only for Gas/Oil systems
+    // Values are managed by d_113 dropdown change handler and ReferenceState.onReferenceStandardChange()
+    // NOT by the ghosting function - this prevents overwriting imported/user values during mode switches
     // --- END ADDED / MODIFIED ---
 
     // Row 116 ghosting logic is already implemented above
