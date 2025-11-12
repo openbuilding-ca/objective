@@ -194,58 +194,68 @@ l: {
 
 ---
 
-## 🚨 CURRENT STATUS - November 12, 2025 (Session 2)
+## 🚨 CURRENT STATUS - November 12, 2025 (Session 3)
 
-### ✅ FIXES COMPLETED (Commits: d6a10dd, 205879d, bb99e35)
+### ✅ FIXES COMPLETED
 
 **1. j_115 Mode Switch Override Bug (Commits: d6a10dd, 205879d)**
 - **Problem:** j_115 imported correctly as "0.92" but reverted to "0.90" after mode switch (Target ↔ Reference)
-- **Root Cause:** `handleHeatingSystemChangeForGhosting()` at line 3669 unconditionally overwrote j_115 with default "0.90" during `switchMode() → updateConditionalUI()`
-- **Fix 1:** Added `j_115_userModified` flag tracking to TargetState.setValue() (lines 54-60)
-- **Fix 2:** Added check in ghosting handler to skip j_115 update if `isUserModified` flag is true (lines 3629-3634)
-- **Status:** ✅ j_115 now preserves user values across mode switches
+- **Root Cause:** `handleHeatingSystemChangeForGhosting()` unconditionally overwrote j_115 with default "0.90"
+- **Fix:** Added `j_115_userModified` flag tracking to TargetState/ReferenceState, added check in ghosting handler
+- **Status:** ✅ FIXED - j_115 now preserves user values across mode switches
 
 **2. Display Precision Loss (Commit: bb99e35)**
-- **Problem:** Fields displayed as "0.9", "89", "3" instead of "0.90", "89.00", "3.00" - made imported precision invisible
-- **Root Cause:** refreshUI() line 486 used raw `element.textContent = stateValue` without formatting
-- **Fix:** Applied `formatNumber(value, "number-2dp")` to all contenteditable fields (lines 487-492)
-- **Also Fixed:** Updated l_118 default from "3" to "3.00" (line 1252)
-- **Status:** ✅ All editable fields now display with 2dp precision
+- **Problem:** Fields displayed as "0.9", "89", "3" instead of "0.90", "89.00", "3.00"
+- **Root Cause:** refreshUI() used raw textContent without formatting
+- **Fix:** Applied `formatNumber(value, "number-2dp")` to all contenteditable fields, updated l_118 default to "3.00"
+- **Status:** ✅ FIXED - All editable fields now display with 2dp precision
 
-### ❌ REMAINING CRITICAL BUGS
-
-**3. j_116 Mode Switch Override Bug (SAME AS j_115)**
+**3. j_116 Mode Switch Override Bug (Commit: 06fe634)**
 - **Problem:** j_116 (Cooling COP) user edits reset to "2.66" after mode switch
-- **Only Active When:** d_113 ≠ "Heatpump" AND d_116 = "Cooling" (otherwise ghosted)
-- **Root Cause:** j_116 NOT in userModified flag tracking (lines 54-60, 176-180)
-- **Required Fix:** Add j_116 to userModified tracking in both TargetState and ReferenceState
-- **Status:** ⏸️ NOT FIXED YET - Same pattern as j_115
+- **Root Cause:** j_116 NOT in userModified flag tracking
+- **Fix:** Added j_116 to userModified tracking in both TargetState and ReferenceState, added check in ghosting handler
+- **Status:** ✅ FIXED - Same pattern as j_115
 
-**4. d_118 Import Rounding Bug (CRITICAL - HIGH PRIORITY)**
-- **Problem:** Imported value "4.80" becomes "5.00" after import
-- **Expected:** 4.80 should remain 4.80
-- **Observed:** After import, d_118 displays "5.00" (rounded)
-- **j_115 Works:** Correctly shows "0.92" after same import
-- **Location:** Either FileHandler.js CSV parsing OR ExcelMapper.js normalization
-- **Status:** 🚨 NOT INVESTIGATED YET - BLOCKING CSV IMPORT PRECISION
+**4. d_118 Import Rounding Bug (Commit: ea7651b)**
+- **Problem:** Imported value "4.80" became "5.00" after import
+- **Root Cause:** ExcelMapper.js used `Math.round()` from old integer slider days
+- **Fix:** Changed to `.toFixed(2)` for decimal preservation in lines 549/552
+- **Status:** ✅ FIXED - d_118 now imports and displays "4.80" correctly
 
-**5. j_115 Still Reverts After Mode Switch**
-- **Problem:** Despite fixes, j_115 still reverts to "0.90" after mode switch in some scenarios
-- **Reported:** "Fine on import, mode switch sets it back to default/fallback"
-- **Hypothesis:** May be additional code path triggering override beyond `handleHeatingSystemChangeForGhosting()`
-- **Status:** ⚠️ PARTIAL FIX - May need additional investigation
+**5. Section13.js fieldFormats Verbosity Reduction (Commit: [pending])**
+- **Problem:** fieldFormats object was 47 lines with verbose inline comments
+- **Fix:** Condensed to 19 lines by grouping fields on same line, keeping only category comments
+- **Status:** ✅ FIXED - Code is more maintainable and easier to scan
 
-### 📊 Test Results So Far
+### ❌ REMAINING CRITICAL ISSUES
+
+**6. j_116 NOT in ExcelMapper (HIGH PRIORITY)**
+- **Problem:** j_116 is not mapped or exported in ExcelMapper.js
+- **Complexity:** Must conditionally import - skip if d_113="Heatpump" (j_116 is calculated), otherwise import user value
+- **Status:** 🚨 NOT STARTED - Requires conditional import logic
+
+**7. Import Calculation Order Bug - d_113 Dependency (CRITICAL - NEW DISCOVERY)**
+- **Problem:** When importing file with d_113="Gas", Reference e_10 calculates incorrectly (>900 instead of 838.0)
+- **Expected Behavior:** If manually set d_113="Gas" in both modes THEN import, e_10 calculates correctly to 838.0
+- **Root Cause Hypothesis:** Import sets d_113 AFTER other fields, but calculations depend on d_113 being set FIRST
+- **Current Import Flow:** Listeners muted → all values placed → listeners unmuted → calculations run
+- **Required Fix:** Ensure d_113 (heating system type) is set FIRST before other Section 13 fields, then release for calculations
+- **Impact:** Affects all Section 13 calculations that depend on heating system type (j_115, j_116, heating energy, etc.)
+- **Status:** 🚨 NOT FIXED YET - Requires import order refactoring
+
+### 📊 Test Results - Session 3
 
 **Working:**
-- ✅ j_115 imports correctly as "0.92"
-- ✅ Display shows "0.90", "0.92", "3.00" with 2dp precision
-- ✅ l_118 now has correct "3.00" default
+- ✅ j_115 imports correctly as "0.92" and persists across mode switches
+- ✅ j_116 user edits persist across mode switches (when d_113 ≠ Heatpump)
+- ✅ d_118 imports and displays "4.80" correctly (no rounding)
+- ✅ Display shows "0.90", "0.92", "3.00", "4.80" with 2dp precision
+- ✅ l_118 has correct "3.00" default
 
 **Broken:**
-- ❌ d_118 imports "4.80" but displays "5.00" (rounded)
-- ❌ j_116 user edits reset on mode switch
-- ⚠️ j_115 may still revert in some mode switch scenarios
+- ❌ j_116 not exported/imported at all (not in ExcelMapper)
+- ❌ e_10 (Reference total) miscalculates when d_113="Gas" is imported (>900 vs expected 838.0)
+- ⚠️ Import order issue: d_113 must be set BEFORE other S13 fields for correct calculations
 
 ---
 
@@ -793,19 +803,126 @@ Apply same normalization logic as Target fields (see Phase 3)
 
 ---
 
-## ✅ Definition of Done
+## 🔧 TECHNICAL SOLUTION: Import Calculation Order Fix
 
-- [ ] All four fields (d_118, j_115, j_116, l_118) export with 2dp precision
-- [ ] All four fields import with 2dp precision (no rounding/truncation)
-- [ ] j_116 conditional import works (skip for Heatpump, import for others)
-- [ ] Large building test case shows no calculation drift after round-trip
-- [ ] Reference mode maintains same precision as Target mode
-- [ ] No breaking changes to existing UI/UX
-- [ ] All test cases pass (6 test scenarios defined in Phase 5)
+### Problem Summary
+When importing Excel files with d_113="Gas", Reference e_10 miscalculates (>900 vs expected 838.0). If d_113 is manually set to "Gas" FIRST, then the same file imports correctly.
+
+### Root Cause
+Import process sets ALL fields simultaneously with listeners muted, then unmutes and triggers calculations. But Section 13 calculations depend on d_113 (heating system type) being set FIRST to properly initialize conditional fields (j_115, j_116, ghosting states).
+
+### Solution Approach
+
+**Option A: Priority Field Import (RECOMMENDED)**
+
+Add a two-phase import process for Section 13 fields:
+
+```javascript
+// FileHandler.js - Add priority field handling
+
+// Phase 1: Set priority fields FIRST (with listeners active)
+const priorityFields = ['d_13', 'd_113', 'ref_d_13', 'ref_d_113']; // Heating system selectors
+
+// Phase 2: Set remaining fields after priority fields are established
+const remainingFields = allFields.filter(f => !priorityFields.includes(f));
+
+// Implementation:
+1. Mute listeners
+2. Set priority fields (d_13, d_113) → unmute → trigger conditional UI updates
+3. Mute listeners again
+4. Set remaining Section 13 fields
+5. Unmute listeners → trigger full calculations
+```
+
+**Why this works:**
+- d_113 triggers `handleHeatingSystemChangeForGhosting()` which sets up conditional field states
+- j_115 is only active when d_113 ≠ "Heatpump" (ghosted otherwise)
+- j_116 is only active when d_113 ≠ "Heatpump" AND d_116 = "Cooling"
+- Setting d_113 FIRST ensures these conditions are evaluated BEFORE importing coefficient values
+
+**Option B: Defer Calculations Until All Fields Set (NOT RECOMMENDED)**
+
+Track when import is in progress, defer ALL calculations until complete. Problem: May miss critical validation or cascade updates.
 
 ---
 
-**Document Status:** Analysis Complete - Ready for Implementation
+## 🎯 j_116 Conditional Import Logic
+
+### Requirements
+- **Export:** Always export j_116 (regardless of heating system type)
+- **Import:** Conditionally import based on d_113 value:
+  - If d_113 = "Heatpump" → SKIP j_116 (field is calculated, not user-editable)
+  - If d_113 ≠ "Heatpump" → IMPORT j_116 (field is user-editable)
+
+### Implementation Strategy
+
+```javascript
+// ExcelMapper.js - Add j_116 conditional import
+
+// 1. Add j_116 to REPORT sheet mapping (Column K, Row 118)
+if (fieldId === "j_116") {
+  const cellRef = "K118";
+  const cellValue = worksheet.getCell(cellRef).value;
+
+  // Extract and normalize to 2dp (COP coefficient)
+  if (cellValue !== null && cellValue !== undefined) {
+    extractedValue = normalizeCoefficient(cellValue); // Returns "2.66" format
+  }
+}
+
+// 2. Add conditional import check in FileHandler.js
+// After Priority Phase (d_113 is already set)
+const currentD113 = window.TEUI.StateManager.getValue('d_113');
+const isHeatpump = currentD113 === "Heatpump";
+
+// Skip j_116 if Heatpump (it's calculated in this mode)
+if (fieldId === 'j_116' && isHeatpump) {
+  console.log('[FileHandler] Skipping j_116 import - calculated when d_113=Heatpump');
+  continue; // Skip this field
+}
+
+// 3. Add same logic for Reference sheet (ref_j_116)
+const currentRefD113 = window.TEUI.StateManager.getValue('ref_d_113');
+const isRefHeatpump = currentRefD113 === "Heatpump";
+
+if (fieldId === 'ref_j_116' && isRefHeatpump) {
+  console.log('[FileHandler] Skipping ref_j_116 import - calculated when ref_d_113=Heatpump');
+  continue;
+}
+```
+
+### Export Mapping (Always Export)
+```javascript
+// FileHandler.js - Add j_116 to export list (line ~809)
+const section13Fields = [
+  'd_13', 'd_113', 'f_113', 'j_113', 'h_113', 'd_114', 'f_114', 'l_113',
+  'd_115', 'f_115', 'h_115', 'l_115', 'j_115', // ✅ j_115 already exported
+  'd_116', 'l_116', 'l_114', 'd_117', 'j_116', // ✅ ADD j_116 here
+  // ... rest of fields
+];
+```
+
+---
+
+## ✅ Definition of Done
+
+- [x] Fix j_115 userModified flag and ghosting handler
+- [x] Fix refreshUI() display formatting for 2dp precision
+- [x] Fix j_116 userModified flag and ghosting handler
+- [x] Fix d_118 import rounding (4.80 → 5.00)
+- [x] Reduce Section13.js fieldFormats verbosity
+- [ ] Implement d_113 priority field import (two-phase import)
+- [ ] Add j_116 to ExcelMapper with conditional import logic
+- [ ] Add j_116 to FileHandler export list
+- [ ] Test import with d_113="Gas" → verify e_10 calculates to 838.0
+- [ ] Test j_116 conditional import (skip for Heatpump, import for Gas/Oil/Electric)
+- [ ] Test full CSV export/import precision cycle (all 4 fields with 2dp)
+- [ ] Large building test case shows no calculation drift after round-trip
+- [ ] Reference mode maintains same precision as Target mode
+
+---
+
+**Document Status:** Session 3 - Implementation In Progress
 **Priority:** HIGH - Affects calculation accuracy for large buildings
-**Risk:** LOW - Following proven k_52 pattern, well-defined scope
-**Estimated Effort:** 4-6 hours (including testing)
+**Risk:** MEDIUM - Import order changes affect calculation cascade
+**Estimated Remaining Effort:** 2-3 hours (import order + j_116 mapping + testing)

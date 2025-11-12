@@ -299,49 +299,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
-      // ✅ FIX (Oct 6, 2025): Field-specific format map matching setFieldValue() calls
-      // Mirrors the format types used in calculation functions for consistency
+      // Field-specific format map for calculated fields
       const fieldFormats = {
-        // Percentages (0 decimal places)
-        m_115: "percent-0dp", // AFUE efficiency
-        m_116: "percent-0dp", // Cooling EUI ratio
-        m_117: "percent-0dp", // Cooling intensity
-        i_122: "percent-0dp", // Latent load factor
-        d_124: "percent-0dp", // Free cooling %
+        // Percentages (0dp)
+        m_115: "percent-0dp", m_116: "percent-0dp", m_117: "percent-0dp",
+        i_122: "percent-0dp", d_124: "percent-0dp",
 
-        // Numbers with comma separators (2 decimal places)
-        d_114: "number-2dp-comma", // Heating sink
-        l_113: "number-2dp-comma", // Heating demand
-        d_115: "number-2dp-comma", // Gas volume
-        f_115: "number-2dp-comma", // Oil volume
-        h_115: "number-2dp-comma", // Gas volume alt
-        l_115: "number-2dp-comma", // Heating sink alt
-        f_114: "number-2dp-comma", // Heating fuel impact
-        l_116: "number-2dp-comma", // Cooling sink
-        l_114: "number-2dp-comma", // Cooling sink alt
-        d_117: "number-2dp-comma", // Cooling load
-        d_120: "number-2dp-comma", // Vent rate L/s
-        f_120: "number-2dp-comma", // Vent rate CFM
-        h_120: "number-2dp-comma", // Vent rate m³/hr
-        d_121: "number-2dp-comma", // Heating vent energy
-        i_121: "number-2dp-comma", // Recovered energy
-        m_121: "number-2dp-comma", // Net heat loss
-        d_122: "number-2dp-comma", // Cooling vent energy
-        d_123: "number-2dp-comma", // Vent energy recovered
-        h_124: "number-2dp-comma", // Free cooling limit
-        m_129: "number-2dp-comma", // CED mitigated
-        d_129: "number-2dp-comma", // CED unmitigated
+        // Large numbers with commas (2dp)
+        d_114: "number-2dp-comma", l_113: "number-2dp-comma", d_115: "number-2dp-comma",
+        f_115: "number-2dp-comma", h_115: "number-2dp-comma", l_115: "number-2dp-comma",
+        f_114: "number-2dp-comma", l_116: "number-2dp-comma", l_114: "number-2dp-comma",
+        d_117: "number-2dp-comma", d_120: "number-2dp-comma", f_120: "number-2dp-comma",
+        h_120: "number-2dp-comma", d_121: "number-2dp-comma", i_121: "number-2dp-comma",
+        m_121: "number-2dp-comma", d_122: "number-2dp-comma", d_123: "number-2dp-comma",
+        h_124: "number-2dp-comma", m_129: "number-2dp-comma", d_129: "number-2dp-comma",
 
-        // Numbers without commas (2 decimal places) - COPs and smaller values
-        h_113: "number-2dp", // COP
-        j_113: "number-2dp", // COP
-        j_114: "number-2dp", // COP
-        j_116: "number-2dp", // COP cooling
-        f_117: "number-2dp", // Cooling factor
-        j_117: "number-2dp", // Cooling value
-        f_119: "number-2dp", // Per-person rate
-        h_119: "number-2dp", // Per-person rate
-        m_124: "number-2dp", // Active cooling days
+        // Small numbers without commas (2dp)
+        h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp", j_116: "number-2dp",
+        f_117: "number-2dp", j_117: "number-2dp", f_119: "number-2dp", h_119: "number-2dp",
+        m_124: "number-2dp",
       };
 
       const calculatedFields = Object.keys(fieldFormats);
