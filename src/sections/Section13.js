@@ -482,8 +482,14 @@ window.TEUI.SectionModules.sect13 = (function () {
           // Update dropdown selections for mode persistence
           dropdown.value = stateValue;
         } else if (element.getAttribute("contenteditable") === "true") {
-          // Update editable fields for mode persistence (d_119, j_115, j_116, l_118)
-          element.textContent = stateValue;
+          // Update editable fields for mode persistence (d_119, j_115, j_116, l_118, d_118)
+          // ✅ Apply 2dp formatting to preserve precision display
+          const numericValue = window.TEUI.parseNumeric(stateValue);
+          if (!isNaN(numericValue)) {
+            element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+          } else {
+            element.textContent = stateValue;
+          }
         }
       });
 
@@ -1243,7 +1249,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         l: {
           fieldId: "l_118",
           type: "editable",
-          value: "3",
+          value: "3.00",
           section: "mechanicalLoads",
           tooltip: true, // ACH Value
         },
