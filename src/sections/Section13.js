@@ -320,7 +320,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         h_124: "number-2dp-comma", m_129: "number-2dp-comma", d_129: "number-2dp-comma",
 
         // Small numbers without commas (2dp)
-        h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp", j_116: "number-2dp",
+        // ✅ S07 PATTERN: j_116 REMOVED - conditionally editable (Gas/Oil), not always calculated
+        // When d_113="Heatpump", j_116 is calculated but DOM updates via refreshUI, not updateCalculatedDisplayValues
+        h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
         f_117: "number-2dp", j_117: "number-2dp", f_119: "number-2dp", h_119: "number-2dp",
         m_124: "number-2dp",
       };
