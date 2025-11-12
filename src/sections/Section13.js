@@ -1175,11 +1175,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         c: { label: "HRV/ERV/MVHR Efficiency (SRE)", classes: ["flex-cell"] },
         d: {
           fieldId: "d_118",
-          type: "percentage",
-          value: "89",
-          min: 0,
-          max: 100,
-          step: 1,
+          type: "editable",
+          value: "89.00",
+          classes: ["user-input"],
           section: "mechanicalLoads",
           tooltip: true, // Typ. Range 50-90%
         },
