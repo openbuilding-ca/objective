@@ -2094,4 +2094,76 @@ if (element && element.getAttribute("contenteditable") !== "true") {
 - ✅ No recursion or performance issues
 
 **Status:** FIXED and verified working
-**Commit:** NOV13-J116-DOM-FIX
+**Commit:** d3d750d (Docs: Add DEBUG-J116-FLOW.js test script)
+
+---
+
+## 🐛 REMAINING ISSUE: j_116 Reference Default Display (Low Priority)
+
+### The Problem
+**Symptom:** When switching d_113 heating system types in Reference mode:
+- Start with d_113="Heatpump" → j_116 shows calculated value (e.g., 2.66) ✅
+- Switch to d_113="Gas" → j_116 shows stale 2.66 instead of Reference default 3.3 ❌
+- Workaround: Toggle Target→Reference modes → j_116 then shows correct 3.3 ✅
+
+**Expected Behavior:**
+When switching from "Heatpump" to any other fuel type in Reference mode, j_116 should immediately display the Reference default (3.3 from ReferenceValues.js) without requiring a mode toggle.
+
+### Root Cause Analysis
+
+**The Flow:**
+1. `ReferenceState.setDefaults()` (line 148) sets: `this.state.j_116 = referenceValues.j_116 || "2.66"`
+2. When d_113="Heatpump", calculations overwrite `ReferenceState.state.j_116` with calculated value
+3. When switching d_113 to "Gas/Oil", that stale calculated value persists in ReferenceState.state
+4. `refreshUI()` (line 439) calls `ReferenceState.getValue("j_116")` → returns stale 2.66
+5. DOM shows wrong value
+
+**The Disconnect:**
+- ✅ Calculations use correct 3.3 (e_10 calculates correctly)
+- ✅ StateManager.getValue("ref_j_116") has correct default after calculations
+- ❌ ReferenceState.state.j_116 has stale calculated value from Heatpump mode
+- ❌ refreshUI() reads from ReferenceState.state, not StateManager
+
+### Investigation Questions
+
+1. **Does ReferenceValues.js load correctly?**
+   - Add logging to `setDefaults()` to verify `referenceValues.j_116` actually returns "3.3"
+   - Check if fallback `|| "2.66"` is being used instead
+
+2. **When should j_116 revert to default?**
+   - Should d_113 change listener reset j_116 when switching away from Heatpump?
+   - Should there be a "contextual default" handler like attempted in earlier sessions?
+   - Should refreshUI() read from StateManager instead of ReferenceState for calculated fields?
+
+3. **Why does mode toggle fix it?**
+   - Trace what happens during switchMode() that makes j_116 display correctly
+   - Does switchMode() call something that re-syncs ReferenceState?
+
+### Attempted Fixes (Reverted)
+
+**Attempt 1:** Added logic in d_113 listener to reset j_116 to Reference default
+- Result: Did not work, stale value persisted
+- Reverted: Back to clean state
+
+**Attempt 2:** Modified ReferenceState.getValue() to read from ReferenceValues for j_116
+- Result: Did not work, stale value persisted
+- Reverted: Back to clean state
+
+### Baseline for Next Session
+
+**Clean Commit:** d3d750d (Docs: Add DEBUG-J116-FLOW.js test script)
+**Branch:** NOV12-IMPORT-FIX
+**Files to Review:**
+- [Section13.js:130-150](src/sections/Section13.js#L130-L150) - ReferenceState.setDefaults()
+- [Section13.js:220-236](src/sections/Section13.js#L220-L236) - ReferenceState.getValue()
+- [Section13.js:414-497](src/sections/Section13.js#L414-L497) - ModeManager.refreshUI()
+- [Section13.js:1822-1838](src/sections/Section13.js#L1822-L1838) - d_113 change listener
+
+**Next Steps:**
+1. Add debug logging to trace actual values during fuel type switch
+2. Verify ReferenceValues.js is loaded and j_116: "3.3" is accessible
+3. Understand why mode toggle causes correct value to appear
+4. Implement surgical fix based on findings
+
+**Priority:** Low (cosmetic issue, doesn't affect calculations)
+**Impact:** Minor UX issue requiring mode toggle workaround
