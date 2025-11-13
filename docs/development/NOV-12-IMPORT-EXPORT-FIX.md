@@ -1331,3 +1331,96 @@ User should test removing j_116 from fieldFormats (line 323) and see if:
 2. ❌ Calculated display broken (Heatpump mode)?
 
 If Heatpump mode display breaks, need conditional approach.
+
+---
+
+## 🐛 FINAL BUG: Reference Mode DOM Display (Session 3 - Nov 12 Continued)
+
+### Test Results After Fixes
+
+**After removing j_116 from fieldFormats (commit b717071):**
+- ✅ Import works better
+- ❌ Reference mode j_116 entry still shows Target value after blur
+- ❌ Requires mode double-tap to see entered Reference value
+
+**After adding j_116 to ReferenceState criticalFields:**
+- ✅ Good addition, doesn't break anything
+- ❌ Still doesn't fix Reference mode DOM display issue
+
+### Symptom Analysis
+
+User reports: "No matter what value I try to enter, the Target mode appears in the Reference mode's place after enter."
+
+**Example:**
+- Target j_116 = 2.0
+- Switch to Reference, enter j_116 = 4.0
+- After blur, DOM shows 2.0 (Target value) instead of 4.0
+- Mode switch to Target and back to Reference → NOW shows 4.0 correctly
+- Value IS in StateManager (ref_j_116 = "4.0") ✅
+- Value persists across mode switches ✅
+- Problem is ONLY immediate DOM display after blur in Reference mode ❌
+
+### New Hypothesis: contenteditable Protection Check Failing
+
+**The Issue:** We removed j_116 from updateCalculatedDisplayValues() fieldFormats, but j_116 IS in refreshUI() fieldsToSync (line 411). When refreshUI reads from state, it should display correctly, but something is overwriting it with the Target value.
+
+**Theory:** The blur handler's immediate DOM write (line 2064) gets overwritten by a subsequent function call that reads the WRONG value from state.
+
+**Critical Code Paths:**
+
+1. **handleEditableBlur writes DOM immediately (S13:2064):**
+```javascript
+this.textContent = formattedDisplay; // Shows "4.00"
+```
+
+2. **ReferenceState.setValue criticalFields (S13:211-216) calls:**
+```javascript
+calculateAll();
+ModeManager.updateCalculatedDisplayValues(); // j_116 NOT in fieldFormats anymore ✅
+```
+
+3. **But something ELSE must be overwriting the DOM...**
+
+**Possible culprits:**
+- A. calculateAll() triggers something that reads unprefixed j_116 instead of ref_j_116
+- B. refreshUI() is being called somewhere and reading from wrong state
+- C. contenteditable protection in refreshUI (line 468) is failing
+- D. getValue() fallback returning Target value instead of Reference value
+
+### Contenteditable Protection Theory
+
+Looking at refreshUI() line 468-476:
+```javascript
+} else if (element.getAttribute("contenteditable") === "true") {
+  // Update editable fields for mode persistence
+  const numericValue = window.TEUI.parseNumeric(stateValue);
+  if (!isNaN(numericValue)) {
+    element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+  }
+}
+```
+
+This SHOULD update j_116 from ReferenceState, but if `stateValue` comes from wrong source, it would show Target value.
+
+**Question:** Does `currentState.getValue("j_116")` in Reference mode correctly return ReferenceState.j_116, or is there a fallback to Target?
+
+### Proposed Fix
+
+**Option 1: Check if getValue() has Target fallback**
+Look at ReferenceState.getValue() line 219-223 to see if it falls back to TargetState or getFieldDefault().
+
+**Option 2: Add defensive check in refreshUI**
+Only update editable fields during mode switch, not during calculations.
+
+**Option 3: Move DOM write after all calculations**
+Ensure handleEditableBlur's DOM write happens LAST, after all state updates and calculations complete.
+
+**Option 4: User's suggestion - Dual field variants**
+Create separate field definitions for j_116 editable vs calculated modes, adapting based on d_113 value.
+
+### Next Steps
+
+1. Document this hypothesis in NOV-12 doc
+2. Commit baseline with current fixes (j_116 removed from fieldFormats, added to criticalFields)
+3. Test contenteditable protection fix or getValue fallback fix
+4. If simple fix doesn't work, consider field variant approach

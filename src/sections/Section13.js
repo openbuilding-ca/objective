@@ -205,6 +205,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           "g_118",
           "d_119",
           "j_115",
+          "j_116", // ✅ ADDED: Match j_115 pattern for Reference mode DOM updates
           "l_118",
         ];
         if (
