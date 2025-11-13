@@ -1585,3 +1585,513 @@ Mirror the pattern used for f_113/j_115 in `onReferenceStandardChange()` (lines 
 2. Test fresh initialization flow: Gas at d_113 should show j_116="3.30" default
 3. Test user-modified flag: Manual j_116 entry should persist even when d_113 changes
 4. Test import flow: Imported j_116 values should still override defaults
+
+---
+
+## 🔄 ATTEMPTED FIX: Contextual j_116 Defaults Based on d_113 (Session 3 - Nov 12 Continued)
+
+### Problem Statement
+
+**Target Value Bleed:** When switching to Reference mode for the first time after selecting Gas at d_113, j_116 displays the Target value (e.g., "2.00") instead of the Reference default (should be "3.30" for Gas/Oil systems).
+
+**Expected Behavior:**
+- Heatpump systems: j_116 default = "2.66" (typical heat pump COP)
+- Gas/Oil systems: j_116 default = "3.30" (higher equivalent because no electric resistance heating)
+- Reference mode should show these defaults on first initialization, not bleed through Target values
+
+### Attempted Solution: ReferenceState.onHeatingSystemChange() Handler
+
+**Approach:** Mirror the pattern used for `onReferenceStandardChange()` (lines 152-177), which sets f_113/j_115 defaults when d_13 (Reference standard) changes.
+
+**Implementation (Section13.js):**
+
+1. **Added onHeatingSystemChange() handler (Lines 179-207):**
+```javascript
+// ✅ NEW: Contextual j_116 defaults based on d_113 heating system type
+onHeatingSystemChange: function () {
+  const currentHeatingSystem = this.state.d_113 || "Heatpump";
+
+  // Only update j_116 if not user-modified
+  if (!this.state.j_116_userModified) {
+    if (currentHeatingSystem === "Heatpump") {
+      this.state.j_116 = "2.66"; // Heatpump COP default
+    } else if (
+      currentHeatingSystem === "Gas" ||
+      currentHeatingSystem === "Oil"
+    ) {
+      this.state.j_116 = "3.30"; // Gas/Oil equivalent COP
+    } else {
+      this.state.j_116 = "2.66"; // Fallback to Heatpump default
+    }
+
+    this.saveState();
+
+    // Only refresh if currently in Reference mode
+    if (ModeManager.currentMode === "reference") {
+      ModeManager.refreshUI();
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
+    }
+  }
+}
+```
+
+2. **Wired handler to d_113 changes in setValue() (Lines 226-229):**
+```javascript
+if (source === "user" || source === "user-modified") {
+  this.saveState();
+
+  // ✅ CONTEXTUAL DEFAULTS: Update j_116 when d_113 changes
+  if (fieldId === "d_113") {
+    this.onHeatingSystemChange();
+  }
+
+  // ... rest of setValue logic
+}
+```
+
+3. **Called handler during setDefaults() initialization (Line 153):**
+```javascript
+this.state.j_115 = referenceValues.j_115 || "0.90";
+this.state.j_116 = referenceValues.j_116 || "2.66";
+this.state.l_118 = referenceValues.l_118 || "3.50";
+
+// ✅ Set contextual j_116 default based on d_113 value
+this.onHeatingSystemChange();
+```
+
+### Test Results: FAILED
+
+**Issue 1: Default Value Overwrite**
+- User reported: "we see 2.66 as the ghosted default, when we know the value in StateManager is 3.30"
+- Root cause: Called `onHeatingSystemChange()` at end of setDefaults() (line 153)
+- Since d_113="Heatpump" at initialization, handler overwrote j_116 from "3.3" (ReferenceValues) to "2.66" (Heatpump default)
+- **Fix Attempt:** Removed the `onHeatingSystemChange()` call from setDefaults()
+
+**Reasoning:**
+- ReferenceValues already has correct default ("3.3" for all standards)
+- Handler only needs to fire when user explicitly changes d_113
+- Preserves Reference standard defaults at initialization
+
+**Issue 2: Broke f_113 Slider Updates in Reference Mode**
+- User reported: "Now when Reference mode has 'Heatpump set and the user adjusts the f_113 HSPF efficiency slider, the j_116 value no longer updates like it does and should in Target mode"
+- Impact: j_116 recalculates invisibly (calculations work) but DOM doesn't update
+- Root issue: **refreshUI() parity problem** between Target and Reference modes
+
+**User's Critical Analysis:**
+> "Target mode works perfectly. Reference mode does not match methods for what Target mode does. Since we have made several changes since the last commit, I think we should 1. Revert to our last commit and then 2. Document what we have tried then 3. Consider why Target RefreshUI tracks with the right default, d_113 options, defaults and adapts to HSPF slider changes visibly in the DOM, where Reference mode does none of those three things."
+
+### Why The Fix Failed
+
+**The Real Problem:** This wasn't a contextual defaults issue - it's a **refreshUI() behavior difference** between Target and Reference modes.
+
+**Target Mode (Working):**
+- When f_113 slider changes in Heatpump mode
+- j_116 recalculates AND DOM updates visibly
+- refreshUI() properly updates j_116 display
+
+**Reference Mode (Broken):**
+- When f_113 slider changes in Heatpump mode
+- j_116 recalculates (calculations work)
+- DOM doesn't update (still shows old value)
+- refreshUI() not updating j_116 properly
+
+**Why Contextual Defaults Made It Worse:**
+- Added a handler that calls `refreshUI()` when d_113 changes
+- But the underlying refreshUI() issue in Reference mode remains
+- Created more code complexity without fixing the root cause
+
+### Revert Action
+
+**Reverted to commit a12b880** - removed all onHeatingSystemChange() implementation:
+```bash
+git checkout a12b880 -- src/sections/Section13.js
+```
+
+**Files Affected:**
+- Section13.js: Removed onHeatingSystemChange(), removed wiring in setValue(), removed call in setDefaults()
+
+### Next Steps: Fix refreshUI() Parity Issue
+
+**Investigation Required:**
+1. Compare Target vs Reference refreshUI() behavior for calculated fields
+2. Identify why Target mode updates j_116 DOM when f_113 changes, but Reference mode doesn't
+3. Examine if the issue is in:
+   - ModeManager.refreshUI() function
+   - ReferenceState getValue() fallback logic
+   - Calculation engine publishing values to wrong state keys
+   - DOM update timing in Reference mode
+
+**Correct Approach:**
+- Fix the refreshUI() disparity FIRST
+- Then revisit contextual defaults if still needed
+- Don't add complexity to work around underlying architectural issues
+
+### Lessons Learned
+
+1. **Symptom vs Root Cause:** "Target value bleed" was a symptom, not the root cause
+2. **Test Thoroughly:** Fix appeared to work for static defaults but broke dynamic updates
+3. **Reference Mode Parity:** Any fix must maintain parity with Target mode behavior
+4. **Revert Early:** When a fix creates new problems, revert and reassess before continuing
+5. **Document Failures:** Failed attempts teach us where NOT to look for solutions
+
+### Status
+
+**REVERTED** - Contextual defaults approach abandoned
+
+**Action Items:**
+1. ✅ Revert to commit a12b880
+2. ✅ Document failed attempt in NOV-12-IMPORT-EXPORT-FIX.md
+3. ✅ Investigate refreshUI() parity issue between Target and Reference modes
+4. ⏸️ Consider if the real issue is in ModeManager, not ReferenceState
+
+---
+
+## 🔍 ROOT CAUSE ANALYSIS: refreshUI() Disparity Between Target and Reference Modes
+
+### Investigation Summary
+
+**User's Observation:**
+> "Target RefreshUI tracks with the right default, d_113 options, defaults and adapts to HSPF slider changes visibly in the DOM, where Reference mode does none of those three things."
+
+**Symptom:** When f_113 (HSPF) slider changes in Heatpump mode:
+- **Target mode:** j_116 DOM updates visibly with calculated value from j_113 ✅
+- **Reference mode:** j_116 recalculates correctly (StateManager has right value) but DOM doesn't update ❌
+
+### The Flow When f_113 Slider Changes
+
+**Section13.js Lines 1836-1846 - f_113 Slider Change Handler:**
+```javascript
+f113Slider.addEventListener("change", function () {
+  const hspfValue = parseFloat(this.value);
+  if (isNaN(hspfValue)) return;
+
+  // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
+  ModeManager.setValue("f_113", hspfValue.toString(), "user-modified");
+
+  // Only after thumb release
+  calculateAll();  // ← Calculates both Target and Reference engines
+  ModeManager.updateCalculatedDisplayValues();  // ← Updates DOM from calculations
+});
+```
+
+**What Happens in Heatpump Mode:**
+1. f_113 slider changes (user drags HSPF slider)
+2. `ModeManager.setValue("f_113", value)` updates TargetState or ReferenceState
+3. `calculateAll()` runs:
+   - Calls `calculateReferenceModel()` → calculates ref_j_113, ref_j_116
+   - Calls `calculateTargetModel()` → calculates j_113, j_116
+4. `updateCalculatedDisplayValues()` should update j_116 DOM... but doesn't in Reference mode
+
+### Root Cause: j_116 NOT in fieldFormats
+
+**Section13.js Lines 324-326 - updateCalculatedDisplayValues():**
+```javascript
+// ✅ S07 PATTERN: j_116 REMOVED - conditionally editable (Gas/Oil), not always calculated
+// When d_113="Heatpump", j_116 is calculated but DOM updates via refreshUI, not updateCalculatedDisplayValues
+h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
+// ← j_116 NOT HERE
+```
+
+**Why j_116 Was Removed (Commit b717071):**
+- j_116 is conditionally editable: editable in Gas/Oil mode, calculated in Heatpump mode
+- Including it in `fieldFormats` caused it to overwrite user edits in Gas/Oil mode
+- The comment says "DOM updates via refreshUI, not updateCalculatedDisplayValues"
+
+**The Problem:** refreshUI() doesn't update j_116 when it's GHOSTED!
+
+### Why refreshUI() Fails to Update j_116
+
+**Section13.js Lines 468-477 - refreshUI() Editable Field Handler:**
+```javascript
+} else if (element.getAttribute("contenteditable") === "true") {
+  // Update editable fields for mode persistence (d_119, j_115, j_116, l_118, d_118)
+  const numericValue = window.TEUI.parseNumeric(stateValue);
+  if (!isNaN(numericValue)) {
+    element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+  }
+}
+```
+
+**The Condition Check:** `element.getAttribute("contenteditable") === "true"`
+
+**When d_113="Heatpump":**
+- j_116 field is GHOSTED (greyed out, not user-editable)
+- `element.getAttribute("contenteditable")` returns `"false"` (string)
+- Condition fails → j_116 DOM not updated
+
+**When d_113="Gas" or "Oil":**
+- j_116 field is UNGHOSTED (editable)
+- `element.getAttribute("contenteditable")` returns `"true"`
+- Condition passes → j_116 DOM updates from state
+
+### Why Target Mode "Works" and Reference Mode "Doesn't"
+
+**Hypothesis:** The issue affects BOTH modes equally, but user perceives it differently:
+
+**In Target Mode:**
+- User changes f_113 slider
+- j_116 DOM doesn't update via refreshUI() (ghosted)
+- j_116 DOM doesn't update via updateCalculatedDisplayValues() (not in fieldFormats)
+- **BUT:** User doesn't notice because they're focused on the slider, not watching j_116
+
+**In Reference Mode:**
+- User changes f_113 slider
+- j_116 DOM doesn't update via refreshUI() (ghosted)
+- j_116 DOM doesn't update via updateCalculatedDisplayValues() (not in fieldFormats)
+- **User notices** because Reference mode calculations trigger and other calculated fields update, but j_116 doesn't
+
+**Alternative Hypothesis:** Target mode has different ghosting state or DOM update path that makes it work.
+
+### The Fix Options
+
+**Option 1: Add j_116 to updateCalculatedDisplayValues() ONLY when Ghosted**
+```javascript
+// Section13.js - updateCalculatedDisplayValues()
+const fieldFormats = {
+  h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
+  // Conditionally add j_116 when d_113="Heatpump" (calculated, ghosted)
+};
+
+// Before the forEach loop:
+const heatingSystem = this.getValue("d_113");
+if (heatingSystem === "Heatpump") {
+  fieldFormats.j_116 = "number-2dp"; // Only add when calculated
+}
+```
+
+**PRO:** Updates j_116 DOM when it's calculated
+**CON:** Adds conditional logic complexity
+
+**Option 2: Update refreshUI() to Handle Ghosted Editable Fields**
+```javascript
+// Section13.js - refreshUI()
+} else if (element.hasAttribute("contenteditable")) {  // ← Changed from === "true"
+  // Update ALL editable fields (ghosted or not)
+  const numericValue = window.TEUI.parseNumeric(stateValue);
+  if (!isNaN(numericValue)) {
+    element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+  }
+}
+```
+
+**PRO:** Simpler, handles all contenteditable fields (including ghosted)
+**CON:** Might update fields that shouldn't be updated
+
+**Option 3: Update j_116 DOM Directly in calculateCoolingSystem()**
+```javascript
+// Section13.js - After calculating j_116_display
+setFieldValue("j_116", j_116_display, "number-2dp");
+```
+
+**PRO:** Direct, explicit DOM update
+**CON:** Bypasses the centralized refreshUI pattern
+
+### ❌ INITIAL HYPOTHESIS WAS WRONG - Deeper Root Cause Found
+
+**User's Critical Insight:**
+> "To clarify, the issue is not with Target mode or j_116 DOM - it updates perfectly (even when ghosted) with f_113 HSPF slider changes. It is the ref_j_116 and Reference mode DOM that does nothing."
+
+**Re-analysis:** Target mode works perfectly! The issue is ONLY in Reference mode.
+
+### The REAL Data Flow Problem
+
+**Target Mode (WORKS):**
+1. `calculateTargetModel()` calculates j_116_display
+2. `calculateCoolingSystem(false, ...)` line 2583: **`setFieldValue("j_116", j_116_display)`** ✅ Direct DOM update
+3. DOM updates immediately
+
+**Reference Mode (BROKEN):**
+1. `calculateReferenceModel()` calculates j_116_display
+2. `calculateCoolingSystem(true, ...)` line 2581: **`if (!isReferenceCalculation)`** - SKIPS DOM update ❌
+3. Line 2598: Returns `j_116: j_116_display` in results object
+4. `storeReferenceResults()` stores it as `ref_j_116` in StateManager ✅
+5. **ReferenceState.state.j_116 is NEVER synced** ❌
+6. `refreshUI()` → `ReferenceState.getValue("j_116")` returns OLD stale value ❌
+7. DOM never updates
+
+**The Missing Sync:**
+- `syncFromGlobalState()` exists (lines 227-254) to sync StateManager → ReferenceState
+- It reads `ref_j_116` from StateManager and writes to `ReferenceState.state.j_116`
+- **BUT it's never called after calculations!** Only used for imports
+
+### Corrected Fix Options
+
+**Option 1: Call syncFromGlobalState After Calculations (Most Architecturally Correct)**
+
+Add sync after Reference calculations:
+```javascript
+// Section13.js - calculateReferenceModel() after storeReferenceResults()
+storeReferenceResults(
+  copResults,
+  heatingResults,
+  coolingResults,
+  unmitigatedResults,
+  mitigatedResults,
+  ventilationRatesResults,
+  ventilationEnergyResults,
+  coolingVentilationResults,
+  freeCoolingResults,
+);
+
+// ✅ NEW: Sync calculated ref_j_116 back to ReferenceState
+ReferenceState.syncFromGlobalState(["j_116"]);
+```
+
+**PRO:**
+- Uses existing sync mechanism
+- Architecturally clean
+- Works for all calculated Reference fields
+- refreshUI() will then read correct value
+
+**CON:**
+- Need to call sync selectively (only for calculated fields, not user-editable ones)
+- Might overwrite user edits if not careful
+
+**Option 2: Update refreshUI() to Read Directly from StateManager in Reference Mode**
+
+Change refreshUI() line 422 from:
+```javascript
+const stateValue = currentState.getValue(fieldId);
+```
+
+To:
+```javascript
+let stateValue;
+if (this.currentMode === "reference" && fieldId === "j_116") {
+  // Read calculated Reference value directly from StateManager
+  stateValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`) || currentState.getValue(fieldId);
+} else {
+  stateValue = currentState.getValue(fieldId);
+}
+```
+
+**PRO:**
+- Targeted fix for j_116 only
+- Reads fresh calculated value from StateManager
+- Doesn't affect other fields
+
+**CON:**
+- Special-case code (not generalizable)
+- Bypasses ReferenceState (architectural inconsistency)
+
+**Option 3: Add j_116 to updateCalculatedDisplayValues() in Reference Mode**
+
+Change updateCalculatedDisplayValues() lines 336-345 to read ref_j_116 directly:
+```javascript
+if (this.currentMode === "reference") {
+  // STRICT MODE: Reference shows ONLY ref_ values
+  valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+
+  // ✅ Special case: j_116 when d_113="Heatpump" (calculated, not in fieldFormats)
+  if (fieldId === "j_116") {
+    const heatingSystem = this.getValue("d_113");
+    if (heatingSystem === "Heatpump" && valueToDisplay) {
+      const element = document.querySelector(`[data-field-id="j_116"]`);
+      if (element) {
+        const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+        element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+      }
+    }
+  }
+}
+```
+
+**PRO:**
+- Keeps calculated field updates in updateCalculatedDisplayValues()
+- Only updates when d_113="Heatpump" (calculated mode)
+
+**CON:**
+- j_116 not in fieldFormats, so this is special-case code
+
+### Recommended Solution: Option 1 (Architecturally Cleanest)
+
+Call `ReferenceState.syncFromGlobalState(["j_116"])` after calculations to sync calculated values back to ReferenceState. This follows the existing data flow pattern and makes refreshUI() work correctly.
+
+**Implementation:**
+```javascript
+// Section13.js - After line 3163 in calculateReferenceModel()
+storeReferenceResults(...);
+
+// ✅ Sync calculated fields back to ReferenceState for DOM updates
+// Only sync calculated fields (j_116 when Heatpump), not user-editable ones
+const heatingSystem = ReferenceState.getValue("d_113");
+if (heatingSystem === "Heatpump") {
+  ReferenceState.syncFromGlobalState(["j_116"]); // Sync calculated COP
+}
+```
+
+**Testing Required:**
+1. Reference mode, d_113=Heatpump, drag f_113 slider → j_116 should update visibly ✅
+2. Reference mode, d_113=Gas, edit j_116 manually → should NOT be overwritten by sync ✅
+3. Target mode unchanged (still works) ✅
+## ✅ SOLUTION: j_116 Reference Mode DOM Update Issue (Session 4 - November 13, 2025)
+
+### The Problem
+**Symptom:** In Reference mode with d_113="Heatpump", dragging the f_113 (HSPF) slider does NOT visibly update the j_116 field in the DOM, even though:
+- Calculations execute correctly (e_10 recalculates properly) ✅
+- `ref_j_116` is correctly written to StateManager ✅
+- Target mode works perfectly (j_116 updates visibly when f_113 changes) ✅
+
+### Root Cause Analysis
+
+The issue was in `updateCalculatedDisplayValues()` at line 365:
+
+**BROKEN CODE:**
+```javascript
+if (element && !element.hasAttribute("contenteditable")) {
+  // Update DOM
+}
+```
+
+**The Bug:** This condition checks if the element does NOT have a `contenteditable` attribute at all. But j_116 DOES have the attribute when in Heatpump mode - it's set to `contenteditable="false"` (ghosted/calculated state).
+
+**The Logic Failure:**
+- j_116 has `contenteditable="false"` when d_113="Heatpump" (calculated/ghosted)
+- `hasAttribute("contenteditable")` returns `true` (attribute exists)
+- `!element.hasAttribute("contenteditable")` returns `false`
+- **DOM update is SKIPPED** ❌
+
+### The Fix
+
+Changed the condition to check the VALUE of the attribute, not just its existence:
+
+**FIXED CODE (Section13.js:368):**
+```javascript
+if (element && element.getAttribute("contenteditable") !== "true") {
+  // Update DOM for calculated fields (contenteditable="false" or no attribute)
+  const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+  if (!isNaN(numericValue)) {
+    const formatType = fieldFormats[fieldId] || "number-2dp";
+    const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+    element.textContent = formattedValue;
+  }
+}
+```
+
+**The Corrected Logic:**
+- j_116 has `contenteditable="false"` (ghosted/calculated)
+- `getAttribute("contenteditable")` returns `"false"`
+- `element.getAttribute("contenteditable") !== "true"` returns `true`
+- **DOM update happens** ✅
+
+### Why This Makes Sense
+
+**When d_113 = "Heatpump":**
+- j_116 is calculated from f_113 (HSPF slider)
+- j_116 becomes `contenteditable="false"` (ghosted/not user-editable)
+- Should be updated by `updateCalculatedDisplayValues()` ✅
+
+**When d_113 = "Gas" or "Oil":**
+- j_116 is user-editable
+- j_116 becomes `contenteditable="true"`
+- Should be updated by `refreshUI()`, not `updateCalculatedDisplayValues()` ✅
+
+### Verification
+- ✅ Reference mode, d_113="Heatpump", drag f_113 slider → j_116 updates in real-time
+- ✅ Target mode unchanged (still works perfectly)
+- ✅ No state isolation issues
+- ✅ No recursion or performance issues
+
+**Status:** FIXED and verified working
+**Commit:** NOV13-J116-DOM-FIX

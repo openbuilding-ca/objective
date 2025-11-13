@@ -321,12 +321,26 @@ window.TEUI.SectionModules.sect13 = (function () {
         h_124: "number-2dp-comma", m_129: "number-2dp-comma", d_129: "number-2dp-comma",
 
         // Small numbers without commas (2dp)
-        // ✅ S07 PATTERN: j_116 REMOVED - conditionally editable (Gas/Oil), not always calculated
-        // When d_113="Heatpump", j_116 is calculated but DOM updates via refreshUI, not updateCalculatedDisplayValues
         h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
         f_117: "number-2dp", j_117: "number-2dp", f_119: "number-2dp", h_119: "number-2dp",
         m_124: "number-2dp",
       };
+
+      // ✅ FIX: Conditionally add j_116 when it's calculated (ghosted in Heatpump mode)
+      // Check if j_116 is currently ghosted (contenteditable="false") = calculated mode
+      const j116Element = document.querySelector('[data-field-id="j_116"]');
+      const isJ116Ghosted = j116Element?.getAttribute("contenteditable") === "false";
+
+      console.log(`[S13 updateCalc] j_116 check: element=${!!j116Element}, contenteditable="${j116Element?.getAttribute("contenteditable")}", isGhosted=${isJ116Ghosted}, mode=${this.currentMode}`);
+
+      if (isJ116Ghosted) {
+        // When ghosted (Heatpump mode), j_116 is calculated → should update from StateManager
+        fieldFormats.j_116 = "number-2dp";
+        console.log(`[S13 updateCalc] ✅ Added j_116 to fieldFormats`);
+      } else {
+        console.log(`[S13 updateCalc] ⏭️ Skipping j_116 (not ghosted)`);
+      }
+      // When NOT ghosted (Gas/Oil mode), j_116 is user-editable → skip (handled by refreshUI)
 
       const calculatedFields = Object.keys(fieldFormats);
 
@@ -348,7 +362,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           const element = document.querySelector(
             `[data-field-id="${fieldId}"]`,
           );
-          if (element && !element.hasAttribute("contenteditable")) {
+          // ✅ FIX (NOV-13): Update calculated fields even if contenteditable exists
+          // The hasAttribute check was too strict - fields with contenteditable="false" (ghosted/calculated)
+          // were being skipped. Now we update unless explicitly contenteditable="true" (user-editable)
+          if (element && element.getAttribute("contenteditable") !== "true") {
             const numericValue = window.TEUI.parseNumeric(valueToDisplay);
             if (!isNaN(numericValue)) {
               // ✅ Use field-specific format from map (S10 pattern)
