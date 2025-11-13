@@ -503,12 +503,8 @@ window.TEUI.CoolingCalculations = (function () {
     const twbSimple =
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
 
-    // Second formula with dewpoint correction factor
-    const twbCorrected =
-      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-
-    // Average of both
-    stateObj.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
+    // ✅ CORRECTED (ANDYs13 branch): USE twbSimple INSTEAD for Excel parity (no averaging)
+    stateObj.wetBulbTemperature = twbSimple;
 
     return stateObj.wetBulbTemperature;
   }
