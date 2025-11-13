@@ -1418,9 +1418,77 @@ Ensure handleEditableBlur's DOM write happens LAST, after all state updates and 
 **Option 4: User's suggestion - Dual field variants**
 Create separate field definitions for j_116 editable vs calculated modes, adapting based on d_113 value.
 
+### Fix Attempt 1: ModeManager.refreshUI() - TOO AGGRESSIVE ❌
+
+**Hypothesis:** The DOM write at line 2064 gets overwritten by subsequent calculation flow. Adding `ModeManager.refreshUI()` after calculations should re-apply the correct state value.
+
+**Implementation:**
+```javascript
+if (fieldId === "j_116") {
+  calculateAll();
+  ModeManager.updateCalculatedDisplayValues();
+  ModeManager.refreshUI(); // ✅ Force full UI refresh after calculations
+}
+```
+
+**Test Results:**
+- ✅ Initial blur display works correctly - j_116 shows entered value in Reference mode
+- ❌ **Mode persistence broken** - Switching back to Target shows Target value, then switching back to Reference shows Target value again
+- Reference mode unable to maintain its own value after mode switches
+
+**Root Cause:** `refreshUI()` updates ALL fields (dropdowns, editables, sliders) from current mode's state. While this fixes the immediate blur display, it's too aggressive and breaks the delicate mode isolation that preserves separate Target/Reference values.
+
+### Fix Attempt 2: Surgical DOM Update - SUCCESS ✅
+
+**Hypothesis:** Instead of refreshing ALL UI elements, read only j_116 from the correct mode's state and update only that specific DOM element.
+
+**Implementation (Section13.js lines 2091-2103):**
+```javascript
+if (fieldId === "j_116") {
+  calculateAll();
+  ModeManager.updateCalculatedDisplayValues();
+
+  // ✅ Surgical DOM update: Re-apply formatted value from state after calculations
+  // refreshUI() is too aggressive and breaks mode persistence
+  const currentStateValue = ModeManager.getValue("j_116");
+  if (currentStateValue) {
+    const numericValue = window.TEUI.parseNumeric(currentStateValue);
+    if (!isNaN(numericValue)) {
+      this.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+    }
+  }
+}
+```
+
+**Test Results:**
+- ✅ Immediate blur display works - j_116 shows entered value in Reference mode
+- ✅ Mode persistence maintained - Target and Reference values stay separate
+- ✅ No "double-toggle dance" required
+- ✅ Mode switches work correctly - each mode displays its own value
+
+**Why This Works:**
+1. Line 2064: Initial DOM write shows user's formatted input
+2. Lines 2092-2093: `calculateAll()` and `updateCalculatedDisplayValues()` run (j_116 not in fieldFormats, so no overwrite)
+3. Lines 2096-2101: Re-read from `ModeManager.getValue("j_116")` which returns the correct mode-specific value:
+   - In Target mode: returns TargetState.j_116
+   - In Reference mode: returns ReferenceState.j_116
+4. Update only the j_116 DOM element, leaving all other fields untouched
+5. Mode persistence maintained because only j_116 updated, not all fields
+
+**Pattern Match:** This follows the S07 e_50 pattern for conditionally editable fields that need special handling in both Target and Reference modes.
+
+### Remaining Issue: Fresh Initialization Default Value Display
+
+**Symptom:** When first switching to Reference mode after selecting Gas at d_113 (fresh initialization, no import), j_116 displays the Target value instead of the Reference default (3.30).
+
+**Status:** User confirmed this is a minor issue not worth immediate code changes. Calculations likely use the correct 3.30 default from StateManager, but the DOM displays the Target value on first Reference mode switch. This matters less when importing files (imported values display correctly), only affects fresh initialization flow.
+
+**Analysis Required:** Study ReferenceState initialization and default value handling to understand why Target value appears instead of Reference default on first mode switch.
+
 ### Next Steps
 
-1. Document this hypothesis in NOV-12 doc
-2. Commit baseline with current fixes (j_116 removed from fieldFormats, added to criticalFields)
-3. Test contenteditable protection fix or getValue fallback fix
-4. If simple fix doesn't work, consider field variant approach
+1. ✅ j_116 removed from fieldFormats (commit b717071)
+2. ✅ j_116 added to criticalFields (commit bc0e357)
+3. ✅ Surgical DOM update fix implemented and tested successfully
+4. Document fix and commit changes
+5. Analyze default value display issue (chat only, no code changes)

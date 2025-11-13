@@ -2091,6 +2091,15 @@ window.TEUI.SectionModules.sect13 = (function () {
         if (fieldId === "j_116") {
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
+          // ✅ Surgical DOM update: Re-apply formatted value from state after calculations
+          // refreshUI() is too aggressive and breaks mode persistence
+          const currentStateValue = ModeManager.getValue("j_116");
+          if (currentStateValue) {
+            const numericValue = window.TEUI.parseNumeric(currentStateValue);
+            if (!isNaN(numericValue)) {
+              this.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+            }
+          }
         }
         if (fieldId === "d_118") {
           calculateAll(); // HRV/ERV efficiency affects ventilation energy calcs
