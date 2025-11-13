@@ -1481,14 +1481,107 @@ if (fieldId === "j_116") {
 
 **Symptom:** When first switching to Reference mode after selecting Gas at d_113 (fresh initialization, no import), j_116 displays the Target value instead of the Reference default (3.30).
 
-**Status:** User confirmed this is a minor issue not worth immediate code changes. Calculations likely use the correct 3.30 default from StateManager, but the DOM displays the Target value on first Reference mode switch. This matters less when importing files (imported values display correctly), only affects fresh initialization flow.
+**Status:** Minor issue - calculations use correct 3.30 default from StateManager, but DOM displays Target value on first Reference mode switch. Matters less when importing files (imported values display correctly), only affects fresh initialization flow.
 
-**Analysis Required:** Study ReferenceState initialization and default value handling to understand why Target value appears instead of Reference default on first mode switch.
+**Root Cause Analysis:**
 
-### Next Steps
+1. **The Problem Flow:**
+   - User enters j_116="2.0" in Target mode
+   - User switches to Reference mode after selecting Gas at d_113
+   - DOM shows "2.00" (Target value) instead of "3.30" (expected Gas/Oil default)
 
+2. **Why Reference Default Doesn't Appear:**
+   - ReferenceState.setDefaults() line 148 sets: `this.state.j_116 = referenceValues.j_116 || "2.66"`
+   - This only runs during initialization, not when d_113 changes to Gas
+   - When ReferenceState.state.j_116 is undefined, getValue() falls back to `getFieldDefault("j_116")`
+   - getFieldDefault() reads from sectionRows line 1112: `value: "2.66"` (Heatpump default)
+   - But when d_113="Gas", user expects "3.30" (Gas furnace equivalent COP)
+
+3. **The Contextual Default Problem:**
+   - Field definition at line 1112 has static Heatpump-context default: "2.66"
+   - No logic exists for contextual defaults based on d_113 value
+   - When d_113="Gas" or "Oil", expected default should be "3.30" (higher because Gas/Oil systems don't use electric resistance heating)
+
+4. **Why You See Target Value Instead of 2.66:**
+   - refreshUI() line 422: `const stateValue = currentState.getValue(fieldId);`
+   - Should return "2.66" from getFieldDefault(), but DOM shows Target "2.00"
+   - Suggests refreshUI() might not be updating j_116 on first mode switch, leaving Target value in DOM
+
+**Recommended Solution: Option 3 - Update j_116 When d_113 Changes in Reference Mode**
+
+Mirror the pattern used for f_113/j_115 in `onReferenceStandardChange()` (lines 161-166), but apply to d_113 changes instead of d_13 changes.
+
+**Implementation Plan (for Nov 12):**
+
+1. **Add d_113 change handler in ReferenceState:**
+   ```javascript
+   // Similar to onReferenceStandardChange() lines 152-177
+   onHeatingSystemChange: function() {
+     const currentHeatingSystem = this.state.d_113 || "Heatpump";
+
+     // Only update j_116 if not user-modified
+     if (!this.state.j_116_userModified) {
+       if (currentHeatingSystem === "Heatpump") {
+         this.state.j_116 = "2.66"; // Heatpump COP default
+       } else if (currentHeatingSystem === "Gas" || currentHeatingSystem === "Oil") {
+         this.state.j_116 = "3.30"; // Gas/Oil equivalent COP
+       } else {
+         this.state.j_116 = "2.66"; // Fallback to Heatpump default
+       }
+
+       this.saveState();
+
+       // Only refresh if currently in Reference mode
+       if (ModeManager.currentMode === "reference") {
+         ModeManager.refreshUI();
+         calculateAll();
+         ModeManager.updateCalculatedDisplayValues();
+       }
+     }
+   }
+   ```
+
+2. **Call onHeatingSystemChange() when d_113 changes in Reference mode:**
+   - In ReferenceState.setValue(), when fieldId === "d_113"
+   - Or in handleHeatingSystemChangeForGhosting() when in Reference mode
+
+3. **Also call during setDefaults() initialization:**
+   - After setting d_113="Heatpump", call onHeatingSystemChange() to set contextual j_116 default
+
+**Why This Approach:**
+- ✅ Follows existing f_113/j_115 pattern from onReferenceStandardChange()
+- ✅ Respects user-modified flag (won't overwrite manual entries)
+- ✅ Contextual defaults based on heating system type
+- ✅ Maintains mode isolation (only affects Reference mode)
+- ✅ Clean architecture - state updates trigger UI refresh
+
+**Alternative Options Considered:**
+
+**Option 1: Contextual Default in getFieldDefault()** - ❌ Rejected
+- Would need to check d_113 value every time
+- getFieldDefault() is meant to be simple fallback, not context-aware
+- Creates coupling between field defaults and state
+
+**Option 2: Initialize j_116 in setDefaults() Based on d_113** - ❌ Rejected
+- Chicken-egg problem: setDefaults runs before user changes d_113
+- Doesn't handle d_113 changes after initialization
+- Would need additional handler anyway
+
+**Option 4: Update j_116 in refreshUI() When Mode Switches** - ❌ Rejected
+- refreshUI() should read state, not modify it
+- Violates separation of concerns (display vs state management)
+- Would trigger on every mode switch, not just d_113 changes
+
+### Summary: Session 3 Complete (Nov 12, 2025)
+
+**Completed:**
 1. ✅ j_116 removed from fieldFormats (commit b717071)
 2. ✅ j_116 added to criticalFields (commit bc0e357)
-3. ✅ Surgical DOM update fix implemented and tested successfully
-4. Document fix and commit changes
-5. Analyze default value display issue (chat only, no code changes)
+3. ✅ Surgical DOM update fix implemented and tested successfully (commit a12b880)
+4. ✅ Documentation updated with analysis and implementation plan
+
+**Next Session (Nov 12 continued):**
+1. Implement Option 3: ReferenceState.onHeatingSystemChange() for contextual j_116 defaults
+2. Test fresh initialization flow: Gas at d_113 should show j_116="3.30" default
+3. Test user-modified flag: Manual j_116 entry should persist even when d_113 changes
+4. Test import flow: Imported j_116 values should still override defaults
