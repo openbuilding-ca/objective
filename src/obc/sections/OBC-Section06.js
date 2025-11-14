@@ -474,9 +474,9 @@ window.OBC.SectionModules.sect06 = (function () {
   function getDropdownOptions() {
     const options = {};
 
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -539,7 +539,7 @@ window.OBC.SectionModules.sect06 = (function () {
       "o",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;
@@ -594,7 +594,7 @@ window.OBC.SectionModules.sect06 = (function () {
   function setCalculatedValue(
     fieldId,
     rawValue,
-    formatType = "number-0dp-comma",
+    formatType = "number-0dp-comma"
   ) {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
@@ -627,7 +627,7 @@ window.OBC.SectionModules.sect06 = (function () {
         window.OBC.StateManager.setValue(
           fieldId,
           rawValue.toString(),
-          "calculated",
+          "calculated"
         );
       }
     }
@@ -667,7 +667,7 @@ window.OBC.SectionModules.sect06 = (function () {
     if (window.OBC?.StateManager?.addListener) {
       const calculationTriggers = ["i_59", "i_60", "i_61"];
 
-      calculationTriggers.forEach((fieldId) => {
+      calculationTriggers.forEach(fieldId => {
         window.OBC.StateManager.addListener(fieldId, () => {
           if (!window.sectionCalculationInProgress) {
             calculateOccupantLoadTotal();
@@ -679,11 +679,11 @@ window.OBC.SectionModules.sect06 = (function () {
     // ALSO add direct DOM event listeners as backup for immediate responsiveness (COPY FROM SECTION 03)
     const triggerFields = ["i_59", "i_60", "i_61"];
 
-    triggerFields.forEach((fieldId) => {
+    triggerFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         // Add input event listeners for immediate calculation updates
-        ["blur", "input", "change"].forEach((eventType) => {
+        ["blur", "input", "change"].forEach(eventType => {
           element.addEventListener(eventType, () => {
             // Small delay to allow StateManager to update first
             setTimeout(() => {

@@ -54,7 +54,7 @@ TEUI.AppendixE = {
       TEUI.ReferenceValues[currentStandardKey] &&
       Object.prototype.hasOwnProperty.call(
         TEUI.ReferenceValues[currentStandardKey],
-        fieldId,
+        fieldId
       )
     ) {
       return "Directly Set by Standard";

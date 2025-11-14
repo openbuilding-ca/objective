@@ -47,16 +47,16 @@ TEUI.ReferenceToggle = (function () {
     ];
 
     const dualStateSections = sectionIds
-      .map((id) => ({
+      .map(id => ({
         id,
         module: window.TEUI?.[id],
         modeManager: window.TEUI?.[id]?.ModeManager,
       }))
-      .filter((s) => s.modeManager);
+      .filter(s => s.modeManager);
 
     console.log(
       `[ReferenceToggle] Found ${dualStateSections.length} dual-state sections:`,
-      dualStateSections.map((s) => s.id),
+      dualStateSections.map(s => s.id)
     );
     return dualStateSections;
   }
@@ -73,7 +73,7 @@ TEUI.ReferenceToggle = (function () {
     let switchedCount = 0;
 
     // Switch all section ModeManagers
-    sections.forEach((section) => {
+    sections.forEach(section => {
       try {
         if (
           section.modeManager &&
@@ -82,12 +82,15 @@ TEUI.ReferenceToggle = (function () {
           section.modeManager.switchMode(mode);
 
           // Call updateCalculatedDisplayValues if it exists
-          if (typeof section.modeManager.updateCalculatedDisplayValues === "function") {
+          if (
+            typeof section.modeManager.updateCalculatedDisplayValues ===
+            "function"
+          ) {
             section.modeManager.updateCalculatedDisplayValues();
           } else if (!warnedSections.has(section.id)) {
             // Only warn once per section to avoid console spam
             console.warn(
-              `[ReferenceToggle] ${section.id} has no updateCalculatedDisplayValues method`,
+              `[ReferenceToggle] ${section.id} has no updateCalculatedDisplayValues method`
             );
             warnedSections.add(section.id);
           }
@@ -97,7 +100,7 @@ TEUI.ReferenceToggle = (function () {
       } catch (error) {
         console.error(
           `[ReferenceToggle] Error switching ${section.id}:`,
-          error,
+          error
         );
       }
     });
@@ -110,7 +113,7 @@ TEUI.ReferenceToggle = (function () {
     document.documentElement.classList.toggle("reference-mode", isReference);
 
     console.log(
-      `🎨 Master Toggle: Switched ${switchedCount}/${sections.length} sections to ${mode.toUpperCase()} mode with global styling`,
+      `🎨 Master Toggle: Switched ${switchedCount}/${sections.length} sections to ${mode.toUpperCase()} mode with global styling`
     );
     return switchedCount;
   }
@@ -121,7 +124,7 @@ TEUI.ReferenceToggle = (function () {
   function updateAllCalculatedDisplays() {
     const dualStateSections = getAllDualStateSections();
 
-    dualStateSections.forEach((section) => {
+    dualStateSections.forEach(section => {
       try {
         if (
           section.modeManager &&
@@ -138,7 +141,7 @@ TEUI.ReferenceToggle = (function () {
       } catch (error) {
         console.error(
           `[ReferenceToggle] Error updating display for ${section.id}:`,
-          error,
+          error
         );
       }
     });
@@ -150,27 +153,27 @@ TEUI.ReferenceToggle = (function () {
     // Setup Reference Setup buttons
     const mirrorTargetBtn = document.getElementById("mirrorTargetBtn");
     if (mirrorTargetBtn) {
-      mirrorTargetBtn.addEventListener("click", (e) => {
+      mirrorTargetBtn.addEventListener("click", e => {
         e.preventDefault();
         mirrorTarget();
       });
     }
 
     const mirrorTargetReferenceBtn = document.getElementById(
-      "mirrorTargetReferenceBtn",
+      "mirrorTargetReferenceBtn"
     );
     if (mirrorTargetReferenceBtn) {
-      mirrorTargetReferenceBtn.addEventListener("click", (e) => {
+      mirrorTargetReferenceBtn.addEventListener("click", e => {
         e.preventDefault();
         mirrorTargetWithReference();
       });
     }
 
     const referenceIndependenceBtn = document.getElementById(
-      "referenceIndependenceBtn",
+      "referenceIndependenceBtn"
     );
     if (referenceIndependenceBtn) {
-      referenceIndependenceBtn.addEventListener("click", (e) => {
+      referenceIndependenceBtn.addEventListener("click", e => {
         e.preventDefault();
         enableReferenceIndependence();
       });
@@ -179,7 +182,7 @@ TEUI.ReferenceToggle = (function () {
     // Setup Display Toggle buttons
     const showReferenceBtn = document.getElementById("showReferenceBtn");
     if (showReferenceBtn) {
-      showReferenceBtn.addEventListener("click", (e) => {
+      showReferenceBtn.addEventListener("click", e => {
         e.preventDefault();
         switchAllSectionsMode("reference");
       });
@@ -187,7 +190,7 @@ TEUI.ReferenceToggle = (function () {
 
     const showTargetBtn = document.getElementById("showTargetBtn");
     if (showTargetBtn) {
-      showTargetBtn.addEventListener("click", (e) => {
+      showTargetBtn.addEventListener("click", e => {
         e.preventDefault();
         switchAllSectionsMode("target");
       });
@@ -195,7 +198,7 @@ TEUI.ReferenceToggle = (function () {
 
     // Keep existing Reference Inputs view button
     const viewRefInputsBtn = document.getElementById(
-      VIEW_REFERENCE_INPUTS_BUTTON_ID,
+      VIEW_REFERENCE_INPUTS_BUTTON_ID
     );
     if (viewRefInputsBtn) {
       viewRefInputsBtn.addEventListener("click", toggleReferenceInputsView);
@@ -217,7 +220,7 @@ TEUI.ReferenceToggle = (function () {
     }
 
     console.log(
-      "[ReferenceToggle] Master Reference Toggle initialization complete",
+      "[ReferenceToggle] Master Reference Toggle initialization complete"
     );
   }
 
@@ -230,7 +233,7 @@ TEUI.ReferenceToggle = (function () {
     const targetMode = isShowingReference ? "reference" : "target";
 
     console.log(
-      `[ReferenceToggle] Switching ALL sections to ${targetMode.toUpperCase()} display mode`,
+      `[ReferenceToggle] Switching ALL sections to ${targetMode.toUpperCase()} display mode`
     );
 
     // Switch all dual-state sections to the target mode
@@ -252,11 +255,11 @@ TEUI.ReferenceToggle = (function () {
       // Use the SAME CSS class that "Highlight Reference Values" uses
       document.body.classList.toggle(
         "viewing-reference-inputs",
-        isShowingReference,
+        isShowingReference
       );
       document.body.classList.toggle(
         "viewing-reference-values",
-        isShowingReference,
+        isShowingReference
       );
 
       // Also apply additional classes for comprehensive styling
@@ -265,11 +268,11 @@ TEUI.ReferenceToggle = (function () {
       htmlElement.classList.toggle("reference-mode", isShowingReference);
 
       console.log(
-        `[ReferenceToggle] Successfully toggled to ${targetMode.toUpperCase()} display mode with UI styling`,
+        `[ReferenceToggle] Successfully toggled to ${targetMode.toUpperCase()} display mode with UI styling`
       );
     } else {
       console.warn(
-        "[ReferenceToggle] No sections were switched - reverting toggle",
+        "[ReferenceToggle] No sections were switched - reverting toggle"
       );
       isShowingReference = !isShowingReference; // Revert if nothing was switched
     }
@@ -281,7 +284,7 @@ TEUI.ReferenceToggle = (function () {
   function handleStandardChange(event) {
     const newStandardKey = event.target.value;
     console.log(
-      `[ReferenceToggle] Reference standard changed to: ${newStandardKey}`,
+      `[ReferenceToggle] Reference standard changed to: ${newStandardKey}`
     );
 
     if (window.TEUI?.StateManager) {
@@ -289,26 +292,26 @@ TEUI.ReferenceToggle = (function () {
       window.TEUI.StateManager.setValue(
         STANDARD_SELECTOR_ID,
         newStandardKey,
-        "user-modified",
+        "user-modified"
       );
 
       // Notify all sections with ReferenceValues.js dependencies
       const dualStateSections = getAllDualStateSections();
-      dualStateSections.forEach((section) => {
+      dualStateSections.forEach(section => {
         try {
           // Look for sections that have onReferenceStandardChange method in their ReferenceState
           if (section.module.ReferenceState?.onReferenceStandardChange) {
             section.module.ReferenceState.onReferenceStandardChange(
-              newStandardKey,
+              newStandardKey
             );
             console.log(
-              `[ReferenceToggle] Updated ${section.id} for new reference standard`,
+              `[ReferenceToggle] Updated ${section.id} for new reference standard`
             );
           }
         } catch (error) {
           console.error(
             `[ReferenceToggle] Error updating ${section.id} for standard change:`,
-            error,
+            error
           );
         }
       });
@@ -332,12 +335,12 @@ TEUI.ReferenceToggle = (function () {
     // Add/Remove body class for styling
     document.body.classList.toggle(
       "viewing-reference-inputs",
-      isViewingReferenceInputs,
+      isViewingReferenceInputs
     );
 
     // Update button text
     const viewRefInputsBtn = document.getElementById(
-      VIEW_REFERENCE_INPUTS_BUTTON_ID,
+      VIEW_REFERENCE_INPUTS_BUTTON_ID
     );
     if (viewRefInputsBtn) {
       viewRefInputsBtn.textContent = isViewingReferenceInputs
@@ -348,7 +351,7 @@ TEUI.ReferenceToggle = (function () {
     // This feature needs to be implemented to highlight Reference input fields
     // from ReferenceValues.js vs calculated values
     console.log(
-      `[ReferenceToggle] Reference inputs view: ${isViewingReferenceInputs ? "ON" : "OFF"}`,
+      `[ReferenceToggle] Reference inputs view: ${isViewingReferenceInputs ? "ON" : "OFF"}`
     );
 
     // TODO: Implement visual highlighting of Reference input fields
@@ -385,7 +388,7 @@ TEUI.ReferenceToggle = (function () {
       // Use FieldManager to get field definitions for this section
       if (window.TEUI?.FieldManager?.getFieldsBySection) {
         const fields = window.TEUI.FieldManager.getFieldsBySection(
-          getUINameForSection(sectionId),
+          getUINameForSection(sectionId)
         );
         return Object.keys(fields);
       }
@@ -397,13 +400,13 @@ TEUI.ReferenceToggle = (function () {
       }
 
       console.warn(
-        `[ReferenceToggle] Could not get field IDs for section ${sectionId}`,
+        `[ReferenceToggle] Could not get field IDs for section ${sectionId}`
       );
       return [];
     } catch (error) {
       console.error(
         `[ReferenceToggle] Error getting field IDs for ${sectionId}:`,
-        error,
+        error
       );
       return [];
     }
@@ -441,7 +444,7 @@ TEUI.ReferenceToggle = (function () {
     try {
       const sections = getAllDualStateSections();
       console.log(
-        `[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`,
+        `[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`
       );
 
       let totalFieldsCopied = 0;
@@ -452,12 +455,12 @@ TEUI.ReferenceToggle = (function () {
         // Get field IDs for this section
         const fieldIds = getFieldIdsForSection(section.id);
         console.log(
-          `[ReferenceToggle] Found ${fieldIds.length} fields for ${section.id}`,
+          `[ReferenceToggle] Found ${fieldIds.length} fields for ${section.id}`
         );
 
         if (fieldIds.length === 0) {
           console.warn(
-            `[ReferenceToggle] No fields found for ${section.id} - skipping`,
+            `[ReferenceToggle] No fields found for ${section.id} - skipping`
           );
           return;
         }
@@ -470,7 +473,7 @@ TEUI.ReferenceToggle = (function () {
 
         // Read all Target values using ModeManager facade
         const targetValues = {};
-        fieldIds.forEach((fieldId) => {
+        fieldIds.forEach(fieldId => {
           const value = section.modeManager.getValue(fieldId);
           if (value !== null && value !== undefined && value !== "") {
             targetValues[fieldId] = value;
@@ -478,7 +481,7 @@ TEUI.ReferenceToggle = (function () {
         });
 
         console.log(
-          `[ReferenceToggle] Read ${Object.keys(targetValues).length} Target values from ${section.id}`,
+          `[ReferenceToggle] Read ${Object.keys(targetValues).length} Target values from ${section.id}`
         );
 
         // Switch to reference mode to write values
@@ -495,15 +498,15 @@ TEUI.ReferenceToggle = (function () {
         section.modeManager.refreshUI();
 
         console.log(
-          `[ReferenceToggle] Copied ${Object.keys(targetValues).length} values to Reference state for ${section.id}`,
+          `[ReferenceToggle] Copied ${Object.keys(targetValues).length} values to Reference state for ${section.id}`
         );
       });
 
       console.log(
-        `🔗 Mirror Target: Successfully copied ${totalFieldsCopied} total fields across ${sections.length} sections`,
+        `🔗 Mirror Target: Successfully copied ${totalFieldsCopied} total fields across ${sections.length} sections`
       );
       console.log(
-        "🎯 Test: Switch to Reference mode to verify e_10 (Reference TEUI) equals h_10 (Target TEUI)",
+        "🎯 Test: Switch to Reference mode to verify e_10 (Reference TEUI) equals h_10 (Target TEUI)"
       );
     } catch (error) {
       console.error("[ReferenceToggle] Mirror Target failed:", error);
@@ -521,10 +524,10 @@ TEUI.ReferenceToggle = (function () {
       const refValues = window.TEUI?.ReferenceValues?.[standard] || {};
 
       console.log(
-        `[ReferenceToggle] Mirror Target + Reference: Using standard "${standard}"`,
+        `[ReferenceToggle] Mirror Target + Reference: Using standard "${standard}"`
       );
       console.log(
-        `[ReferenceToggle] Found ${Object.keys(refValues).length} reference values for this standard`,
+        `[ReferenceToggle] Found ${Object.keys(refValues).length} reference values for this standard`
       );
 
       // First execute Mirror Target to copy all Target values
@@ -534,9 +537,9 @@ TEUI.ReferenceToggle = (function () {
       const sections = getAllDualStateSections();
       let totalOverlayFields = 0;
 
-      sections.forEach((section) => {
+      sections.forEach(section => {
         console.log(
-          `[ReferenceToggle] Applying ReferenceValues overlay to ${section.id}...`,
+          `[ReferenceToggle] Applying ReferenceValues overlay to ${section.id}...`
         );
 
         // Save current mode
@@ -563,21 +566,21 @@ TEUI.ReferenceToggle = (function () {
 
         if (appliedFields.length > 0) {
           console.log(
-            `[ReferenceToggle] Applied ${appliedFields.length} reference standard values to ${section.id}: [${appliedFields.join(", ")}]`,
+            `[ReferenceToggle] Applied ${appliedFields.length} reference standard values to ${section.id}: [${appliedFields.join(", ")}]`
           );
         }
       });
 
       console.log(
-        `🔗 Mirror Target + Reference: Applied ${totalOverlayFields} reference standard values across all sections`,
+        `🔗 Mirror Target + Reference: Applied ${totalOverlayFields} reference standard values across all sections`
       );
       console.log(
-        `📋 Standard: "${standard}" - building code minimums now overlay Target inputs`,
+        `📋 Standard: "${standard}" - building code minimums now overlay Target inputs`
       );
     } catch (error) {
       console.error(
         "[ReferenceToggle] Mirror Target + Reference failed:",
-        error,
+        error
       );
     }
   }
@@ -587,7 +590,7 @@ TEUI.ReferenceToggle = (function () {
    */
   function enableReferenceIndependence() {
     console.log(
-      "🔓 Reference Independence: Sections are already independent by default",
+      "🔓 Reference Independence: Sections are already independent by default"
     );
     // No action needed - dual-state architecture already provides independence
   }

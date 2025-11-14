@@ -1043,9 +1043,9 @@ window.OBC.SectionModules.sect04 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.fieldId) {
           fields[cell.fieldId] = {
@@ -1072,9 +1072,9 @@ window.OBC.SectionModules.sect04 = (function () {
 
   function getDropdownOptions() {
     const dropdowns = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.type === "dropdown" && cell.options) {
           dropdowns[cell.dropdownId || cell.fieldId] = cell.options;
@@ -1130,7 +1130,7 @@ window.OBC.SectionModules.sect04 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a copy of the cell for the layout
         const cell = { ...row.cells[col] };
@@ -1154,9 +1154,9 @@ window.OBC.SectionModules.sect04 = (function () {
   function updateLinkedDescription(dropdownFieldId, selectedValue) {
     // Find the row and cell that contains this dropdown
     let linkedFieldId = null;
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.fieldId === dropdownFieldId && cell.linkedField) {
           linkedFieldId = cell.linkedField;
@@ -1167,7 +1167,7 @@ window.OBC.SectionModules.sect04 = (function () {
     if (linkedFieldId) {
       // Find the description from the dropdown options
       let description = "";
-      buildingClassificationOptions.forEach((option) => {
+      buildingClassificationOptions.forEach(option => {
         if (option.value === selectedValue) {
           description = option.description || option.name; // Use description property
         }
@@ -1175,7 +1175,7 @@ window.OBC.SectionModules.sect04 = (function () {
 
       // Update the linked field with the description
       const linkedElement = document.querySelector(
-        `[data-field-id="${linkedFieldId}"]`,
+        `[data-field-id="${linkedFieldId}"]`
       );
       if (linkedElement) {
         linkedElement.textContent = description;
@@ -1190,7 +1190,7 @@ window.OBC.SectionModules.sect04 = (function () {
     const sourceFieldIds = ["d_40", "d_41", "d_42", "d_43", "d_44"];
     const selectedValues = [];
 
-    sourceFieldIds.forEach((fieldId) => {
+    sourceFieldIds.forEach(fieldId => {
       const value = window.OBC?.StateManager?.getValue(fieldId);
       if (value && value !== "-") {
         selectedValues.push(value);
@@ -1202,7 +1202,7 @@ window.OBC.SectionModules.sect04 = (function () {
       if (window.OBC?.FieldManager?.updateDropdownOptions) {
         window.OBC.FieldManager.updateDropdownOptions(
           "e_50",
-          buildingClassificationOptions,
+          buildingClassificationOptions
         );
       }
       return;
@@ -1214,7 +1214,7 @@ window.OBC.SectionModules.sect04 = (function () {
     ];
 
     // Add only the selected classification values from D40-D44
-    buildingClassificationOptions.forEach((option) => {
+    buildingClassificationOptions.forEach(option => {
       if (selectedValues.includes(option.value)) {
         filteredOptions.push(option);
       }
@@ -1227,7 +1227,7 @@ window.OBC.SectionModules.sect04 = (function () {
       // Reset E50 if current value is no longer valid
       const currentE50Value = window.OBC.StateManager.getValue("e_50") || "-";
       const isCurrentValueValid = filteredOptions.some(
-        (option) => option.value === currentE50Value,
+        option => option.value === currentE50Value
       );
 
       if (!isCurrentValueValid && currentE50Value !== "-") {
@@ -1255,9 +1255,9 @@ window.OBC.SectionModules.sect04 = (function () {
       "d_44",
       "e_50",
     ];
-    classificationDropdowns.forEach((fieldId) => {
+    classificationDropdowns.forEach(fieldId => {
       const dropdown = document.querySelector(
-        `select[data-field-id="${fieldId}"]`,
+        `select[data-field-id="${fieldId}"]`
       );
       if (dropdown) {
         dropdown.addEventListener("change", function () {
@@ -1274,7 +1274,7 @@ window.OBC.SectionModules.sect04 = (function () {
     // Set up StateManager listeners for E50 filtering (more reliable than DOM events)
     if (window.OBC?.StateManager) {
       const sourceFieldIds = ["d_40", "d_41", "d_42", "d_43", "d_44"];
-      sourceFieldIds.forEach((fieldId) => {
+      sourceFieldIds.forEach(fieldId => {
         window.OBC.StateManager.addListener(fieldId, function () {
           requestAnimationFrame(updateE50Filter);
         });

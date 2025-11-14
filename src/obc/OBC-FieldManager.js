@@ -163,7 +163,7 @@ OBC.FieldManager = (function () {
   function getDropdownOptions(dropdownId, context = {}) {
     // First check if there's a field with this dropdown ID
     const fieldId = Object.keys(allFields).find(
-      (id) => allFields[id].dropdownId === dropdownId,
+      id => allFields[id].dropdownId === dropdownId
     );
 
     // If field found and it has options, use those first
@@ -303,7 +303,7 @@ OBC.FieldManager = (function () {
       } catch (error) {
         console.error(
           `Error in ${sectionId} module initializeEventHandlers:`,
-          error,
+          error
         );
       }
     }
@@ -337,7 +337,7 @@ OBC.FieldManager = (function () {
 
     if (!OBC.SectionModules[internalSectionId]) {
       console.error(
-        `Module not found for section ${sectionId} (${internalSectionId})`,
+        `Module not found for section ${sectionId} (${internalSectionId})`
       );
       return false;
     }
@@ -362,7 +362,7 @@ OBC.FieldManager = (function () {
       document.dispatchEvent(
         new CustomEvent(`obc-section-rendered`, {
           detail: { sectionId: sectionId },
-        }),
+        })
       );
 
       return true;
@@ -382,7 +382,7 @@ OBC.FieldManager = (function () {
     }
 
     // Render each section
-    Object.keys(sections).forEach((sectionId) => {
+    Object.keys(sections).forEach(sectionId => {
       renderSection(sectionId);
     });
 
@@ -390,7 +390,7 @@ OBC.FieldManager = (function () {
     document.dispatchEvent(
       new CustomEvent("obc-rendering-complete", {
         detail: { message: "All sections rendered successfully" },
-      }),
+      })
     );
 
     return true;
@@ -415,7 +415,7 @@ OBC.FieldManager = (function () {
 
     // If there's a render hook, use it instead of creating a new table
     const renderHook = contentContainer.querySelector(
-      `[data-render-section="${sectionId}"]`,
+      `[data-render-section="${sectionId}"]`
     );
     const containerElement = renderHook || contentContainer;
 
@@ -441,7 +441,7 @@ OBC.FieldManager = (function () {
       tbody.innerHTML = "";
 
       // Generate rows based on layout definition
-      layout.rows.forEach((rowDef) => {
+      layout.rows.forEach(rowDef => {
         const rowElement = document.createElement("tr");
         rowElement.setAttribute("data-id", rowDef.id);
 
@@ -470,7 +470,7 @@ OBC.FieldManager = (function () {
           if (index === 0) {
             // Column A - apply classes and attributes first
             if (cellDef.classes && Array.isArray(cellDef.classes)) {
-              cellDef.classes.forEach((className) => {
+              cellDef.classes.forEach(className => {
                 cellElement.classList.add(className);
               });
             }
@@ -492,7 +492,7 @@ OBC.FieldManager = (function () {
                   cellElement,
                   cellDef,
                   rowDef.id,
-                  sectionId,
+                  sectionId
                 );
             }
 
@@ -524,7 +524,7 @@ OBC.FieldManager = (function () {
                 if (cellDef.dropdownId) {
                   selectElement.setAttribute(
                     "data-dropdown-id",
-                    cellDef.dropdownId,
+                    cellDef.dropdownId
                   );
                 }
 
@@ -582,7 +582,7 @@ OBC.FieldManager = (function () {
                 cellElement.classList.add(
                   "editable",
                   "user-input",
-                  "numeric-field",
+                  "numeric-field"
                 );
                 cellElement.textContent = cellDef.value || "0.00";
                 cellElement.setAttribute("contenteditable", "true");
@@ -614,7 +614,7 @@ OBC.FieldManager = (function () {
                     window.OBC.StateManager.setValue(
                       fieldId,
                       this.value,
-                      "user-modified",
+                      "user-modified"
                     );
                   }
                 });
@@ -633,7 +633,7 @@ OBC.FieldManager = (function () {
 
               // Apply any custom classes to this cell
               if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellDef.classes.forEach((className) => {
+                cellDef.classes.forEach(className => {
                   cellElement.classList.add(className);
                 });
               }
@@ -643,7 +643,7 @@ OBC.FieldManager = (function () {
               // --- ADDED DEBUG LOG for initial textContent ---
               if (cellDef.fieldId === "d_119" || cellDef.fieldId === "j_115") {
                 console.log(
-                  `[FieldManager] Setting initial textContent for ${cellDef.fieldId} to: "${cellElement.textContent}"`,
+                  `[FieldManager] Setting initial textContent for ${cellDef.fieldId} to: "${cellElement.textContent}"`
                 );
               }
               // --- END DEBUG LOG ---
@@ -660,7 +660,7 @@ OBC.FieldManager = (function () {
 
               // Apply any custom classes to this cell
               if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellDef.classes.forEach((className) => {
+                cellDef.classes.forEach(className => {
                   cellElement.classList.add(className);
                 });
               }
@@ -688,15 +688,15 @@ OBC.FieldManager = (function () {
 
     // Add event listeners for dropdowns with dependencies
     const fields = getFieldsBySection(sectionId);
-    Object.values(fields).forEach((field) => {
+    Object.values(fields).forEach(field => {
       if (field.type === "dropdown" && field.dropdownId) {
         const dropdown = document.querySelector(
-          `[data-dropdown-id="${field.dropdownId}"]`,
+          `[data-dropdown-id="${field.dropdownId}"]`
         );
         if (dropdown) {
           dropdown.addEventListener("change", () => {
             const fieldId = Object.keys(fields).find(
-              (key) => fields[key] === field,
+              key => fields[key] === field
             );
             if (fieldId) {
               updateDependentDropdowns(fieldId);
@@ -748,7 +748,7 @@ OBC.FieldManager = (function () {
       ];
 
       // Add value cells
-      fieldEntries.forEach((entry) => {
+      fieldEntries.forEach(entry => {
         cells.push({
           fieldId: entry.fieldId,
           label: entry.field.label,
@@ -858,12 +858,12 @@ OBC.FieldManager = (function () {
           } else if (field.type === "coefficient_slider") {
             displayValue = window.OBC.formatNumber(
               parseFloat(value),
-              "number-2dp",
+              "number-2dp"
             );
           } else if (field.type === "year_slider") {
             displayValue = window.OBC.formatNumber(
               parseFloat(value),
-              "integer-nocomma",
+              "integer-nocomma"
             );
           }
 
@@ -891,17 +891,17 @@ OBC.FieldManager = (function () {
           }
           initialDisplayValue = window.OBC.formatNumber(
             valToFormat,
-            "percent-0dp",
+            "percent-0dp"
           );
         } else if (field.type === "coefficient_slider") {
           initialDisplayValue = window.OBC.formatNumber(
             parseFloat(rangeInput.value),
-            "number-2dp",
+            "number-2dp"
           );
         } else if (field.type === "year_slider") {
           initialDisplayValue = window.OBC.formatNumber(
             parseFloat(rangeInput.value),
-            "integer-nocomma",
+            "integer-nocomma"
           );
         }
         displaySpan.textContent = initialDisplayValue;
@@ -914,8 +914,8 @@ OBC.FieldManager = (function () {
 
         // CRITICAL PROTECTION: Apply a mutation observer to ensure the slider cell
         // never gets the contenteditable attribute applied after initialization
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
+        const observer = new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
             if (
               mutation.type === "attributes" &&
               (mutation.attributeName === "contenteditable" ||
@@ -986,7 +986,7 @@ OBC.FieldManager = (function () {
     Object.entries(fields).forEach(([fieldId, field]) => {
       if (field.type === "dropdown" && field.dropdownId) {
         const selectElement = document.querySelector(
-          `[data-dropdown-id="${field.dropdownId}"]`,
+          `[data-dropdown-id="${field.dropdownId}"]`
         );
         if (!selectElement) return;
 
@@ -1020,7 +1020,7 @@ OBC.FieldManager = (function () {
         }
 
         // Add options to select element
-        options.forEach((option) => {
+        options.forEach(option => {
           const optionEl = document.createElement("option");
 
           // Handle both object and primitive options
@@ -1059,20 +1059,20 @@ OBC.FieldManager = (function () {
   function updateDependentDropdowns(fieldId) {
     // Find all fields that depend on this field
     const dependentFields = Object.values(allFields).filter(
-      (f) =>
+      f =>
         f.type === "dropdown" &&
         f.dependencies &&
-        f.dependencies.includes(fieldId),
+        f.dependencies.includes(fieldId)
     );
 
-    dependentFields.forEach((depField) => {
+    dependentFields.forEach(depField => {
       const dependentId = Object.keys(allFields).find(
-        (id) => allFields[id] === depField,
+        id => allFields[id] === depField
       );
       if (!dependentId) return;
 
       const dropdown = document.querySelector(
-        `[data-field-id="${dependentId}"]`,
+        `[data-field-id="${dependentId}"]`
       );
       if (!dropdown) return;
 
@@ -1089,7 +1089,7 @@ OBC.FieldManager = (function () {
         } catch (error) {
           console.error(
             `Error getting dependent options for ${dependentId}:`,
-            error,
+            error
           );
         }
       }
@@ -1099,7 +1099,7 @@ OBC.FieldManager = (function () {
 
       // Add new options
       if (options && options.length > 0) {
-        options.forEach((option) => {
+        options.forEach(option => {
           const optionEl = document.createElement("option");
           const value = typeof option === "object" ? option.value : option;
           const text =
@@ -1144,7 +1144,7 @@ OBC.FieldManager = (function () {
 
     // Add options from the options list
     if (options && options.length > 0) {
-      options.forEach((option) => {
+      options.forEach(option => {
         const optionEl = document.createElement("option");
         // Support both { value, name } and simple string options
         const value = typeof option === "object" ? option.value : option;
@@ -1226,7 +1226,7 @@ OBC.FieldManager = (function () {
           : element.querySelector('input[type="range"]');
         const displaySpan =
           element.parentNode.querySelector(
-            `span[data-field-id='${fieldId}-value']`,
+            `span[data-field-id='${fieldId}-value']`
           ) || element.querySelector(`span`);
 
         if (sliderInput) {
@@ -1246,12 +1246,12 @@ OBC.FieldManager = (function () {
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue) / 100,
-                "percent-0dp",
+                "percent-0dp"
               ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue),
-                "number-2dp",
+                "number-2dp"
               ); // Default for others
             }
           }
@@ -1269,7 +1269,7 @@ OBC.FieldManager = (function () {
           : element.querySelector('input[type="range"]');
         const displaySpan =
           element.parentNode.querySelector(
-            `span[data-field-id='${fieldId}-value']`,
+            `span[data-field-id='${fieldId}-value']`
           ) || element.querySelector(`span`);
 
         if (sliderInput) {
@@ -1289,12 +1289,12 @@ OBC.FieldManager = (function () {
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue) / 100,
-                "percent-0dp",
+                "percent-0dp"
               ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue),
-                "number-2dp",
+                "number-2dp"
               ); // Default for others
             }
           }
@@ -1352,7 +1352,7 @@ OBC.FieldManager = (function () {
 
     if (!element || element.tagName !== "SELECT") {
       console.warn(
-        `updateDropdownOptions: No select element found for ${fieldId} (tried ${dropdownId} and ${fieldId})`,
+        `updateDropdownOptions: No select element found for ${fieldId} (tried ${dropdownId} and ${fieldId})`
       );
       return;
     }
@@ -1364,7 +1364,7 @@ OBC.FieldManager = (function () {
     element.innerHTML = "";
 
     // Add new options
-    newOptions.forEach((option) => {
+    newOptions.forEach(option => {
       const optionEl = document.createElement("option");
       const value = typeof option === "object" ? option.value : option;
       const text =
@@ -1376,7 +1376,7 @@ OBC.FieldManager = (function () {
     });
 
     // Restore selection if still valid
-    const isCurrentValueValid = newOptions.some((option) => {
+    const isCurrentValueValid = newOptions.some(option => {
       const value = typeof option === "object" ? option.value : option;
       return value === currentValue;
     });

@@ -87,7 +87,7 @@ window.TEUI.CoolingSankey = (function () {
     // Deep copy the template
     const sankeyData = {
       nodes: JSON.parse(
-        JSON.stringify(COOLING_SANKEY_STRUCTURE_TEMPLATE.nodes),
+        JSON.stringify(COOLING_SANKEY_STRUCTURE_TEMPLATE.nodes)
       ),
       links: [],
     };
@@ -96,7 +96,7 @@ window.TEUI.CoolingSankey = (function () {
     const teuiState = window.TEUI.StateManager;
     if (!teuiState || typeof teuiState.getValue !== "function") {
       console.warn(
-        "CoolingSankey: TEUI.StateManager not available. Using template defaults.",
+        "CoolingSankey: TEUI.StateManager not available. Using template defaults."
       );
       return sankeyData;
     }
@@ -104,7 +104,7 @@ window.TEUI.CoolingSankey = (function () {
     // Helper function to safely get state value and convert to number
     // MODE AWARE: Reads ref_ prefixed values when S16 is in Reference mode
     // Critical: Must return valid number for D3, never NaN
-    const getStateValue = (key) => {
+    const getStateValue = key => {
       let rawValue;
 
       // Check if Section 16 is in Reference mode
@@ -258,7 +258,7 @@ window.TEUI.CoolingSankey = (function () {
     // Logic from BALANCE.csv:
     //   - If K value > 0: Energy GAINED (ground warmer than building)
     //   - If K value ≤ 0: Energy REMOVED (ground absorbs heat from building)
-    const getRawStateValue = (key) => {
+    const getRawStateValue = key => {
       let rawValue;
 
       // MODE AWARE: Same pattern as getStateValue
@@ -353,7 +353,7 @@ window.TEUI.CoolingSankey = (function () {
     // Ventilation Free Cooling (c_124 or h_124)
     const freeCooling = Math.max(
       getRawStateValue("c_124"),
-      getRawStateValue("h_124"),
+      getRawStateValue("h_124")
     );
     if (freeCooling > MIN_VALUE) {
       energyRemovedLinks.push({

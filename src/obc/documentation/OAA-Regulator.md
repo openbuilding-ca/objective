@@ -264,7 +264,7 @@ This two-factor verification approach significantly enhances security while main
    ```javascript
    // OBC Matrix will NOT store ANY firm data except applicant's own
    const OAALookup = {
-     search: async (query) => {
+     search: async query => {
        // Query OAA API for single record
        const result = await fetch("https://api.oaa.on.ca/v1/search", {
          headers: { Authorization: "Bearer OBJECTIVE_OBC_MATRIX_KEY" },
@@ -285,7 +285,7 @@ This two-factor verification approach significantly enhances security while main
    const response = await fetch(apiEndpoint, { body: encryptedQuery });
    const decryptedResult = await decryptWithPrivateKey(
      response,
-     OBC_PRIVATE_KEY,
+     OBC_PRIVATE_KEY
    );
 
    // Even if intercepted, transmission contains only meaningless encrypted code
@@ -365,7 +365,7 @@ The [OAA Directory](https://oaa.on.ca/oaa-directory) provides publicly available
 async function updateOAADatabase() {
   // Download public Excel file of practices
   const response = await fetch(
-    "https://oaa.on.ca/oaa-directory/practices-listing.xlsx",
+    "https://oaa.on.ca/oaa-directory/practices-listing.xlsx"
   );
   const workbook = XLSX.read(await response.arrayBuffer());
 
@@ -450,7 +450,7 @@ async function handleStampUpload(file) {
     // Show success with member details
     updateStampStatus(
       `✓ Verified: ${validation.name} (License ${validation.license})`,
-      "success",
+      "success"
     );
 
     // Optional: Auto-populate other form fields
@@ -459,7 +459,7 @@ async function handleStampUpload(file) {
     // Show validation warning with manual override
     updateStampStatus(
       `⚠ ${validation.reason}. Please verify manually.`,
-      "warning",
+      "warning"
     );
 
     // Provide suggested matches if available

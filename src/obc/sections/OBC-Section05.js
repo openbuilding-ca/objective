@@ -313,9 +313,9 @@ window.OBC.SectionModules.sect05 = (function () {
   function getDropdownOptions() {
     const options = {};
 
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -370,7 +370,7 @@ window.OBC.SectionModules.sect05 = (function () {
       "o",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;
@@ -389,7 +389,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function updateImportanceCategoryModifier(importanceCategory) {
     const modifierDropdown = document.querySelector(
-      '[data-dropdown-id="dd_i_53"]',
+      '[data-dropdown-id="dd_i_53"]'
     );
     if (!modifierDropdown) {
       console.error("Section 05: Modifier dropdown not found");
@@ -405,7 +405,7 @@ window.OBC.SectionModules.sect05 = (function () {
     modifierDropdown.innerHTML = "";
 
     // Add new options
-    options.forEach((option) => {
+    options.forEach(option => {
       const optionElement = document.createElement("option");
       optionElement.value = option.value;
       optionElement.textContent = option.name;
@@ -432,7 +432,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
     // Add conditional dropdown handling for importance category
     const importanceCategoryDropdown = document.querySelector(
-      '[data-dropdown-id="dd_d_53"]',
+      '[data-dropdown-id="dd_d_53"]'
     );
     if (importanceCategoryDropdown) {
       importanceCategoryDropdown.addEventListener("change", function (e) {
@@ -447,11 +447,11 @@ window.OBC.SectionModules.sect05 = (function () {
     // Initialize the conditional dropdown with the default importance category value
     setTimeout(() => {
       const importanceCategoryDropdown = document.querySelector(
-        '[data-dropdown-id="dd_d_53"]',
+        '[data-dropdown-id="dd_d_53"]'
       );
       if (importanceCategoryDropdown) {
         updateImportanceCategoryModifier(
-          importanceCategoryDropdown.value || "Low",
+          importanceCategoryDropdown.value || "Low"
         );
       }
     }, 100); // Small delay to ensure DOM is ready

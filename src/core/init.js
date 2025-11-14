@@ -12,7 +12,7 @@
 function initializeUIHandlers() {
   // Initialize Bootstrap tooltips
   var tooltipTriggerList = [].slice.call(
-    document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
   );
   var _tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -34,7 +34,7 @@ function initializeUIHandlers() {
         window.TEUI.StateManager.revertToLastImportedState();
       } else {
         console.error(
-          "StateManager or revertToLastImportedState function not found.",
+          "StateManager or revertToLastImportedState function not found."
         );
         alert("Error: Reset function is not available.");
       }
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
   body.classList.add("vertical-layout");
 
   // Add toggle icons to section headers if missing
-  document.querySelectorAll(".section-header").forEach((header) => {
+  document.querySelectorAll(".section-header").forEach(header => {
     // Skip if already has toggle icon
     if (!header.querySelector(".toggle-icon")) {
       const toggleIcon = document.createElement("span");
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     tabContainer.innerHTML = "";
 
     // Create tabs for each section (except Key Values)
-    sections.forEach((section) => {
+    sections.forEach(section => {
       if (section.id === "keyValues") return;
 
       const sectionHeader = section.querySelector(".section-header");
@@ -236,8 +236,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Remove active class from all tabs and sections
     document
       .querySelectorAll(".tab")
-      .forEach((t) => t.classList.remove("active"));
-    sections.forEach((s) => {
+      .forEach(t => t.classList.remove("active"));
+    sections.forEach(s => {
       if (s.id !== "keyValues") {
         s.classList.remove("active");
       }
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add active class to selected tab and section
     const selectedTab = document.querySelector(
-      `.tab[data-section-id="${sectionId}"]`,
+      `.tab[data-section-id="${sectionId}"]`
     );
     if (selectedTab) {
       selectedTab.classList.add("active");
@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Toggle section collapse/expand when header is clicked (vertical layout only)
-  document.querySelectorAll(".section-header").forEach((header) => {
+  document.querySelectorAll(".section-header").forEach(header => {
     header.addEventListener("click", function (event) {
       // Skip if clicking on buttons in the header
       if (
@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Helper function to collapse all sections
   function collapseAllSections() {
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       // Skip Key Values section
       if (header.closest(".section").id === "keyValues") return;
 
@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Helper function to expand all sections
   function expandAllSections() {
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       header.classList.remove("collapsed");
       header.setAttribute("aria-expanded", "true");
     });
@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Save layout preference
       localStorage.setItem(
         "layoutMode",
-        isVerticalLayout ? "vertical" : "horizontal",
+        isVerticalLayout ? "vertical" : "horizontal"
       );
     });
   }
@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function saveCollapsedState() {
     const collapsedSections = {};
 
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       const section = header.closest(".section");
       if (section.id === "keyValues") return;
 
@@ -418,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     localStorage.setItem(
       "collapsedSections",
-      JSON.stringify(collapsedSections),
+      JSON.stringify(collapsedSections)
     );
   }
 
@@ -428,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const collapsedSections =
         JSON.parse(localStorage.getItem("collapsedSections")) || {};
 
-      document.querySelectorAll(".section-header").forEach((header) => {
+      document.querySelectorAll(".section-header").forEach(header => {
         const section = header.closest(".section");
         if (section.id === "keyValues") return;
 
@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let collapsedCount = 0;
     let totalSections = 0;
 
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       const section = header.closest(".section");
       if (section.id === "keyValues") return;
 
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const keyValuesHeight = keyValuesSection.offsetHeight;
       document.documentElement.style.setProperty(
         "--key-values-height",
-        `${keyValuesHeight}px`,
+        `${keyValuesHeight}px`
       );
     }
   }
@@ -523,20 +523,20 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update CSS variable for other elements that need this value
       document.documentElement.style.setProperty(
         "--key-values-height",
-        `${keyValueRect.height}px`,
+        `${keyValueRect.height}px`
       );
     }
   }
 
   // Make key values close button same size as layout toggle
   const headerButtons = document.querySelectorAll(
-    ".section-header .btn, .layout-toggle-btn",
+    ".section-header .btn, .layout-toggle-btn"
   );
-  headerButtons.forEach((button) => {
+  headerButtons.forEach(button => {
     button.classList.add(
       "d-flex",
       "align-items-center",
-      "justify-content-center",
+      "justify-content-center"
     );
   });
 
@@ -572,7 +572,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Apply the appropriate display mode to all tabs
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       const textElement = tab.querySelector(".tab-text");
 
       if (displayMode === "icon-only") {
@@ -668,7 +668,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!localStorage.getItem("disclaimerSeen")) {
     // Show the modal
     const disclaimerModal = new bootstrap.Modal(
-      document.getElementById("disclaimerModal"),
+      document.getElementById("disclaimerModal")
     );
     disclaimerModal.show();
 
@@ -730,7 +730,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   "Excel data loaded successfully! Click Apply to use the data.";
                 applyExcelBtn.classList.remove("d-none");
               })
-              .catch((error) => {
+              .catch(error => {
                 feedbackArea.textContent = `Error loading Excel file: ${error.message}`;
               });
           }
@@ -774,7 +774,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentUrl.searchParams.get("qc") === "true") {
           // QC already enabled - show info
           alert(
-            "QC monitoring is already active! Check the QC Dashboard in the top-right corner.",
+            "QC monitoring is already active! Check the QC Dashboard in the top-right corner."
           );
           return;
         }
@@ -788,7 +788,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "• QC Dashboard will appear in top-right\n" +
             "• Complete violation tracking from startup\n" +
             "• One-click report copy to clipboard\n\n" +
-            "Continue?",
+            "Continue?"
         );
 
         if (confirmed) {
@@ -808,7 +808,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add options
     if (options && options.length) {
-      options.forEach((option) => {
+      options.forEach(option => {
         const optionEl = document.createElement("option");
 
         if (typeof option === "object") {
@@ -847,7 +847,7 @@ document.addEventListener("DOMContentLoaded", function () {
       spacer.style.height = "15px";
       spacer.style.minHeight = "15px";
     },
-    { passive: true },
+    { passive: true }
   );
 
   // Update key values height and tab container position
@@ -862,7 +862,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update CSS variable
       document.documentElement.style.setProperty(
         "--key-values-height",
-        keyValuesHeight + "px",
+        keyValuesHeight + "px"
       );
 
       // Set tab container position exactly at bottom of Key Values
@@ -911,7 +911,7 @@ document.addEventListener("DOMContentLoaded", function () {
           field.dataset.originalValue = field.textContent || field.value || "";
         }
       },
-      true,
+      true
     );
 
     document.addEventListener(
@@ -935,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
       },
-      true,
+      true
     );
 
     // ROOT CAUSE FIX: No auto-marking on page load - clean slate

@@ -33,13 +33,13 @@
           fileInput.value = null; // Reset file input
           fileInput.click();
         });
-        fileInput.addEventListener("change", (event) => {
+        fileInput.addEventListener("change", event => {
           this.handleFileSelect(event);
         });
       }
 
       if (exportBtn) {
-        exportBtn.addEventListener("click", (event) => {
+        exportBtn.addEventListener("click", event => {
           event.preventDefault();
           this.exportToCSV();
         });
@@ -64,14 +64,14 @@
       this.showStatus(`Reading file: ${file.name}...`, "info");
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = e => {
         try {
           const fileExtension = file.name.split(".").pop().toLowerCase();
 
           if (fileExtension === "csv") {
             console.log("Detected CSV file.");
             const csvString = new TextDecoder("utf-8").decode(
-              new Uint8Array(e.target.result),
+              new Uint8Array(e.target.result)
             );
             this.processImportedCSV(csvString);
           } else if (fileExtension === "xlsx" || fileExtension === "xls") {
@@ -118,22 +118,22 @@
         "[FileHandler] 🔍 d_19 in importedData?",
         "d_19" in importedData,
         "Value:",
-        importedData.d_19,
+        importedData.d_19
       );
       console.log(
         "[FileHandler] 🔍 h_19 in importedData?",
         "h_19" in importedData,
         "Value:",
-        importedData.h_19,
+        importedData.h_19
       );
 
       if (importedData.d_19 || importedData.h_19) {
         console.log(
-          `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`,
+          `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`
         );
       } else {
         console.warn(
-          "[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!",
+          "[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!"
         );
       }
 
@@ -141,7 +141,7 @@
         // mapExcelToReportModel returns null on sheet error
         this.showStatus(
           "Error: REPORT sheet not found in Excel file.",
-          "error",
+          "error"
         );
         return;
       }
@@ -153,7 +153,7 @@
 
       // 🔒 START IMPORT QUARANTINE - Mute listeners to prevent premature calculations
       console.log(
-        "[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners",
+        "[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners"
       );
       window.TEUI.StateManager.muteListeners();
 
@@ -161,37 +161,37 @@
         // Import Target values (REPORT sheet)
         this.updateStateFromImportData(importedData, 0, false);
         console.log(
-          `[FileHandler] Imported ${Object.keys(importedData).length} Target values`,
+          `[FileHandler] Imported ${Object.keys(importedData).length} Target values`
         );
 
         // Import REFERENCE data from REFERENCE sheet (optional)
         console.log(
-          "[FileHandler DEBUG] About to call processImportedExcelReference",
+          "[FileHandler DEBUG] About to call processImportedExcelReference"
         );
         this.processImportedExcelReference(workbook);
         console.log(
-          "[FileHandler DEBUG] Returned from processImportedExcelReference",
+          "[FileHandler DEBUG] Returned from processImportedExcelReference"
         );
 
         // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
         console.log(
-          "[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...",
+          "[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete..."
         );
         this.syncPatternASections();
         console.log(
-          "[FileHandler] ✅ Pattern A sections synced with imported values",
+          "[FileHandler] ✅ Pattern A sections synced with imported values"
         );
       } finally {
         // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
         window.TEUI.StateManager.unmuteListeners();
         console.log(
-          "[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners",
+          "[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners"
         );
       }
 
       // Trigger clean recalculation with all imported values loaded
       console.log(
-        "[FileHandler] Triggering post-import calculation with fresh values...",
+        "[FileHandler] Triggering post-import calculation with fresh values..."
       );
       if (
         this.calculator &&
@@ -202,7 +202,7 @@
         // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
         // Pattern A sections use isolated state - DOM must be refreshed to show updated values
         console.log(
-          "[FileHandler] 🔄 Refreshing Pattern A section UIs after import...",
+          "[FileHandler] 🔄 Refreshing Pattern A section UIs after import..."
         );
         const patternASections = [
           "sect02",
@@ -221,7 +221,7 @@
           "sect15",
         ];
 
-        patternASections.forEach((sectionId) => {
+        patternASections.forEach(sectionId => {
           const section = window.TEUI?.SectionModules?.[sectionId];
           if (section?.ModeManager?.refreshUI) {
             section.ModeManager.refreshUI();
@@ -238,7 +238,7 @@
     processImportedExcelReference(workbook) {
       console.log(
         "[FileHandler DEBUG] processImportedExcelReference called, excelMapper exists:",
-        !!this.excelMapper,
+        !!this.excelMapper
       );
 
       if (!this.excelMapper) {
@@ -251,12 +251,12 @@
       const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
       console.log(
         "[FileHandler DEBUG] mapExcelToReferenceModel returned, keys:",
-        Object.keys(referenceData).length,
+        Object.keys(referenceData).length
       );
 
       if (Object.keys(referenceData).length === 0) {
         console.log(
-          "No REFERENCE sheet found or no mappable reference data - this is optional",
+          "No REFERENCE sheet found or no mappable reference data - this is optional"
         );
         return;
       }
@@ -264,11 +264,11 @@
       console.log(
         "[FileHandler DEBUG] About to call updateStateFromImportData for",
         Object.keys(referenceData).length,
-        "reference fields",
+        "reference fields"
       );
       console.log(
         "[FileHandler DEBUG] First 5 reference fields:",
-        Object.keys(referenceData).slice(0, 5),
+        Object.keys(referenceData).slice(0, 5)
       );
 
       // Import reference data without triggering full recalculation
@@ -276,11 +276,11 @@
       this.updateStateFromImportData(referenceData, 0, true);
 
       console.log(
-        "[FileHandler DEBUG] Returned from updateStateFromImportData",
+        "[FileHandler DEBUG] Returned from updateStateFromImportData"
       );
       this.showStatus(
         `Reference import complete. ${Object.keys(referenceData).length} reference fields imported.`,
-        "success",
+        "success"
       );
     }
 
@@ -290,14 +290,12 @@
       let message = "";
 
       try {
-        const rows = csvString
-          .split(/\r?\n/)
-          .filter((row) => row.trim() !== ""); // Split lines and remove empty ones
+        const rows = csvString.split(/\r?\n/).filter(row => row.trim() !== ""); // Split lines and remove empty ones
 
         // Support both legacy (2 rows) and new dual-state format (3 rows)
         if (rows.length !== 2 && rows.length !== 3) {
           throw new Error(
-            `Expected 2 rows (legacy) or 3 rows (dual-state), but found ${rows.length}.`,
+            `Expected 2 rows (legacy) or 3 rows (dual-state), but found ${rows.length}.`
           );
         }
 
@@ -306,7 +304,7 @@
         const referenceValueRow = rows.length === 3 ? rows[2] : null; // Reference values (if present)
 
         // Basic parsing for CSV row, handles quoted fields from our escapeCSV output
-        const parseCSVRow = (rowString) => {
+        const parseCSVRow = rowString => {
           const values = [];
           let currentVal = "";
           let inQuotes = false;
@@ -342,13 +340,13 @@
 
         if (fieldIds.length !== targetValues.length) {
           throw new Error(
-            `Header count (${fieldIds.length}) does not match target value count (${targetValues.length}). CSV may be malformed.`,
+            `Header count (${fieldIds.length}) does not match target value count (${targetValues.length}). CSV may be malformed.`
           );
         }
 
         if (referenceValues && fieldIds.length !== referenceValues.length) {
           throw new Error(
-            `Header count (${fieldIds.length}) does not match reference value count (${referenceValues.length}). CSV may be malformed.`,
+            `Header count (${fieldIds.length}) does not match reference value count (${referenceValues.length}). CSV may be malformed.`
           );
         }
 
@@ -375,7 +373,7 @@
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
             "No valid data found in standardized CSV.",
-            "warning",
+            "warning"
           );
           return;
         }
@@ -387,7 +385,7 @@
 
         // 🔒 START IMPORT QUARANTINE - Mute listeners to prevent premature calculations
         console.log(
-          "[FileHandler] 🔒 CSV IMPORT QUARANTINE START - Muting listeners",
+          "[FileHandler] 🔒 CSV IMPORT QUARANTINE START - Muting listeners"
         );
         window.TEUI.StateManager.muteListeners();
 
@@ -395,28 +393,28 @@
           // Import all data (target + reference)
           this.updateStateFromImportData(importedData, 0, false);
           console.log(
-            `[FileHandler] Imported ${targetCount} target + ${refCount} reference values`,
+            `[FileHandler] Imported ${targetCount} target + ${refCount} reference values`
           );
 
           // ✅ CRITICAL: Sync Pattern A sections AFTER import
           console.log(
-            "[FileHandler] 🔧 Syncing all Pattern A sections after CSV import...",
+            "[FileHandler] 🔧 Syncing all Pattern A sections after CSV import..."
           );
           this.syncPatternASections();
           console.log(
-            "[FileHandler] ✅ Pattern A sections synced with imported values",
+            "[FileHandler] ✅ Pattern A sections synced with imported values"
           );
         } finally {
           // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
           window.TEUI.StateManager.unmuteListeners();
           console.log(
-            "[FileHandler] 🔓 CSV IMPORT QUARANTINE END - Unmuting listeners",
+            "[FileHandler] 🔓 CSV IMPORT QUARANTINE END - Unmuting listeners"
           );
         }
 
         // Trigger clean recalculation with all imported values loaded
         console.log(
-          "[FileHandler] Triggering post-import calculation with fresh values...",
+          "[FileHandler] Triggering post-import calculation with fresh values..."
         );
         if (
           this.calculator &&
@@ -427,7 +425,7 @@
           // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
           // Pattern A sections use isolated state - DOM must be refreshed to show updated values
           console.log(
-            "[FileHandler] 🔄 Refreshing Pattern A section UIs after CSV import...",
+            "[FileHandler] 🔄 Refreshing Pattern A section UIs after CSV import..."
           );
           const patternASections = [
             "sect02",
@@ -446,7 +444,7 @@
             "sect15",
           ];
 
-          patternASections.forEach((sectionId) => {
+          patternASections.forEach(sectionId => {
             const section = window.TEUI?.SectionModules?.[sectionId];
             if (section?.ModeManager?.refreshUI) {
               section.ModeManager.refreshUI();
@@ -461,13 +459,13 @@
 
         this.showStatus(
           `Import successful. ${targetCount} target and ${refCount} reference fields imported. All calculations updated.`,
-          "success",
+          "success"
         );
       } catch (error) {
         console.error("Error parsing standardized CSV:", error);
         this.showStatus(
           `Error parsing standardized CSV: ${error.message}`,
-          "error",
+          "error"
         );
       }
     }
@@ -475,19 +473,19 @@
     updateStateFromImportData(
       importedData,
       csvSkippedCount = 0,
-      skipRecalculation = false,
+      skipRecalculation = false
     ) {
       console.log(
         "[FileHandler DEBUG] updateStateFromImportData CALLED with",
         Object.keys(importedData).length,
         "fields, skipRecalculation=",
-        skipRecalculation,
+        skipRecalculation
       );
       console.log(
         "[FileHandler DEBUG] stateManager exists:",
         !!this.stateManager,
         "fieldManager exists:",
-        !!this.fieldManager,
+        !!this.fieldManager
       );
 
       if (!this.stateManager || !this.fieldManager) {
@@ -495,14 +493,14 @@
           "[FileHandler ERROR] StateManager or FieldManager not available! stateManager:",
           !!this.stateManager,
           "fieldManager:",
-          !!this.fieldManager,
+          !!this.fieldManager
         );
         this.showStatus("StateManager or FieldManager not available.", "error");
         return;
       }
 
       console.log(
-        "[FileHandler DEBUG] Passed validation checks, starting forEach loop...",
+        "[FileHandler DEBUG] Passed validation checks, starting forEach loop..."
       );
       this.showStatus("Updating application state...", "info");
       let updatedCount = 0;
@@ -531,7 +529,7 @@
             this.stateManager.setValue(fieldId, parsedValue, "imported");
             updatedCount++;
             console.log(
-              `[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`,
+              `[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`
             );
             return; // Done with this reference field
           }
@@ -556,10 +554,10 @@
           } else if (fieldDef.type === "dropdown" && !isS03LocationField) {
             const options = this.fieldManager.getDropdownOptions(
               fieldDef.dropdownId,
-              { parentValue: null },
+              { parentValue: null }
             );
-            const validValues = options.map((opt) =>
-              typeof opt === "object" ? String(opt.value) : String(opt),
+            const validValues = options.map(opt =>
+              typeof opt === "object" ? String(opt.value) : String(opt)
             );
             if (!validValues.includes(String(value))) {
               isValid = false;
@@ -578,29 +576,29 @@
                 window.TEUI.FieldManager.updateFieldDisplay(
                   fieldId,
                   parsedValue,
-                  fieldDef,
+                  fieldDef
                 );
               } catch (e) {
                 console.error(
                   `[FileHandler] Error calling FieldManager.updateFieldDisplay for ${fieldId}:`,
-                  e,
+                  e
                 );
               }
             } else {
               console.warn(
-                `[FileHandler] TEUI.FieldManager.updateFieldDisplay is not available. UI for ${fieldId} may not update visually.`,
+                `[FileHandler] TEUI.FieldManager.updateFieldDisplay is not available. UI for ${fieldId} may not update visually.`
               );
             }
           } else {
             console.warn(
-              `Skipping import for field ${fieldId}: Invalid value "${value}" for type ${fieldDef.type}.`,
+              `Skipping import for field ${fieldId}: Invalid value "${value}" for type ${fieldDef.type}.`
             );
             skippedValidationCount++;
           }
         } catch (error) {
           console.error(
             `Error processing field ${fieldId} with value "${value}":`,
-            error,
+            error
           );
           skippedValidationCount++;
           isValid = false; // Ensure isValid is false on error
@@ -610,7 +608,7 @@
       // Skip recalculation and reference data loading when importing reference fields
       if (skipRecalculation) {
         console.log(
-          `[FileHandler] Reference data import complete. ${updatedCount} fields updated. Skipping recalculation.`,
+          `[FileHandler] Reference data import complete. ${updatedCount} fields updated. Skipping recalculation.`
         );
         return;
       }
@@ -624,13 +622,13 @@
         const finalD13 = this.stateManager.getApplicationValue("d_13");
         if (finalD13) {
           console.log(
-            `[FileHandler] All imported values set. Explicitly calling loadReferenceData for standard: ${finalD13}`,
+            `[FileHandler] All imported values set. Explicitly calling loadReferenceData for standard: ${finalD13}`
           );
           this.stateManager.loadReferenceData(finalD13);
           console.log(`[FileHandler] loadReferenceData finished after import.`);
         } else {
           console.warn(
-            "[FileHandler] d_13 not found in imported data or state after import; cannot explicitly load reference data.",
+            "[FileHandler] d_13 not found in imported data or state after import; cannot explicitly load reference data."
           );
         }
       }
@@ -639,7 +637,7 @@
       // See processImportedExcel() for the new location
 
       console.log(
-        `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
+        `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`
       );
     }
 
@@ -669,7 +667,7 @@
       ];
 
       console.log(
-        "[FileHandler] 🔧 PHASE 2: Syncing Pattern A sections from global StateManager...",
+        "[FileHandler] 🔧 PHASE 2: Syncing Pattern A sections from global StateManager..."
       );
 
       patternASections.forEach(({ id, name }) => {
@@ -681,7 +679,7 @@
         } else {
           // Not an error - section may not have syncFromGlobalState yet
           console.log(
-            `[FileHandler] ${name} TargetState.syncFromGlobalState() not available (not yet implemented)`,
+            `[FileHandler] ${name} TargetState.syncFromGlobalState() not available (not yet implemented)`
           );
         }
 
@@ -705,7 +703,7 @@
       // S11's syncFromGlobalState() no longer calls this to prevent premature sync
       if (window.TEUI?.SectionModules?.sect11?.syncAreasFromS10) {
         console.log(
-          "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10...",
+          "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10..."
         );
 
         // Enable dual-state sync for import
@@ -721,7 +719,7 @@
         }
 
         console.log(
-          "[FileHandler] ✅ PHASE 2.5: S11 window area sync complete",
+          "[FileHandler] ✅ PHASE 2.5: S11 window area sync complete"
         );
       }
     }
@@ -732,18 +730,18 @@
       if (!this.stateManager || !this.fieldManager) {
         this.showStatus(
           "StateManager or FieldManager not available for export.",
-          "error",
+          "error"
         );
         return;
       }
       this.showStatus(
         "Generating CSV export with Target and Reference data...",
-        "info",
+        "info"
       );
 
       try {
         // Basic CSV escaping (handles commas, quotes, newlines)
-        const escapeCSV = (val) => {
+        const escapeCSV = val => {
           // Ensure string conversion, handle null/undefined
           let strVal = String(val ?? "");
 
@@ -767,53 +765,154 @@
         // Order matches ExcelMapper.excelReportInputMapping definition
         const userEditableFieldIds = [
           // Section 02: Building Information
-          "d_12", "d_13", "d_14", "d_15",
-          "h_12", "h_13", "h_14", "h_15",
-          "i_16", "i_17",
-          "l_12", "l_13", "l_14", "l_15", "l_16",
+          "d_12",
+          "d_13",
+          "d_14",
+          "d_15",
+          "h_12",
+          "h_13",
+          "h_14",
+          "h_15",
+          "i_16",
+          "i_17",
+          "l_12",
+          "l_13",
+          "l_14",
+          "l_15",
+          "l_16",
 
           // Section 03: Climate
-          "d_19", "h_19", "h_20", "h_21", "i_21", "m_19", "l_20", "l_21", "l_24",
+          "d_19",
+          "h_19",
+          "h_20",
+          "h_21",
+          "i_21",
+          "m_19",
+          "l_20",
+          "l_21",
+          "l_24",
 
           // Section 04: Actual Energy
-          "d_27", "d_28", "d_29", "d_30", "d_31",
-          "l_28", "l_29", "l_30", "l_31",  // l_27 removed (calculated field)
+          "d_27",
+          "d_28",
+          "d_29",
+          "d_30",
+          "d_31",
+          "l_28",
+          "l_29",
+          "l_30",
+          "l_31", // l_27 removed (calculated field)
           "h_35",
 
           // Section 05: Emissions
-          "d_39", "i_41",
+          "d_39",
+          "i_41",
 
           // Section 06: Renewable Energy
-          "d_44", "d_45", "d_46", "i_44", "k_45", "i_46", "m_43",
+          "d_44",
+          "d_45",
+          "d_46",
+          "i_44",
+          "k_45",
+          "i_46",
+          "m_43",
 
           // Section 07: Water Use
-          "d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52",
+          "d_49",
+          "e_49",
+          "e_50",
+          "d_51",
+          "d_52",
+          "d_53",
+          "k_52",
 
           // Section 08: Indoor Air Quality
-          "d_56", "d_57", "d_58", "d_59", "i_59",
+          "d_56",
+          "d_57",
+          "d_58",
+          "d_59",
+          "i_59",
 
           // Section 09: Occupant Gains
-          "d_63", "g_63", "d_64", "d_66", "d_68", "g_67",
+          "d_63",
+          "g_63",
+          "d_64",
+          "d_66",
+          "d_68",
+          "g_67",
 
           // Section 10: Radiant Gains (31 fields)
-          "d_73", "d_74", "d_75", "d_76", "d_77", "d_78",
-          "e_73", "e_74", "e_75", "e_76", "e_77", "e_78",
-          "f_73", "f_74", "f_75", "f_76", "f_77", "f_78",
-          "g_73", "g_74", "g_75", "g_76", "g_77", "g_78",
-          "h_73", "h_74", "h_75", "h_76", "h_77", "h_78",
+          "d_73",
+          "d_74",
+          "d_75",
+          "d_76",
+          "d_77",
+          "d_78",
+          "e_73",
+          "e_74",
+          "e_75",
+          "e_76",
+          "e_77",
+          "e_78",
+          "f_73",
+          "f_74",
+          "f_75",
+          "f_76",
+          "f_77",
+          "f_78",
+          "g_73",
+          "g_74",
+          "g_75",
+          "g_76",
+          "g_77",
+          "g_78",
+          "h_73",
+          "h_74",
+          "h_75",
+          "h_76",
+          "h_77",
+          "h_78",
           "d_80",
 
           // Section 11: Transmission Losses
-          "d_85", "f_85", "d_86", "f_86", "d_87", "f_87",
-          "g_88", "g_89", "g_90", "g_91", "g_92", "g_93",
-          "d_94", "f_94", "d_95", "f_95",
-          "d_96", "d_97",
+          "d_85",
+          "f_85",
+          "d_86",
+          "f_86",
+          "d_87",
+          "f_87",
+          "g_88",
+          "g_89",
+          "g_90",
+          "g_91",
+          "g_92",
+          "g_93",
+          "d_94",
+          "f_94",
+          "d_95",
+          "f_95",
+          "d_96",
+          "d_97",
 
           // Section 12: Volume Metrics
-          "d_103", "g_103", "d_105", "d_108", "g_109",
+          "d_103",
+          "g_103",
+          "d_105",
+          "d_108",
+          "g_109",
 
           // Section 13: Mechanical Loads
-          "d_113", "f_113", "j_115", "j_116", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120",
+          "d_113",
+          "f_113",
+          "j_115",
+          "j_116",
+          "d_116",
+          "d_118",
+          "g_118",
+          "l_118",
+          "d_119",
+          "l_119",
+          "k_120",
 
           // Section 15: Summary
           "d_142",
@@ -856,7 +955,7 @@
         };
 
         // Get values for each field in the explicit list
-        userEditableFieldIds.forEach((fieldId) => {
+        userEditableFieldIds.forEach(fieldId => {
           // ✅ CONDITIONAL EXPORT: Skip j_116 when d_113="Heatpump"
           // When Heatpump, j_116 is calculated from j_113, not user-editable
           // Exporting empty string ensures import won't overwrite calculated value
@@ -864,7 +963,9 @@
             const d113Value = this.stateManager.getValue("d_113");
             if (d113Value === "Heatpump") {
               targetValues.push(""); // Export empty - j_116 is calculated
-              console.log("[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)");
+              console.log(
+                "[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)"
+              );
             } else {
               const targetValue = this.stateManager.getValue(fieldId) ?? "";
               const formattedTarget = formatExportValue(fieldId, targetValue);
@@ -875,11 +976,17 @@
             const refD113Value = this.stateManager.getValue("ref_d_113");
             if (refD113Value === "Heatpump") {
               referenceValues.push(""); // Export empty - ref_j_116 is calculated
-              console.log("[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)");
+              console.log(
+                "[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)"
+              );
             } else {
               const refFieldId = `ref_${fieldId}`;
-              const referenceValue = this.stateManager.getValue(refFieldId) ?? "";
-              const formattedReference = formatExportValue(fieldId, referenceValue);
+              const referenceValue =
+                this.stateManager.getValue(refFieldId) ?? "";
+              const formattedReference = formatExportValue(
+                fieldId,
+                referenceValue
+              );
               referenceValues.push(escapeCSV(formattedReference));
             }
             return; // Skip normal export logic for j_116
@@ -919,7 +1026,7 @@
 
         console.log(`[CSV Export] Generated filename: ${filename}`);
         console.log(
-          `[CSV Export] Exported ${userEditableFieldIds.length} fields (explicit list matching Excel import) with Target and Reference values`,
+          `[CSV Export] Exported ${userEditableFieldIds.length} fields (explicit list matching Excel import) with Target and Reference values`
         );
 
         // Trigger Download - should work in Safari when called synchronously from click event
@@ -938,7 +1045,7 @@
 
         this.showStatus(
           "Dual-state CSV export complete (Target + Reference).",
-          "success",
+          "success"
         );
       } catch (error) {
         console.error("Error generating CSV export:", error);
@@ -965,7 +1072,7 @@
       try {
         this.showStatus(
           "Preparing full Excel export (legacy method)...",
-          "info",
+          "info"
         );
         const currentData = this.stateManager
           ? this.stateManager.exportValues()
@@ -990,7 +1097,7 @@
         console.error("Error exporting full Excel:", error);
         this.showStatus(
           `Error exporting full Excel: ${error.message}`,
-          "error",
+          "error"
         );
       }
     }

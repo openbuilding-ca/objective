@@ -26,7 +26,7 @@ TEUI.ReferenceManager = (function () {
       !window.TEUI.ReferenceValues
     ) {
       console.error(
-        "ReferenceManager: Missing core dependencies (StateManager or ReferenceValues).",
+        "ReferenceManager: Missing core dependencies (StateManager or ReferenceValues)."
       );
       return;
     }
@@ -164,7 +164,7 @@ TEUI.ReferenceManager = (function () {
 
     if (!sectionId || !sectionName || !sectionCalculateAll) {
       console.error(
-        `createReferenceHandler: Missing required config properties for section: ${sectionName || sectionId}`,
+        `createReferenceHandler: Missing required config properties for section: ${sectionName || sectionId}`
       );
       // Return a dummy handler to avoid errors
       return {
@@ -229,7 +229,7 @@ TEUI.ReferenceManager = (function () {
             return;
 
           const element = sectionContainer.querySelector(
-            `[data-field-id="${fieldData.targetCell}"]`,
+            `[data-field-id="${fieldData.targetCell}"]`
           );
           if (element) {
             // Save original value
@@ -244,7 +244,7 @@ TEUI.ReferenceManager = (function () {
             // Display formatted reference value
             const formattedRefValue = formatReferenceValue(
               fieldData.targetCell,
-              fieldData.value,
+              fieldData.value
             );
             if (element.value !== undefined) {
               element.value = formattedRefValue;
@@ -256,7 +256,7 @@ TEUI.ReferenceManager = (function () {
             const isLocked =
               TEUI.ReferenceManager.isCodeDefinedField(fieldData.targetCell) &&
               !TEUI.ReferenceManager.isEditableInReferenceMode(
-                fieldData.targetCell,
+                fieldData.targetCell
               );
 
             element.classList.toggle("reference-locked", isLocked);
@@ -276,10 +276,10 @@ TEUI.ReferenceManager = (function () {
             // Trigger row recalculation if applicable function provided
             if (sectionRecalculateRow && componentConfig) {
               const currentRowNumber = parseInt(
-                fieldData.targetCell.split("_")[1],
+                fieldData.targetCell.split("_")[1]
               );
               const componentConf = componentConfig.find(
-                (conf) => conf.row === currentRowNumber,
+                conf => conf.row === currentRowNumber
               );
               if (componentConf) {
                 sectionRecalculateRow(currentRowNumber, componentConf, fieldId); // Pass original fieldId
@@ -289,7 +289,7 @@ TEUI.ReferenceManager = (function () {
             // Update indicators if function provided
             if (sectionUpdateIndicators) {
               const currentRowNumber = parseInt(
-                fieldData.targetCell.split("_")[1],
+                fieldData.targetCell.split("_")[1]
               );
               sectionUpdateIndicators(currentRowNumber);
             }
@@ -302,9 +302,9 @@ TEUI.ReferenceManager = (function () {
         if (!sectionContainer) return;
 
         const elements = sectionContainer.querySelectorAll(
-          "[data-original-value]",
+          "[data-original-value]"
         );
-        elements.forEach((element) => {
+        elements.forEach(element => {
           const originalValue = element.getAttribute("data-original-value");
           if (element.value !== undefined) {
             element.value = originalValue;
@@ -326,7 +326,7 @@ TEUI.ReferenceManager = (function () {
           sectionCalculateAll();
         } else {
           console.error(
-            `Ref Handler (${sectionName}): sectionCalculateAll function is not valid!`,
+            `Ref Handler (${sectionName}): sectionCalculateAll function is not valid!`
           );
         }
       },

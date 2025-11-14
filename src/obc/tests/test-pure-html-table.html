@@ -167,7 +167,7 @@
         if (!table) return;
 
         const headerCells = table.querySelectorAll(
-          "thead tr:first-child th, thead tr:first-child td",
+          "thead tr:first-child th, thead tr:first-child td"
         );
         const totalWidth = table.offsetWidth;
         const widths = [];
@@ -195,29 +195,25 @@
         });
 
         // Find max and min widths
-        const maxWidth = Math.max(...widths.map((w) => w.width));
-        const minWidth = Math.min(...widths.map((w) => w.width));
-        const maxCol = widths.find((w) => w.width === maxWidth);
-        const minCol = widths.find((w) => w.width === minWidth);
+        const maxWidth = Math.max(...widths.map(w => w.width));
+        const minWidth = Math.min(...widths.map(w => w.width));
+        const maxCol = widths.find(w => w.width === maxWidth);
+        const minCol = widths.find(w => w.width === minWidth);
 
         // Detect goalpost behavior
-        const avgWidth =
-          widths.reduce((sum, w) => sum + w.width, 0) / widths.length;
+        const avgWidth = widths.reduce((sum, w) => sum + w.width, 0) / widths.length;
         const expansion = maxWidth - avgWidth;
 
         console.log(`=== ${tableId.toUpperCase()} ANALYSIS ===`);
         console.log(
           "Column widths:",
-          widths.map((w) => `${w.text}: ${w.width}px`),
+          widths.map(w => `${w.text}: ${w.width}px`)
         );
         console.log("Max width:", maxWidth, "Column:", maxCol.text);
         console.log("Min width:", minWidth, "Column:", minCol.text);
         console.log("Average width:", avgWidth.toFixed(1));
         console.log("Expansion amount:", expansion.toFixed(1), "pixels");
-        console.log(
-          "Goalpost detected:",
-          expansion > avgWidth * 0.5 ? "YES" : "NO",
-        );
+        console.log("Goalpost detected:", expansion > avgWidth * 0.5 ? "YES" : "NO");
 
         return {
           widths,
@@ -236,9 +232,7 @@
 
           // Update summary
           document.getElementById("equal-distribution").textContent =
-            !citiesResult.goalposts && !obcResult.goalposts
-              ? "✅ YES"
-              : "❌ NO";
+            !citiesResult.goalposts && !obcResult.goalposts ? "✅ YES" : "❌ NO";
 
           document.getElementById("goalpost-detected").textContent =
             citiesResult.goalposts || obcResult.goalposts ? "🚨 YES" : "✅ NO";
@@ -258,10 +252,10 @@
           console.log("\n🎯 CONCLUSION:");
           console.log(
             "Pure HTML exhibits goalpost behavior:",
-            citiesResult.goalposts || obcResult.goalposts,
+            citiesResult.goalposts || obcResult.goalposts
           );
           console.log(
-            "If NO goalposts here but YES in our app → JavaScript interference confirmed",
+            "If NO goalposts here but YES in our app → JavaScript interference confirmed"
           );
           console.log("If YES goalposts here → Natural browser behavior");
         }, 100);

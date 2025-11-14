@@ -12,7 +12,7 @@
 function initializeUIHandlers() {
   // Initialize Bootstrap tooltips
   var tooltipTriggerList = [].slice.call(
-    document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
   );
   var _tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -33,7 +33,7 @@ function initializeUIHandlers() {
       ) {
         if (
           confirm(
-            "Are you sure you want to reset? This will clear user-modified values but keep imported data.",
+            "Are you sure you want to reset? This will clear user-modified values but keep imported data."
           )
         ) {
           window.OBC.StateManager.resetFields();
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
   body.classList.add("vertical-layout");
 
   // Add toggle icons to section headers if missing
-  document.querySelectorAll(".section-header").forEach((header) => {
+  document.querySelectorAll(".section-header").forEach(header => {
     // Skip if already has toggle icon
     if (!header.querySelector(".toggle-icon")) {
       const toggleIcon = document.createElement("span");
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
     tabContainer.innerHTML = "";
 
     // Create tabs for each section (except sticky header section)
-    sections.forEach((section) => {
+    sections.forEach(section => {
       if (section.id === "keyValues" || section.id === "buildingInfo") return;
 
       const sectionHeader = section.querySelector(".section-header");
@@ -275,8 +275,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Remove active class from all tabs and sections
     document
       .querySelectorAll(".tab")
-      .forEach((t) => t.classList.remove("active"));
-    sections.forEach((s) => {
+      .forEach(t => t.classList.remove("active"));
+    sections.forEach(s => {
       if (s.id !== "keyValues" && s.id !== "buildingInfo") {
         s.classList.remove("active");
       }
@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add active class to selected tab and section
     const selectedTab = document.querySelector(
-      `.tab[data-section-id="${sectionId}"]`,
+      `.tab[data-section-id="${sectionId}"]`
     );
     if (selectedTab) {
       selectedTab.classList.add("active");
@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Toggle section collapse/expand when header is clicked (vertical layout only)
-  document.querySelectorAll(".section-header").forEach((header) => {
+  document.querySelectorAll(".section-header").forEach(header => {
     header.addEventListener("click", function (event) {
       // Skip if clicking on buttons in the header
       if (
@@ -371,7 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Helper function to collapse all sections
   function collapseAllSections() {
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       // Skip sticky header sections
       const sectionId = header.closest(".section").id;
       if (sectionId === "keyValues" || sectionId === "buildingInfo") return;
@@ -383,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Helper function to expand all sections
   function expandAllSections() {
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       // Skip sticky header sections
       const sectionId = header.closest(".section").id;
       if (sectionId === "keyValues" || sectionId === "buildingInfo") return;
@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Save layout preference
       localStorage.setItem(
         "layoutMode",
-        isVerticalLayout ? "vertical" : "horizontal",
+        isVerticalLayout ? "vertical" : "horizontal"
       );
     });
   }
@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function saveCollapsedState() {
     const collapsedSections = {};
 
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       const section = header.closest(".section");
       // Skip sticky header sections
       if (section.id === "keyValues" || section.id === "buildingInfo") return;
@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     localStorage.setItem(
       "collapsedSections",
-      JSON.stringify(collapsedSections),
+      JSON.stringify(collapsedSections)
     );
   }
 
@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const collapsedSections =
         JSON.parse(localStorage.getItem("collapsedSections")) || {};
 
-      document.querySelectorAll(".section-header").forEach((header) => {
+      document.querySelectorAll(".section-header").forEach(header => {
         const section = header.closest(".section");
         // Skip sticky header sections
         if (section.id === "keyValues" || section.id === "buildingInfo") return;
@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let collapsedCount = 0;
     let totalSections = 0;
 
-    document.querySelectorAll(".section-header").forEach((header) => {
+    document.querySelectorAll(".section-header").forEach(header => {
       const section = header.closest(".section");
       // Skip sticky header sections
       if (section.id === "keyValues" || section.id === "buildingInfo") return;
@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const keyValuesHeight = keyValuesSection.offsetHeight;
       document.documentElement.style.setProperty(
         "--key-values-height",
-        `${keyValuesHeight}px`,
+        `${keyValuesHeight}px`
       );
     }
   }
@@ -573,20 +573,20 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update CSS variable for other elements that need this value
       document.documentElement.style.setProperty(
         "--key-values-height",
-        `${keyValueRect.height}px`,
+        `${keyValueRect.height}px`
       );
     }
   }
 
   // Make key values close button same size as layout toggle
   const headerButtons = document.querySelectorAll(
-    ".section-header .btn, .layout-toggle-btn",
+    ".section-header .btn, .layout-toggle-btn"
   );
-  headerButtons.forEach((button) => {
+  headerButtons.forEach(button => {
     button.classList.add(
       "d-flex",
       "align-items-center",
-      "justify-content-center",
+      "justify-content-center"
     );
   });
 
@@ -622,7 +622,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Apply the appropriate display mode to all tabs
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       const textElement = tab.querySelector(".tab-text");
 
       if (displayMode === "icon-only") {
@@ -718,7 +718,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!localStorage.getItem("disclaimerSeen")) {
     // Show the modal
     const disclaimerModal = new bootstrap.Modal(
-      document.getElementById("disclaimerModal"),
+      document.getElementById("disclaimerModal")
     );
     disclaimerModal.show();
 
@@ -778,7 +778,7 @@ document.addEventListener("DOMContentLoaded", function () {
       spacer.style.height = "15px";
       spacer.style.minHeight = "15px";
     },
-    { passive: true },
+    { passive: true }
   );
 
   // Update sticky header height and tab container position
@@ -795,7 +795,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update CSS variable (keep legacy name for compatibility)
       document.documentElement.style.setProperty(
         "--key-values-height",
-        stickyHeight + "px",
+        stickyHeight + "px"
       );
 
       // Set tab container position exactly at bottom of sticky section

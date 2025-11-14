@@ -115,7 +115,7 @@ TEUI.StateManager = (function () {
     } catch (e) {
       console.error(
         `Error formatting value ${value} with format ${formatType}:`,
-        e,
+        e
       );
       return String(value); // Fallback to string representation on error
     }
@@ -227,7 +227,7 @@ TEUI.StateManager = (function () {
 
       // Register dependencies if any
       if (field.dependencies && Array.isArray(field.dependencies)) {
-        field.dependencies.forEach((dependencyId) => {
+        field.dependencies.forEach(dependencyId => {
           registerDependency(dependencyId, fieldId);
         });
       }
@@ -283,7 +283,7 @@ TEUI.StateManager = (function () {
         "S15_REFERENCE_STATE",
       ];
 
-      dualStateKeys.forEach((key) => {
+      dualStateKeys.forEach(key => {
         localStorage.removeItem(key);
         console.log(`Global Reset: Cleared ${key}`);
       });
@@ -312,10 +312,7 @@ TEUI.StateManager = (function () {
       ) {
         value = independentReferenceState[fieldId];
       } else if (
-        Object.prototype.hasOwnProperty.call(
-          activeReferenceDataSet,
-          fieldId,
-        )
+        Object.prototype.hasOwnProperty.call(activeReferenceDataSet, fieldId)
       ) {
         // Then check activeReferenceDataSet
         value = activeReferenceDataSet[fieldId];
@@ -364,7 +361,7 @@ TEUI.StateManager = (function () {
     // 🔍 DEBUG: Track ref_h_15 to catch who overwrites imported value
     if (fieldId === "ref_h_15") {
       console.log(
-        `[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`,
+        `[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`
       );
       console.trace("[StateManager] ref_h_15 setValue stack trace:");
     }
@@ -381,7 +378,7 @@ TEUI.StateManager = (function () {
         const currentStandard = getValue("d_13") || "OBC SB10 5.5-6 Z6";
         const behavior = window.TEUI.AppendixE.getFieldBehavior(
           fieldId,
-          currentStandard,
+          currentStandard
         );
         if (behavior === "Independently User-Editable in Reference Mode") {
           // Store in separate reference state and update activeReferenceDataSet
@@ -497,7 +494,7 @@ TEUI.StateManager = (function () {
     const dependents = dependencies.get(fieldId);
 
     // Mark each dependent as dirty and recurse
-    dependents.forEach((dependentId) => {
+    dependents.forEach(dependentId => {
       dirtyFields.add(dependentId);
       markDependentsDirty(dependentId, visited);
     });
@@ -519,7 +516,7 @@ TEUI.StateManager = (function () {
     if (fieldIds.length === 0) {
       dirtyFields.clear();
     } else {
-      fieldIds.forEach((id) => dirtyFields.delete(id));
+      fieldIds.forEach(id => dirtyFields.delete(id));
     }
   }
 
@@ -560,7 +557,7 @@ TEUI.StateManager = (function () {
     // Check if listeners are muted (import quarantine)
     if (!listenersActive) {
       console.log(
-        `[StateManager] Skipped listener for ${fieldId} (quarantine active)`,
+        `[StateManager] Skipped listener for ${fieldId} (quarantine active)`
       );
       return;
     }
@@ -569,7 +566,7 @@ TEUI.StateManager = (function () {
     if (!listeners.has(fieldId)) {
       return;
     }
-    listeners.get(fieldId).forEach((callback) => {
+    listeners.get(fieldId).forEach(callback => {
       try {
         callback(newValue, oldValue, fieldId, state);
       } catch (error) {
@@ -585,13 +582,13 @@ TEUI.StateManager = (function () {
    * @param {Object} observer - Observer object with optional onGetValue and onSetValue methods
    */
   function addObserver(observer) {
-    if (!observer || typeof observer !== 'object') {
-      console.error('[StateManager] Invalid observer - must be an object');
+    if (!observer || typeof observer !== "object") {
+      console.error("[StateManager] Invalid observer - must be an object");
       return;
     }
 
     observers.add(observer);
-    console.log('[StateManager] Observer added');
+    console.log("[StateManager] Observer added");
   }
 
   /**
@@ -600,7 +597,7 @@ TEUI.StateManager = (function () {
    */
   function removeObserver(observer) {
     observers.delete(observer);
-    console.log('[StateManager] Observer removed');
+    console.log("[StateManager] Observer removed");
   }
 
   /**
@@ -613,13 +610,13 @@ TEUI.StateManager = (function () {
       return; // Fast path: no observers
     }
 
-    observers.forEach((observer) => {
+    observers.forEach(observer => {
       try {
-        if (typeof observer.onGetValue === 'function') {
+        if (typeof observer.onGetValue === "function") {
           observer.onGetValue(fieldId, value);
         }
       } catch (error) {
-        console.error('[StateManager] Error in observer.onGetValue:', error);
+        console.error("[StateManager] Error in observer.onGetValue:", error);
       }
     });
   }
@@ -635,13 +632,13 @@ TEUI.StateManager = (function () {
       return; // Fast path: no observers
     }
 
-    observers.forEach((observer) => {
+    observers.forEach(observer => {
       try {
-        if (typeof observer.onSetValue === 'function') {
+        if (typeof observer.onSetValue === "function") {
           observer.onSetValue(fieldId, value, state);
         }
       } catch (error) {
-        console.error('[StateManager] Error in observer.onSetValue:', error);
+        console.error("[StateManager] Error in observer.onSetValue:", error);
       }
     });
   }
@@ -673,8 +670,13 @@ TEUI.StateManager = (function () {
       // ✅ FIX (Nov 4, 2025): Also save lastImportedState separately for 3-tier reset
       // This ensures imported state persists across page reloads
       if (Object.keys(lastImportedState).length > 0) {
-        localStorage.setItem("TEUI_Last_Imported_State", JSON.stringify(lastImportedState));
-        console.log(`[StateManager] Saved ${Object.keys(lastImportedState).length} imported fields to localStorage`);
+        localStorage.setItem(
+          "TEUI_Last_Imported_State",
+          JSON.stringify(lastImportedState)
+        );
+        console.log(
+          `[StateManager] Saved ${Object.keys(lastImportedState).length} imported fields to localStorage`
+        );
       }
     } catch (error) {
       console.error("Error saving state to localStorage:", error);
@@ -705,10 +707,14 @@ TEUI.StateManager = (function () {
 
       // ✅ FIX (Nov 4, 2025): Restore lastImportedState from localStorage
       // This ensures "Undo Changes" works after page reload
-      const importedStateJson = localStorage.getItem("TEUI_Last_Imported_State");
+      const importedStateJson = localStorage.getItem(
+        "TEUI_Last_Imported_State"
+      );
       if (importedStateJson) {
         lastImportedState = JSON.parse(importedStateJson);
-        console.log(`[StateManager] Restored ${Object.keys(lastImportedState).length} imported fields from localStorage`);
+        console.log(
+          `[StateManager] Restored ${Object.keys(lastImportedState).length} imported fields from localStorage`
+        );
       }
     } catch (error) {
       console.error("Error loading state from localStorage:", error);
@@ -751,7 +757,7 @@ TEUI.StateManager = (function () {
     const order = [];
 
     // Helper function for depth-first topological sort
-    const visit = (fieldId) => {
+    const visit = fieldId => {
       if (temp.has(fieldId)) {
         return;
       }
@@ -761,7 +767,7 @@ TEUI.StateManager = (function () {
 
         // Visit all dependents
         if (dependencies.has(fieldId)) {
-          dependencies.get(fieldId).forEach((depId) => visit(depId));
+          dependencies.get(fieldId).forEach(depId => visit(depId));
         }
 
         temp.delete(fieldId);
@@ -771,7 +777,7 @@ TEUI.StateManager = (function () {
     };
 
     // Start with dirty fields
-    getDirtyFields().forEach((fieldId) => visit(fieldId));
+    getDirtyFields().forEach(fieldId => visit(fieldId));
 
     // Reverse to get correct calculation order
     return order.reverse();
@@ -1236,7 +1242,7 @@ TEUI.StateManager = (function () {
     ];
 
     // Add architectural nodes and links
-    architecturalNodes.forEach((node) => nodes.set(node.id, node));
+    architecturalNodes.forEach(node => nodes.set(node.id, node));
     links.push(...architecturalLinks);
 
     // === MODE-BASED DEPENDENCY PROCESSING ===
@@ -1247,7 +1253,7 @@ TEUI.StateManager = (function () {
     const processFieldDependencies = (
       sourcePrefix = "",
       targetPrefix = "",
-      nodePrefix = "",
+      nodePrefix = ""
     ) => {
       dependencies.forEach((targets, sourceId) => {
         const processedSourceId = sourcePrefix + sourceId;
@@ -1261,7 +1267,7 @@ TEUI.StateManager = (function () {
           });
         }
 
-        targets.forEach((targetId) => {
+        targets.forEach(targetId => {
           const processedTargetId = targetPrefix + targetId;
 
           // Add target node if not already added
@@ -1298,7 +1304,7 @@ TEUI.StateManager = (function () {
     // Enhance node data using FieldManager
     if (window.TEUI?.FieldManager) {
       const fieldManager = window.TEUI.FieldManager;
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         const fieldDef = fieldManager.getField(node.id);
         node.type = fieldDef?.type || "unknown";
         node.label = fieldDef?.label || node.id; // Use fieldDef label or fallback to ID
@@ -1308,7 +1314,7 @@ TEUI.StateManager = (function () {
       });
     } else {
       console.warn(
-        "[StateManager] FieldManager not available to enhance node data.",
+        "[StateManager] FieldManager not available to enhance node data."
       );
     }
 
@@ -1336,21 +1342,21 @@ TEUI.StateManager = (function () {
 
     // Map internal section IDs (sect01, sect02, etc.) to user-facing names
     const sectionMap = {
-      "sect01": "01. Totals",
-      "sect02": "02. Building Information",
-      "sect03": "03. Climate Calculations",
-      "sect04": "04. Actual vs. Target",
-      "sect05": "05. CO2e Emissions",
-      "sect06": "06. Renewable Energy",
-      "sect07": "07. Water and DHW",
-      "sect08": "08. Indoor Air Quality",
-      "sect09": "09. Occupant & Internal Gains",
-      "sect10": "10. Radiant Gains",
-      "sect11": "11. Transmission Losses",
-      "sect12": "12. Volume and Surface",
-      "sect13": "13. Mechanical Loads",
-      "sect14": "14. TEDI & TELI",
-      "sect15": "15. TEUI",
+      sect01: "01. Totals",
+      sect02: "02. Building Information",
+      sect03: "03. Climate Calculations",
+      sect04: "04. Actual vs. Target",
+      sect05: "05. CO2e Emissions",
+      sect06: "06. Renewable Energy",
+      sect07: "07. Water and DHW",
+      sect08: "08. Indoor Air Quality",
+      sect09: "09. Occupant & Internal Gains",
+      sect10: "10. Radiant Gains",
+      sect11: "11. Transmission Losses",
+      sect12: "12. Volume and Surface",
+      sect13: "13. Mechanical Loads",
+      sect14: "14. TEDI & TELI",
+      sect15: "15. TEUI",
     };
 
     return sectionMap[sectionId] || "Other";
@@ -1400,12 +1406,12 @@ TEUI.StateManager = (function () {
    */
   function loadReferenceData(standardKey) {
     console.log(
-      `[StateManager] Loading reference data for standard: ${standardKey}`,
+      `[StateManager] Loading reference data for standard: ${standardKey}`
     );
     activeReferenceDataSet = {}; // Initialize/Clear
 
     // Helper to get current application state value, bypassing mode-aware getValue for this step
-    const getApplicationStateValueInternal = (id) => {
+    const getApplicationStateValueInternal = id => {
       if (fields.has(id)) {
         return fields.get(id).value;
       }
@@ -1417,12 +1423,12 @@ TEUI.StateManager = (function () {
       window.TEUI && TEUI.FieldManager?.getAllUserEditableFields();
 
     if (allUserEditableFields) {
-      Object.keys(allUserEditableFields).forEach((fieldId) => {
+      Object.keys(allUserEditableFields).forEach(fieldId => {
         // Check if this field has an independent Reference value
         if (
           Object.prototype.hasOwnProperty.call(
             independentReferenceState,
-            fieldId,
+            fieldId
           )
         ) {
           // Use the independent Reference value
@@ -1435,11 +1441,11 @@ TEUI.StateManager = (function () {
       });
       console.log(
         "[StateManager] Step 1: Copied application state to activeReferenceDataSet (preserving independent Reference values). d_53 value:",
-        activeReferenceDataSet["d_53"],
+        activeReferenceDataSet["d_53"]
       );
     } else {
       console.warn(
-        "[StateManager] Could not get allUserEditableFields from FieldManager for Step 1.",
+        "[StateManager] Could not get allUserEditableFields from FieldManager for Step 1."
       );
       // Fallback: try to copy from current 'fields' if FieldManager helper isn't ready/available
       fields.forEach((fieldData, fieldId) => {
@@ -1454,7 +1460,7 @@ TEUI.StateManager = (function () {
       if (Object.keys(activeReferenceDataSet).length > 0) {
         console.log(
           "[StateManager] Step 1 (Fallback): Copied from current fields map to activeReferenceDataSet. d_53 value:",
-          activeReferenceDataSet["d_53"],
+          activeReferenceDataSet["d_53"]
         );
       }
     }
@@ -1462,7 +1468,7 @@ TEUI.StateManager = (function () {
     // Step 2: Apply Specific "Reference Mode Defaults" (from Appendix E - placeholder)
     const referenceModeDefaults =
       (window.TEUI && TEUI.AppendixE?.getReferenceModeDefaults()) || {};
-    Object.keys(referenceModeDefaults).forEach((fieldId) => {
+    Object.keys(referenceModeDefaults).forEach(fieldId => {
       // Ensure it's a known field we care about changing
       if (
         Object.prototype.hasOwnProperty.call(activeReferenceDataSet, fieldId) ||
@@ -1473,27 +1479,27 @@ TEUI.StateManager = (function () {
     });
     console.log(
       "[StateManager] Step 2: Applied Reference Mode Defaults. d_53 value:",
-      activeReferenceDataSet["d_53"],
+      activeReferenceDataSet["d_53"]
     );
 
     // Step 3: Overlay Explicit Standard Overrides
     console.log(
-      `[StateManager] Attempting to access TEUI.ReferenceValues for standardKey: "${standardKey}"`,
+      `[StateManager] Attempting to access TEUI.ReferenceValues for standardKey: "${standardKey}"`
     );
 
     // DEBUG: Check if TEUI.ReferenceValues exists
     console.log(
       "[StateManager] TEUI.ReferenceValues exists?",
-      !!(window.TEUI && window.TEUI.ReferenceValues),
+      !!(window.TEUI && window.TEUI.ReferenceValues)
     );
     if (window.TEUI && window.TEUI.ReferenceValues) {
       console.log(
         "[StateManager] Available standards:",
-        Object.keys(window.TEUI.ReferenceValues),
+        Object.keys(window.TEUI.ReferenceValues)
       );
       console.log(
         "[StateManager] Exact standardKey being requested:",
-        JSON.stringify(standardKey),
+        JSON.stringify(standardKey)
       );
 
       // Check if the exact standard exists
@@ -1503,12 +1509,12 @@ TEUI.StateManager = (function () {
         // console.log("[StateManager] Standard data:", exactMatch);
         console.log(
           "[StateManager] d_53 in standard?",
-          Object.prototype.hasOwnProperty.call(exactMatch, "d_53"),
+          Object.prototype.hasOwnProperty.call(exactMatch, "d_53")
         );
         if (Object.prototype.hasOwnProperty.call(exactMatch, "d_53")) {
           console.log(
             "[StateManager] d_53 value in standard:",
-            exactMatch["d_53"],
+            exactMatch["d_53"]
           );
         }
       }
@@ -1522,42 +1528,42 @@ TEUI.StateManager = (function () {
 
     if (standardOverrideData) {
       // console.log("[StateManager] Found standard override data, applying...");
-      Object.keys(standardOverrideData).forEach((fieldId) => {
+      Object.keys(standardOverrideData).forEach(fieldId => {
         console.log(
-          `[StateManager] Checking field: ${fieldId}, value: ${standardOverrideData[fieldId]}`,
+          `[StateManager] Checking field: ${fieldId}, value: ${standardOverrideData[fieldId]}`
         );
         // Apply if the field is already in our dataset (meaning it's a recognized user-editable field)
         if (
           Object.prototype.hasOwnProperty.call(
             activeReferenceDataSet,
-            fieldId,
+            fieldId
           ) ||
           (allUserEditableFields && allUserEditableFields[fieldId])
         ) {
           console.log(
-            `[StateManager] Applying ${fieldId} = ${standardOverrideData[fieldId]}`,
+            `[StateManager] Applying ${fieldId} = ${standardOverrideData[fieldId]}`
           );
           activeReferenceDataSet[fieldId] = standardOverrideData[fieldId];
         } else {
           console.warn(
-            `[StateManager] Standard ${standardKey} defines field ${fieldId} not in known user-editable fields`,
+            `[StateManager] Standard ${standardKey} defines field ${fieldId} not in known user-editable fields`
           );
         }
       });
       console.log(
         "[StateManager] Step 3: Applied standard overrides. d_53 value:",
-        activeReferenceDataSet["d_53"],
+        activeReferenceDataSet["d_53"]
       );
     } else {
       console.warn(
         `[StateManager] No override data found for standard: ${standardKey}. Available standards:`,
-        Object.keys(window.TEUI?.ReferenceValues || {}),
+        Object.keys(window.TEUI?.ReferenceValues || {})
       );
     }
 
     // Step 4 (Ensure Completeness - Fallback if needed)
     if (allUserEditableFields) {
-      Object.keys(allUserEditableFields).forEach((fieldId) => {
+      Object.keys(allUserEditableFields).forEach(fieldId => {
         if (
           !Object.prototype.hasOwnProperty.call(activeReferenceDataSet, fieldId)
         ) {
@@ -1568,11 +1574,11 @@ TEUI.StateManager = (function () {
     }
     console.log(
       "[StateManager] FINAL d_53 value in activeReferenceDataSet:",
-      activeReferenceDataSet["d_53"],
+      activeReferenceDataSet["d_53"]
     );
     console.log(
       "[StateManager] Final activeReferenceDataSet keys:",
-      Object.keys(activeReferenceDataSet).length,
+      Object.keys(activeReferenceDataSet).length
     );
   }
 
@@ -1591,7 +1597,7 @@ TEUI.StateManager = (function () {
       )
     ) {
       console.warn(
-        "[StateManager] Attempted to setValueInReferenceMode when not in Reference Mode.",
+        "[StateManager] Attempted to setValueInReferenceMode when not in Reference Mode."
       );
       return false;
     }
@@ -1604,7 +1610,7 @@ TEUI.StateManager = (function () {
       const currentStandard = getValue("d_13") || "OBC SB10 5.5-6 Z6";
       const behavior = window.TEUI.AppendixE.getFieldBehavior(
         fieldId,
-        currentStandard,
+        currentStandard
       );
       if (behavior === "Independently User-Editable in Reference Mode") {
         // Store in separate reference state storage
@@ -1613,7 +1619,7 @@ TEUI.StateManager = (function () {
         }
         independentReferenceState[fieldId] = value;
         console.log(
-          `[StateManager] Stored independent Reference value for ${fieldId}: ${value}`,
+          `[StateManager] Stored independent Reference value for ${fieldId}: ${value}`
         );
       }
     }
@@ -1633,7 +1639,7 @@ TEUI.StateManager = (function () {
     // TODO: Consider if markDependentsDirty specifically for reference mode is needed,
     // or if the existing mechanism + mode-aware getValue is sufficient.
     console.log(
-      `[StateManager] Value set in Reference Mode for ${fieldId}: ${value}`,
+      `[StateManager] Value set in Reference Mode for ${fieldId}: ${value}`
     );
     return true;
   }
@@ -1674,7 +1680,7 @@ TEUI.StateManager = (function () {
     if (Object.keys(lastImportedState).length === 0) {
       // No imported data - perform a system refresh instead
       console.log(
-        "[StateManager] No imported data found. Performing system refresh...",
+        "[StateManager] No imported data found. Performing system refresh..."
       );
 
       // Trigger a full recalculation to refresh the system
@@ -1686,7 +1692,7 @@ TEUI.StateManager = (function () {
         window.TEUI.Calculator.calculateAll();
       } else {
         console.warn(
-          "[StateManager] Calculator.calculateAll not available for system refresh.",
+          "[StateManager] Calculator.calculateAll not available for system refresh."
         );
       }
 
@@ -1718,7 +1724,7 @@ TEUI.StateManager = (function () {
       ) {
         window.TEUI.FileHandler.showStatus(
           "System defaults restored (no imported states yet)",
-          "info",
+          "info"
         );
       }
       // console.log("[StateManager] System refresh completed.");
@@ -1739,7 +1745,7 @@ TEUI.StateManager = (function () {
       const valueChanged = setValue(
         fieldId,
         importedValue,
-        "system_reverted_to_import",
+        "system_reverted_to_import"
       ); // Use a new distinct source
 
       // Update the UI display for the field
@@ -1754,19 +1760,19 @@ TEUI.StateManager = (function () {
             window.TEUI.FieldManager.updateFieldDisplay(
               fieldId,
               importedValue,
-              fieldDef,
+              fieldDef
             );
             if (valueChanged) revertedCount++;
           } catch (e) {
             console.error(
               `[StateManager] Error calling FieldManager.updateFieldDisplay for ${fieldId} during revert:`,
-              e,
+              e
             );
           }
         }
       } else {
         console.warn(
-          `[StateManager] FieldManager.updateFieldDisplay not available during revert for ${fieldId}.`,
+          `[StateManager] FieldManager.updateFieldDisplay not available during revert for ${fieldId}.`
         );
       }
     });
@@ -1779,7 +1785,7 @@ TEUI.StateManager = (function () {
     // Pattern A sections must have their isolated TargetState/ReferenceState synced from
     // global StateManager BEFORE calculations run, otherwise calculations use stale isolated state
     console.log(
-      "[StateManager] 🔄 Syncing Pattern A isolated states from restored StateManager...",
+      "[StateManager] 🔄 Syncing Pattern A isolated states from restored StateManager..."
     );
     const patternASections = [
       "sect02",
@@ -1798,17 +1804,21 @@ TEUI.StateManager = (function () {
       "sect15",
     ];
 
-    patternASections.forEach((sectionId) => {
+    patternASections.forEach(sectionId => {
       const section = window.TEUI?.SectionModules?.[sectionId];
 
       // Sync isolated state FROM restored StateManager values
       if (section?.TargetState?.syncFromGlobalState) {
         section.TargetState.syncFromGlobalState();
-        console.log(`[StateManager] 🔄 ${sectionId} TargetState synced from restored values`);
+        console.log(
+          `[StateManager] 🔄 ${sectionId} TargetState synced from restored values`
+        );
       }
       if (section?.ReferenceState?.syncFromGlobalState) {
         section.ReferenceState.syncFromGlobalState();
-        console.log(`[StateManager] 🔄 ${sectionId} ReferenceState synced from restored values`);
+        console.log(
+          `[StateManager] 🔄 ${sectionId} ReferenceState synced from restored values`
+        );
       }
     });
 
@@ -1818,14 +1828,16 @@ TEUI.StateManager = (function () {
       window.TEUI.Calculator &&
       typeof window.TEUI.Calculator.calculateAll === "function"
     ) {
-      console.log("[StateManager] 🧮 Running calculateAll with synced states...");
+      console.log(
+        "[StateManager] 🧮 Running calculateAll with synced states..."
+      );
       window.TEUI.Calculator.calculateAll();
 
       // Finally, refresh Pattern A section UIs to display calculated results
       console.log(
-        "[StateManager] 🔄 Refreshing Pattern A section UIs after calculations...",
+        "[StateManager] 🔄 Refreshing Pattern A section UIs after calculations..."
       );
-      patternASections.forEach((sectionId) => {
+      patternASections.forEach(sectionId => {
         const section = window.TEUI?.SectionModules?.[sectionId];
 
         // Refresh UI with calculated values
@@ -1835,12 +1847,14 @@ TEUI.StateManager = (function () {
           if (section.ModeManager.updateCalculatedDisplayValues) {
             section.ModeManager.updateCalculatedDisplayValues();
           }
-          console.log(`[StateManager] ✅ ${sectionId} UI refreshed after calculations`);
+          console.log(
+            `[StateManager] ✅ ${sectionId} UI refreshed after calculations`
+          );
         }
       });
     } else {
       console.warn(
-        "[StateManager] Calculator.calculateAll not available to trigger after reverting state.",
+        "[StateManager] Calculator.calculateAll not available to trigger after reverting state."
       );
     }
 
@@ -1851,11 +1865,11 @@ TEUI.StateManager = (function () {
     ) {
       window.TEUI.FileHandler.showStatus(
         `Application state reset to last imported values. ${revertedCount} fields updated.`,
-        "success",
+        "success"
       );
     }
     console.log(
-      `[StateManager] Reverted to last imported state. ${revertedCount} fields updated.`,
+      `[StateManager] Reverted to last imported state. ${revertedCount} fields updated.`
     );
   }
 
@@ -1876,7 +1890,7 @@ TEUI.StateManager = (function () {
 
     // Check if there are user modifications
     let hasUserModifications = false;
-    fields.forEach((field) => {
+    fields.forEach(field => {
       if (field.state === VALUE_STATES.USER_MODIFIED) {
         hasUserModifications = true;
       }
@@ -1996,7 +2010,7 @@ TEUI.StateManager = (function () {
       // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
       return Object.prototype.hasOwnProperty.call(
         activeReferenceDataSet,
-        fieldId,
+        fieldId
       )
         ? activeReferenceDataSet[fieldId]
         : fields.has(fieldId)
@@ -2064,7 +2078,7 @@ TEUI.StateManager = (function () {
   function unmuteListeners() {
     listenersActive = true;
     console.log(
-      "[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)",
+      "[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)"
     );
   }
 

@@ -38,7 +38,7 @@ TEUI.QCMonitor = (function () {
 
     if (!isActive) {
       console.log(
-        "[QCMonitor] QC monitoring disabled. Add ?qc=true to URL to activate.",
+        "[QCMonitor] QC monitoring disabled. Add ?qc=true to URL to activate."
       );
       return false;
     }
@@ -57,7 +57,7 @@ TEUI.QCMonitor = (function () {
       instrumentStateManager();
     } else {
       console.warn(
-        "[QCMonitor] StateManager not available for instrumentation",
+        "[QCMonitor] StateManager not available for instrumentation"
       );
     }
 
@@ -85,7 +85,7 @@ TEUI.QCMonitor = (function () {
     setTimeout(() => {
       if (!window.TEUI?.StateManager) {
         console.error(
-          "[QCMonitor] StateManager not available for Mirror Target init",
+          "[QCMonitor] StateManager not available for Mirror Target init"
         );
         return;
       }
@@ -116,7 +116,7 @@ TEUI.QCMonitor = (function () {
       baseline.set("Reference", referenceBaseline);
 
       console.log(
-        `[QCMonitor] Mirror Target baseline captured: ${targetBaseline.size} Target, ${referenceBaseline.size} Reference values`,
+        `[QCMonitor] Mirror Target baseline captured: ${targetBaseline.size} Target, ${referenceBaseline.size} Reference values`
       );
 
       // Immediate baseline comparison
@@ -193,7 +193,7 @@ TEUI.QCMonitor = (function () {
     // Log significant writes for debugging
     if (shouldLogWrite(fieldId, source)) {
       console.log(
-        `[QCMonitor] 📝 Write: ${fieldId}="${value}" (${source}) at ${timestamp.toFixed(2)}ms`,
+        `[QCMonitor] 📝 Write: ${fieldId}="${value}" (${source}) at ${timestamp.toFixed(2)}ms`
       );
     }
   }
@@ -218,7 +218,7 @@ TEUI.QCMonitor = (function () {
         const missingValueAnalysis = analyzeMissingValue(
           fieldId,
           caller,
-          timestamp,
+          timestamp
         );
 
         logViolation({
@@ -273,17 +273,17 @@ TEUI.QCMonitor = (function () {
     // Check timing - has this field been accessed multiple times?
     const fieldTracker = pathwayTracker.get(fieldId);
     const readCount = fieldTracker
-      ? fieldTracker.operations.filter((op) => op.operation === "read").length
+      ? fieldTracker.operations.filter(op => op.operation === "read").length
       : 0;
     const hasBeenWritten = fieldTracker ? fieldTracker.written : false;
 
     // Check if field was ever successfully written (not null)
     const wasEverNonNull = fieldTracker
       ? fieldTracker.operations.some(
-          (op) =>
+          op =>
             op.operation === "read" &&
             op.value !== null &&
-            op.value !== undefined,
+            op.value !== undefined
         )
       : false;
 
@@ -897,7 +897,7 @@ TEUI.QCMonitor = (function () {
           // Check if this is a calculated field that should be updating
           const fieldTracker = pathwayTracker.get(fieldId);
           const readCount = fieldTracker
-            ? fieldTracker.operations.filter((op) => op.operation === "read")
+            ? fieldTracker.operations.filter(op => op.operation === "read")
                 .length
             : 0;
 
@@ -971,11 +971,9 @@ TEUI.QCMonitor = (function () {
       }
 
       // Check for reads from missing sources
-      const readOps = tracker.operations.filter(
-        (op) => op.operation === "read",
-      );
+      const readOps = tracker.operations.filter(op => op.operation === "read");
       const nullReads = readOps.filter(
-        (op) => op.value === null || op.value === undefined,
+        op => op.value === null || op.value === undefined
       );
 
       if (nullReads.length > 0) {
@@ -1038,7 +1036,7 @@ TEUI.QCMonitor = (function () {
           showCopyNotification("QC Report copied to clipboard!", "success");
           console.log("[QCMonitor] Report copied to clipboard successfully");
         })
-        .catch((err) => {
+        .catch(err => {
           console.error("[QCMonitor] Failed to copy to clipboard:", err);
           showCopyNotification("Failed to copy to clipboard", "error");
         });
@@ -1070,7 +1068,7 @@ TEUI.QCMonitor = (function () {
 
     // Add violation categories
     const categoryCounts = {};
-    report.violations.forEach((v) => {
+    report.violations.forEach(v => {
       const category = v.analysis?.category || "unknown";
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
@@ -1104,22 +1102,22 @@ TEUI.QCMonitor = (function () {
 
     // Show only critical violations in the quick copy version
     const criticalViolations = report.violations.filter(
-      (v) => v.severity === "error",
+      v => v.severity === "error"
     );
     const warningViolations = report.violations
-      .filter((v) => v.severity === "warning")
+      .filter(v => v.severity === "warning")
       .slice(0, 10);
 
     if (criticalViolations.length > 0) {
       content += `#### 🔥 Critical Issues (${criticalViolations.length}):\n`;
-      criticalViolations.forEach((v) => {
+      criticalViolations.forEach(v => {
         content += `- **${v.type}**: \`${v.field}\` - ${v.message}\n`;
       });
     }
 
     if (warningViolations.length > 0) {
       content += `\n#### ⚠️ Top Warnings (${warningViolations.length} shown):\n`;
-      warningViolations.forEach((v) => {
+      warningViolations.forEach(v => {
         content += `- **${v.type}**: \`${v.field}\` - ${v.message}\n`;
       });
     }
@@ -1231,7 +1229,7 @@ TEUI.QCMonitor = (function () {
 
       if (report.violations.length > 0) {
         console.group("Violations by severity:");
-        report.violations.forEach((violation) => {
+        report.violations.forEach(violation => {
           const emoji =
             violation.severity === "error"
               ? "❌"
@@ -1264,7 +1262,7 @@ TEUI.QCMonitor = (function () {
       .concat(detectMissingRefValues());
 
     // Log any new critical violations immediately
-    newViolations.forEach((violation) => {
+    newViolations.forEach(violation => {
       if (violation.severity === "error") {
         console.error(`[QCMonitor] 🚨 ${violation.type}: ${violation.message}`);
       }
@@ -1283,7 +1281,7 @@ TEUI.QCMonitor = (function () {
     // Check for known contamination patterns
     const criticalFields = ["h_10", "e_10", "j_32", "k_32"];
 
-    criticalFields.forEach((fieldId) => {
+    criticalFields.forEach(fieldId => {
       const targetValue = stateManager.getValue(fieldId);
       const refValue = stateManager.getValue(`ref_${fieldId}`);
 
@@ -1316,7 +1314,7 @@ TEUI.QCMonitor = (function () {
     // NOTE: Excludes h_10 and e_10 since S01 is state agnostic (h_10=Target, e_10=Reference)
     const expectedRefFields = ["d_20", "d_21", "h_15", "j_32", "k_32", "i_98"];
 
-    expectedRefFields.forEach((fieldId) => {
+    expectedRefFields.forEach(fieldId => {
       const targetValue = stateManager.getValue(fieldId);
       const refValue = stateManager.getValue(`ref_${fieldId}`);
 
@@ -1375,7 +1373,7 @@ TEUI.QCMonitor = (function () {
         "h_15",
       ];
 
-      knownFields.forEach((fieldId) => {
+      knownFields.forEach(fieldId => {
         const targetValue = stateManager.getValue(fieldId);
 
         // EXCLUDE S01 REFERENCE FIELDS: S01 is state agnostic (h_10=Target, e_10=Reference)
@@ -1516,11 +1514,9 @@ TEUI.QCMonitor = (function () {
     if (!dashboard) return;
 
     const allViolations = getAllViolations();
-    const errorCount = allViolations.filter(
-      (v) => v.severity === "error",
-    ).length;
+    const errorCount = allViolations.filter(v => v.severity === "error").length;
     const warningCount = allViolations.filter(
-      (v) => v.severity === "warning",
+      v => v.severity === "warning"
     ).length;
 
     const violationCountEl = dashboard.querySelector("#violation-count");

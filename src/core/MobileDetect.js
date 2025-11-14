@@ -84,7 +84,7 @@
       document.getElementById("export-excel"),
     ];
 
-    excelButtons.forEach((btn) => {
+    excelButtons.forEach(btn => {
       if (btn) {
         btn.style.display = "none";
       }

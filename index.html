@@ -38,12 +38,14 @@
     <!-- Dev environment detection -->
     <script>
       // Check if we're on dev domain and apply styling
-      if (window.location.hostname === 'dev-objective.openbuilding.ca' ||
-          window.location.hostname === 'localhost' ||
-          window.location.hostname === '127.0.0.1') {
-        document.addEventListener('DOMContentLoaded', function() {
-          document.body.classList.add('dev-environment');
-          document.title = '[DEV] ' + document.title;
+      if (
+        window.location.hostname === "dev-objective.openbuilding.ca" ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+      ) {
+        document.addEventListener("DOMContentLoaded", function () {
+          document.body.classList.add("dev-environment");
+          document.title = "[DEV] " + document.title;
         });
       }
     </script>
@@ -271,18 +273,30 @@
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><h6 class="dropdown-header">Reset Options</h6></li>
                 <li>
-                  <a class="dropdown-item" href="#" onclick="event.preventDefault(); if(TEUI.StateManager.getResetTier() > 0 && confirm('Undo all changes?')) TEUI.StateManager.resetTier1_UndoChanges();">
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    onclick="event.preventDefault(); if(TEUI.StateManager.getResetTier() > 0 && confirm('Undo all changes?')) TEUI.StateManager.resetTier1_UndoChanges();"
+                  >
                     <i class="bi bi-arrow-counterclockwise"></i> Undo Changes
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#" onclick="event.preventDefault(); if(TEUI.StateManager.getResetTier() === 2 && confirm('Clear imported data and return to defaults?')) TEUI.StateManager.resetTier2_ClearImport();">
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    onclick="event.preventDefault(); if(TEUI.StateManager.getResetTier() === 2 && confirm('Clear imported data and return to defaults?')) TEUI.StateManager.resetTier2_ClearImport();"
+                  >
                     <i class="bi bi-file-earmark-x"></i> Clear Import Data
                   </a>
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
-                  <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); if(confirm('Factory reset? This will clear ALL data and cannot be undone.')) TEUI.StateManager.resetTier3_FactoryReset();">
+                  <a
+                    class="dropdown-item text-danger"
+                    href="#"
+                    onclick="event.preventDefault(); if(confirm('Factory reset? This will clear ALL data and cannot be undone.')) TEUI.StateManager.resetTier3_FactoryReset();"
+                  >
                     <i class="bi bi-exclamation-triangle"></i> Factory Reset
                   </a>
                 </li>
@@ -643,34 +657,57 @@
       <footer class="pt-5 mt-5 text-muted border-top">
         <div class="row">
           <div class="col-md-12">
-            <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+            <div
+              class="d-flex align-items-center justify-content-center flex-wrap gap-3"
+            >
               <!-- Open Source / GitHub -->
-              <span style="font-size: 0.75rem;" title="OBJECTIVE is an Open-Source project of OpenBuilding.ca. If you would like to request features, report bugs, or contribute, please visit our Git repo">
+              <span
+                style="font-size: 0.75rem"
+                title="OBJECTIVE is an Open-Source project of OpenBuilding.ca. If you would like to request features, report bugs, or contribute, please visit our Git repo"
+              >
                 OBJECTIVE is Open-Source
               </span>
-              <a href="https://github.com/openbuilding-ca/objective" target="_blank" rel="noopener noreferrer" title="Visit OBJECTIVE GitHub Repository - Request features, report bugs, or contribute">
-                <i class="bi bi-github" style="font-size: 50px; color: #6c757d;"></i>
+              <a
+                href="https://github.com/openbuilding-ca/objective"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit OBJECTIVE GitHub Repository - Request features, report bugs, or contribute"
+              >
+                <i
+                  class="bi bi-github"
+                  style="font-size: 50px; color: #6c757d"
+                ></i>
               </a>
 
               <!-- Developed by -->
-              <span style="font-size: 0.75rem;">Developed by OpenBuilding.ca</span>
-              <a href="https://openbuilding.ca/OBJECTIVE/" target="_blank" rel="noopener noreferrer">
+              <span style="font-size: 0.75rem"
+                >Developed by OpenBuilding.ca</span
+              >
+              <a
+                href="https://openbuilding.ca/OBJECTIVE/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
                   src="src/assets/imageOB.png"
                   alt="OpenBuilding Logo"
-                  style="height: 60px;"
+                  style="height: 60px"
                 />
               </a>
 
               <!-- Support text and OAA logo -->
-              <span class="text-center" style="font-size: 0.75rem;">
+              <span class="text-center" style="font-size: 0.75rem">
                 and is generously supported by:
               </span>
-              <a href="https://oaa.on.ca/knowledge-and-resources/Climate-Action/teui" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://oaa.on.ca/knowledge-and-resources/Climate-Action/teui"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
                   src="src/assets/imageOAA.png"
                   alt="OAA Logo - Ontario Association of Architects / Ordre des architectes de l'Ontario"
-                  style="height: 60px;"
+                  style="height: 60px"
                 />
               </a>
             </div>
@@ -724,9 +761,9 @@
               home using its own proprietary methods.
             </p>
             <p>
-              Enter your information (Blue inputs).
-              Default values from an A2 Event Centre exist to speed up the process,  
-              but you must over-write them with relevant values from your own project.
+              Enter your information (Blue inputs). Default values from an A2
+              Event Centre exist to speed up the process, but you must
+              over-write them with relevant values from your own project.
               Results will be calculated automatically (all Black text fields).
             </p>
             <hr />
@@ -735,19 +772,22 @@
               DEVELOPMENT. IT IS NOT YET COMPLETE! As such it is not fit for any
               purpose, and is meant for demonstration only. Our team has made
               every effort to have OBJECTIVE's Targeted Energy Use match
-              real-world values by reviewing a wide range of actual building types and
-              their utility bills, but **no** energy model can accurately predict energy
-              use due to hundreds of influences beyond the ability to model,
-              among other things, exact weather in a given year, user behaviours, or actual
-              commissioned equipment or envelope efficiencies. This modelling tool
-              aims to set Targets in a way that is consistent with measured results, 
-              but our experience has shown that with correct use, we can arrive at values very 
-              close to real-world, utility-bill values for total energy use. 'Accuracy of results'
-              has been our primary focus, not 'similarity of methods' to other energy modelling tools.
+              real-world values by reviewing a wide range of actual building
+              types and their utility bills, but **no** energy model can
+              accurately predict energy use due to hundreds of influences beyond
+              the ability to model, among other things, exact weather in a given
+              year, user behaviours, or actual commissioned equipment or
+              envelope efficiencies. This modelling tool aims to set Targets in
+              a way that is consistent with measured results, but our experience
+              has shown that with correct use, we can arrive at values very
+              close to real-world, utility-bill values for total energy use.
+              'Accuracy of results' has been our primary focus, not 'similarity
+              of methods' to other energy modelling tools.
             </p>
             <p>
-              Only for Canadian projects. If you are interested in a localization for your own country, 
-              please contact OBJECTIVE support at andy@openbuilding.ca
+              Only for Canadian projects. If you are interested in a
+              localization for your own country, please contact OBJECTIVE
+              support at andy@openbuilding.ca
             </p>
           </div>
           <div class="modal-footer">
@@ -819,9 +859,7 @@ Select a province and city to view weather data.</pre
               !document.querySelector(".modal.show")
             ) {
               console.log("Cleaning up lingering modal backdrops");
-              document
-                .querySelectorAll(".modal-backdrop")
-                .forEach((el) => el.remove());
+              document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
               document.body.classList.remove("modal-open");
               document.body.style.overflow = "";
               document.body.style.paddingRight = "";
@@ -844,7 +882,7 @@ Select a province and city to view weather data.</pre
           // Force immediate save before navigation
           TEUI.StateManager.saveState();
           console.log(
-            "TEUI StateManager: State saved before navigating to OBC Matrix",
+            "TEUI StateManager: State saved before navigating to OBC Matrix"
           );
 
           // Check what was actually saved
@@ -872,7 +910,7 @@ Select a province and city to view weather data.</pre
 
         const tier = TEUI.StateManager.getResetTier();
 
-        switch(tier) {
+        switch (tier) {
           case 0:
             // Already at defaults
             alert("Already at default values. No reset needed.");
@@ -888,7 +926,11 @@ Select a province and city to view weather data.</pre
           case 2:
             // Has imported data
             // First press: Offer to undo changes back to imported state
-            if (confirm("Undo your changes and return to imported values?\n\n(Click the dropdown arrow for more reset options)")) {
+            if (
+              confirm(
+                "Undo your changes and return to imported values?\n\n(Click the dropdown arrow for more reset options)"
+              )
+            ) {
               TEUI.StateManager.resetTier1_UndoChanges();
             }
             break;
@@ -908,7 +950,7 @@ Select a province and city to view weather data.</pre
         const maxRetries = 10; // Maximum 10 retries = 5 seconds
 
         const sectionHeader = document.querySelector(
-          "#climateCalculations .section-header",
+          "#climateCalculations .section-header"
         );
         if (!sectionHeader) {
           console.warn("Global Toggle: S03 header not found");
@@ -925,13 +967,13 @@ Select a province and city to view weather data.</pre
         if (!ModeManager) {
           if (retryCount < maxRetries) {
             console.warn(
-              `Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`,
+              `Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`
             );
             // Retry after a delay if S03 isn't ready (with retry limit)
             setTimeout(() => setupGlobalToggleUI(retryCount + 1), 500);
           } else {
             console.error(
-              "Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load.",
+              "Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load."
             );
           }
           return;
@@ -959,8 +1001,7 @@ Select a province and city to view weather data.</pre
         // Create toggle
         const toggleDiv = document.createElement("div");
         toggleDiv.className = "reference-toggle";
-        toggleDiv.style.cssText =
-          "display: flex; align-items: center; gap: 10px;";
+        toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
 
         const toggleLabel = document.createElement("label");
         toggleLabel.textContent = "Show Reference";
@@ -1041,7 +1082,7 @@ Select a province and city to view weather data.</pre
           event.stopPropagation();
           if (
             confirm(
-              "Are you sure you want to reset all Target/Reference states to defaults?",
+              "Are you sure you want to reset all Target/Reference states to defaults?"
             )
           ) {
             // Clear all dual-state localStorage keys
@@ -1066,13 +1107,13 @@ Select a province and city to view weather data.</pre
               "S15_REFERENCE_STATE",
             ];
 
-            dualStateKeys.forEach((key) => {
+            dualStateKeys.forEach(key => {
               localStorage.removeItem(key);
               console.log(`Global Reset: Cleared ${key}`);
             });
 
             console.log(
-              "Global Reset: All dual-state localStorage cleared. Refreshing page...",
+              "Global Reset: All dual-state localStorage cleared. Refreshing page..."
             );
 
             // Refresh page to reload defaults
@@ -1092,7 +1133,7 @@ Select a province and city to view weather data.</pre
         sectionHeader.appendChild(toggleContainer);
 
         console.log(
-          "Global Toggle: Setup complete in S03 header using S03's ModeManager",
+          "Global Toggle: Setup complete in S03 header using S03's ModeManager"
         );
       }
 
@@ -1133,7 +1174,7 @@ Select a province and city to view weather data.</pre
           let defaultCount = 0;
           let calculatedCount = 0;
 
-          allKeys.forEach((key) => {
+          allKeys.forEach(key => {
             const fieldInfo = TEUI.StateManager.getDebugInfo(key);
             if (fieldInfo) {
               switch (fieldInfo.state) {
@@ -1205,19 +1246,21 @@ Select a province and city to view weather data.</pre
         }
 
         // 📚 HELP BUTTON: Toggle tooltips on/off
-        const toggleHelpBtn = document.getElementById('toggleHelpBtn');
+        const toggleHelpBtn = document.getElementById("toggleHelpBtn");
         if (toggleHelpBtn && window.TEUI?.TooltipManager) {
           // Set initial button state
           const updateButtonState = () => {
             const isEnabled = window.TEUI.TooltipManager.isEnabled();
             if (isEnabled) {
-              toggleHelpBtn.classList.remove('btn-outline-secondary', 'btn-danger');
-              toggleHelpBtn.classList.add('btn-success');
-              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle-fill"></i> Help On';
+              toggleHelpBtn.classList.remove("btn-outline-secondary", "btn-danger");
+              toggleHelpBtn.classList.add("btn-success");
+              toggleHelpBtn.innerHTML =
+                '<i class="bi bi-question-circle-fill"></i> Help On';
             } else {
-              toggleHelpBtn.classList.remove('btn-success', 'btn-outline-secondary');
-              toggleHelpBtn.classList.add('btn-danger');
-              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle"></i> Help Off';
+              toggleHelpBtn.classList.remove("btn-success", "btn-outline-secondary");
+              toggleHelpBtn.classList.add("btn-danger");
+              toggleHelpBtn.innerHTML =
+                '<i class="bi bi-question-circle"></i> Help Off';
             }
           };
 
@@ -1225,28 +1268,29 @@ Select a province and city to view weather data.</pre
           updateButtonState();
 
           // Add click handler
-          toggleHelpBtn.addEventListener('click', function() {
+          toggleHelpBtn.addEventListener("click", function () {
             window.TEUI.TooltipManager.toggleTooltips();
             updateButtonState();
           });
         }
 
         // 🧘 ZEN MASTER BUTTON: Toggle dependency tracing on/off
-        const zenMasterBtn = document.getElementById('zenMasterBtn');
+        const zenMasterBtn = document.getElementById("zenMasterBtn");
         if (zenMasterBtn && window.TEUI?.zenMaster) {
           // Set initial button state
           const updateZenButtonState = () => {
             const status = window.TEUI.zenMaster.getStatus();
             if (status.enabled) {
-              zenMasterBtn.classList.remove('btn-outline-success');
-              zenMasterBtn.classList.add('btn-success');
-              zenMasterBtn.innerHTML = '🧘 Zen ON';
+              zenMasterBtn.classList.remove("btn-outline-success");
+              zenMasterBtn.classList.add("btn-success");
+              zenMasterBtn.innerHTML = "🧘 Zen ON";
               zenMasterBtn.title = `ZenMaster ACTIVE - Tracking ${status.fieldsTracked} fields, ${status.accessEvents} events`;
             } else {
-              zenMasterBtn.classList.remove('btn-success');
-              zenMasterBtn.classList.add('btn-outline-success');
-              zenMasterBtn.innerHTML = '🧘 Zen';
-              zenMasterBtn.title = 'ZenMaster: Click to enable runtime dependency discovery';
+              zenMasterBtn.classList.remove("btn-success");
+              zenMasterBtn.classList.add("btn-outline-success");
+              zenMasterBtn.innerHTML = "🧘 Zen";
+              zenMasterBtn.title =
+                "ZenMaster: Click to enable runtime dependency discovery";
             }
           };
 
@@ -1254,19 +1298,23 @@ Select a province and city to view weather data.</pre
           updateZenButtonState();
 
           // Add click handler
-          zenMasterBtn.addEventListener('click', function() {
+          zenMasterBtn.addEventListener("click", function () {
             const status = window.TEUI.zenMaster.getStatus();
             if (status.enabled) {
               // Disable and show results
               window.TEUI.zenMaster.disable();
-              console.log('🧘 ZenMaster disabled. Use zenValidate() or zenExportFile() to see results.');
+              console.log(
+                "🧘 ZenMaster disabled. Use zenValidate() or zenExportFile() to see results."
+              );
               if (status.fieldsTracked > 0) {
                 window.TEUI.zenMaster.validateDependencies();
               }
             } else {
               // Enable tracing
               window.TEUI.zenMaster.enable();
-              console.log('🧘 ZenMaster enabled. Interact with the app to trace dependencies.');
+              console.log(
+                "🧘 ZenMaster enabled. Interact with the app to trace dependencies."
+              );
             }
             updateZenButtonState();
           });

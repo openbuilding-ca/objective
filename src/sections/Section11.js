@@ -163,14 +163,14 @@ window.TEUI.SectionModules.sect11 = (function () {
         "f_95", // Walls BG, floor slab
         "d_96",
         "d_97", // Interior floor, thermal bridge
-      ],
+      ]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
           console.log(
-            `S11 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S11 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -179,7 +179,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       // FileHandler will call it manually AFTER all Pattern A sections synced
       // This prevents syncing from S10 before S10's import values are ready
       console.log(
-        "[S11 TargetState] Import sync complete (S10 sync deferred to FileHandler)",
+        "[S11 TargetState] Import sync complete (S10 sync deferred to FileHandler)"
       );
     },
     saveState: function () {
@@ -261,23 +261,23 @@ window.TEUI.SectionModules.sect11 = (function () {
           "g_92",
           "g_93", // U-values
         ];
-        referenceFields.forEach((fieldId) => {
+        referenceFields.forEach(fieldId => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value,
-              "default",
+              "default"
             );
             console.log(
-              `[S11 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
+              `[S11 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`
             );
           }
         });
       }
 
       console.log(
-        `S11: Reference defaults loaded from standard: ${currentStandard}`,
+        `S11: Reference defaults loaded from standard: ${currentStandard}`
       );
     },
 
@@ -289,7 +289,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       const preservedAreas = {};
       const areaFields = ["d_85", "d_86", "d_87", "d_94", "d_95", "d_96"];
 
-      areaFields.forEach((fieldId) => {
+      areaFields.forEach(fieldId => {
         // For Reference mode, always preserve current values
         if (ModeManager.currentMode === "reference") {
           preservedAreas[fieldId] = this.state[fieldId];
@@ -308,7 +308,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       this.saveState();
 
       console.log(
-        "S11: Reference standard updated, areas preserved, performance values updated",
+        "S11: Reference standard updated, areas preserved, performance values updated"
       );
 
       // Only refresh UI if currently in reference mode
@@ -347,15 +347,15 @@ window.TEUI.SectionModules.sect11 = (function () {
         "f_95", // Walls BG, floor slab
         "d_96",
         "d_97", // Interior floor, thermal bridge
-      ],
+      ]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
           console.log(
-            `S11 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+            `S11 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
           );
         }
       });
@@ -364,7 +364,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       // FileHandler will call it manually AFTER all Pattern A sections synced
       // This prevents syncing from S10 before S10's import values are ready
       console.log(
-        "[S11 ReferenceState] Import sync complete (S10 sync deferred to FileHandler)",
+        "[S11 ReferenceState] Import sync complete (S10 sync deferred to FileHandler)"
       );
     },
     setValue: function (fieldId, value) {
@@ -417,7 +417,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
     resetState: function () {
       console.log(
-        "S11: Resetting state and clearing localStorage for Section 11.",
+        "S11: Resetting state and clearing localStorage for Section 11."
       );
       TargetState.setDefaults();
       TargetState.saveState();
@@ -474,7 +474,7 @@ window.TEUI.SectionModules.sect11 = (function () {
             : source || "calculated";
         if (fieldId === "d_97") {
           console.log(
-            `[S11] ModeManager REF write: ref_d_97=${value} (src=${writeSource})`,
+            `[S11] ModeManager REF write: ref_d_97=${value} (src=${writeSource})`
           );
         }
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, writeSource);
@@ -482,7 +482,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
     refreshUI: function () {
       const sectionElement = document.getElementById(
-        "envelopeTransmissionLosses",
+        "envelopeTransmissionLosses"
       );
       if (!sectionElement) return;
 
@@ -515,12 +515,12 @@ window.TEUI.SectionModules.sect11 = (function () {
         "d_97", // Ground RSI + Interior + TBP
       ];
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -602,7 +602,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         "k_98",
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const valueToDisplay =
           this.currentMode === "reference"
             ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
@@ -610,7 +610,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
+            `[data-field-id="${fieldId}"]`
           );
           if (element) {
             const num = window.TEUI.parseNumeric(valueToDisplay, 0);
@@ -626,7 +626,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S11');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S11");
     },
   };
 
@@ -696,16 +696,74 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Roof",
       cells: {
         c: { label: "Roof" },
-        d: { fieldId: "d_85", type: "editable", value: "1411.52", label: "Roof: Area m²" },
-        e: { fieldId: "e_85", type: "calculated", value: "0.00", dependencies: ["f_85"], label: "Roof: R-Value Imperial" },
-        f: { fieldId: "f_85", type: "editable", value: "9.35", label: "Roof: RSI Value K·m²/W" },
-        g: { fieldId: "g_85", type: "calculated", value: "0.00", dependencies: ["f_85"], label: "Roof: U-Value W/m²·K" },
-        h: { fieldId: "h_85", type: "calculated", value: "0%", dependencies: ["d_85", "d_101"], label: "Roof: % of Total Envelope Area" },
-        i: { fieldId: "i_85", type: "calculated", value: "0.00", dependencies: ["d_85", "d_20", "f_85"], label: "Roof: Heat Loss kWh/yr" },
-        j: { fieldId: "j_85", type: "calculated", value: "0%", dependencies: ["i_85", "i_98"], label: "Roof: Heat Loss %" },
-        k: { fieldId: "k_85", type: "calculated", value: "0.00", dependencies: ["d_85", "d_21", "f_85"], label: "Roof: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_85", type: "calculated", value: "0%", dependencies: ["k_85", "k_98"], label: "Roof: Heat Gain %" },
-        m: { fieldId: "m_85", type: "calculated", value: "0%", dependencies: ["f_85", "t_85"], label: "Roof: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_85",
+          type: "editable",
+          value: "1411.52",
+          label: "Roof: Area m²",
+        },
+        e: {
+          fieldId: "e_85",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_85"],
+          label: "Roof: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_85",
+          type: "editable",
+          value: "9.35",
+          label: "Roof: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_85",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_85"],
+          label: "Roof: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_85",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_85", "d_101"],
+          label: "Roof: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_85",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_85", "d_20", "f_85"],
+          label: "Roof: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_85",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_85", "i_98"],
+          label: "Roof: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_85",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_85", "d_21", "f_85"],
+          label: "Roof: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_85",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_85", "k_98"],
+          label: "Roof: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_85",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["f_85", "t_85"],
+          label: "Roof: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_85", type: "calculated", value: "✓" },
       },
     },
@@ -715,16 +773,74 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Walls Above Grade (Exclude Openings!)",
       cells: {
         c: { label: "Walls Above Grade (Exclude Openings!)" },
-        d: { fieldId: "d_86", type: "editable", value: "712.97", label: "Walls Above Grade: Area m²" },
-        e: { fieldId: "e_86", type: "calculated", value: "0.00", dependencies: ["f_86"], label: "Walls Above Grade: R-Value Imperial" },
-        f: { fieldId: "f_86", type: "editable", value: "6.69", label: "Walls Above Grade: RSI Value K·m²/W" },
-        g: { fieldId: "g_86", type: "calculated", value: "0.00", dependencies: ["f_86"], label: "Walls Above Grade: U-Value W/m²·K" },
-        h: { fieldId: "h_86", type: "calculated", value: "0%", dependencies: ["d_86", "d_101"], label: "Walls Above Grade: % of Total Envelope Area" },
-        i: { fieldId: "i_86", type: "calculated", value: "0.00", dependencies: ["d_86", "d_20", "f_86"], label: "Walls Above Grade: Heat Loss kWh/yr" },
-        j: { fieldId: "j_86", type: "calculated", value: "0%", dependencies: ["i_86", "i_98"], label: "Walls Above Grade: Heat Loss %" },
-        k: { fieldId: "k_86", type: "calculated", value: "0.00", dependencies: ["d_86", "d_21", "f_86"], label: "Walls Above Grade: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_86", type: "calculated", value: "0%", dependencies: ["k_86", "k_98"], label: "Walls Above Grade: Heat Gain %" },
-        m: { fieldId: "m_86", type: "calculated", value: "0%", dependencies: ["f_86", "t_86"], label: "Walls Above Grade: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_86",
+          type: "editable",
+          value: "712.97",
+          label: "Walls Above Grade: Area m²",
+        },
+        e: {
+          fieldId: "e_86",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_86"],
+          label: "Walls Above Grade: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_86",
+          type: "editable",
+          value: "6.69",
+          label: "Walls Above Grade: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_86",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_86"],
+          label: "Walls Above Grade: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_86",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_86", "d_101"],
+          label: "Walls Above Grade: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_86",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_86", "d_20", "f_86"],
+          label: "Walls Above Grade: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_86",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_86", "i_98"],
+          label: "Walls Above Grade: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_86",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_86", "d_21", "f_86"],
+          label: "Walls Above Grade: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_86",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_86", "k_98"],
+          label: "Walls Above Grade: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_86",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["f_86", "t_86"],
+          label: "Walls Above Grade: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_86", type: "calculated", value: "✓" },
       },
     },
@@ -734,16 +850,74 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Floor Exposed",
       cells: {
         c: { label: "Floor Exposed" },
-        d: { fieldId: "d_87", type: "editable", value: "0.00", label: "Floor Exposed: Area m²" },
-        e: { fieldId: "e_87", type: "calculated", value: "0.00", dependencies: ["f_87"], label: "Floor Exposed: R-Value Imperial" },
-        f: { fieldId: "f_87", type: "editable", value: "9.52", label: "Floor Exposed: RSI Value K·m²/W" },
-        g: { fieldId: "g_87", type: "calculated", value: "0.00", dependencies: ["f_87"], label: "Floor Exposed: U-Value W/m²·K" },
-        h: { fieldId: "h_87", type: "calculated", value: "0%", dependencies: ["d_87", "d_101"], label: "Floor Exposed: % of Total Envelope Area" },
-        i: { fieldId: "i_87", type: "calculated", value: "0.00", dependencies: ["d_87", "d_20", "f_87"], label: "Floor Exposed: Heat Loss kWh/yr" },
-        j: { fieldId: "j_87", type: "calculated", value: "0%", dependencies: ["i_87", "i_98"], label: "Floor Exposed: Heat Loss %" },
-        k: { fieldId: "k_87", type: "calculated", value: "0.00", dependencies: ["d_87", "d_21", "f_87"], label: "Floor Exposed: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_87", type: "calculated", value: "0%", dependencies: ["k_87", "k_98"], label: "Floor Exposed: Heat Gain %" },
-        m: { fieldId: "m_87", type: "calculated", value: "0%", dependencies: ["f_87", "t_87"], label: "Floor Exposed: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_87",
+          type: "editable",
+          value: "0.00",
+          label: "Floor Exposed: Area m²",
+        },
+        e: {
+          fieldId: "e_87",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_87"],
+          label: "Floor Exposed: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_87",
+          type: "editable",
+          value: "9.52",
+          label: "Floor Exposed: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_87",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_87"],
+          label: "Floor Exposed: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_87",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_87", "d_101"],
+          label: "Floor Exposed: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_87",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_87", "d_20", "f_87"],
+          label: "Floor Exposed: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_87",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_87", "i_98"],
+          label: "Floor Exposed: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_87",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_87", "d_21", "f_87"],
+          label: "Floor Exposed: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_87",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_87", "k_98"],
+          label: "Floor Exposed: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_87",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["f_87", "t_87"],
+          label: "Floor Exposed: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_87", type: "calculated", value: "✓" },
       },
     },
@@ -753,16 +927,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Doors",
       cells: {
         c: { label: "Doors" },
-        d: { fieldId: "d_88", type: "calculated", value: "", dependencies: ["d_73"], label: "Doors: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_73
-        e: { fieldId: "e_88", type: "calculated", value: "0.00", dependencies: ["f_88"], label: "Doors: R-Value Imperial" },
-        f: { fieldId: "f_88", type: "calculated", value: "0.00", dependencies: ["g_88"], label: "Doors: RSI Value K·m²/W" },
-        g: { fieldId: "g_88", type: "editable", value: "1.990", label: "Doors: U-Value W/m²·K" },
-        h: { fieldId: "h_88", type: "calculated", value: "0%", dependencies: ["d_88", "d_101"], label: "Doors: % of Total Envelope Area" },
-        i: { fieldId: "i_88", type: "calculated", value: "0.00", dependencies: ["d_88", "d_20", "f_88"], label: "Doors: Heat Loss kWh/yr" },
-        j: { fieldId: "j_88", type: "calculated", value: "0%", dependencies: ["i_88", "i_98"], label: "Doors: Heat Loss %" },
-        k: { fieldId: "k_88", type: "calculated", value: "0.00", dependencies: ["d_88", "d_21", "f_88"], label: "Doors: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_88", type: "calculated", value: "0%", dependencies: ["k_88", "k_98"], label: "Doors: Heat Gain %" },
-        m: { fieldId: "m_88", type: "calculated", value: "0%", dependencies: ["t_88", "g_88"], label: "Doors: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_88",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_73"],
+          label: "Doors: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_73
+        e: {
+          fieldId: "e_88",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_88"],
+          label: "Doors: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_88",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_88"],
+          label: "Doors: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_88",
+          type: "editable",
+          value: "1.990",
+          label: "Doors: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_88",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_88", "d_101"],
+          label: "Doors: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_88",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_88", "d_20", "f_88"],
+          label: "Doors: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_88",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_88", "i_98"],
+          label: "Doors: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_88",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_88", "d_21", "f_88"],
+          label: "Doors: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_88",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_88", "k_98"],
+          label: "Doors: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_88",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_88", "g_88"],
+          label: "Doors: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_88", type: "calculated", value: "✓" },
       },
     },
@@ -772,16 +1005,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area North",
       cells: {
         c: { label: "Window Area North" },
-        d: { fieldId: "d_89", type: "calculated", value: "", dependencies: ["d_74"], label: "Window Area North: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_74
-        e: { fieldId: "e_89", type: "calculated", value: "0.00", dependencies: ["f_89"], label: "Window Area North: R-Value Imperial" },
-        f: { fieldId: "f_89", type: "calculated", value: "0.00", dependencies: ["g_89"], label: "Window Area North: RSI Value K·m²/W" },
-        g: { fieldId: "g_89", type: "editable", value: "1.420", label: "Window Area North: U-Value W/m²·K" },
-        h: { fieldId: "h_89", type: "calculated", value: "0%", dependencies: ["d_89", "d_101"], label: "Window Area North: % of Total Envelope Area" },
-        i: { fieldId: "i_89", type: "calculated", value: "0.00", dependencies: ["d_89", "d_20", "f_89"], label: "Window Area North: Heat Loss kWh/yr" },
-        j: { fieldId: "j_89", type: "calculated", value: "0%", dependencies: ["i_89", "i_98"], label: "Window Area North: Heat Loss %" },
-        k: { fieldId: "k_89", type: "calculated", value: "0.00", dependencies: ["d_89", "d_21", "f_89"], label: "Window Area North: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_89", type: "calculated", value: "0%", dependencies: ["k_89", "k_98"], label: "Window Area North: Heat Gain %" },
-        m: { fieldId: "m_89", type: "calculated", value: "0%", dependencies: ["t_89", "g_89"], label: "Window Area North: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_89",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_74"],
+          label: "Window Area North: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_74
+        e: {
+          fieldId: "e_89",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_89"],
+          label: "Window Area North: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_89",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_89"],
+          label: "Window Area North: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_89",
+          type: "editable",
+          value: "1.420",
+          label: "Window Area North: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_89",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_89", "d_101"],
+          label: "Window Area North: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_89",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_89", "d_20", "f_89"],
+          label: "Window Area North: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_89",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_89", "i_98"],
+          label: "Window Area North: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_89",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_89", "d_21", "f_89"],
+          label: "Window Area North: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_89",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_89", "k_98"],
+          label: "Window Area North: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_89",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_89", "g_89"],
+          label: "Window Area North: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_89", type: "calculated", value: "✓" },
       },
     },
@@ -791,16 +1083,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area East",
       cells: {
         c: { label: "Window Area East" },
-        d: { fieldId: "d_90", type: "calculated", value: "", dependencies: ["d_75"], label: "Window Area East: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_75
-        e: { fieldId: "e_90", type: "calculated", value: "0.00", dependencies: ["f_90"], label: "Window Area East: R-Value Imperial" },
-        f: { fieldId: "f_90", type: "calculated", value: "0.00", dependencies: ["g_90"], label: "Window Area East: RSI Value K·m²/W" },
-        g: { fieldId: "g_90", type: "editable", value: "1.420", label: "Window Area East: U-Value W/m²·K" },
-        h: { fieldId: "h_90", type: "calculated", value: "0%", dependencies: ["d_90", "d_101"], label: "Window Area East: % of Total Envelope Area" },
-        i: { fieldId: "i_90", type: "calculated", value: "0.00", dependencies: ["d_90", "d_20", "f_90"], label: "Window Area East: Heat Loss kWh/yr" },
-        j: { fieldId: "j_90", type: "calculated", value: "0%", dependencies: ["i_90", "i_98"], label: "Window Area East: Heat Loss %" },
-        k: { fieldId: "k_90", type: "calculated", value: "0.00", dependencies: ["d_90", "d_21", "f_90"], label: "Window Area East: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_90", type: "calculated", value: "0%", dependencies: ["k_90", "k_98"], label: "Window Area East: Heat Gain %" },
-        m: { fieldId: "m_90", type: "calculated", value: "0%", dependencies: ["t_90", "g_90"], label: "Window Area East: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_90",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_75"],
+          label: "Window Area East: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_75
+        e: {
+          fieldId: "e_90",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_90"],
+          label: "Window Area East: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_90",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_90"],
+          label: "Window Area East: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_90",
+          type: "editable",
+          value: "1.420",
+          label: "Window Area East: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_90",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_90", "d_101"],
+          label: "Window Area East: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_90",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_90", "d_20", "f_90"],
+          label: "Window Area East: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_90",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_90", "i_98"],
+          label: "Window Area East: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_90",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_90", "d_21", "f_90"],
+          label: "Window Area East: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_90",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_90", "k_98"],
+          label: "Window Area East: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_90",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_90", "g_90"],
+          label: "Window Area East: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_90", type: "calculated", value: "✓" },
       },
     },
@@ -810,16 +1161,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area South",
       cells: {
         c: { label: "Window Area South" },
-        d: { fieldId: "d_91", type: "calculated", value: "", dependencies: ["d_76"], label: "Window Area South: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_76
-        e: { fieldId: "e_91", type: "calculated", value: "0.00", dependencies: ["f_91"], label: "Window Area South: R-Value Imperial" },
-        f: { fieldId: "f_91", type: "calculated", value: "0.00", dependencies: ["g_91"], label: "Window Area South: RSI Value K·m²/W" },
-        g: { fieldId: "g_91", type: "editable", value: "1.420", label: "Window Area South: U-Value W/m²·K" },
-        h: { fieldId: "h_91", type: "calculated", value: "0%", dependencies: ["d_91", "d_101"], label: "Window Area South: % of Total Envelope Area" },
-        i: { fieldId: "i_91", type: "calculated", value: "0.00", dependencies: ["d_91", "d_20", "f_91"], label: "Window Area South: Heat Loss kWh/yr" },
-        j: { fieldId: "j_91", type: "calculated", value: "0%", dependencies: ["i_91", "i_98"], label: "Window Area South: Heat Loss %" },
-        k: { fieldId: "k_91", type: "calculated", value: "0.00", dependencies: ["d_91", "d_21", "f_91"], label: "Window Area South: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_91", type: "calculated", value: "0%", dependencies: ["k_91", "k_98"], label: "Window Area South: Heat Gain %" },
-        m: { fieldId: "m_91", type: "calculated", value: "0%", dependencies: ["t_91", "g_91"], label: "Window Area South: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_91",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_76"],
+          label: "Window Area South: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_76
+        e: {
+          fieldId: "e_91",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_91"],
+          label: "Window Area South: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_91",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_91"],
+          label: "Window Area South: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_91",
+          type: "editable",
+          value: "1.420",
+          label: "Window Area South: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_91",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_91", "d_101"],
+          label: "Window Area South: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_91",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_91", "d_20", "f_91"],
+          label: "Window Area South: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_91",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_91", "i_98"],
+          label: "Window Area South: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_91",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_91", "d_21", "f_91"],
+          label: "Window Area South: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_91",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_91", "k_98"],
+          label: "Window Area South: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_91",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_91", "g_91"],
+          label: "Window Area South: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_91", type: "calculated", value: "✓" },
       },
     },
@@ -829,16 +1239,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area West",
       cells: {
         c: { label: "Window Area West" },
-        d: { fieldId: "d_92", type: "calculated", value: "", dependencies: ["d_77"], label: "Window Area West: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_77
-        e: { fieldId: "e_92", type: "calculated", value: "0.00", dependencies: ["f_92"], label: "Window Area West: R-Value Imperial" },
-        f: { fieldId: "f_92", type: "calculated", value: "0.00", dependencies: ["g_92"], label: "Window Area West: RSI Value K·m²/W" },
-        g: { fieldId: "g_92", type: "editable", value: "1.420", label: "Window Area West: U-Value W/m²·K" },
-        h: { fieldId: "h_92", type: "calculated", value: "0%", dependencies: ["d_92", "d_101"], label: "Window Area West: % of Total Envelope Area" },
-        i: { fieldId: "i_92", type: "calculated", value: "0.00", dependencies: ["d_92", "d_20", "f_92"], label: "Window Area West: Heat Loss kWh/yr" },
-        j: { fieldId: "j_92", type: "calculated", value: "0%", dependencies: ["i_92", "i_98"], label: "Window Area West: Heat Loss %" },
-        k: { fieldId: "k_92", type: "calculated", value: "0.00", dependencies: ["d_92", "d_21", "f_92"], label: "Window Area West: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_92", type: "calculated", value: "0%", dependencies: ["k_92", "k_98"], label: "Window Area West: Heat Gain %" },
-        m: { fieldId: "m_92", type: "calculated", value: "0%", dependencies: ["t_92", "g_92"], label: "Window Area West: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_92",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_77"],
+          label: "Window Area West: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_77
+        e: {
+          fieldId: "e_92",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_92"],
+          label: "Window Area West: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_92",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_92"],
+          label: "Window Area West: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_92",
+          type: "editable",
+          value: "1.420",
+          label: "Window Area West: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_92",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_92", "d_101"],
+          label: "Window Area West: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_92",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_92", "d_20", "f_92"],
+          label: "Window Area West: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_92",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_92", "i_98"],
+          label: "Window Area West: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_92",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_92", "d_21", "f_92"],
+          label: "Window Area West: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_92",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_92", "k_98"],
+          label: "Window Area West: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_92",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_92", "g_92"],
+          label: "Window Area West: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_92", type: "calculated", value: "✓" },
       },
     },
@@ -848,16 +1317,75 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Skylights",
       cells: {
         c: { label: "Skylights" },
-        d: { fieldId: "d_93", type: "calculated", value: "", dependencies: ["d_78"], label: "Skylights: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_78
-        e: { fieldId: "e_93", type: "calculated", value: "0.00", dependencies: ["f_93"], label: "Skylights: R-Value Imperial" },
-        f: { fieldId: "f_93", type: "calculated", value: "0.00", dependencies: ["g_93"], label: "Skylights: RSI Value K·m²/W" },
-        g: { fieldId: "g_93", type: "editable", value: "1.420", label: "Skylights: U-Value W/m²·K" },
-        h: { fieldId: "h_93", type: "calculated", value: "0%", dependencies: ["d_93", "d_101"], label: "Skylights: % of Total Envelope Area" },
-        i: { fieldId: "i_93", type: "calculated", value: "0.00", dependencies: ["d_93", "d_20", "f_93"], label: "Skylights: Heat Loss kWh/yr" },
-        j: { fieldId: "j_93", type: "calculated", value: "0%", dependencies: ["i_93", "i_98"], label: "Skylights: Heat Loss %" },
-        k: { fieldId: "k_93", type: "calculated", value: "0.00", dependencies: ["d_93", "d_21", "f_93"], label: "Skylights: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_93", type: "calculated", value: "0%", dependencies: ["k_93", "k_98"], label: "Skylights: Heat Gain %" },
-        m: { fieldId: "m_93", type: "calculated", value: "0%", dependencies: ["t_93", "g_93"], label: "Skylights: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_93",
+          type: "calculated",
+          value: "",
+          dependencies: ["d_78"],
+          label: "Skylights: Area m²",
+        }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_78
+        e: {
+          fieldId: "e_93",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_93"],
+          label: "Skylights: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_93",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["g_93"],
+          label: "Skylights: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_93",
+          type: "editable",
+          value: "1.420",
+          label: "Skylights: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_93",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_93", "d_101"],
+          label: "Skylights: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_93",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_93", "d_20", "f_93"],
+          label: "Skylights: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_93",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_93", "i_98"],
+          label: "Skylights: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_93",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_93", "d_21", "f_93"],
+          label: "Skylights: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_93",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_93", "k_98"],
+          label: "Skylights: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_93",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["t_93", "g_93"],
+          label: "Skylights: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_93", type: "calculated", value: "✓" },
       },
     },
@@ -867,16 +1395,74 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Walls Below Grade (Conditioned Space)",
       cells: {
         c: { label: "Walls Below Grade (Conditioned Space)" },
-        d: { fieldId: "d_94", type: "editable", value: "0.00", label: "Walls Below Grade: Area m²" },
-        e: { fieldId: "e_94", type: "calculated", value: "0.00", dependencies: ["f_94"], label: "Walls Below Grade: R-Value Imperial" },
-        f: { fieldId: "f_94", type: "editable", value: "4.00", label: "Walls Below Grade: RSI Value K·m²/W" },
-        g: { fieldId: "g_94", type: "calculated", value: "0.00", dependencies: ["f_94"], label: "Walls Below Grade: U-Value W/m²·K" },
-        h: { fieldId: "h_94", type: "calculated", value: "0%", dependencies: ["d_94", "d_102"], label: "Walls Below Grade: % of Total Envelope Area" },
-        i: { fieldId: "i_94", type: "calculated", value: "0.00", dependencies: ["d_94", "d_22", "f_94"], label: "Walls Below Grade: Heat Loss kWh/yr" },
-        j: { fieldId: "j_94", type: "calculated", value: "0%", dependencies: ["i_94", "i_98"], label: "Walls Below Grade: Heat Loss %" },
-        k: { fieldId: "k_94", type: "calculated", value: "0.00", dependencies: ["i_21", "d_94", "h_22", "f_94"], label: "Walls Below Grade: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_94", type: "calculated", value: "0%", dependencies: ["k_94", "k_98"], label: "Walls Below Grade: Heat Gain %" },
-        m: { fieldId: "m_94", type: "calculated", value: "0%", dependencies: ["f_94", "t_94"], label: "Walls Below Grade: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_94",
+          type: "editable",
+          value: "0.00",
+          label: "Walls Below Grade: Area m²",
+        },
+        e: {
+          fieldId: "e_94",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_94"],
+          label: "Walls Below Grade: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_94",
+          type: "editable",
+          value: "4.00",
+          label: "Walls Below Grade: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_94",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_94"],
+          label: "Walls Below Grade: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_94",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["d_94", "d_102"],
+          label: "Walls Below Grade: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_94",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_94", "d_22", "f_94"],
+          label: "Walls Below Grade: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_94",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_94", "i_98"],
+          label: "Walls Below Grade: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_94",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["i_21", "d_94", "h_22", "f_94"],
+          label: "Walls Below Grade: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_94",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_94", "k_98"],
+          label: "Walls Below Grade: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_94",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["f_94", "t_94"],
+          label: "Walls Below Grade: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_94", type: "calculated", value: "✓" },
       },
     },
@@ -886,16 +1472,74 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Floor Slab (Conditioned Space)",
       cells: {
         c: { label: "Floor Slab (Conditioned Space)" },
-        d: { fieldId: "d_95", type: "editable", value: "1100.42", label: "Floor Slab: Area m²" },
-        e: { fieldId: "e_95", type: "calculated", value: "0.00", dependencies: ["f_95"], label: "Floor Slab: R-Value Imperial" },
-        f: { fieldId: "f_95", type: "editable", value: "3.70", label: "Floor Slab: RSI Value K·m²/W" },
-        g: { fieldId: "g_95", type: "calculated", value: "0.00", dependencies: ["f_95"], label: "Floor Slab: U-Value W/m²·K" },
-        h: { fieldId: "h_95", type: "calculated", value: "100%", dependencies: ["d_95", "d_102"], label: "Floor Slab: % of Total Envelope Area" },
-        i: { fieldId: "i_95", type: "calculated", value: "0.00", dependencies: ["d_95", "d_22", "f_95"], label: "Floor Slab: Heat Loss kWh/yr" },
-        j: { fieldId: "j_95", type: "calculated", value: "0%", dependencies: ["i_95", "i_98"], label: "Floor Slab: Heat Loss %" },
-        k: { fieldId: "k_95", type: "calculated", value: "0.00", dependencies: ["i_21", "d_95", "h_22", "f_95"], label: "Floor Slab: Heat Gain kWh/Cooling Season" },
-        l: { fieldId: "l_95", type: "calculated", value: "0%", dependencies: ["k_95", "k_98"], label: "Floor Slab: Heat Gain %" },
-        m: { fieldId: "m_95", type: "calculated", value: "0%", dependencies: ["f_95", "t_95"], label: "Floor Slab: Reference Compliance Ratio" },
+        d: {
+          fieldId: "d_95",
+          type: "editable",
+          value: "1100.42",
+          label: "Floor Slab: Area m²",
+        },
+        e: {
+          fieldId: "e_95",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_95"],
+          label: "Floor Slab: R-Value Imperial",
+        },
+        f: {
+          fieldId: "f_95",
+          type: "editable",
+          value: "3.70",
+          label: "Floor Slab: RSI Value K·m²/W",
+        },
+        g: {
+          fieldId: "g_95",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["f_95"],
+          label: "Floor Slab: U-Value W/m²·K",
+        },
+        h: {
+          fieldId: "h_95",
+          type: "calculated",
+          value: "100%",
+          dependencies: ["d_95", "d_102"],
+          label: "Floor Slab: % of Total Envelope Area",
+        },
+        i: {
+          fieldId: "i_95",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_95", "d_22", "f_95"],
+          label: "Floor Slab: Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_95",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_95", "i_98"],
+          label: "Floor Slab: Heat Loss %",
+        },
+        k: {
+          fieldId: "k_95",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["i_21", "d_95", "h_22", "f_95"],
+          label: "Floor Slab: Heat Gain kWh/Cooling Season",
+        },
+        l: {
+          fieldId: "l_95",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_95", "k_98"],
+          label: "Floor Slab: Heat Gain %",
+        },
+        m: {
+          fieldId: "m_95",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["f_95", "t_95"],
+          label: "Floor Slab: Reference Compliance Ratio",
+        },
         n: { fieldId: "n_95", type: "calculated", value: "✓" },
       },
     },
@@ -905,7 +1549,13 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "B.11 Interior Floors (incl. garages)",
       cells: {
         c: { label: "B.11 Interior Floors (incl. garages)" },
-        d: { fieldId: "d_96", type: "editable", value: "29.70", tooltip: true, label: "Interior Floors: Area m²" },
+        d: {
+          fieldId: "d_96",
+          type: "editable",
+          value: "29.70",
+          tooltip: true,
+          label: "Interior Floors: Area m²",
+        },
         e: { content: "-" },
         f: { content: "-" },
         g: { content: "-" },
@@ -937,11 +1587,41 @@ window.TEUI.SectionModules.sect11 = (function () {
         },
         e: { fieldId: "e_97", type: "calculated", value: "0.200" }, // Placeholder for decimal equivalent
         f: { content: "0.00", classes: ["label-prefix"] },
-        i: { fieldId: "i_97", type: "calculated", value: "0.00", dependencies: ["i_98", "d_97"], label: "Penalty Heat Loss kWh/yr" },
-        j: { fieldId: "j_97", type: "calculated", value: "0%", dependencies: ["i_97", "i_98"], label: "Penalty Heat Loss %" },
-        k: { fieldId: "k_97", type: "calculated", value: "0.00", dependencies: ["h_21", "k_98", "d_97"], label: "Penalty Heat Gain kWh" },
-        l: { fieldId: "l_97", type: "calculated", value: "0%", dependencies: ["k_97", "k_98"], label: "Penalty Heat Gain %" },
-        m: { fieldId: "m_97", type: "calculated", value: "0%", dependencies: ["i_97", "l_12", "k_97"], label: "Penalty Cost Impact" },
+        i: {
+          fieldId: "i_97",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["i_98", "d_97"],
+          label: "Penalty Heat Loss kWh/yr",
+        },
+        j: {
+          fieldId: "j_97",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_97", "i_98"],
+          label: "Penalty Heat Loss %",
+        },
+        k: {
+          fieldId: "k_97",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["h_21", "k_98", "d_97"],
+          label: "Penalty Heat Gain kWh",
+        },
+        l: {
+          fieldId: "l_97",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["k_97", "k_98"],
+          label: "Penalty Heat Gain %",
+        },
+        m: {
+          fieldId: "m_97",
+          type: "calculated",
+          value: "0%",
+          dependencies: ["i_97", "l_12", "k_97"],
+          label: "Penalty Cost Impact",
+        },
         n: { fieldId: "n_97", type: "calculated", value: "✓" },
       },
     },
@@ -951,28 +1631,128 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "ET",
       cells: {
         c: { label: "Envelope Totals" },
-        d: { fieldId: "d_98", type: "calculated", value: "0.00", dependencies: ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95"], label: "Total Envelope Area m²" },
-        e: { fieldId: "e_98", type: "calculated", value: "0.00", dependencies: ["d_94", "d_95", "g_101", "g_102"], label: "Total R-Value Imperial" },
+        d: {
+          fieldId: "d_98",
+          type: "calculated",
+          value: "0.00",
+          dependencies: [
+            "d_85",
+            "d_86",
+            "d_87",
+            "d_88",
+            "d_89",
+            "d_90",
+            "d_91",
+            "d_92",
+            "d_93",
+            "d_94",
+            "d_95",
+          ],
+          label: "Total Envelope Area m²",
+        },
+        e: {
+          fieldId: "e_98",
+          type: "calculated",
+          value: "0.00",
+          dependencies: ["d_94", "d_95", "g_101", "g_102"],
+          label: "Total R-Value Imperial",
+        },
         f: {},
         g: {},
-        h: { fieldId: "h_98", type: "calculated", value: "100%", dependencies: ["h_85", "h_86", "h_87", "h_88", "h_89", "h_90", "h_91", "h_92", "h_93"], label: "Total % of Envelope" },
-        i: { fieldId: "i_98", type: "calculated", value: "0.00", dependencies: ["i_85", "i_86", "i_87", "i_88", "i_89", "i_90", "i_91", "i_92", "i_93", "i_94", "i_95"], label: "Total Heat Loss kWh/yr" },
+        h: {
+          fieldId: "h_98",
+          type: "calculated",
+          value: "100%",
+          dependencies: [
+            "h_85",
+            "h_86",
+            "h_87",
+            "h_88",
+            "h_89",
+            "h_90",
+            "h_91",
+            "h_92",
+            "h_93",
+          ],
+          label: "Total % of Envelope",
+        },
+        i: {
+          fieldId: "i_98",
+          type: "calculated",
+          value: "0.00",
+          dependencies: [
+            "i_85",
+            "i_86",
+            "i_87",
+            "i_88",
+            "i_89",
+            "i_90",
+            "i_91",
+            "i_92",
+            "i_93",
+            "i_94",
+            "i_95",
+          ],
+          label: "Total Heat Loss kWh/yr",
+        },
         j: {
           fieldId: "j_98",
           type: "calculated",
           value: "100%",
           tooltip: true,
-          dependencies: ["j_85", "j_86", "j_87", "j_88", "j_89", "j_90", "j_91", "j_92", "j_93", "j_94", "j_95"],
-          label: "Total Heat Loss %"
+          dependencies: [
+            "j_85",
+            "j_86",
+            "j_87",
+            "j_88",
+            "j_89",
+            "j_90",
+            "j_91",
+            "j_92",
+            "j_93",
+            "j_94",
+            "j_95",
+          ],
+          label: "Total Heat Loss %",
         },
-        k: { fieldId: "k_98", type: "calculated", value: "0.00", dependencies: ["k_85", "k_86", "k_87", "k_88", "k_89", "k_90", "k_91", "k_92", "k_93", "k_94", "k_95"], label: "Total Heat Gain kWh" },
+        k: {
+          fieldId: "k_98",
+          type: "calculated",
+          value: "0.00",
+          dependencies: [
+            "k_85",
+            "k_86",
+            "k_87",
+            "k_88",
+            "k_89",
+            "k_90",
+            "k_91",
+            "k_92",
+            "k_93",
+            "k_94",
+            "k_95",
+          ],
+          label: "Total Heat Gain kWh",
+        },
         l: {
           fieldId: "l_98",
           type: "calculated",
           value: "100%",
           tooltip: true,
-          dependencies: ["l_85", "l_86", "l_87", "l_88", "l_89", "l_90", "l_91", "l_92", "l_93", "l_94", "l_95"],
-          label: "Total Heat Gain %"
+          dependencies: [
+            "l_85",
+            "l_86",
+            "l_87",
+            "l_88",
+            "l_89",
+            "l_90",
+            "l_91",
+            "l_92",
+            "l_93",
+            "l_94",
+            "l_95",
+          ],
+          label: "Total Heat Gain %",
         },
         m: {},
         n: { fieldId: "n_98", type: "calculated", value: "✓" },
@@ -986,9 +1766,9 @@ window.TEUI.SectionModules.sect11 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.fieldId && cell.type) {
           // Copy all relevant properties from the cell definition
           fields[cell.fieldId] = {
@@ -1033,7 +1813,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       "m",
       "n",
     ];
-    columns.forEach((col) => {
+    columns.forEach(col => {
       const cell = row.cells?.[col] ? { ...row.cells[col] } : {};
       if (col === "c" && !cell.label && row.label) cell.label = row.label;
       // Only remove properties confirmed unnecessary for rendering
@@ -1234,10 +2014,10 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       if (needsDualSync) {
         console.log(
-          `[S11 Area Sync] DUAL-STATE SYNC - populating BOTH Target and Reference states`,
+          `[S11 Area Sync] DUAL-STATE SYNC - populating BOTH Target and Reference states`
         );
         console.log(
-          `[S11 Area Sync] Reason: d_88=${refArea_d88}, ref_d_73 in StateManager=${stateManager_refArea}`,
+          `[S11 Area Sync] Reason: d_88=${refArea_d88}, ref_d_73 in StateManager=${stateManager_refArea}`
         );
       } else {
         console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
@@ -1287,11 +2067,11 @@ window.TEUI.SectionModules.sect11 = (function () {
             setCalculatedValue(s11Field, areaValue, "number");
 
             console.log(
-              `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
+              `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`
             );
           } else {
             console.warn(
-              `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
+              `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`
             );
           }
         }
@@ -1339,23 +2119,23 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     // ✅ ENABLED: All listeners active with guards
     // Listen for Target mode changes
-    s10AreaFields.forEach((fieldId) => {
-      window.TEUI.StateManager.addListener(fieldId, (newValue) => {
+    s10AreaFields.forEach(fieldId => {
+      window.TEUI.StateManager.addListener(fieldId, newValue => {
         // GUARD: Only fire if Target mode active
         if (ModeManager.currentMode !== "target") return;
         // GUARD: Only fire if S11 initialized
         if (!isS11Initialized) return;
 
         console.log(
-          `[S11 Listener] ${fieldId} changed to ${newValue} (Target mode)`,
+          `[S11 Listener] ${fieldId} changed to ${newValue} (Target mode)`
         );
         debouncedSyncAreasFromS10();
       });
     });
 
     // Listen for Reference mode changes
-    s10AreaFields.forEach((fieldId) => {
-      window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+    s10AreaFields.forEach(fieldId => {
+      window.TEUI.StateManager.addListener(`ref_${fieldId}`, newValue => {
         // ✅ MODE GUARD REMOVED: In dual-state architecture, sections have independent modes.
         // S12 can be in Reference mode while S11 is in Target mode. When S12 publishes
         // ref_i_103, S10 fires and publishes ref_d_73-78. S11 must respond regardless of
@@ -1364,7 +2144,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         if (!isS11Initialized) return;
 
         console.log(
-          `[S11 Listener] ref_${fieldId} changed to ${newValue} (Reference mode)`,
+          `[S11 Listener] ref_${fieldId} changed to ${newValue} (Reference mode)`
         );
         debouncedSyncAreasFromS10();
       });
@@ -1380,7 +2160,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   function calculateComponentRow(
     rowNumber,
     config,
-    isReferenceCalculation = false,
+    isReferenceCalculation = false
   ) {
     const { type, input } = config;
     const rowStr = rowNumber.toString();
@@ -1442,23 +2222,23 @@ window.TEUI.SectionModules.sect11 = (function () {
         setCalculatedValue(
           uValueFieldId,
           uValue === Infinity ? "N/A" : uValue,
-          "W/m2",
+          "W/m2"
         );
         setCalculatedValue(
           rsiFieldId,
           rsiValue === Infinity ? "N/A" : rsiValue,
-          "number",
+          "number"
         );
       } else {
         // ✅ FIX: Reference mode - store converted values to ReferenceState
         // These need to be available for downstream sections (e.g., S12 needs U-values)
         ReferenceState.setValue(
           uValueFieldId,
-          uValue === Infinity ? "0" : uValue.toString(),
+          uValue === Infinity ? "0" : uValue.toString()
         );
         ReferenceState.setValue(
           rsiFieldId,
-          rsiValue === Infinity ? "0" : rsiValue.toString(),
+          rsiValue === Infinity ? "0" : rsiValue.toString()
         );
       }
 
@@ -1565,7 +2345,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           uValueFieldId,
           heatlossFieldId,
           heatgainFieldId,
-        ].forEach((id) => setCalculatedValue(id, 0));
+        ].forEach(id => setCalculatedValue(id, 0));
       }
     }
   }
@@ -1573,7 +2353,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   function calculateThermalBridgePenalty(
     componentHeatlossSubtotal,
     componentHeatgainSubtotal,
-    isReferenceCalculation = false,
+    isReferenceCalculation = false
   ) {
     try {
       // Get the thermal bridge penalty value based on calculation mode
@@ -1600,8 +2380,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (isReferenceCalculation) {
         console.log(
           `[S11] REF TB%=${penaltyPercent}% → ref_i_97=${penaltyHeatloss.toFixed(
-            2,
-          )}, ref_k_97=${penaltyHeatgain.toFixed(2)}`,
+            2
+          )}, ref_k_97=${penaltyHeatgain.toFixed(2)}`
         );
       }
       if (isReferenceCalculation) {
@@ -1640,7 +2420,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
         setCalculatedValue(mFieldId, 1.0, "percent"); // 1.0 = 100%
         const nElement = document.querySelector(
-          `[data-field-id="${nFieldId}"]`,
+          `[data-field-id="${nFieldId}"]`
         );
         if (nElement) nElement.textContent = "✓";
         setElementClass(nFieldId, true);
@@ -1703,14 +2483,14 @@ window.TEUI.SectionModules.sect11 = (function () {
     } catch (error) {
       console.error(
         `Error updating reference indicators for row ${rowId}:`,
-        error,
+        error
       );
       const mElementErr = document.querySelector(
-        `[data-field-id="${mFieldId}"]`,
+        `[data-field-id="${mFieldId}"]`
       );
       if (mElementErr) mElementErr.textContent = "Error";
       const nElementErr = document.querySelector(
-        `[data-field-id="${nFieldId}"]`,
+        `[data-field-id="${nFieldId}"]`
       );
       if (nElementErr) nElementErr.textContent = "?";
     }
@@ -1735,7 +2515,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
       const componentResults = {};
 
-      componentConfig.forEach((config) => {
+      componentConfig.forEach(config => {
         // Calculate using reference values
         const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
 
@@ -1757,7 +2537,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       const penaltyResults = calculateThermalBridgePenalty(
         totals.loss,
         totals.gain,
-        true,
+        true
       ); // true = isReferenceCalculation
       const penaltyHeatlossI = penaltyResults ? penaltyResults.heatloss : 0;
       const penaltyHeatgainK = penaltyResults ? penaltyResults.heatgain : 0;
@@ -1768,34 +2548,34 @@ window.TEUI.SectionModules.sect11 = (function () {
         window.TEUI.StateManager.setValue(
           "ref_d_98",
           totals.areaD.toString(),
-          "calculated",
+          "calculated"
         );
         window.TEUI.StateManager.setValue(
           "ref_i_98",
           totals.loss.toString(),
-          "calculated",
+          "calculated"
         );
         window.TEUI.StateManager.setValue(
           "ref_k_98",
           totals.gain.toString(),
-          "calculated",
+          "calculated"
         );
 
         // Penalty values
         console.log(
           `[S11] Writing ref penalty: ref_i_97=${penaltyHeatlossI.toFixed(2)}, ref_k_97=${penaltyHeatgainK.toFixed(
-            2,
-          )}`,
+            2
+          )}`
         );
         window.TEUI.StateManager.setValue(
           "ref_i_97",
           penaltyHeatlossI.toString(),
-          "calculated",
+          "calculated"
         );
         window.TEUI.StateManager.setValue(
           "ref_k_97",
           penaltyHeatgainK.toString(),
-          "calculated",
+          "calculated"
         );
 
         // Store individual component reference values (calculated results)
@@ -1805,12 +2585,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           window.TEUI.StateManager.setValue(
             `ref_i_${rowStr}`,
             results.heatloss.toString(),
-            "calculated",
+            "calculated"
           );
           window.TEUI.StateManager.setValue(
             `ref_k_${rowStr}`,
             results.heatgain.toString(),
-            "calculated",
+            "calculated"
           );
         });
 
@@ -1830,13 +2610,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           "d_95",
           "d_96",
         ];
-        areaFields.forEach((fieldId) => {
+        areaFields.forEach(fieldId => {
           const value = ReferenceState.getValue(fieldId);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value.toString(),
-              "calculated",
+              "calculated"
             );
           }
         });
@@ -1856,13 +2636,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           "f_94",
           "f_95",
         ];
-        rsiFields.forEach((fieldId) => {
+        rsiFields.forEach(fieldId => {
           const value = ReferenceState.getValue(fieldId);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value.toString(),
-              "calculated",
+              "calculated"
             );
           }
         });
@@ -1881,13 +2661,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           "g_94",
           "g_95",
         ];
-        uValueFields.forEach((fieldId) => {
+        uValueFields.forEach(fieldId => {
           const value = ReferenceState.getValue(fieldId);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value.toString(),
-              "calculated",
+              "calculated"
             );
           }
         });
@@ -1898,7 +2678,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           window.TEUI.StateManager.setValue(
             `ref_d_97`,
             d97Value.toString(),
-            "calculated",
+            "calculated"
           );
         }
       }
@@ -1930,7 +2710,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
-      componentConfig.forEach((config) => {
+      componentConfig.forEach(config => {
         calculateComponentRow(config.row, config, false); // false = Target calculation
         const area = getNumericValue(`d_${config.row}`) || 0;
         totals.loss += getNumericValue(`i_${config.row}`) || 0;
@@ -1962,7 +2742,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       const lossIndicatorClasses = ["loss-high", "loss-medium", "loss-low"];
       const gainIndicatorClasses = ["gain-high", "gain-medium", "gain-low"]; // Define gain classes
 
-      rowsToProcess.forEach((config) => {
+      rowsToProcess.forEach(config => {
         const rowStr = config.row.toString();
         const hCellFieldId = `h_${rowStr}`; // Field ID for Column H
         const jCellFieldId = `j_${rowStr}`; // Field ID for Column J
@@ -1980,7 +2760,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
           // Apply text color class to Column H based on type
           const hElement = document.querySelector(
-            `[data-field-id="${hCellFieldId}"]`,
+            `[data-field-id="${hCellFieldId}"]`
           );
           if (hElement) {
             hElement.classList.remove("text-air-facing", "text-ground-facing");
@@ -2034,11 +2814,11 @@ window.TEUI.SectionModules.sect11 = (function () {
 
         // --- Apply Left Alignment to J & L Columns ---
         const jElement = document.querySelector(
-          `[data-field-id="${jCellFieldId}"]`,
+          `[data-field-id="${jCellFieldId}"]`
         );
         if (jElement) jElement.classList.add("text-left-indicator");
         const lElement = document.querySelector(
-          `[data-field-id="${lCellFieldId}"]`,
+          `[data-field-id="${lCellFieldId}"]`
         );
         if (lElement) lElement.classList.add("text-left-indicator");
         // --- End Left Alignment ---
@@ -2063,13 +2843,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           "d_95",
           "d_96",
         ];
-        areaFields.forEach((fieldId) => {
+        areaFields.forEach(fieldId => {
           const value = TargetState.getValue(fieldId);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               fieldId,
               value.toString(),
-              "calculated",
+              "calculated"
             );
           }
         });
@@ -2089,7 +2869,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   function calculateAll() {
     console.log(
       `%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`,
-      "color: #f0f; font-weight: bold;",
+      "color: #f0f; font-weight: bold;"
     );
 
     calculateReferenceModel();
@@ -2104,12 +2884,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           window.TEUI.StateManager.setValue(
             "ref_i_97",
             results.heatloss.toString(),
-            "calculated",
+            "calculated"
           );
           window.TEUI.StateManager.setValue(
             "ref_k_97",
             results.heatgain.toString(),
-            "calculated",
+            "calculated"
           );
         } else {
           // Re-write component values
@@ -2117,12 +2897,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           window.TEUI.StateManager.setValue(
             `ref_i_${rowStr}`,
             results.heatloss.toString(),
-            "calculated",
+            "calculated"
           );
           window.TEUI.StateManager.setValue(
             `ref_k_${rowStr}`,
             results.heatgain.toString(),
-            "calculated",
+            "calculated"
           );
         }
       });
@@ -2203,13 +2983,13 @@ window.TEUI.SectionModules.sect11 = (function () {
   }
 
   function initializeEventHandlers() {
-    editableFields.forEach((fieldId) => {
+    editableFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       // Attach listeners only to fields actually found and marked as editable
       if (field?.classList.contains("editable")) {
         if (!field.hasEditableListeners) {
           // Prevent adding multiple listeners
-          field.addEventListener("keydown", (e) => {
+          field.addEventListener("keydown", e => {
             if (e.key === "Enter") {
               e.preventDefault();
               field.blur();
@@ -2218,7 +2998,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           field.addEventListener("blur", handleFieldBlur.bind(field)); // Ensure 'this' context
           field.addEventListener("focus", () => field.classList.add("editing"));
           field.addEventListener("focusout", () =>
-            field.classList.remove("editing"),
+            field.classList.remove("editing")
           );
           field.hasEditableListeners = true; // Mark as listener attached
         }
@@ -2228,7 +3008,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     // *** ADDED: Specific listener for d_97 slider ***
     const d97Slider = document.querySelector(
-      'input[type="range"][data-field-id="d_97"]',
+      'input[type="range"][data-field-id="d_97"]'
     );
     if (d97Slider) {
       if (!d97Slider.hasSliderListener) {
@@ -2248,7 +3028,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           const src = "user-modified";
           ModeManager.setValue("d_97", percentageValue.toString(), src);
           console.log(
-            `[S11] Slider input d_97=${percentageValue} (localMode=${ModeManager.currentMode})`,
+            `[S11] Slider input d_97=${percentageValue} (localMode=${ModeManager.currentMode})`
           );
 
           // Trigger local recalculation; cross-section updates flow via StateManager listeners
@@ -2264,7 +3044,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           const src = "user-modified";
           ModeManager.setValue("d_97", percentageValue.toString(), src);
           console.log(
-            `[S11] Slider change d_97=${percentageValue} (localMode=${ModeManager.currentMode})`,
+            `[S11] Slider change d_97=${percentageValue} (localMode=${ModeManager.currentMode})`
           );
           // Note: StateManager listeners will handle full recalculation cascade
           // Stopgap robot fingers to ensure S12 updates immediately in both modes
@@ -2301,7 +3081,7 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
         console.log(
-          `[S11] Listener: d_97 changed → recalculating (src=${src})`,
+          `[S11] Listener: d_97 changed → recalculating (src=${src})`
         );
         calculateAll();
       });
@@ -2310,10 +3090,10 @@ window.TEUI.SectionModules.sect11 = (function () {
         "ref_d_97",
         (val, _old, _id, src) => {
           console.log(
-            `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`,
+            `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`
           );
           calculateAll();
-        },
+        }
       );
       // console.log("Section 11 listeners for climate data added.");
     } else {
@@ -2329,7 +3109,7 @@ window.TEUI.SectionModules.sect11 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#envelopeTransmissionLosses .section-header",
+      "#envelopeTransmissionLosses .section-header"
     );
     if (
       !sectionHeader ||
@@ -2350,12 +3130,12 @@ window.TEUI.SectionModules.sect11 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       // Use a confirmation dialog to prevent accidental resets
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 11.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 11."
         )
       ) {
         ModeManager.resetState();
@@ -2379,9 +3159,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -2395,13 +3176,13 @@ window.TEUI.SectionModules.sect11 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 
   function onSectionRendered() {
     console.log(
-      "S11: Section rendered - initializing Self-Contained State Module.",
+      "S11: Section rendered - initializing Self-Contained State Module."
     );
 
     // 1. Initialize the ModeManager and its internal states
@@ -2423,7 +3204,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.sect11 = window.TEUI.sect11 || {};
       window.TEUI.sect11.ModeManager = ModeManager;
       console.log(
-        "S11: ModeManager exposed globally for cross-section integration.",
+        "S11: ModeManager exposed globally for cross-section integration."
       );
     }
 
@@ -2431,7 +3212,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Must be set BEFORE syncAreasFromS10() to avoid guard blocks
     isS11Initialized = true;
     console.log(
-      "[S11 Area Sync] S11 initialization complete - sync functions now enabled",
+      "[S11 Area Sync] S11 initialization complete - sync functions now enabled"
     );
 
     // ✅ FIX: Sync areas from S10 BEFORE first calculateAll()
@@ -2448,7 +3229,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     // After init, listeners should use mode-aware sync only
     isInitializationPhase = false;
     console.log(
-      "[S11 Area Sync] Initialization phase complete - DUAL-STATE SYNC disabled",
+      "[S11 Area Sync] Initialization phase complete - DUAL-STATE SYNC disabled"
     );
 
     // 6. Apply validation tooltips to fields
@@ -2496,9 +3277,11 @@ window.TEUI.SectionModules.sect11 = (function () {
     syncAreasFromS10: syncAreasFromS10,
 
     // ✅ FIX (Nov 2): Expose import flag control for FileHandler
-    setImportActive: (active) => {
+    setImportActive: active => {
       isImportActive = active;
-      console.log(`[S11 Area Sync] Import phase ${active ? "STARTED" : "ENDED"} - Dual-state sync ${active ? "ENABLED" : "DISABLED"}`);
+      console.log(
+        `[S11 Area Sync] Import phase ${active ? "STARTED" : "ENDED"} - Dual-state sync ${active ? "ENABLED" : "DISABLED"}`
+      );
     },
   };
 })();

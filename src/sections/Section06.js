@@ -53,14 +53,14 @@ window.TEUI.SectionModules.sect06 = (function () {
      * Bridges global StateManager → isolated TargetState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"],
+      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S06 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S06 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -97,7 +97,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       };
 
       console.log(
-        `S06: Reference defaults loaded from standard: ${currentStandard}`,
+        `S06: Reference defaults loaded from standard: ${currentStandard}`
       );
     },
     // Listen for changes to the reference standard and reload defaults
@@ -129,15 +129,15 @@ window.TEUI.SectionModules.sect06 = (function () {
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"],
+      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S06 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+            `S06 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
           );
         }
       });
@@ -154,10 +154,14 @@ window.TEUI.SectionModules.sect06 = (function () {
 
       // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
       if (window.TEUI?.StateManager) {
-        ["d_44", "d_45", "d_46", "i_44", "k_45", "i_46", "m_43"].forEach((id) => {
+        ["d_44", "d_45", "d_46", "i_44", "k_45", "i_46", "m_43"].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });
@@ -191,7 +195,7 @@ window.TEUI.SectionModules.sect06 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value,
-          "user-modified",
+          "user-modified"
         );
       }
     },
@@ -214,7 +218,7 @@ window.TEUI.SectionModules.sect06 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S06');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S06");
     },
 
     refreshUI: function () {
@@ -232,12 +236,12 @@ window.TEUI.SectionModules.sect06 = (function () {
         "m_43",
       ]; // All editable fields
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -252,10 +256,10 @@ window.TEUI.SectionModules.sect06 = (function () {
       // Update all calculated fields to show values for current mode
       const calculatedFields = ["d_43", "i_43", "i_45"];
       console.log(
-        `🔄 [S06] updateCalculatedDisplayValues: mode=${this.currentMode}`,
+        `🔄 [S06] updateCalculatedDisplayValues: mode=${this.currentMode}`
       );
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // ✅ FIXED: No fallback to Target values - Reference should show Reference values only
@@ -460,9 +464,9 @@ window.TEUI.SectionModules.sect06 = (function () {
   //==========================================================================
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -484,7 +488,7 @@ window.TEUI.SectionModules.sect06 = (function () {
     const layoutRows = [];
     if (sectionRows["header"])
       layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.keys(sectionRows).forEach((key) => {
+    Object.keys(sectionRows).forEach(key => {
       if (key !== "header") layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
@@ -506,7 +510,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       "m",
       "n",
     ];
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         if (col === "c" && !cell.label && row.label) cell.label = row.label;
@@ -541,19 +545,19 @@ window.TEUI.SectionModules.sect06 = (function () {
   function calculateOnSiteSubtotal(isReferenceCalculation = false) {
     const d_44_value =
       window.TEUI.parseNumeric(
-        getSectionValue("d_44", isReferenceCalculation),
+        getSectionValue("d_44", isReferenceCalculation)
       ) || 0;
     const d_45_value =
       window.TEUI.parseNumeric(
-        getSectionValue("d_45", isReferenceCalculation),
+        getSectionValue("d_45", isReferenceCalculation)
       ) || 0;
     const d_46_value =
       window.TEUI.parseNumeric(
-        getSectionValue("d_46", isReferenceCalculation),
+        getSectionValue("d_46", isReferenceCalculation)
       ) || 0;
     const i_46_value =
       window.TEUI.parseNumeric(
-        getSectionValue("i_46", isReferenceCalculation),
+        getSectionValue("i_46", isReferenceCalculation)
       ) || 0;
 
     // ✅ EXACT EXCEL FORMULA: Sum of all onsite renewable inputs plus reserved removals
@@ -561,12 +565,12 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     if (isReferenceCalculation) {
       console.log(
-        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`,
+        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`
       );
       window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
     } else {
       console.log(
-        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`,
+        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`
       );
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
@@ -581,11 +585,11 @@ window.TEUI.SectionModules.sect06 = (function () {
   function calculateOffsiteRenewable(isReferenceCalculation = false) {
     const i_44_value =
       window.TEUI.parseNumeric(
-        getSectionValue("i_44", isReferenceCalculation),
+        getSectionValue("i_44", isReferenceCalculation)
       ) || 0;
     const i_46_value =
       window.TEUI.parseNumeric(
-        getSectionValue("i_46", isReferenceCalculation),
+        getSectionValue("i_46", isReferenceCalculation)
       ) || 0;
 
     // ✅ EXACT EXCEL FORMULA: Sum of offsite renewable inputs
@@ -605,7 +609,7 @@ window.TEUI.SectionModules.sect06 = (function () {
   function calculateGreenNaturalGasEnergy(isReferenceCalculation = false) {
     const k_45_value =
       window.TEUI.parseNumeric(
-        getSectionValue("k_45", isReferenceCalculation),
+        getSectionValue("k_45", isReferenceCalculation)
       ) || 0;
 
     // ✅ EXACT EXCEL FORMULA: Gas volume * conversion factor
@@ -683,11 +687,11 @@ window.TEUI.SectionModules.sect06 = (function () {
       "m_43", // Exterior/Site loads
     ];
 
-    editableFields.forEach((fieldId) => {
+    editableFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
         // ✅ CRITICAL: Prevent newlines on Enter key (copy from S05 pattern)
-        field.addEventListener("keydown", (e) => {
+        field.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault(); // Prevent adding a newline
             field.blur(); // Remove focus to trigger the blur event
@@ -712,7 +716,7 @@ window.TEUI.SectionModules.sect06 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#onSiteEnergy .section-header",
+      "#onSiteEnergy .section-header"
     );
     if (
       !sectionHeader ||
@@ -733,11 +737,11 @@ window.TEUI.SectionModules.sect06 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 06.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 06."
         )
       ) {
         ModeManager.resetState();
@@ -761,9 +765,10 @@ window.TEUI.SectionModules.sect06 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -777,7 +782,7 @@ window.TEUI.SectionModules.sect06 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 

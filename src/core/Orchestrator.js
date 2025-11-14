@@ -35,11 +35,11 @@ TEUI.Orchestrator = (function () {
       // 🆕 DUAL-STATE SUPPORT
       targetOutputs: config.targetOutputs || config.outputs || [],
       referenceOutputs:
-        config.referenceOutputs || config.outputs?.map((o) => `ref_${o}`) || [],
+        config.referenceOutputs || config.outputs?.map(o => `ref_${o}`) || [],
     };
 
     console.log(
-      `[Orchestrator] Registered section ${id} with dependencies: [${config.dependsOn.join(", ")}]`,
+      `[Orchestrator] Registered section ${id} with dependencies: [${config.dependsOn.join(", ")}]`
     );
   }
 
@@ -57,14 +57,14 @@ TEUI.Orchestrator = (function () {
       }
       if (!visited.has(id)) {
         stack.add(id);
-        (sections[id].dependsOn || []).forEach((dep) => visit(dep, stack));
+        (sections[id].dependsOn || []).forEach(dep => visit(dep, stack));
         stack.delete(id);
         visited.add(id);
         sorted.push(id);
       }
     }
 
-    Object.keys(sections).forEach((id) => visit(id));
+    Object.keys(sections).forEach(id => visit(id));
     return sorted;
   }
 
@@ -99,7 +99,7 @@ TEUI.Orchestrator = (function () {
       const order = topoSort();
       console.log("[Orchestrator] Execution order:", order);
 
-      order.forEach((id) => {
+      order.forEach(id => {
         try {
           const sectionStart = performance.now();
           console.log(`[Orchestrator] Executing section ${id}`);
@@ -113,13 +113,13 @@ TEUI.Orchestrator = (function () {
             sectionModule.calculateAll();
           } else {
             console.warn(
-              `[Orchestrator] Section ${id} not found or missing calculateAll method`,
+              `[Orchestrator] Section ${id} not found or missing calculateAll method`
             );
           }
 
           const sectionEnd = performance.now();
           console.log(
-            `[Orchestrator] ${id} completed in ${(sectionEnd - sectionStart).toFixed(1)}ms`,
+            `[Orchestrator] ${id} completed in ${(sectionEnd - sectionStart).toFixed(1)}ms`
           );
         } catch (err) {
           console.error(`[${id}] Orchestrator error:`, err);
@@ -129,7 +129,7 @@ TEUI.Orchestrator = (function () {
       // 📊 TOTAL PERFORMANCE LOGGING
       const totalTime = performance.now() - startTime;
       console.log(
-        `[Orchestrator] Total execution time: ${totalTime.toFixed(1)}ms`,
+        `[Orchestrator] Total execution time: ${totalTime.toFixed(1)}ms`
       );
 
       // 📊 QC INTEGRATION: Validate post-execution state
@@ -138,7 +138,7 @@ TEUI.Orchestrator = (function () {
         if (violations.length > 0) {
           console.warn(
             "[Orchestrator] QC detected violations after execution:",
-            violations,
+            violations
           );
         }
       }
@@ -155,7 +155,7 @@ TEUI.Orchestrator = (function () {
    */
   function initialize() {
     console.log(
-      "[Orchestrator] Initializing with Calculator.js dependency chain...",
+      "[Orchestrator] Initializing with Calculator.js dependency chain..."
     );
 
     // Register all sections using proven Calculator.js calcOrder
@@ -274,12 +274,12 @@ TEUI.Orchestrator = (function () {
     ];
 
     // Register all sections
-    sectionRegistrations.forEach((section) => {
+    sectionRegistrations.forEach(section => {
       registerSection(section.id, section);
     });
 
     console.log(
-      `[Orchestrator] Initialized with ${Object.keys(sections).length} sections`,
+      `[Orchestrator] Initialized with ${Object.keys(sections).length} sections`
     );
     console.log("[Orchestrator] Dependency order:", topoSort());
   }
@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.TEUI?.Orchestrator) {
       window.TEUI.Orchestrator.initialize();
       console.log(
-        "[Orchestrator] Ready for testing. Use TEUI.Orchestrator.runAll() to test execution.",
+        "[Orchestrator] Ready for testing. Use TEUI.Orchestrator.runAll() to test execution."
       );
     }
   }, 1000);
@@ -327,5 +327,5 @@ document.addEventListener("DOMContentLoaded", function () {
 window.TEUI.Orchestrator = TEUI.Orchestrator;
 
 console.log(
-  "[4012-Orchestrator.js] Module loaded - Phase 1A implementation complete",
+  "[4012-Orchestrator.js] Module loaded - Phase 1A implementation complete"
 );

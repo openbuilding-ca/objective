@@ -239,7 +239,11 @@ window.TEUI.SectionModules.sect15 = (function () {
     publishToStateManager: function () {
       // ✅ CSV EXPORT FIX: Publish d_142 Reference default to StateManager
       if (window.TEUI?.StateManager && this.data.d_142) {
-        window.TEUI.StateManager.setValue("ref_d_142", this.data.d_142, "default");
+        window.TEUI.StateManager.setValue(
+          "ref_d_142",
+          this.data.d_142,
+          "default"
+        );
       }
     },
   };
@@ -285,7 +289,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         "h_141", // Capital cost inputs if any
       ];
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           const currentState =
@@ -338,7 +342,7 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       const currentState = this.getCurrentState();
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           let rawValue = currentState.getValue(fieldId);
@@ -420,7 +424,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S15');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S15");
     },
   };
 
@@ -440,7 +444,7 @@ window.TEUI.SectionModules.sect15 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#teuiSummary .section-header, #teuiSummary .section-title",
+      "#teuiSummary .section-header, #teuiSummary .section-title"
     );
     if (
       !sectionHeader ||
@@ -461,11 +465,11 @@ window.TEUI.SectionModules.sect15 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 15.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 15."
         )
       ) {
         ModeManager.resetCurrentState();
@@ -489,9 +493,10 @@ window.TEUI.SectionModules.sect15 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -505,7 +510,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
 
     console.log("✅ S15: Header controls injected successfully");
@@ -1047,10 +1052,10 @@ window.TEUI.SectionModules.sect15 = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -1117,7 +1122,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -1175,8 +1180,8 @@ window.TEUI.SectionModules.sect15 = (function () {
     const sm = window.TEUI.StateManager;
 
     // Dependencies for d_135: =M43+K51+H70+D117+I104+M121-I80
-    ["m_43", "k_51", "h_70", "d_117", "i_104", "m_121", "i_80"].forEach((dep) =>
-      sm.registerDependency(dep, "d_135"),
+    ["m_43", "k_51", "h_70", "d_117", "i_104", "m_121", "i_80"].forEach(dep =>
+      sm.registerDependency(dep, "d_135")
     );
 
     // Dependencies for h_135: =D135/H15
@@ -1186,8 +1191,8 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Dependencies for d_136: =IF(D113="Electricity",D135,IF(D113="Heatpump",(K51+D117+D114+M43+H70),IF(D113="Gas",(K51+D117+M43+H70),IF(D113="Oil",(K51+D117+M43+H70)))))
     sm.registerDependency("d_113", "d_136"); // Primary Heating System
     sm.registerDependency("d_135", "d_136"); // Dependency if electric
-    ["k_51", "d_117", "d_114", "m_43", "h_70"].forEach((dep) =>
-      sm.registerDependency(dep, "d_136"),
+    ["k_51", "d_117", "d_114", "m_43", "h_70"].forEach(dep =>
+      sm.registerDependency(dep, "d_136")
     ); // Dependencies if HP/Gas/Oil
 
     // Dependencies for h_136: =D136/H15
@@ -1195,16 +1200,16 @@ window.TEUI.SectionModules.sect15 = (function () {
     sm.registerDependency("h_15", "h_136");
 
     // Dependencies for d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
-    ["g_101", "d_101", "d_102", "g_102", "h_23", "d_23"].forEach((dep) =>
-      sm.registerDependency(dep, "d_137"),
+    ["g_101", "d_101", "d_102", "g_102", "h_23", "d_23"].forEach(dep =>
+      sm.registerDependency(dep, "d_137")
     );
 
     // Dependencies for l_137: =D137*3412.14245
     sm.registerDependency("d_137", "l_137");
 
     // Dependencies for d_138: =(G101*D101+D102*G102)*(D24-H24)/1000
-    ["g_101", "d_101", "d_102", "g_102", "d_24", "h_24"].forEach((dep) =>
-      sm.registerDependency(dep, "d_138"),
+    ["g_101", "d_101", "d_102", "g_102", "d_24", "h_24"].forEach(dep =>
+      sm.registerDependency(dep, "d_138")
     );
 
     // Dependencies for h_138: =D138*0.2843451361
@@ -1230,7 +1235,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       "k_64",
       "h_124",
       "m_19",
-    ].forEach((dep) => sm.registerDependency(dep, "d_139"));
+    ].forEach(dep => sm.registerDependency(dep, "d_139"));
 
     // Dependencies for h_139: =D139*0.2843451361
     sm.registerDependency("d_139", "h_139");
@@ -1257,8 +1262,8 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Dependencies for l_141: =(L13*D28)+(L14*D29)+(L15*D31)+(L16*D30)
     // l_13=gas price, d_28=gas usage, l_14=propane price, d_29=propane usage,
     // l_15=wood price, d_31=wood usage, l_16=oil price, d_30=oil usage
-    ["l_13", "d_28", "l_14", "d_29", "l_15", "d_31", "l_16", "d_30"].forEach((dep) =>
-      sm.registerDependency(dep, "l_141"),
+    ["l_13", "d_28", "l_14", "d_29", "l_15", "d_31", "l_16", "d_30"].forEach(
+      dep => sm.registerDependency(dep, "l_141")
     );
 
     // Dependencies for h_142: =IF(D113="Heatpump",D142/(D141-H141), 0)
@@ -1315,7 +1320,7 @@ window.TEUI.SectionModules.sect15 = (function () {
   function calculateReferenceModel() {
     try {
       // 🎯 Enhanced helper function to get Reference values with comprehensive parseFloat
-      const getRefValue = (fieldId) => {
+      const getRefValue = fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
 
@@ -1337,14 +1342,14 @@ window.TEUI.SectionModules.sect15 = (function () {
         parseFloat(window.TEUI?.StateManager?.getValue("ref_h_15")) || 1;
       if (area === null || area <= 0) {
         console.warn(
-          "[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model",
+          "[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model"
         );
         return; // Exit early if we can't calculate without area
       }
 
       const elecPrice =
         window.TEUI?.parseNumeric?.(
-          window.TEUI?.StateManager?.getValue(`ref_l_12`),
+          window.TEUI?.StateManager?.getValue(`ref_l_12`)
         ) || 0;
       // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed cost values
       const gasPrice =
@@ -1425,15 +1430,15 @@ window.TEUI.SectionModules.sect15 = (function () {
         "ref_i_104",
       ];
       const missingValues = criticalRefValues.filter(
-        (fieldId) => !window.TEUI.StateManager.getValue(fieldId),
+        fieldId => !window.TEUI.StateManager.getValue(fieldId)
       );
       if (missingValues.length > 0) {
         console.warn(
-          `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`,
+          `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`
         );
         // ✅ TIMING FIX: Use fallback values during initialization, values will be available later
         console.log(
-          `[S15] Using fallback values for missing upstream dependencies (initialization timing)`,
+          `[S15] Using fallback values for missing upstream dependencies (initialization timing)`
         );
       }
 
@@ -1474,15 +1479,15 @@ window.TEUI.SectionModules.sect15 = (function () {
       // Read S01 dashboard values directly (S01 is state-agnostic)
       const refTEUI_e10 =
         window.TEUI?.parseNumeric(
-          window.TEUI?.StateManager?.getValue("e_10"),
+          window.TEUI?.StateManager?.getValue("e_10")
         ) || 0; // Reference TEUI (Sec 1)
       const targetTEUI_h10 =
         window.TEUI?.parseNumeric(
-          window.TEUI?.StateManager?.getValue("h_10"),
+          window.TEUI?.StateManager?.getValue("h_10")
         ) || 0; // Target TEUI (Sec 1)
       const actualTEUI_k10 =
         window.TEUI?.parseNumeric(
-          window.TEUI?.StateManager?.getValue("k_10"),
+          window.TEUI?.StateManager?.getValue("k_10")
         ) || 0; // Actual TEUI from Sec 1
       const reportingMode_d14 =
         window.TEUI?.StateManager?.getValue("d_14") || "Targeted Use"; // Reporting Mode
@@ -1658,7 +1663,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     } catch (error) {
       console.error(
         "[Section15] Error in Reference Model calculations:",
-        error,
+        error
       );
     }
   }
@@ -1705,7 +1710,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ FIX: Use robust currency parsing for electricity price from S04
       const elecPrice =
         window.TEUI?.parseNumeric?.(
-          window.TEUI?.StateManager?.getValue("l_12"),
+          window.TEUI?.StateManager?.getValue("l_12")
         ) || 0;
       // console.log(
       //   `[S15 DEBUG] 💰 Electricity price from S04: $${elecPrice}/kWh`,
@@ -1849,7 +1854,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       window.TEUI.StateManager?.setValue(
         "h_10",
         teui_h136.toString(),
-        "calculated",
+        "calculated"
       );
 
       // 🚨 DISABLED: S15 overriding S01's h_10 calculation causes race condition
@@ -2008,7 +2013,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Get all fields managed by this section
     const fields = getFields();
 
-    Object.keys(fields).forEach((fieldId) => {
+    Object.keys(fields).forEach(fieldId => {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -2067,7 +2072,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       window.TEUI.StateManager.setValue(
         fieldId,
         numValue.toString(),
-        "user-modified",
+        "user-modified"
       );
 
       // Format for display
@@ -2078,7 +2083,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       const storedValue = ModeManager.getValue(fieldId) || "30000.00";
       fieldElement.textContent = formatNumber(
         parseFloat(storedValue),
-        "currency",
+        "currency"
       );
     }
 
@@ -2094,7 +2099,7 @@ window.TEUI.SectionModules.sect15 = (function () {
   function initializeEventHandlers() {
     if (!window.TEUI.StateManager) {
       console.warn(
-        "StateManager not available for teuiSummary dependency registration",
+        "StateManager not available for teuiSummary dependency registration"
       );
       return;
     }
@@ -2103,7 +2108,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Setup event handlers for editable fields
     const editableFields = ["d_142"]; // Cost Premium of HP Equipment
 
-    editableFields.forEach((fieldId) => {
+    editableFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (
         field &&
@@ -2111,7 +2116,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         !field.hasEditableListeners
       ) {
         // Prevent Enter key from creating newlines
-        field.addEventListener("keydown", (e) => {
+        field.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
@@ -2125,7 +2130,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         // Visual feedback for editing state
         field.addEventListener("focus", () => field.classList.add("editing"));
         field.addEventListener("focusout", () =>
-          field.classList.remove("editing"),
+          field.classList.remove("editing")
         );
 
         field.hasEditableListeners = true;
@@ -2133,7 +2138,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     });
 
     // Helper function to create listeners that trigger calculateAll
-    const addCalculationListener = (key) => {
+    const addCalculationListener = key => {
       sm.addListener(key, () => {
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
@@ -2191,8 +2196,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       "ref_d_114", // M.2.1Heating demand
       "j_115",
       "ref_j_115", // AFUE Efficiency
-      "d_116",  // ✅ NOV14-COOLFIX: Cooling system type (affects d117_effective calculation)
-      "ref_d_116",  // ✅ NOV14-COOLFIX: Reference cooling system type
+      "d_116", // ✅ NOV14-COOLFIX: Cooling system type (affects d117_effective calculation)
+      "ref_d_116", // ✅ NOV14-COOLFIX: Reference cooling system type
       "d_117",
       "ref_d_117", // M.3.5
       "m_121",
@@ -2280,7 +2285,7 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // ✅ FIXED: Add listeners correctly for mixed prefixed/unprefixed dependencies
     // console.log(`[S15DEBUG] Setting up ${uniqueDependencies.length} dependencies:`, uniqueDependencies);
-    uniqueDependencies.forEach((dep) => {
+    uniqueDependencies.forEach(dep => {
       addCalculationListener(dep); // Add listener for the dependency as-is
       // console.log(`[S15DEBUG] Added listener for: ${dep}`);
 
@@ -2312,7 +2317,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       registerDependencies();
     } else {
       console.warn(
-        "StateManager not ready during sect15 onSectionRendered dependency registration.",
+        "StateManager not ready during sect15 onSectionRendered dependency registration."
       );
       // Optionally, retry registration later or listen for a StateManager ready event
     }

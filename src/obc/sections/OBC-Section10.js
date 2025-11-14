@@ -343,7 +343,7 @@ window.OBC.SectionModules.sect10 = (function () {
       "o",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;

@@ -382,7 +382,7 @@ window.TEUI.SectionModules.sect18 = (function () {
 
     // Also log to console for copy/paste
     console.log(
-      `[S18] QC Report generated for ${sectionFilter} - see Notes section for formatted output`,
+      `[S18] QC Report generated for ${sectionFilter} - see Notes section for formatted output`
     );
   }
 
@@ -412,36 +412,36 @@ window.TEUI.SectionModules.sect18 = (function () {
     };
 
     console.log(
-      `[S18] Filtering for ${sectionFilter}, pattern: ${sectionPatterns[sectionFilter]}`,
+      `[S18] Filtering for ${sectionFilter}, pattern: ${sectionPatterns[sectionFilter]}`
     );
     console.log(
-      `[S18] Total violations before filter: ${report.violations.length}`,
+      `[S18] Total violations before filter: ${report.violations.length}`
     );
 
     const pattern = sectionPatterns[sectionFilter];
     if (!pattern) return report;
 
     // Filter violations by field pattern
-    const filteredViolations = report.violations.filter((violation) => {
+    const filteredViolations = report.violations.filter(violation => {
       const field = violation.field.replace("ref_", ""); // Remove ref_ prefix for pattern matching
       const matches = pattern.test(field);
       if (sectionFilter === "S03") {
         console.log(
-          `[S18] Testing field: ${field}, matches S03 pattern: ${matches}`,
+          `[S18] Testing field: ${field}, matches S03 pattern: ${matches}`
         );
       }
       return matches;
     });
 
     console.log(
-      `[S18] Filtered violations for ${sectionFilter}: ${filteredViolations.length}`,
+      `[S18] Filtered violations for ${sectionFilter}: ${filteredViolations.length}`
     );
 
     // Update violation counts
     const filteredByType = {};
     const filteredBySeverity = {};
 
-    filteredViolations.forEach((v) => {
+    filteredViolations.forEach(v => {
       filteredByType[v.type] = (filteredByType[v.type] || 0) + 1;
       const severity = v.severity || "info";
       filteredBySeverity[severity] = (filteredBySeverity[severity] || 0) + 1;
@@ -561,7 +561,7 @@ window.TEUI.SectionModules.sect18 = (function () {
 
       // Group violations by type for compact display
       const grouped = {};
-      report.violations.forEach((v) => {
+      report.violations.forEach(v => {
         if (!grouped[v.type]) grouped[v.type] = [];
         grouped[v.type].push(v);
       });
@@ -572,7 +572,7 @@ window.TEUI.SectionModules.sect18 = (function () {
         html += `<div style="margin: 8px 0; padding: 6px; background: #f8f9fa; border-left: 3px solid ${typeColor};">`;
         html += `<strong style="color: ${typeColor};">${type} (${violations.length})</strong><br>`;
 
-        violations.slice(0, 50).forEach((v) => {
+        violations.slice(0, 50).forEach(v => {
           const caller = v.caller ? `, ${v.caller}` : "";
           const category = v.analysis?.category
             ? `[${v.analysis.category}]`
@@ -616,7 +616,7 @@ ${formatViolationsByType(report.violations)}`;
   function formatViolationsByType(violations) {
     // Group violations by type
     const groupedByType = {};
-    violations.forEach((v) => {
+    violations.forEach(v => {
       if (!groupedByType[v.type]) {
         groupedByType[v.type] = [];
       }
@@ -659,7 +659,7 @@ ${formatViolationsByType(report.violations)}`;
     let output = "";
 
     // Process violations in priority order
-    typeOrder.forEach((type) => {
+    typeOrder.forEach(type => {
       const violationsOfType = groupedByType[type];
       if (!violationsOfType || violationsOfType.length === 0) return;
 
@@ -671,7 +671,7 @@ ${formatViolationsByType(report.violations)}`;
       if (type === "MIRROR_TARGET_DIVERGENCE") {
         // Special handling for mirror target divergence - show field pairs
         const grouped = {};
-        violationsOfType.forEach((v) => {
+        violationsOfType.forEach(v => {
           const baseField = v.field.replace("ref_", "");
           if (!grouped[baseField]) grouped[baseField] = [];
           grouped[baseField].push(v);
@@ -679,9 +679,7 @@ ${formatViolationsByType(report.violations)}`;
 
         Object.entries(grouped).forEach(([baseField, violations]) => {
           const sections = [
-            ...new Set(
-              violations.map((v) => identifyViolationSection(v.field)),
-            ),
+            ...new Set(violations.map(v => identifyViolationSection(v.field))),
           ];
           output += `- **[${sections.join(",")}]** \`${baseField}\`: Reference vs Target divergence (${violations.length} instances)\n`;
         });
@@ -691,7 +689,7 @@ ${formatViolationsByType(report.violations)}`;
       ) {
         // Group by section for stale values
         const bySectionAndReason = {};
-        violationsOfType.forEach((v) => {
+        violationsOfType.forEach(v => {
           const section = identifyViolationSection(v.field);
           const reason =
             v.analysis?.recommendations?.[0] || "Check dependencies";
@@ -702,12 +700,12 @@ ${formatViolationsByType(report.violations)}`;
 
         Object.entries(bySectionAndReason).forEach(([key, fields]) => {
           const [section, reason] = key.split("|");
-          output += `- **[${section}]** ${fields.map((f) => `\`${f}\``).join(", ")} - ${reason}\n`;
+          output += `- **[${section}]** ${fields.map(f => `\`${f}\``).join(", ")} - ${reason}\n`;
         });
       } else {
         // Group by section for other types
         const bySection = {};
-        violationsOfType.forEach((v) => {
+        violationsOfType.forEach(v => {
           const section = identifyViolationSection(v.field);
           if (!bySection[section]) bySection[section] = [];
           bySection[section].push(v.field);
@@ -718,10 +716,10 @@ ${formatViolationsByType(report.violations)}`;
             // For long lists, show first 10 and count
             output += `- **[${section}]** ${fields
               .slice(0, 10)
-              .map((f) => `\`${f}\``)
+              .map(f => `\`${f}\``)
               .join(", ")} ... and ${fields.length - 10} more\n`;
           } else {
-            output += `- **[${section}]** ${fields.map((f) => `\`${f}\``).join(", ")}\n`;
+            output += `- **[${section}]** ${fields.map(f => `\`${f}\``).join(", ")}\n`;
           }
         });
       }
@@ -751,7 +749,7 @@ ${formatViolationsByType(report.violations)}`;
     };
 
     const categoryCounts = {};
-    violations.forEach((v) => {
+    violations.forEach(v => {
       const category = v.analysis?.category || "unknown";
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
@@ -793,13 +791,13 @@ ${formatViolationsByType(report.violations)}`;
 
     // Debug pattern matching
     console.log(
-      `[S18] Testing e_10 against S01 pattern: ${sectionPatterns["S01"].test("e_10")}`,
+      `[S18] Testing e_10 against S01 pattern: ${sectionPatterns["S01"].test("e_10")}`
     );
     console.log(
-      `[S18] Testing h_10 against S01 pattern: ${sectionPatterns["S01"].test("h_10")}`,
+      `[S18] Testing h_10 against S01 pattern: ${sectionPatterns["S01"].test("h_10")}`
     );
     console.log(
-      `[S18] Testing d_20 against S03 pattern: ${sectionPatterns["S03"].test("d_20")}`,
+      `[S18] Testing d_20 against S03 pattern: ${sectionPatterns["S03"].test("d_20")}`
     );
 
     for (const [section, pattern] of Object.entries(sectionPatterns)) {
@@ -820,7 +818,7 @@ ${formatViolationsByType(report.violations)}`;
    */
   function updateQCOutput(htmlContent) {
     const outputField = document.querySelector(
-      '[data-field-id="s18_qc_output"]',
+      '[data-field-id="s18_qc_output"]'
     );
     if (outputField) {
       outputField.innerHTML = htmlContent;
@@ -830,7 +828,7 @@ ${formatViolationsByType(report.violations)}`;
         window.TEUI.StateManager.setValue(
           "s18_qc_output",
           htmlContent,
-          "calculated",
+          "calculated"
         );
       }
     }
@@ -1086,14 +1084,14 @@ ${formatViolationsByType(filteredReport.violations)}`;
       .addEventListener("click", () => copyFromModal());
 
     // Close on overlay click
-    modal.addEventListener("click", (e) => {
+    modal.addEventListener("click", e => {
       if (e.target === modal) {
         modal.remove();
       }
     });
 
     // Close on Escape key
-    const escapeHandler = (e) => {
+    const escapeHandler = e => {
       if (e.key === "Escape") {
         modal.remove();
         document.removeEventListener("keydown", escapeHandler);
@@ -1118,7 +1116,7 @@ ${formatViolationsByType(filteredReport.violations)}`;
       .then(() => {
         showModalCopyConfirmation();
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("[S18] Failed to copy to clipboard:", err);
         // Fallback method
         textarea.select();
@@ -1177,7 +1175,7 @@ ${formatViolationsByType(filteredReport.violations)}`;
       .then(() => {
         showCopyConfirmation();
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("[S18] Failed to copy to clipboard:", err);
         // Fallback method
         textarea.select();

@@ -27,6 +27,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 ### Reporting Issues
 
 **Found a bug?**
+
 1. Check [existing issues](https://github.com/openbuilding-ca/objective/issues) to avoid duplicates
 2. Create a new issue with:
    - Clear, descriptive title
@@ -36,6 +37,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
    - Browser and OS information
 
 **Have a feature request?**
+
 1. Check existing issues first
 2. Create a new issue describing:
    - The problem you're trying to solve
@@ -45,6 +47,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 ### Submitting Changes
 
 1. **Fork the repository**
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/objective.git
    cd objective
@@ -52,6 +55,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
    ```
 
 2. **Create a branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    # or
@@ -59,11 +63,13 @@ We are committed to providing a welcoming and inclusive environment for all cont
    ```
 
 3. **Make your changes**
+
    - Follow the coding standards below
    - Test your changes thoroughly
    - Update documentation as needed
 
 4. **Commit your changes**
+
    ```bash
    git add .
    git commit -m "feat: Add new calculation for..."
@@ -72,6 +78,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
    ```
 
    Commit message format:
+
    - `feat:` New feature
    - `fix:` Bug fix
    - `docs:` Documentation changes
@@ -80,11 +87,13 @@ We are committed to providing a welcoming and inclusive environment for all cont
    - `chore:` Maintenance tasks
 
 5. **Push and create Pull Request**
+
    ```bash
    git push origin feature/your-feature-name
    ```
 
    Then create a PR on GitHub with:
+
    - Clear description of changes
    - Reference to related issues
    - Screenshots/videos if applicable
@@ -144,9 +153,10 @@ objective/
 - **Comments** - Document complex logic and calculation formulas
 
 Example:
+
 ```javascript
 (function () {
-  'use strict';
+  "use strict";
 
   // Calculate heat loss through building envelope
   function calculateHeatLoss(area, rValue, hdd) {
@@ -180,15 +190,18 @@ Example:
 Before submitting a PR, test:
 
 1. **Calculations** - Verify math is correct
+
    - Compare with Excel reference files in `src/data/`
    - Test edge cases (zero values, negatives, very large numbers)
 
 2. **UI/UX** - Check user interface
+
    - All buttons and inputs work
    - Responsive design on mobile
    - No console errors
 
 3. **Browser Compatibility**
+
    - Chrome
    - Firefox
    - Safari
@@ -224,6 +237,7 @@ By contributing to OBJECTIVE, you agree that your contributions will be licensed
 ## Recognition
 
 Contributors will be recognized in:
+
 - Project README
 - Release notes
 - Future project documentation

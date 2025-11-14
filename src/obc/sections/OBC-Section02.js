@@ -444,9 +444,9 @@ window.OBC.SectionModules.sect02 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.fieldId) {
           fields[cell.fieldId] = {
@@ -471,9 +471,9 @@ window.OBC.SectionModules.sect02 = (function () {
 
   function getDropdownOptions() {
     const dropdowns = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.type === "dropdown" && cell.options) {
           dropdowns[cell.dropdownId || cell.fieldId] = cell.options;
@@ -536,7 +536,7 @@ window.OBC.SectionModules.sect02 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties

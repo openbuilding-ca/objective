@@ -92,23 +92,14 @@
         // Test formatNumber function directly
         if (window.TEUI?.formatNumber) {
           const testNumber = 1000;
-          const formatted = window.TEUI.formatNumber(
-            testNumber,
-            "number-2dp-comma",
-          );
+          const formatted = window.TEUI.formatNumber(testNumber, "number-2dp-comma");
           log(
-            "🧪 Direct formatNumber test: " +
-              testNumber +
-              ' -> "' +
-              formatted +
-              '"',
+            "🧪 Direct formatNumber test: " + testNumber + ' -> "' + formatted + '"'
           );
         }
 
         // Add manual test button
-        const testField = document.querySelector(
-          '[data-field-id="test_field"]',
-        );
+        const testField = document.querySelector('[data-field-id="test_field"]');
         testField.addEventListener("focus", function () {
           log("👆 Field focused");
         });
@@ -118,11 +109,7 @@
           setTimeout(() => {
             log("👋 Field blurred (after formatting)");
             log('📄 Field content: "' + this.textContent + '"');
-            log(
-              '🏷️ data-type attribute: "' +
-                this.getAttribute("data-type") +
-                '"',
-            );
+            log('🏷️ data-type attribute: "' + this.getAttribute("data-type") + '"');
             log("🎨 CSS classes: " + Array.from(this.classList).join(", "));
           }, 10); // Small delay to let formatting happen first
         });

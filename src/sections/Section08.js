@@ -35,14 +35,14 @@ window.TEUI.SectionModules.sect08 = (function () {
      * Bridges global StateManager → isolated TargetState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_56", "d_57", "d_58", "d_59"],
+      fieldIds = ["d_56", "d_57", "d_58", "d_59"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
           console.log(
-            `S08 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S08 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -81,15 +81,15 @@ window.TEUI.SectionModules.sect08 = (function () {
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_56", "d_57", "d_58", "d_59"],
+      fieldIds = ["d_56", "d_57", "d_58", "d_59"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
           console.log(
-            `S08 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+            `S08 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
           );
         }
       });
@@ -110,10 +110,14 @@ window.TEUI.SectionModules.sect08 = (function () {
 
       // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
       if (window.TEUI?.StateManager) {
-        ["d_56", "d_57", "d_58", "d_59", "i_59"].forEach((id) => {
+        ["d_56", "d_57", "d_58", "d_59", "i_59"].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });
@@ -141,7 +145,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S08');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S08");
     },
     updateUIForMode: function () {
       const sectionElement = document.getElementById("indoorAirQuality");
@@ -150,9 +154,9 @@ window.TEUI.SectionModules.sect08 = (function () {
       const currentState = this.getCurrentState();
       const fieldsToSync = ["d_56", "d_57", "d_58", "d_59", "i_59"];
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         const stateValue = currentState.getValue(fieldId);
 
@@ -189,7 +193,7 @@ window.TEUI.SectionModules.sect08 = (function () {
         "n_59",
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           let value;
@@ -203,9 +207,10 @@ window.TEUI.SectionModules.sect08 = (function () {
 
           const formatType = getFieldFormat(fieldId);
           // Skip formatting for "raw" type fields (checkmarks, symbols)
-          const formattedValue = formatType === "raw"
-            ? value
-            : (window.TEUI?.formatNumber?.(value, formatType) ?? value);
+          const formattedValue =
+            formatType === "raw"
+              ? value
+              : (window.TEUI?.formatNumber?.(value, formatType) ?? value);
           element.textContent = formattedValue;
 
           // ✅ FIX: Reapply CSS classes for status fields (n_56, n_57, n_58, n_59)
@@ -229,7 +234,7 @@ window.TEUI.SectionModules.sect08 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value,
-          "user-modified",
+          "user-modified"
         );
       }
     },
@@ -256,7 +261,10 @@ window.TEUI.SectionModules.sect08 = (function () {
     if (typeof rawValue === "string") {
       // String values (symbols, text) pass through as-is
       valueToStore = rawValue;
-    } else if (rawValue == null || (typeof rawValue === "number" && !isFinite(rawValue))) {
+    } else if (
+      rawValue == null ||
+      (typeof rawValue === "number" && !isFinite(rawValue))
+    ) {
       // Only null/undefined/NaN/Infinity become "N/A"
       valueToStore = "N/A";
     } else {
@@ -428,19 +436,19 @@ window.TEUI.SectionModules.sect08 = (function () {
     const sectionElement = document.getElementById("indoorAirQuality");
     if (!sectionElement) return;
 
-    sectionElement.addEventListener("input", (e) => {
+    sectionElement.addEventListener("input", e => {
       if (e.target.matches('input[type="range"]')) handleUserInput(e);
     });
 
     sectionElement.addEventListener(
       "blur",
-      (e) => {
+      e => {
         if (e.target.matches('[contenteditable="true"]')) handleUserInput(e);
       },
-      true,
+      true
     );
 
-    sectionElement.addEventListener("keydown", (e) => {
+    sectionElement.addEventListener("keydown", e => {
       if (e.target.matches('[contenteditable="true"]') && e.key === "Enter") {
         e.preventDefault();
         e.target.blur();
@@ -451,7 +459,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     if (window.TEUI?.StateManager) {
       const sm = window.TEUI.StateManager;
       const dependencies = ["d_31", "k_31"];
-      dependencies.forEach((dep) => {
+      dependencies.forEach(dep => {
         sm.addListener(dep, calculateAll);
       });
 
@@ -470,7 +478,7 @@ window.TEUI.SectionModules.sect08 = (function () {
   // ✅ RENAMED: injectLocalToggle → injectHeaderControls for consistency
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#indoorAirQuality .section-header",
+      "#indoorAirQuality .section-header"
     );
     if (
       !sectionHeader ||
@@ -488,7 +496,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     resetButton.textContent = "Reset";
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (confirm("Reset all values to defaults?")) {
         TargetState.setDefaults();
@@ -514,9 +522,10 @@ window.TEUI.SectionModules.sect08 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -529,7 +538,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 
@@ -746,9 +755,9 @@ window.TEUI.SectionModules.sect08 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -778,7 +787,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     const layoutRows = [];
     if (sectionRows["header"])
       layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.keys(sectionRows).forEach((key) => {
+    Object.keys(sectionRows).forEach(key => {
       if (key !== "header") layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
@@ -799,7 +808,7 @@ window.TEUI.SectionModules.sect08 = (function () {
       "m",
       "n",
     ];
-    columns.forEach((col) => {
+    columns.forEach(col => {
       const cell = row.cells?.[col] || {};
       if (col === "c" && !cell.label && row.label) cell.label = row.label;
       rowDef.cells.push(cell);

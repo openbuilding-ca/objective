@@ -38,7 +38,7 @@ TEUI.ComponentBridge = (function () {
 
     // Add formatted options
     optionsHTML += formattedOptions
-      .map((option) => {
+      .map(option => {
         const value = option.value || option;
         const name = option.name || option;
         return `<option value="${value}" ${value === selectedValue ? "selected" : ""}>${name}</option>`;
@@ -128,7 +128,7 @@ TEUI.ComponentBridge = (function () {
         } catch (error) {
           console.error(
             `Error getting options for dropdown ${dropdownId}:`,
-            error,
+            error
           );
         }
 
@@ -141,7 +141,7 @@ TEUI.ComponentBridge = (function () {
         innerHTML = createDropdownHTML(
           fieldId,
           dropdownOptions,
-          field.defaultValue,
+          field.defaultValue
         );
         break;
       }
@@ -165,7 +165,7 @@ TEUI.ComponentBridge = (function () {
         // For calculated/derived values, we'd typically just display the value
         element.textContent = field.defaultValue;
         element.classList.add(
-          field.type === "calculated" ? "calculated-value" : "derived-value",
+          field.type === "calculated" ? "calculated-value" : "derived-value"
         );
         return; // No need for the rest of the initialization
     }
@@ -186,7 +186,7 @@ TEUI.ComponentBridge = (function () {
             window.TEUI.StateManager.setValue(
               fieldId,
               e.target.value,
-              "user-modified",
+              "user-modified"
             );
           }
 
@@ -209,7 +209,7 @@ TEUI.ComponentBridge = (function () {
     if (!field || !field.dependencies) return;
 
     // Handle each dependent field
-    field.dependencies.forEach((dependentFieldId) => {
+    field.dependencies.forEach(dependentFieldId => {
       const dependentField = TEUI.getField(dependentFieldId);
       if (!dependentField) return;
 
@@ -226,7 +226,7 @@ TEUI.ComponentBridge = (function () {
    */
   function updateCityDropdown(provinceValue) {
     const cityDropdownElement = document.querySelector(
-      '[data-dropdown-id="dd_h_19"]',
+      '[data-dropdown-id="dd_h_19"]'
     );
     if (!cityDropdownElement) {
       // console.warn('City dropdown not found');
@@ -258,7 +258,7 @@ TEUI.ComponentBridge = (function () {
     }
 
     // Add city options
-    provinceData.cities.forEach((city) => {
+    provinceData.cities.forEach(city => {
       const option = document.createElement("option");
       option.value = city.name;
       option.textContent = city.name;
@@ -276,7 +276,7 @@ TEUI.ComponentBridge = (function () {
       : {};
 
     // Initialize each field
-    Object.keys(fields).forEach((fieldId) => {
+    Object.keys(fields).forEach(fieldId => {
       initField(fieldId);
     });
 
@@ -291,7 +291,7 @@ TEUI.ComponentBridge = (function () {
     const sections = TEUI.getSections ? TEUI.getSections() : {};
 
     // Initialize each section
-    Object.keys(sections).forEach((sectionId) => {
+    Object.keys(sections).forEach(sectionId => {
       initSection(sectionId);
     });
 
@@ -348,7 +348,7 @@ TEUI.ComponentBridge = (function () {
     }
 
     // Add options
-    options.forEach((option) => {
+    options.forEach(option => {
       const optionElement = document.createElement("option");
 
       // Handle both object and primitive options
@@ -383,7 +383,7 @@ TEUI.ComponentBridge = (function () {
       } else if (isPresentFutureToggle) {
         // For Present/Future toggle, default to 'Present' if no saved value
         const defaultOption = Array.from(dropdownElement.options).find(
-          (opt) => opt.value === "Present",
+          opt => opt.value === "Present"
         );
         if (defaultOption) {
           dropdownElement.value = "Present";
@@ -411,7 +411,7 @@ TEUI.ComponentBridge = (function () {
 
     if (!window.TEUI.StateManager) {
       console.warn(
-        "🔄 ComponentBridge: StateManager not available, dual-state sync delayed",
+        "🔄 ComponentBridge: StateManager not available, dual-state sync delayed"
       );
       return;
     }

@@ -20,7 +20,7 @@ window.OBC.ExpandableRows = (function () {
     cellElement,
     cellDef,
     rowId,
-    sectionId,
+    sectionId
   ) {
     // Check if this cell should have expandable controls
     if (
@@ -80,7 +80,7 @@ window.OBC.ExpandableRows = (function () {
     const existing = expandableGroups.get(groupId);
     if (existing && existing.expandableRows) {
       console.log(
-        `🔍 GROUP ${groupId} already fully initialized, skipping duplicate`,
+        `🔍 GROUP ${groupId} already fully initialized, skipping duplicate`
       );
       return;
     }
@@ -95,7 +95,7 @@ window.OBC.ExpandableRows = (function () {
       sectionId: sectionId,
       expandableRows: (attributes["data-expandable-rows"] || "")
         .split(",")
-        .filter((id) => id.trim()),
+        .filter(id => id.trim()),
       defaultVisible: parseInt(attributes["data-default-visible"] || "1", 10),
       maxRows: 0, // Will be calculated
       currentVisible: 0,
@@ -226,7 +226,7 @@ window.OBC.ExpandableRows = (function () {
     // console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}, expandableRows:`, config.expandableRows);
 
     // Hide all expandable rows initially
-    config.expandableRows.forEach((rowId) => {
+    config.expandableRows.forEach(rowId => {
       const rowElement = document.querySelector(`tr[data-id="${rowId}"]`);
       if (rowElement) {
         rowElement.style.display = "none";
@@ -313,10 +313,10 @@ window.OBC.ExpandableRows = (function () {
     if (!config) return;
 
     const addBtn = document.querySelector(
-      `.expandable-add-btn[onclick*="${groupId}"]`,
+      `.expandable-add-btn[onclick*="${groupId}"]`
     );
     const removeBtn = document.querySelector(
-      `.expandable-remove-btn[onclick*="${groupId}"]`,
+      `.expandable-remove-btn[onclick*="${groupId}"]`
     );
 
     if (addBtn) {
@@ -339,7 +339,7 @@ window.OBC.ExpandableRows = (function () {
     try {
       localStorage.setItem(
         `OBC_ExpandableRows_${groupId}`,
-        visibleCount.toString(),
+        visibleCount.toString()
       );
     } catch (e) {
       console.warn(`Could not save state for expandable group ${groupId}:`, e);
@@ -387,7 +387,7 @@ window.OBC.ExpandableRows = (function () {
     isRowVisible: isRowVisible,
 
     // For debugging
-    getGroupConfig: (groupId) => expandableGroups.get(groupId),
+    getGroupConfig: groupId => expandableGroups.get(groupId),
     getAllGroups: () => Array.from(expandableGroups.keys()),
   };
 })();

@@ -930,9 +930,9 @@ window.OBC.SectionModules.sect03 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.fieldId) {
           fields[cell.fieldId] = {
@@ -957,9 +957,9 @@ window.OBC.SectionModules.sect03 = (function () {
 
   function getDropdownOptions() {
     const dropdowns = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.type === "dropdown" && cell.options) {
           dropdowns[cell.dropdownId || cell.fieldId] = cell.options;
@@ -1025,7 +1025,7 @@ window.OBC.SectionModules.sect03 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -1110,7 +1110,7 @@ window.OBC.SectionModules.sect03 = (function () {
   function setCalculatedValue(
     fieldId,
     rawValue,
-    formatType = "number-2dp-comma",
+    formatType = "number-2dp-comma"
   ) {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
@@ -1143,7 +1143,7 @@ window.OBC.SectionModules.sect03 = (function () {
         window.OBC.StateManager.setValue(
           fieldId,
           rawValue.toString(),
-          "calculated",
+          "calculated"
         );
       }
     }
@@ -1261,7 +1261,7 @@ window.OBC.SectionModules.sect03 = (function () {
     console.log("=== S03 STATE CHECK ===");
     console.log(
       "Section 03 module loaded:",
-      !!window.OBC?.SectionModules?.sect03,
+      !!window.OBC?.SectionModules?.sect03
     );
     console.log("StateManager available:", !!window.OBC?.StateManager);
 
@@ -1276,7 +1276,7 @@ window.OBC.SectionModules.sect03 = (function () {
       "g_24",
       "i_24",
     ];
-    testFields.forEach((fieldId) => {
+    testFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       const stateValue = window.OBC?.StateManager?.getValue(fieldId);
       const numericValue = getNumericValue(fieldId);
@@ -1389,7 +1389,7 @@ window.OBC.SectionModules.sect03 = (function () {
         "j_34",
       ];
 
-      calculationTriggers.forEach((fieldId) => {
+      calculationTriggers.forEach(fieldId => {
         window.OBC.StateManager.addListener(fieldId, () => {
           if (!window.sectionCalculationInProgress) {
             performAllCalculations();
@@ -1420,11 +1420,11 @@ window.OBC.SectionModules.sect03 = (function () {
       "j_34",
     ];
 
-    triggerFields.forEach((fieldId) => {
+    triggerFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         // Add input event listeners for immediate calculation updates
-        ["blur", "input", "change"].forEach((eventType) => {
+        ["blur", "input", "change"].forEach(eventType => {
           element.addEventListener(eventType, () => {
             // Small delay to allow StateManager to update first
             setTimeout(() => {

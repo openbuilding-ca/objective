@@ -70,7 +70,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           "d_113",
           "d_116",
           "f_113",
-          "j_116",  // ✅ NOV14-COOLFIX: Added for cooling calculation convergence
+          "j_116", // ✅ NOV14-COOLFIX: Added for cooling calculation convergence
           "d_118",
           "g_118",
           "d_119",
@@ -106,9 +106,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         "d_119", // Rate Per Person
         "l_119", // Summer Boost
         "k_120", // Unoccupied Setback %
-      ],
+      ]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
@@ -238,14 +238,14 @@ window.TEUI.SectionModules.sect13 = (function () {
         "d_119", // Rate Per Person
         "l_119", // Summer Boost
         "k_120", // Unoccupied Setback %
-      ],
+      ]
     ) {
       // ✅ SIMPLIFIED: No skip logic needed (tested and verified)
       // Type fix (coefficient → coefficient_slider) was the entire solution
       // f_113/j_115 import correctly AND still respond to d_13 Standard changes
       // Previous skip logic was technical debt (removed Nov 1, 2025)
 
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -264,10 +264,25 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
       if (window.TEUI?.StateManager) {
-        ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"].forEach((id) => {
+        [
+          "d_113",
+          "f_113",
+          "j_115",
+          "d_116",
+          "d_118",
+          "g_118",
+          "l_118",
+          "d_119",
+          "l_119",
+          "k_120",
+        ].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });
@@ -309,30 +324,55 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Field-specific format map for calculated fields
       const fieldFormats = {
         // Percentages (0dp)
-        m_115: "percent-0dp", m_116: "percent-0dp", m_117: "percent-0dp",
-        i_122: "percent-0dp", d_124: "percent-0dp",
+        m_115: "percent-0dp",
+        m_116: "percent-0dp",
+        m_117: "percent-0dp",
+        i_122: "percent-0dp",
+        d_124: "percent-0dp",
 
         // Large numbers with commas (2dp)
-        d_114: "number-2dp-comma", l_113: "number-2dp-comma", d_115: "number-2dp-comma",
-        f_115: "number-2dp-comma", h_115: "number-2dp-comma", l_115: "number-2dp-comma",
-        f_114: "number-2dp-comma", l_116: "number-2dp-comma", l_114: "number-2dp-comma",
-        d_117: "number-2dp-comma", d_120: "number-2dp-comma", f_120: "number-2dp-comma",
-        h_120: "number-2dp-comma", d_121: "number-2dp-comma", i_121: "number-2dp-comma",
-        m_121: "number-2dp-comma", d_122: "number-2dp-comma", d_123: "number-2dp-comma",
-        h_124: "number-2dp-comma", m_129: "number-2dp-comma", d_129: "number-2dp-comma",
+        d_114: "number-2dp-comma",
+        l_113: "number-2dp-comma",
+        d_115: "number-2dp-comma",
+        f_115: "number-2dp-comma",
+        h_115: "number-2dp-comma",
+        l_115: "number-2dp-comma",
+        f_114: "number-2dp-comma",
+        l_116: "number-2dp-comma",
+        l_114: "number-2dp-comma",
+        d_117: "number-2dp-comma",
+        d_120: "number-2dp-comma",
+        f_120: "number-2dp-comma",
+        h_120: "number-2dp-comma",
+        d_121: "number-2dp-comma",
+        i_121: "number-2dp-comma",
+        m_121: "number-2dp-comma",
+        d_122: "number-2dp-comma",
+        d_123: "number-2dp-comma",
+        h_124: "number-2dp-comma",
+        m_129: "number-2dp-comma",
+        d_129: "number-2dp-comma",
 
         // Small numbers without commas (2dp)
-        h_113: "number-2dp", j_113: "number-2dp", j_114: "number-2dp",
-        f_117: "number-2dp", j_117: "number-2dp", f_119: "number-2dp", h_119: "number-2dp",
+        h_113: "number-2dp",
+        j_113: "number-2dp",
+        j_114: "number-2dp",
+        f_117: "number-2dp",
+        j_117: "number-2dp",
+        f_119: "number-2dp",
+        h_119: "number-2dp",
         m_124: "number-2dp",
       };
 
       // ✅ FIX: Conditionally add j_116 when it's calculated (ghosted in Heatpump mode)
       // Check if j_116 is currently ghosted (contenteditable="false") = calculated mode
       const j116Element = document.querySelector('[data-field-id="j_116"]');
-      const isJ116Ghosted = j116Element?.getAttribute("contenteditable") === "false";
+      const isJ116Ghosted =
+        j116Element?.getAttribute("contenteditable") === "false";
 
-      console.log(`[S13 updateCalc] j_116 check: element=${!!j116Element}, contenteditable="${j116Element?.getAttribute("contenteditable")}", isGhosted=${isJ116Ghosted}, mode=${this.currentMode}`);
+      console.log(
+        `[S13 updateCalc] j_116 check: element=${!!j116Element}, contenteditable="${j116Element?.getAttribute("contenteditable")}", isGhosted=${isJ116Ghosted}, mode=${this.currentMode}`
+      );
 
       if (isJ116Ghosted) {
         // When ghosted (Heatpump mode), j_116 is calculated → should update from StateManager
@@ -345,7 +385,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       const calculatedFields = Object.keys(fieldFormats);
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
@@ -361,7 +401,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
+            `[data-field-id="${fieldId}"]`
           );
           // ✅ FIX (NOV-13): Update calculated fields even if contenteditable exists
           // The hasAttribute check was too strict - fields with contenteditable="false" (ghosted/calculated)
@@ -373,7 +413,7 @@ window.TEUI.SectionModules.sect13 = (function () {
               const formatType = fieldFormats[fieldId] || "number-2dp";
               const formattedValue = window.TEUI.formatNumber(
                 numericValue,
-                formatType,
+                formatType
               );
               element.textContent = formattedValue;
             }
@@ -436,13 +476,13 @@ window.TEUI.SectionModules.sect13 = (function () {
         "k_120",
       ];
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
 
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -488,7 +528,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ✅ Apply 2dp formatting to preserve precision display
           const numericValue = window.TEUI.parseNumeric(stateValue);
           if (!isNaN(numericValue)) {
-            element.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+            element.textContent = window.TEUI.formatNumber(
+              numericValue,
+              "number-2dp"
+            );
           } else {
             element.textContent = stateValue;
           }
@@ -510,7 +553,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S13');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S13");
     },
   };
 
@@ -529,7 +572,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#mechanicalLoads .section-header, #mechanicalLoads .section-title",
+      "#mechanicalLoads .section-header, #mechanicalLoads .section-title"
     );
     if (
       !sectionHeader ||
@@ -550,11 +593,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 13.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 13."
         )
       ) {
         ModeManager.resetState();
@@ -578,9 +621,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -593,7 +637,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 
@@ -663,7 +707,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     }
     const element = document.querySelector(
-      `[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`,
+      `[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`
     );
     if (element) {
       return element.value !== undefined ? element.value : element.textContent;
@@ -681,7 +725,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     fieldId,
     value,
     formatType = "number-2dp-comma",
-    fieldType = "calculated",
+    fieldType = "calculated"
   ) {
     const valueToStore =
       value !== null && value !== undefined ? String(value) : "0";
@@ -707,7 +751,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           valueToStore,
-          fieldType,
+          fieldType
         );
 
         // Track StateManager publications (commented out for clean logs)
@@ -765,7 +809,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function updateAllReferenceIndicators() {
     try {
-      Object.keys(referenceComparisons).forEach((fieldId) => {
+      Object.keys(referenceComparisons).forEach(fieldId => {
         updateReferenceIndicator(fieldId);
       });
     } catch (error) {
@@ -836,7 +880,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     } catch (error) {
       console.error(
         `Error updating reference indicators for ${fieldId}:`,
-        error,
+        error
       );
     }
   }
@@ -1357,12 +1401,12 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "3,333.33",
           section: "mechanicalLoads",
           dependencies: [
-            "d_63",   // Occupants
-            "i_63",   // Hrs/Day
-            "d_105",  // Net Interior Volume
-            "g_118",  // Ventilation Method
-            "l_118",  // ACH
-            "d_119",  // Per Person Ventilation Rate
+            "d_63", // Occupants
+            "i_63", // Hrs/Day
+            "d_105", // Net Interior Volume
+            "g_118", // Ventilation Method
+            "l_118", // ACH
+            "d_119", // Per Person Ventilation Rate
           ],
         },
         e: {
@@ -1476,13 +1520,13 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "30,257.37",
           section: "mechanicalLoads",
           dependencies: [
-            "d_21",   //CDD
-            "i_63",   //Hrs/Day
-            "d_116",  //Mech. Cooling Provided
-            "g_118",  //Ventilation Method
-            "l_119",  //Summer Boost
-            "d_120",  //Volumetric Ventilation Rate
-            "i_122",  //Latent Load Factor (%)
+            "d_21", //CDD
+            "i_63", //Hrs/Day
+            "d_116", //Mech. Cooling Provided
+            "g_118", //Ventilation Method
+            "l_119", //Summer Boost
+            "d_120", //Volumetric Ventilation Rate
+            "i_122", //Latent Load Factor (%)
           ],
         },
         e: {
@@ -1665,10 +1709,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -1728,7 +1772,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       "n",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
 
@@ -1783,9 +1827,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // --- Standard Editable Field Handlers ---
     const editableFields = sectionElement.querySelectorAll(
-      ".editable.user-input",
+      ".editable.user-input"
     );
-    editableFields.forEach((field) => {
+    editableFields.forEach(field => {
       // Prevent adding listeners multiple times
       if (!field.hasEditableListeners) {
         field.setAttribute("contenteditable", "true");
@@ -1822,7 +1866,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           typeof window.TEUI.StateManager.updateTEUICalculations === "function"
         ) {
           window.TEUI.StateManager.updateTEUICalculations(
-            "S13_d113_fuel_switch",
+            "S13_d113_fuel_switch"
           );
         }
       });
@@ -1833,7 +1877,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Add direct HSPF slider handler (S11 proven pattern)
       const f113Slider = document.querySelector(
-        'input[type="range"][data-field-id="f_113"]',
+        'input[type="range"][data-field-id="f_113"]'
       );
       if (f113Slider && !f113Slider.hasSliderListener) {
         // Input event for display updates only (no calculations)
@@ -1868,7 +1912,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Add direct d_118 slider handler (CRITICAL: Must calculate during drag!)
       const d118Slider = document.querySelector(
-        'input[type="range"][data-field-id="d_118"]',
+        'input[type="range"][data-field-id="d_118"]'
       );
       if (d118Slider && !d118Slider.hasSliderListener) {
         // Input event for live feedback AND calculations during dragging
@@ -1889,7 +1933,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           ModeManager.setValue(
             "d_118",
             efficiencyValue.toString(),
-            "user-modified",
+            "user-modified"
           );
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
@@ -1904,7 +1948,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           ModeManager.setValue(
             "d_118",
             efficiencyValue.toString(),
-            "user-modified",
+            "user-modified"
           );
 
           // Final calculation after thumb release
@@ -1999,7 +2043,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("ref_l_128", calculateAndRefresh); // Reference from S14
     } else {
       console.error(
-        "[Section13] ❌ StateManager not available to add listeners!",
+        "[Section13] ❌ StateManager not available to add listeners!"
       );
     }
 
@@ -2017,7 +2061,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (e.target && e.target.matches('[data-field-id="k_120"]')) {
         const sliderValueStr = e.target.value;
         const displaySpan = document.querySelector(
-          `#mechanicalLoads span[data-display-for="k_120"]`,
+          `#mechanicalLoads span[data-display-for="k_120"]`
         );
         if (displaySpan) {
           const numericSliderValue = parseFloat(sliderValueStr);
@@ -2042,7 +2086,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           window.TEUI.StateManager.setValue(
             fieldId,
             sliderValueStr,
-            "user-modified",
+            "user-modified"
           );
         }
 
@@ -2078,7 +2122,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           : "number-2dp"; // Default format
       const formattedDisplay = window.TEUI.formatNumber(
         numericValue,
-        formatType,
+        formatType
       );
       this.textContent = formattedDisplay; // Set formatted display
 
@@ -2098,7 +2142,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           window.TEUI.StateManager.setValue(
             fieldId,
             valueToStore,
-            "user-modified",
+            "user-modified"
           );
         }
 
@@ -2115,7 +2159,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           if (currentStateValue) {
             const numericValue = window.TEUI.parseNumeric(currentStateValue);
             if (!isNaN(numericValue)) {
-              this.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+              this.textContent = window.TEUI.formatNumber(
+                numericValue,
+                "number-2dp"
+              );
             }
           }
         }
@@ -2197,7 +2244,7 @@ window.TEUI.SectionModules.sect13 = (function () {
             window.TEUI.StateManager.setValue(
               fieldId,
               fieldDef.defaultValue,
-              "default",
+              "default"
             );
           }
           // else {
@@ -2217,9 +2264,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
       const fieldsToUpdate = ["d_119", "j_115", "j_116", "l_118"]; // ADDED j_116, l_118
-      fieldsToUpdate.forEach((fieldId) => {
+      fieldsToUpdate.forEach(fieldId => {
         const element = document.querySelector(
-          `td[data-field-id="${fieldId}"]`,
+          `td[data-field-id="${fieldId}"]`
         );
         const stateValue = window.TEUI.StateManager.getValue(fieldId);
         if (element && stateValue !== null && stateValue !== undefined) {
@@ -2228,7 +2275,7 @@ window.TEUI.SectionModules.sect13 = (function () {
             const formatType = "number-2dp"; // Assuming 2 decimal places for both
             const formattedDisplay = window.TEUI.formatNumber(
               numericValue,
-              formatType,
+              formatType
             );
             element.textContent = formattedDisplay;
           }
@@ -2261,7 +2308,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Set up event handlers for all dropdowns in this section
     const dropdowns = sectionElement.querySelectorAll("select");
-    dropdowns.forEach((dropdown) => {
+    dropdowns.forEach(dropdown => {
       // Remove any existing handlers to avoid duplicates
       dropdown.removeEventListener("change", handleDropdownChange);
 
@@ -2389,19 +2436,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     });
 
     // Listen for Reference climate data changes to trigger recalculation
-    sm.addListener("ref_d_20", (newValue) => {
+    sm.addListener("ref_d_20", newValue => {
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     });
-    sm.addListener("ref_d_21", (newValue) => {
+    sm.addListener("ref_d_21", newValue => {
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     });
-    sm.addListener("ref_d_22", (newValue) => {
+    sm.addListener("ref_d_22", newValue => {
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     });
-    sm.addListener("ref_h_22", (newValue) => {
+    sm.addListener("ref_h_22", newValue => {
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     });
@@ -2531,7 +2578,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateCoolingSystem(
     isReferenceCalculation = false,
-    copResults = {},
+    copResults = {}
   ) {
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = ModeManager.getValue("d_113");
@@ -2639,7 +2686,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateVentilationRates(isReferenceCalculation = false) {
     const ratePerPerson =
       window.TEUI.parseNumeric(
-        getSectionValue("d_119", isReferenceCalculation),
+        getSectionValue("d_119", isReferenceCalculation)
       ) || 0;
     const cfm = ratePerPerson * 2.11888;
     const m3hr = ratePerPerson * 3.6;
@@ -2654,28 +2701,28 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_119", true)
-          : getFieldValue("d_119"),
+          : getFieldValue("d_119")
       ) || 0;
 
     // 🔧 BUG #5 FIX: Read external dependencies with mode awareness to prevent state mixing
     const volume =
       window.TEUI.parseNumeric(
-        getExternalValue("d_105", isReferenceCalculation),
+        getExternalValue("d_105", isReferenceCalculation)
       ) || 0;
     const ach = window.TEUI.parseNumeric(ModeManager.getValue("l_118")) || 0;
 
     // 🔧 BUG #5 FIX: Read occupancy values mode-aware (from S08 and S09)
     const occupiedHours =
       window.TEUI.parseNumeric(
-        getExternalValue("i_63", isReferenceCalculation),
+        getExternalValue("i_63", isReferenceCalculation)
       ) || 0;
     const totalHours =
       window.TEUI.parseNumeric(
-        getExternalValue("j_63", isReferenceCalculation),
+        getExternalValue("j_63", isReferenceCalculation)
       ) || 8760;
     const occupants_d63 =
       window.TEUI.parseNumeric(
-        getExternalValue("d_63", isReferenceCalculation),
+        getExternalValue("d_63", isReferenceCalculation)
       ) || 0;
 
     let ventRateLs = 0;
@@ -2712,10 +2759,24 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("h_120", ventilationRateM3h_h120, "number-2dp-comma"); // m3/hr
     } else {
       // Reference: Store with ref_ prefix for downstream calculations
-      window.TEUI.StateManager.setValue("ref_d_120", ventilationRateLs_d120.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_f_120", (ventRateLs * 2.11888).toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_h_120", ventilationRateM3h_h120.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_120=${ventilationRateLs_d120.toFixed(2)} L/s for Reference ventilation energy calc`);
+      window.TEUI.StateManager.setValue(
+        "ref_d_120",
+        ventilationRateLs_d120.toString(),
+        "calculated"
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_f_120",
+        (ventRateLs * 2.11888).toString(),
+        "calculated"
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_h_120",
+        ventilationRateM3h_h120.toString(),
+        "calculated"
+      );
+      console.log(
+        `[S13] 🔗 Published ref_d_120=${ventilationRateLs_d120.toFixed(2)} L/s for Reference ventilation energy calc`
+      );
     }
 
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
@@ -2739,7 +2800,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateVentilationEnergy(
     isReferenceCalculation = false,
-    ventRateD120 = null,
+    ventRateD120 = null
   ) {
     // 🔧 BUG #5 FIX: Accept d_120 as parameter OR read mode-aware from StateManager
     // This prevents reading Target d_120 when calculating Reference ventilation energy
@@ -2750,7 +2811,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Fallback: read from StateManager mode-aware
       ventRate =
         window.TEUI.parseNumeric(
-          getExternalValue("d_120", isReferenceCalculation),
+          getExternalValue("d_120", isReferenceCalculation)
         ) || 0;
     }
 
@@ -2787,7 +2848,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateCoolingVentilation(
     isReferenceCalculation = false,
-    ventRateD120 = null,
+    ventRateD120 = null
   ) {
     // 🔧 BUG #5 FIX: Accept d_120 as parameter OR read mode-aware
     let ventilationRateLs_d120 = 0;
@@ -2796,22 +2857,22 @@ window.TEUI.SectionModules.sect13 = (function () {
     } else {
       ventilationRateLs_d120 =
         window.TEUI.parseNumeric(
-          getExternalValue("d_120", isReferenceCalculation),
+          getExternalValue("d_120", isReferenceCalculation)
         ) || 0;
     }
 
     // 🔧 BUG #5 FIX: Read external dependencies mode-aware (CDD from S03, occupancy from S08/S09)
     const cdd_d21 =
       window.TEUI.parseNumeric(
-        getExternalValue("d_21", isReferenceCalculation),
+        getExternalValue("d_21", isReferenceCalculation)
       ) || 0;
     const occupiedHours_i63 =
       window.TEUI.parseNumeric(
-        getExternalValue("i_63", isReferenceCalculation),
+        getExternalValue("i_63", isReferenceCalculation)
       ) || 0;
     const totalHours_j63 =
       window.TEUI.parseNumeric(
-        getExternalValue("j_63", isReferenceCalculation),
+        getExternalValue("j_63", isReferenceCalculation)
       ) || 8760;
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
@@ -2820,8 +2881,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     const latentLoadFactor_i122 =
       window.TEUI.parseNumeric(
         window.TEUI.StateManager.getValue(
-          isReferenceCalculation ? "ref_cooling_latentLoadFactor" : "cooling_latentLoadFactor"
-        ),
+          isReferenceCalculation
+            ? "ref_cooling_latentLoadFactor"
+            : "cooling_latentLoadFactor"
+        )
       ) || 1.0;
     const summerBoostRawValue = ModeManager.getValue("l_119");
     const summerBoostFactor =
@@ -2875,15 +2938,29 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue(
         "d_122",
         ventEnergyCoolingIncoming_d122,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
       setFieldValue("d_123", ventEnergyRecovered_d123, "number-2dp-comma");
     } else {
       // Reference: Store with ref_ prefix for CED calculations
-      window.TEUI.StateManager.setValue("ref_i_122", latentLoadFactor_i122.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_d_122", ventEnergyCoolingIncoming_d122.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_d_123", ventEnergyRecovered_d123.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_122=${ventEnergyCoolingIncoming_d122.toFixed(2)} kWh/yr for Reference CED calc`);
+      window.TEUI.StateManager.setValue(
+        "ref_i_122",
+        latentLoadFactor_i122.toString(),
+        "calculated"
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_d_122",
+        ventEnergyCoolingIncoming_d122.toString(),
+        "calculated"
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_d_123",
+        ventEnergyRecovered_d123.toString(),
+        "calculated"
+      );
+      console.log(
+        `[S13] 🔗 Published ref_d_122=${ventEnergyCoolingIncoming_d122.toFixed(2)} kWh/yr for Reference CED calc`
+      );
     }
 
     return {
@@ -2902,25 +2979,26 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateCEDUnmitigated(isReferenceCalculation = false) {
     // Read from appropriate state based on mode
     const k71 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_71" : "k_71",
+      isReferenceCalculation ? "ref_k_71" : "k_71"
     );
     const k79 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_79" : "k_79",
+      isReferenceCalculation ? "ref_k_79" : "k_79"
     );
     const k97 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_97" : "k_97",
+      isReferenceCalculation ? "ref_k_97" : "k_97"
     );
     const k104 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_104" : "k_104",
+      isReferenceCalculation ? "ref_k_104" : "k_104"
     );
     const k103 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_103" : "k_103",
+      isReferenceCalculation ? "ref_k_103" : "k_103"
     );
     // ✅ FIX (Oct 27, 2025): Make d_122 read mode-aware
     // Was reading unprefixed d_122 (Target value) even in Reference calculations
-    const d122 = window.TEUI.parseNumeric(
-      getExternalValue("d_122", isReferenceCalculation)
-    ) || 0;
+    const d122 =
+      window.TEUI.parseNumeric(
+        getExternalValue("d_122", isReferenceCalculation)
+      ) || 0;
 
     // Excel formula: D129 = K71+K79+K97+K104+K103+D122 (FIXED: was K98, should be K97)
     const cedUnmitigated = k71 + k79 + k97 + k104 + k103 + d122;
@@ -2931,8 +3009,14 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("d_129", cedUnmitigated, "number-2dp-comma");
     } else {
       // Reference: Store with ref_ prefix for CED mitigated calculation
-      window.TEUI.StateManager.setValue("ref_d_129", cedUnmitigated.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_129=${cedUnmitigated.toFixed(2)} kWh/yr for Reference CED mitigated calc`);
+      window.TEUI.StateManager.setValue(
+        "ref_d_129",
+        cedUnmitigated.toString(),
+        "calculated"
+      );
+      console.log(
+        `[S13] 🔗 Published ref_d_129=${cedUnmitigated.toFixed(2)} kWh/yr for Reference CED mitigated calc`
+      );
     }
 
     return { d_129: cedUnmitigated };
@@ -2948,21 +3032,21 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? window.TEUI.StateManager.getValue("ref_d_129")
-          : getFieldValue("d_129"),
+          : getFieldValue("d_129")
       ) || 0;
 
     const h124 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? window.TEUI.StateManager.getValue("ref_h_124")
-          : getFieldValue("h_124"),
+          : getFieldValue("h_124")
       ) || 0;
 
     const d123 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? window.TEUI.StateManager.getValue("ref_d_123")
-          : getFieldValue("d_123"),
+          : getFieldValue("d_123")
       ) || 0;
 
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
@@ -2996,7 +3080,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? window.TEUI.StateManager.getValue("ref_h_120")
-          : getFieldValue("h_120"),
+          : getFieldValue("h_120")
       ) || 0;
 
     try {
@@ -3041,7 +3125,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.parseNumeric(
           isReferenceCalculation
             ? window.TEUI.StateManager.getValue("ref_d_129")
-            : getFieldValue("d_129"),
+            : getFieldValue("d_129")
         ) || 0;
 
       let percentFreeCooling = 0;
@@ -3064,7 +3148,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           : window.TEUI.StateManager.getValue("m_19");
 
         m_124_raw = m_19_fallback || 120; // Default to 120 days if m_19 also unavailable
-        console.warn("[S13] cooling_m_124 not available, using m_19 fallback:", m_124_raw);
+        console.warn(
+          "[S13] cooling_m_124 not available, using m_19 fallback:",
+          m_124_raw
+        );
       }
 
       const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
@@ -3106,7 +3193,7 @@ window.TEUI.SectionModules.sect13 = (function () {
               window.TEUI.StateManager.setValue(
                 `ref_${fieldId}`,
                 value.toString(),
-                "calculated-persistent",
+                "calculated-persistent"
               );
             }
           });
@@ -3141,7 +3228,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
       const ventilationEnergyResults = calculateVentilationEnergy(
         true,
-        ventilationRatesResults.d_120,
+        ventilationRatesResults.d_120
       );
 
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
@@ -3152,7 +3239,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
       const coolingVentilationResults = calculateCoolingVentilation(
         true,
-        ventilationRatesResults.d_120,
+        ventilationRatesResults.d_120
       );
 
       // CED calculations (D129/M129) - now in S13, after D122 exists
@@ -3177,12 +3264,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         ventilationRatesResults,
         ventilationEnergyResults,
         coolingVentilationResults,
-        freeCoolingResults,
+        freeCoolingResults
       );
     } catch (error) {
       console.error(
         "[Section13] Error in Reference Model calculations:",
-        error,
+        error
       );
     } finally {
       // ✅ PHASE 1: Always restore original mode (ENDGAME Pattern 1)
@@ -3209,7 +3296,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // 🔧 BUG #5 FIX: Pass calculated d_120 for consistency (Target reads from StateManager anyway)
       const ventilationEnergyResults = calculateVentilationEnergy(
         false,
-        ventilationRatesResults.d_120,
+        ventilationRatesResults.d_120
       );
 
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
@@ -3220,7 +3307,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // 🔧 BUG #5 FIX: Pass calculated d_120 for consistency
       const coolingVentilationResults = calculateCoolingVentilation(
         false,
-        ventilationRatesResults.d_120,
+        ventilationRatesResults.d_120
       );
 
       // CED calculations (D129/M129) - now in S13, after D122 exists
@@ -3245,7 +3332,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         coolingVentilationResults,
         freeCoolingResults,
         unmitigatedResults,
-        mitigatedResults,
+        mitigatedResults
       );
 
       // Update reference indicators after calculations
@@ -3269,7 +3356,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingVentilationResults,
     freeCoolingResults,
     unmitigatedResults,
-    mitigatedResults,
+    mitigatedResults
   ) {
     // COP Values
     if (copResults.h_113 !== undefined)
@@ -3332,19 +3419,19 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue(
         "d_121",
         ventilationEnergyResults.d_121,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
     if (ventilationEnergyResults.i_121 !== undefined)
       setFieldValue(
         "i_121",
         ventilationEnergyResults.i_121,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
     if (ventilationEnergyResults.m_121 !== undefined)
       setFieldValue(
         "m_121",
         ventilationEnergyResults.m_121,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
 
     // Cooling Ventilation Results
@@ -3354,13 +3441,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue(
         "d_122",
         coolingVentilationResults.d_122,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
     if (coolingVentilationResults.d_123 !== undefined)
       setFieldValue(
         "d_123",
         coolingVentilationResults.d_123,
-        "number-2dp-comma",
+        "number-2dp-comma"
       );
 
     // Free Cooling Results
@@ -3387,7 +3474,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     ventilationRatesResults,
     ventilationEnergyResults,
     coolingVentilationResults,
-    freeCoolingResults,
+    freeCoolingResults
   ) {
     if (!window.TEUI?.StateManager) return;
 
@@ -3413,7 +3500,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),
-          "calculated",
+          "calculated"
         );
       }
     });
@@ -3441,7 +3528,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const directRead = window.TEUI?.StateManager?.getValue("ref_d_127");
     const fallbackRead = window.TEUI?.StateManager?.getReferenceValue("d_127");
     const domRead = window.TEUI.parseNumeric(
-      document.getElementById("d_127")?.value,
+      document.getElementById("d_127")?.value
     );
 
     // Reading reference TED value (debug logging removed)
@@ -3468,7 +3555,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const fuelImpactResults = calculateReferenceModelHeatingFuelImpact(
       systemType,
       tedReference,
-      heatingDemand_d114,
+      heatingDemand_d114
     );
 
     return {
@@ -3484,7 +3571,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateReferenceModelHeatingFuelImpact(
     systemType,
     tedReference,
-    heatingDemand_d114,
+    heatingDemand_d114
   ) {
     const afue =
       window.TEUI.parseNumeric(ReferenceState.getValue("j_115")) || 1;
@@ -3550,7 +3637,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Disable/enable controls within the value cell
       const input = valueCell.querySelector(
-        'input, select, [contenteditable="true"]',
+        'input, select, [contenteditable="true"]'
       ); // Target input, select, or editable
       if (input) {
         if (input.hasAttribute("contenteditable")) {
@@ -3648,9 +3735,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       row115.classList.toggle("ghosted", !isFossilFuel);
       // Also disable/enable controls within the row
       const controlsInRow = row115.querySelectorAll(
-        'input, select, [contenteditable="true"]',
+        'input, select, [contenteditable="true"]'
       );
-      controlsInRow.forEach((control) => {
+      controlsInRow.forEach(control => {
         if (control.getAttribute("data-field-id") !== "j_115") {
           // Don't disable j_115 based on row ghosting alone
           if (control.hasAttribute("contenteditable")) {

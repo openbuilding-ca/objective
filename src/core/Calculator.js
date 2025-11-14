@@ -230,7 +230,7 @@ TEUI.Calculator = (function () {
     if (window.TEUI.LocationManager) {
       const location = window.TEUI.LocationManager.getLocationData(
         city,
-        province,
+        province
       );
       if (location) {
         climateZone = determineClimateZone(location.HDD);
@@ -248,7 +248,7 @@ TEUI.Calculator = (function () {
       stateManager.setValue(
         "climate-zone",
         climateZone,
-        stateManager.VALUE_STATES.CALCULATED,
+        stateManager.VALUE_STATES.CALCULATED
       );
     }
   }
@@ -275,31 +275,31 @@ TEUI.Calculator = (function () {
     const stateManager = window.TEUI.StateManager; // Ensure we have the reference
     const heatingSetpoint = window.TEUI.parseNumeric(
       stateManager.getValue("h_23"),
-      21,
+      21
     ); // Default 21C
     const coolingSeason = window.TEUI.parseNumeric(
       stateManager.getValue("m_19"),
-      120,
+      120
     ); // Default 120 days
 
     // If defaults were used, values should be valid numbers, but add safety check
     if (isNaN(heatingSetpoint) || isNaN(coolingSeason)) {
       console.error(
-        "Critical error: Could not determine valid heating setpoint or cooling season length for GF HDD calc.",
+        "Critical error: Could not determine valid heating setpoint or cooling season length for GF HDD calc."
       );
       return;
     }
 
     // Calculate ground facing HDD using the correct formula
     const groundFacingHDD = Math.round(
-      (heatingSetpoint - 10) * 365 - coolingSeason,
+      (heatingSetpoint - 10) * 365 - coolingSeason
     );
 
     // Update the field
     stateManager.setValue(
       "d_22",
       groundFacingHDD.toString(),
-      stateManager.VALUE_STATES.CALCULATED,
+      stateManager.VALUE_STATES.CALCULATED
     );
   }
 
@@ -323,7 +323,7 @@ TEUI.Calculator = (function () {
     stateManager.setValue(
       "cf_e_22",
       groundFacingCDD.toString(),
-      stateManager.VALUE_STATES.CALCULATED,
+      stateManager.VALUE_STATES.CALCULATED
     );
   }
 
@@ -338,7 +338,7 @@ TEUI.Calculator = (function () {
       stateManager.setValue(
         "cf_e_23a",
         heatingF.toString(),
-        stateManager.VALUE_STATES.CALCULATED,
+        stateManager.VALUE_STATES.CALCULATED
       );
     }
 
@@ -349,7 +349,7 @@ TEUI.Calculator = (function () {
       stateManager.setValue(
         "cf_e_24a",
         coolingF.toString(),
-        stateManager.VALUE_STATES.CALCULATED,
+        stateManager.VALUE_STATES.CALCULATED
       );
     }
   }
@@ -371,7 +371,7 @@ TEUI.Calculator = (function () {
     stateManager.setValue(
       "cf_j_10",
       `${percent}%`,
-      stateManager.VALUE_STATES.CALCULATED,
+      stateManager.VALUE_STATES.CALCULATED
     );
   }
 
@@ -392,7 +392,7 @@ TEUI.Calculator = (function () {
     stateManager.setValue(
       "j_8",
       `${percent}%`,
-      stateManager.VALUE_STATES.CALCULATED,
+      stateManager.VALUE_STATES.CALCULATED
     );
   }
 
@@ -420,7 +420,7 @@ TEUI.Calculator = (function () {
       const calculationOrder = stateManager.getCalculationOrder();
 
       // Calculate each field in the correct order
-      calculationOrder.forEach((fieldId) => {
+      calculationOrder.forEach(fieldId => {
         // Get field definition
         const field = getField(fieldId);
         if (!field) return;
@@ -432,7 +432,7 @@ TEUI.Calculator = (function () {
             stateManager.setValue(
               fieldId,
               value,
-              stateManager.VALUE_STATES.CALCULATED,
+              stateManager.VALUE_STATES.CALCULATED
             );
 
             // Update UI
@@ -507,13 +507,13 @@ TEUI.Calculator = (function () {
     ];
 
     // Explicitly call each section's calculateAll if it exists
-    calcOrder.forEach((sectionKey) => {
+    calcOrder.forEach(sectionKey => {
       if (sectionKey === "cooling") {
         // Special handling for Cooling module
         if (window.TEUI?.CoolingCalculations?.calculateAll) {
           try {
             console.log(
-              "[Calculator] 🌀 Calling CoolingCalculations module...",
+              "[Calculator] 🌀 Calling CoolingCalculations module..."
             );
             // ✅ BUG #9 FIX: Pass "target" mode for default calculator run
             window.TEUI.CoolingCalculations.calculateAll("target");
@@ -551,7 +551,7 @@ TEUI.Calculator = (function () {
     const lines = csv.split("\n");
 
     // Process each line
-    lines.forEach((line) => {
+    lines.forEach(line => {
       if (!line.trim()) return; // Skip empty lines
 
       // Parse CSV line
@@ -587,14 +587,14 @@ TEUI.Calculator = (function () {
 
   function attachCityChangeListener() {
     const cityDropdowns = document.querySelectorAll(
-      '[data-dropdown-id="dd_h_19"]',
+      '[data-dropdown-id="dd_h_19"]'
     );
 
-    cityDropdowns.forEach((dropdown) => {
+    cityDropdowns.forEach(dropdown => {
       dropdown.addEventListener("change", function (e) {
         const city = e.target.value;
         const province = document.querySelector(
-          '[data-dropdown-id="dd_d_19"]',
+          '[data-dropdown-id="dd_d_19"]'
         ).value;
         if (city && province) {
           updateWeatherData(province, city);
@@ -610,16 +610,16 @@ TEUI.Calculator = (function () {
 
   function attachProvinceChangeListener() {
     const provinceDropdowns = document.querySelectorAll(
-      '[data-dropdown-id="dd_d_19"]',
+      '[data-dropdown-id="dd_d_19"]'
     );
 
-    provinceDropdowns.forEach((dropdown) => {
+    provinceDropdowns.forEach(dropdown => {
       dropdown.addEventListener("change", function (e) {
         // Clear city dropdown values when province changes
         const cityDropdowns = document.querySelectorAll(
-          '[data-dropdown-id="dd_h_19"]',
+          '[data-dropdown-id="dd_h_19"]'
         );
-        cityDropdowns.forEach((cityDropdown) => {
+        cityDropdowns.forEach(cityDropdown => {
           cityDropdown.innerHTML = '<option value="">Select City</option>';
 
           // Populate with cities from the selected province
@@ -627,7 +627,7 @@ TEUI.Calculator = (function () {
             const locationData = TEUI.ExcelLocationHandler.getLocationData();
             if (locationData && locationData[e.target.value]) {
               const cities = locationData[e.target.value].cities;
-              cities.forEach((city) => {
+              cities.forEach(city => {
                 const option = document.createElement("option");
                 option.value = city.name;
                 option.textContent = city.name;
@@ -642,16 +642,16 @@ TEUI.Calculator = (function () {
 
   function attachPresentFutureToggleListener() {
     const futureToggles = document.querySelectorAll(
-      '[data-dropdown-id="dd_h_20"]',
+      '[data-dropdown-id="dd_h_20"]'
     );
 
-    futureToggles.forEach((toggle) => {
+    futureToggles.forEach(toggle => {
       toggle.addEventListener("change", function (_e) {
         const city = document.querySelector(
-          '[data-dropdown-id="dd_h_19"]',
+          '[data-dropdown-id="dd_h_19"]'
         )?.value;
         const province = document.querySelector(
-          '[data-dropdown-id="dd_d_19"]',
+          '[data-dropdown-id="dd_d_19"]'
         )?.value;
         if (city && province) {
           updateWeatherData(province, city);
@@ -662,16 +662,16 @@ TEUI.Calculator = (function () {
 
   function attachWeatherDataButtonListener() {
     const weatherDataBtns = document.querySelectorAll(
-      "#showWeatherDataBtn, #weatherDataBtn",
+      "#showWeatherDataBtn, #weatherDataBtn"
     );
 
-    weatherDataBtns.forEach((btn) => {
+    weatherDataBtns.forEach(btn => {
       btn.addEventListener("click", function () {
         const city = document.querySelector(
-          '[data-dropdown-id="dd_h_19"]',
+          '[data-dropdown-id="dd_h_19"]'
         )?.value;
         const province = document.querySelector(
-          '[data-dropdown-id="dd_d_19"]',
+          '[data-dropdown-id="dd_d_19"]'
         )?.value;
         if (city && province) {
           showFullWeatherData(province, city);
@@ -688,7 +688,7 @@ TEUI.Calculator = (function () {
       mutations.forEach(function (mutation) {
         if (mutation.type === "childList") {
           const cityDropdowns = document.querySelectorAll(
-            '[data-dropdown-id="dd_h_19"]',
+            '[data-dropdown-id="dd_h_19"]'
           );
           if (cityDropdowns.length > 0) {
             attachCityChangeListener();
@@ -716,7 +716,7 @@ TEUI.Calculator = (function () {
     }
 
     // Find the city data
-    const cityData = locationData[province].cities.find((c) => c.name === city);
+    const cityData = locationData[province].cities.find(c => c.name === city);
     if (!cityData) {
       console.error(`City ${city} not found in province ${province}`);
       return;
@@ -724,7 +724,7 @@ TEUI.Calculator = (function () {
 
     // Check if we should use future values or present values
     const presentFutureEl = document.querySelector(
-      '[data-dropdown-id="dd_h_20"]',
+      '[data-dropdown-id="dd_h_20"]'
     );
     const presentFutureValue = presentFutureEl ? presentFutureEl.value : "";
 
@@ -827,10 +827,10 @@ TEUI.Calculator = (function () {
   function updateFieldValue(fieldId, value) {
     // Update in DOM
     const fieldElements = document.querySelectorAll(
-      `[data-field-id="${fieldId}"]`,
+      `[data-field-id="${fieldId}"]`
     );
     if (fieldElements.length > 0) {
-      fieldElements.forEach((element) => {
+      fieldElements.forEach(element => {
         element.textContent = value || "0";
       });
     } else {
@@ -842,7 +842,7 @@ TEUI.Calculator = (function () {
       window.TEUI.StateManager.setValue(
         fieldId,
         (value || "0").toString(),
-        "derived",
+        "derived"
       );
     }
   }
@@ -856,9 +856,7 @@ TEUI.Calculator = (function () {
         return;
       }
 
-      const cityData = locationData[province].cities.find(
-        (c) => c.name === city,
-      );
+      const cityData = locationData[province].cities.find(c => c.name === city);
       if (!cityData) {
         console.error(`City ${city} not found in province ${province}`);
         alert(`Error: City ${city} not found in province ${province}`);
@@ -881,7 +879,7 @@ TEUI.Calculator = (function () {
       const modalEl = document.getElementById("weatherDataModal");
       if (!modalEl) {
         console.error(
-          "Weather data modal element not found with ID: weatherDataModal",
+          "Weather data modal element not found with ID: weatherDataModal"
         );
         alert("Error: Could not find weather data modal element");
         return;
@@ -1027,7 +1025,7 @@ function _initializeWeatherDataHandlers() {
 
   // Listen for province selection changes
   const provinceDropdown = document.querySelector(
-    '[data-dropdown-id="dd_d_19"]',
+    '[data-dropdown-id="dd_d_19"]'
   );
   if (provinceDropdown) {
     provinceDropdown.addEventListener("change", function (e) {
@@ -1042,7 +1040,7 @@ function _initializeWeatherDataHandlers() {
         const locationData = TEUI.ExcelLocationHandler.getLocationData();
         if (locationData && locationData[province]) {
           const cities = locationData[province].cities;
-          cities.forEach((city) => {
+          cities.forEach(city => {
             const option = document.createElement("option");
             option.value = city.name;
             option.textContent = city.name;
@@ -1059,7 +1057,7 @@ function _initializeWeatherDataHandlers() {
     cityDropdown.addEventListener("change", function (e) {
       const city = e.target.value;
       const province = document.querySelector(
-        '[data-dropdown-id="dd_d_19"]',
+        '[data-dropdown-id="dd_d_19"]'
       ).value;
       if (city && province) {
         // Use the properly scoped function from TEUI.Calculator
@@ -1099,7 +1097,7 @@ function _initializeWeatherDataHandlers() {
     futureToggle.addEventListener("change", function (_e) {
       const city = document.querySelector('[data-dropdown-id="dd_h_19"]').value;
       const province = document.querySelector(
-        '[data-dropdown-id="dd_d_19"]',
+        '[data-dropdown-id="dd_d_19"]'
       ).value;
       if (city && province) {
         // Use the properly scoped function from TEUI.Calculator
@@ -1116,7 +1114,7 @@ function _initializeWeatherDataHandlers() {
     weatherDataBtn.addEventListener("click", function () {
       const city = document.querySelector('[data-dropdown-id="dd_h_19"]').value;
       const province = document.querySelector(
-        '[data-dropdown-id="dd_d_19"]',
+        '[data-dropdown-id="dd_d_19"]'
       ).value;
       if (city && province) {
         // Note: showFullWeatherData is also in TEUI.Calculator scope
@@ -1133,7 +1131,7 @@ function _initializeWeatherDataHandlers() {
     showWeatherDataBtn.addEventListener("click", function () {
       const city = document.querySelector('[data-dropdown-id="dd_h_19"]').value;
       const province = document.querySelector(
-        '[data-dropdown-id="dd_d_19"]',
+        '[data-dropdown-id="dd_d_19"]'
       ).value;
       if (city && province) {
         // Note: showFullWeatherData is also in TEUI.Calculator scope

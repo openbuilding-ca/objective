@@ -181,7 +181,7 @@ TEUI.SectionIntegrator = (function () {
    * Initialize all registered integrations
    */
   function initializeAllIntegrations() {
-    Object.values(registeredIntegrations).forEach((integration) => {
+    Object.values(registeredIntegrations).forEach(integration => {
       try {
         if (typeof integration.initialize === "function") {
           integration.initialize();
@@ -189,7 +189,7 @@ TEUI.SectionIntegrator = (function () {
       } catch (error) {
         console.error(
           `Error initializing integration ${integration.name}:`,
-          error,
+          error
         );
       }
     });
@@ -345,7 +345,7 @@ TEUI.SectionIntegrator = (function () {
         window.TEUI.StateManager.setValue(
           "f_32",
           "132938.00",
-          window.TEUI.StateManager.VALUE_STATES.DEFAULT,
+          window.TEUI.StateManager.VALUE_STATES.DEFAULT
         );
       }
 
@@ -353,7 +353,7 @@ TEUI.SectionIntegrator = (function () {
         window.TEUI.StateManager.setValue(
           "j_32",
           "132763.65",
-          window.TEUI.StateManager.VALUE_STATES.DEFAULT,
+          window.TEUI.StateManager.VALUE_STATES.DEFAULT
         );
       }
 
@@ -361,7 +361,7 @@ TEUI.SectionIntegrator = (function () {
         window.TEUI.StateManager.setValue(
           "h_15",
           "1427.20",
-          window.TEUI.StateManager.VALUE_STATES.DEFAULT,
+          window.TEUI.StateManager.VALUE_STATES.DEFAULT
         );
       }
 
@@ -387,11 +387,11 @@ TEUI.SectionIntegrator = (function () {
 
     // Find the actual energy value fields
     const actualEnergyInputs = section04.querySelectorAll(
-      'input[data-contributes-to="f_32"]',
+      'input[data-contributes-to="f_32"]'
     );
 
     // Add change listeners to all fields that contribute to the total
-    actualEnergyInputs.forEach((input) => {
+    actualEnergyInputs.forEach(input => {
       input.addEventListener("change", function () {
         updateTEUIValues();
       });
@@ -399,11 +399,11 @@ TEUI.SectionIntegrator = (function () {
 
     // Also listen for the target energy inputs
     const targetEnergyInputs = section04.querySelectorAll(
-      'input[data-contributes-to="j_32"]',
+      'input[data-contributes-to="j_32"]'
     );
 
     // Add change listeners
-    targetEnergyInputs.forEach((input) => {
+    targetEnergyInputs.forEach(input => {
       input.addEventListener("change", function () {
         updateTEUIValues();
       });
@@ -450,7 +450,7 @@ TEUI.SectionIntegrator = (function () {
       typeof window.TEUI.StateManager.updateTEUICalculations === "function"
     ) {
       window.TEUI.StateManager.updateTEUICalculations(
-        "section-integrator-force",
+        "section-integrator-force"
       );
     }
 
@@ -469,7 +469,7 @@ TEUI.SectionIntegrator = (function () {
   function initializeEmissionsFactorIntegration() {
     if (!window.TEUI.StateManager) {
       console.error(
-        "StateManager not available for emissions factor integration",
+        "StateManager not available for emissions factor integration"
       );
       return;
     }
@@ -520,7 +520,7 @@ TEUI.SectionIntegrator = (function () {
 
     // Try indirect method through DOM event
     const provinceDropdown = document.querySelector(
-      '[data-dropdown-id="dd_d_19"]',
+      '[data-dropdown-id="dd_d_19"]'
     );
     if (provinceDropdown) {
       provinceDropdown.dispatchEvent(new Event("change", { bubbles: true }));
@@ -569,7 +569,7 @@ TEUI.SectionIntegrator = (function () {
   function initializeVolumeMetricsIntegration() {
     if (!window.TEUI.StateManager) {
       console.error(
-        "StateManager not available for Volume Metrics integration",
+        "StateManager not available for Volume Metrics integration"
       );
       return;
     }
@@ -627,7 +627,7 @@ TEUI.SectionIntegrator = (function () {
       "d_95",
     ];
 
-    envelopeFields.forEach((fieldId) => {
+    envelopeFields.forEach(fieldId => {
       window.TEUI.StateManager.addListener(fieldId, function () {
         forceVolumeMetricsUpdate();
       });

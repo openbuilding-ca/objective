@@ -30,7 +30,9 @@ window.TEUI.ToggleUISync = {
     // Early return if toggle elements not initialized
     if (!toggleElements) {
       if (debugMode) {
-        console.warn(`[${sectionId}] Toggle elements not yet initialized, skipping UI sync`);
+        console.warn(
+          `[${sectionId}] Toggle elements not yet initialized, skipping UI sync`
+        );
       }
       return;
     }
@@ -55,7 +57,9 @@ window.TEUI.ToggleUISync = {
 
     // Optional debug logging
     if (debugMode) {
-      console.log(`[${sectionId}] Synced toggle UI to ${mode.toUpperCase()} mode`);
+      console.log(
+        `[${sectionId}] Synced toggle UI to ${mode.toUpperCase()} mode`
+      );
     }
-  }
+  },
 };

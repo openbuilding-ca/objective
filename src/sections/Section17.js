@@ -36,7 +36,7 @@ window.TEUI.SectionModules.sect17 = (function () {
       } catch (error) {
         console.error(
           "[sect17] Error calling window.TEUI.initializeGraphInstanceAndUI:",
-          error,
+          error
         );
       }
     } else if (
@@ -50,12 +50,12 @@ window.TEUI.SectionModules.sect17 = (function () {
       } catch (error) {
         console.error(
           "[sect17] Error calling window.TEUI.initializeDependencyGraph:",
-          error,
+          error
         );
       }
     } else {
       console.warn(
-        "[sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.",
+        "[sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale."
       );
     }
   }

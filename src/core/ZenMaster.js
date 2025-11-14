@@ -56,7 +56,7 @@ window.TEUI.ZenMaster = class ZenMaster {
     this.validationResults = null;
 
     // Mode tracking for Target/Reference state isolation
-    this.currentMode = 'target'; // 'target' or 'reference'
+    this.currentMode = "target"; // 'target' or 'reference'
   }
 
   /**
@@ -64,23 +64,27 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   enable() {
     if (this.isEnabled) {
-      console.warn('[ZenMaster] Already enabled');
+      console.warn("[ZenMaster] Already enabled");
       return;
     }
 
-    console.log('🧘 [ZenMaster] Enabling runtime dependency tracing...');
+    console.log("🧘 [ZenMaster] Enabling runtime dependency tracing...");
 
     // Register as an observer with StateManager
     const stateManager = window.TEUI?.StateManager;
     if (!stateManager) {
-      console.error('[ZenMaster] StateManager not found. Cannot enable tracing.');
+      console.error(
+        "[ZenMaster] StateManager not found. Cannot enable tracing."
+      );
       return;
     }
 
     stateManager.addObserver(this);
 
     this.isEnabled = true;
-    console.log('✅ [ZenMaster] Enabled. All getValue() and setValue() calls will be traced.');
+    console.log(
+      "✅ [ZenMaster] Enabled. All getValue() and setValue() calls will be traced."
+    );
   }
 
   /**
@@ -88,11 +92,11 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   disable() {
     if (!this.isEnabled) {
-      console.warn('[ZenMaster] Not currently enabled');
+      console.warn("[ZenMaster] Not currently enabled");
       return;
     }
 
-    console.log('🧘 [ZenMaster] Disabling runtime dependency tracing...');
+    console.log("🧘 [ZenMaster] Disabling runtime dependency tracing...");
 
     // Unregister as an observer from StateManager
     const stateManager = window.TEUI?.StateManager;
@@ -101,7 +105,7 @@ window.TEUI.ZenMaster = class ZenMaster {
     }
 
     this.isEnabled = false;
-    console.log('✅ [ZenMaster] Disabled. Observer unregistered.');
+    console.log("✅ [ZenMaster] Disabled. Observer unregistered.");
   }
 
   /**
@@ -130,7 +134,7 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @param {string} fieldId - The field being calculated
    * @param {string} mode - 'target' or 'reference' calculation mode
    */
-  startTrace(fieldId, mode = 'target') {
+  startTrace(fieldId, mode = "target") {
     this.isTracing = true;
     this.currentMode = mode;
     this.currentCalculation = fieldId;
@@ -152,16 +156,17 @@ window.TEUI.ZenMaster = class ZenMaster {
     // Log all accesses when enabled (for general observation)
     this.accessLog.push({
       timestamp: Date.now(),
-      calculatingField: this.currentCalculation || 'unknown',
+      calculatingField: this.currentCalculation || "unknown",
       mode: this.currentMode,
       accessedField: accessedFieldId,
       value: value,
-      stackDepth: this.calculationStack.length
+      stackDepth: this.calculationStack.length,
     });
 
     // If we're in an active trace with calculation stack, record dependencies
     if (this.isTracing && this.calculationStack.length > 0) {
-      const currentCalc = this.calculationStack[this.calculationStack.length - 1];
+      const currentCalc =
+        this.calculationStack[this.calculationStack.length - 1];
 
       // Don't record self-references
       if (accessedFieldId === currentCalc.fieldId) {
@@ -171,7 +176,9 @@ window.TEUI.ZenMaster = class ZenMaster {
       // Record the dependency
       currentCalc.dependencies.add(accessedFieldId);
 
-      console.log(`  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`);
+      console.log(
+        `  📖 [ZenMaster] ${currentCalc.fieldId} → reads → ${accessedFieldId} = ${value}`
+      );
     }
   }
 
@@ -193,12 +200,12 @@ window.TEUI.ZenMaster = class ZenMaster {
     // Log the setValue event
     this.accessLog.push({
       timestamp: Date.now(),
-      type: 'setValue',
+      type: "setValue",
       calculatingField: fieldId,
       mode: this.currentMode,
       accessedField: fieldId,
       value: value,
-      stackDepth: this.calculationStack.length
+      stackDepth: this.calculationStack.length,
     });
   }
 
@@ -208,7 +215,7 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   endTrace() {
     if (!this.isTracing || this.calculationStack.length === 0) {
-      console.warn('[ZenMaster] endTrace called but not currently tracing');
+      console.warn("[ZenMaster] endTrace called but not currently tracing");
       return new Set();
     }
 
@@ -216,7 +223,7 @@ window.TEUI.ZenMaster = class ZenMaster {
     const { fieldId, mode, dependencies } = completed;
 
     // Store the discovered dependencies
-    const key = mode === 'reference' ? `ref_${fieldId}` : fieldId;
+    const key = mode === "reference" ? `ref_${fieldId}` : fieldId;
     if (!this.dependencies.has(key)) {
       this.dependencies.set(key, new Set());
     }
@@ -225,7 +232,9 @@ window.TEUI.ZenMaster = class ZenMaster {
     const existing = this.dependencies.get(key);
     dependencies.forEach(dep => existing.add(dep));
 
-    console.log(`✅ [ZenMaster] END trace: ${fieldId} (${mode}) → depends on [${Array.from(dependencies).join(', ')}]`);
+    console.log(
+      `✅ [ZenMaster] END trace: ${fieldId} (${mode}) → depends on [${Array.from(dependencies).join(", ")}]`
+    );
 
     // If stack is empty, we're done tracing
     if (this.calculationStack.length === 0) {
@@ -242,20 +251,27 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @param {Function} calculateFn - The calculation function to trace
    * @param {string} mode - 'target' or 'reference'
    */
-  traceSection(sectionId, calculateFn, mode = 'target') {
-    console.log(`\n🧘 [ZenMaster] ========== TRACING ${sectionId.toUpperCase()} (${mode} mode) ==========`);
+  traceSection(sectionId, calculateFn, mode = "target") {
+    console.log(
+      `\n🧘 [ZenMaster] ========== TRACING ${sectionId.toUpperCase()} (${mode} mode) ==========`
+    );
 
     this.startTrace(`${sectionId}_calculateAll`, mode);
 
     try {
       calculateFn();
     } catch (error) {
-      console.error(`[ZenMaster] Error during ${sectionId} calculation:`, error);
+      console.error(
+        `[ZenMaster] Error during ${sectionId} calculation:`,
+        error
+      );
     } finally {
       this.endTrace();
     }
 
-    console.log(`🧘 [ZenMaster] ========== END ${sectionId.toUpperCase()} ==========\n`);
+    console.log(
+      `🧘 [ZenMaster] ========== END ${sectionId.toUpperCase()} ==========\n`
+    );
   }
 
   /**
@@ -264,20 +280,24 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   buildDependenciesFromAccessLog() {
     if (this.accessLog.length === 0) {
-      console.warn('[ZenMaster] No access events recorded. Enable ZenMaster and interact with the app.');
+      console.warn(
+        "[ZenMaster] No access events recorded. Enable ZenMaster and interact with the app."
+      );
       return;
     }
 
-    console.log(`🔍 [ZenMaster] Analyzing ${this.accessLog.length} access events...`);
+    console.log(
+      `🔍 [ZenMaster] Analyzing ${this.accessLog.length} access events...`
+    );
 
     // Infer dependencies from access patterns:
     // When field X is set (setValue), any getValue calls immediately after are dependencies of X
     let currentField = null;
     let dependencyCount = 0;
 
-    this.accessLog.forEach((event) => {
+    this.accessLog.forEach(event => {
       // Check if this is a setValue event
-      if (event.type === 'setValue') {
+      if (event.type === "setValue") {
         currentField = event.calculatingField;
 
         // Initialize dependency set for this field
@@ -286,7 +306,10 @@ window.TEUI.ZenMaster = class ZenMaster {
         }
       }
       // If calculatingField changed, this is a new calculation context
-      else if (event.calculatingField !== 'unknown' && event.calculatingField !== currentField) {
+      else if (
+        event.calculatingField !== "unknown" &&
+        event.calculatingField !== currentField
+      ) {
         currentField = event.calculatingField;
 
         // Initialize dependency set for this field
@@ -296,7 +319,11 @@ window.TEUI.ZenMaster = class ZenMaster {
       }
 
       // Record getValue dependencies for current field
-      if (currentField && event.type !== 'setValue' && event.accessedField !== currentField) {
+      if (
+        currentField &&
+        event.type !== "setValue" &&
+        event.accessedField !== currentField
+      ) {
         const deps = this.dependencies.get(currentField);
         if (deps && !deps.has(event.accessedField)) {
           deps.add(event.accessedField);
@@ -305,8 +332,12 @@ window.TEUI.ZenMaster = class ZenMaster {
       }
     });
 
-    const fieldsWithDeps = Array.from(this.dependencies.entries()).filter(([_, deps]) => deps.size > 0);
-    console.log(`✅ [ZenMaster] Discovered ${fieldsWithDeps.length} fields with ${dependencyCount} total dependencies`);
+    const fieldsWithDeps = Array.from(this.dependencies.entries()).filter(
+      ([_, deps]) => deps.size > 0
+    );
+    console.log(
+      `✅ [ZenMaster] Discovered ${fieldsWithDeps.length} fields with ${dependencyCount} total dependencies`
+    );
   }
 
   /**
@@ -321,7 +352,7 @@ window.TEUI.ZenMaster = class ZenMaster {
 
     const graph = {
       nodes: [],
-      links: []
+      links: [],
     };
 
     // Build unique node set from access log (all fields that were accessed)
@@ -342,7 +373,7 @@ window.TEUI.ZenMaster = class ZenMaster {
     graph.nodes = Array.from(nodeSet).map(id => ({
       id,
       label: this.getFieldLabel(id),
-      group: this.getFieldSection(id)
+      group: this.getFieldSection(id),
     }));
 
     // Create links from structured dependencies
@@ -350,7 +381,7 @@ window.TEUI.ZenMaster = class ZenMaster {
       deps.forEach(dep => {
         graph.links.push({
           source: dep,
-          target: fieldId
+          target: fieldId,
         });
       });
     });
@@ -374,10 +405,10 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   getFieldSection(fieldId) {
     const fieldManager = window.TEUI?.FieldManager;
-    if (!fieldManager) return 'Other';
+    if (!fieldManager) return "Other";
 
     const field = fieldManager.getField(fieldId);
-    return field?.section || 'Other';
+    return field?.section || "Other";
   }
 
   /**
@@ -409,7 +440,7 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @returns {Object} Validation results with phantoms and missing deps categorized
    */
   validateDependencies() {
-    console.log('\n🔍 [ZenMaster] ========== DEPENDENCY VALIDATION ==========');
+    console.log("\n🔍 [ZenMaster] ========== DEPENDENCY VALIDATION ==========");
 
     const results = {
       sections: {},
@@ -421,13 +452,13 @@ window.TEUI.ZenMaster = class ZenMaster {
         totalMissing: 0,
         totalConditional: 0,
         totalUIDeps: 0,
-        totalNonExistent: 0
-      }
+        totalNonExistent: 0,
+      },
     };
 
     const fieldManager = window.TEUI?.FieldManager;
     if (!fieldManager) {
-      console.error('[ZenMaster] FieldManager not found');
+      console.error("[ZenMaster] FieldManager not found");
       return results;
     }
 
@@ -437,7 +468,8 @@ window.TEUI.ZenMaster = class ZenMaster {
     // For each field with declared dependencies, compare to traced
     Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
       const hasDeps = fieldDef.dependencies && fieldDef.dependencies.length > 0;
-      const hasConditionalDeps = fieldDef.conditionalDeps && fieldDef.conditionalDeps.length > 0;
+      const hasConditionalDeps =
+        fieldDef.conditionalDeps && fieldDef.conditionalDeps.length > 0;
       const hasUIDeps = fieldDef.uiDeps && fieldDef.uiDeps.length > 0;
 
       if (!hasDeps && !hasConditionalDeps && !hasUIDeps) {
@@ -448,7 +480,7 @@ window.TEUI.ZenMaster = class ZenMaster {
       const declaredDeps = new Set([
         ...(fieldDef.dependencies || []),
         ...(fieldDef.conditionalDeps || []),
-        ...(fieldDef.uiDeps || [])
+        ...(fieldDef.uiDeps || []),
       ]);
 
       const tracedDeps = this.dependencies.get(fieldId) || new Set();
@@ -470,7 +502,10 @@ window.TEUI.ZenMaster = class ZenMaster {
           // Check category
           if (fieldDef.uiDeps && fieldDef.uiDeps.includes(dep)) {
             uiPhantoms.push(dep); // UI dependency - expected to not show in trace
-          } else if (fieldDef.conditionalDeps && fieldDef.conditionalDeps.includes(dep)) {
+          } else if (
+            fieldDef.conditionalDeps &&
+            fieldDef.conditionalDeps.includes(dep)
+          ) {
             conditionalPhantoms.push(dep); // Conditional - may not have been triggered
           } else {
             phantoms.push(dep); // True phantom - declared but never used
@@ -479,7 +514,9 @@ window.TEUI.ZenMaster = class ZenMaster {
       });
 
       // Find missing (used but not declared in any category)
-      const missing = Array.from(tracedDeps).filter(dep => !declaredDeps.has(dep));
+      const missing = Array.from(tracedDeps).filter(
+        dep => !declaredDeps.has(dep)
+      );
 
       // Count conditional and UI deps in summary even if there are no other issues
       if (conditionalPhantoms.length > 0) {
@@ -490,22 +527,30 @@ window.TEUI.ZenMaster = class ZenMaster {
       }
 
       // Skip if no issues (but we already counted conditional/UI above)
-      if (phantoms.length === 0 && missing.length === 0 && nonExistentDeps.length === 0) {
+      if (
+        phantoms.length === 0 &&
+        missing.length === 0 &&
+        nonExistentDeps.length === 0
+      ) {
         // Log conditional/UI deps for awareness but don't flag as issues
         if (conditionalPhantoms.length > 0 || uiPhantoms.length > 0) {
-          console.log(`\n✅ ${fieldId} (${fieldDef.label || 'unlabeled'})`);
+          console.log(`\n✅ ${fieldId} (${fieldDef.label || "unlabeled"})`);
           if (conditionalPhantoms.length > 0) {
-            console.log(`  🔀 CONDITIONAL deps (not triggered): ${conditionalPhantoms.join(', ')}`);
+            console.log(
+              `  🔀 CONDITIONAL deps (not triggered): ${conditionalPhantoms.join(", ")}`
+            );
           }
           if (uiPhantoms.length > 0) {
-            console.log(`  🎨 UI deps (for dropdown/validation): ${uiPhantoms.join(', ')}`);
+            console.log(
+              `  🎨 UI deps (for dropdown/validation): ${uiPhantoms.join(", ")}`
+            );
           }
         }
         return; // No true issues
       }
 
       // Record issues
-      const section = fieldDef.section || 'unknown';
+      const section = fieldDef.section || "unknown";
       if (!results.sections[section]) {
         results.sections[section] = [];
       }
@@ -520,7 +565,7 @@ window.TEUI.ZenMaster = class ZenMaster {
         conditionalPhantoms,
         uiPhantoms,
         nonExistentDeps,
-        missing
+        missing,
       };
 
       results.sections[section].push(issue);
@@ -540,38 +585,64 @@ window.TEUI.ZenMaster = class ZenMaster {
       }
 
       // Log the issue with categorization
-      console.log(`\n⚠️ ${fieldId} (${fieldDef.label || 'unlabeled'}) [type: ${fieldDef.type || 'unknown'}]`);
+      console.log(
+        `\n⚠️ ${fieldId} (${fieldDef.label || "unlabeled"}) [type: ${fieldDef.type || "unknown"}]`
+      );
       if (nonExistentDeps.length > 0) {
-        console.log(`  🔍 CHECK-SRC deps (not found in FieldManager - verify source code): ${nonExistentDeps.join(', ')}`);
+        console.log(
+          `  🔍 CHECK-SRC deps (not found in FieldManager - verify source code): ${nonExistentDeps.join(", ")}`
+        );
       }
       if (phantoms.length > 0) {
-        console.log(`  🤔 NON-SM-UKN deps (not traced via StateManager - may use dual-state/DOM/local storage): ${phantoms.join(', ')}`);
+        console.log(
+          `  🤔 NON-SM-UKN deps (not traced via StateManager - may use dual-state/DOM/local storage): ${phantoms.join(", ")}`
+        );
       }
       if (conditionalPhantoms.length > 0) {
-        console.log(`  🔀 CONDITIONAL deps (not triggered in this test): ${conditionalPhantoms.join(', ')}`);
+        console.log(
+          `  🔀 CONDITIONAL deps (not triggered in this test): ${conditionalPhantoms.join(", ")}`
+        );
       }
       if (uiPhantoms.length > 0) {
-        console.log(`  🎨 UI deps (for dropdown/validation, not calculation): ${uiPhantoms.join(', ')}`);
+        console.log(
+          `  🎨 UI deps (for dropdown/validation, not calculation): ${uiPhantoms.join(", ")}`
+        );
       }
       if (missing.length > 0) {
-        console.log(`  ➕ MISSING deps (traced via StateManager but not declared): ${missing.join(', ')}`);
+        console.log(
+          `  ➕ MISSING deps (traced via StateManager but not declared): ${missing.join(", ")}`
+        );
       }
     });
 
     this.validationResults = results;
 
-    console.log('\n📊 [ZenMaster] ========== VALIDATION SUMMARY ==========');
-    console.log('⚠️  WARNING: ZenMaster only traces StateManager.getValue() calls!');
-    console.log('⚠️  Dependencies via dual-state/DOM/local storage are NOT visible.');
-    console.log('⚠️  ALWAYS verify findings against source code before changes!');
-    console.log('==========================================================');
+    console.log("\n📊 [ZenMaster] ========== VALIDATION SUMMARY ==========");
+    console.log(
+      "⚠️  WARNING: ZenMaster only traces StateManager.getValue() calls!"
+    );
+    console.log(
+      "⚠️  Dependencies via dual-state/DOM/local storage are NOT visible."
+    );
+    console.log(
+      "⚠️  ALWAYS verify findings against source code before changes!"
+    );
+    console.log("==========================================================");
     console.log(`Total fields validated: ${results.summary.totalFields}`);
-    console.log(`Fields with NON-SM-UKN deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} deps)`);
-    console.log(`Fields with MISSING deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} missing)`);
-    console.log(`Conditional deps not triggered: ${results.summary.totalConditional}`);
+    console.log(
+      `Fields with NON-SM-UKN deps: ${results.summary.fieldsWithPhantoms} (${results.summary.totalPhantoms} deps)`
+    );
+    console.log(
+      `Fields with MISSING deps: ${results.summary.fieldsWithMissing} (${results.summary.totalMissing} missing)`
+    );
+    console.log(
+      `Conditional deps not triggered: ${results.summary.totalConditional}`
+    );
     console.log(`UI-only deps (expected): ${results.summary.totalUIDeps}`);
-    console.log(`CHECK-SRC dependency fields: ${results.summary.totalNonExistent} 🔍`);
-    console.log('==========================================================\n');
+    console.log(
+      `CHECK-SRC dependency fields: ${results.summary.totalNonExistent} 🔍`
+    );
+    console.log("==========================================================\n");
 
     return results;
   }
@@ -588,11 +659,11 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @returns {Object} Report of unlabeled fields
    */
   validateLabels() {
-    console.log('\n🏷️  [ZenMaster] ========== LABEL VALIDATION ==========');
+    console.log("\n🏷️  [ZenMaster] ========== LABEL VALIDATION ==========");
 
     const fieldManager = window.TEUI?.FieldManager;
     if (!fieldManager) {
-      console.error('[ZenMaster] FieldManager not found');
+      console.error("[ZenMaster] FieldManager not found");
       return { unlabeled: [] };
     }
 
@@ -604,30 +675,37 @@ window.TEUI.ZenMaster = class ZenMaster {
       const label = fieldDef.label;
 
       // Check if label is missing entirely
-      if (!label || label.trim() === '') {
+      if (!label || label.trim() === "") {
         unlabeled.push({
           fieldId,
-          section: fieldDef.section || 'unknown',
-          type: fieldDef.type || 'unknown'
+          section: fieldDef.section || "unknown",
+          type: fieldDef.type || "unknown",
         });
-        console.log(`  ❌ ${fieldId} [${fieldDef.section || 'unknown'}] - NO LABEL`);
+        console.log(
+          `  ❌ ${fieldId} [${fieldDef.section || "unknown"}] - NO LABEL`
+        );
       }
       // Check if label is just the field ID (poor labeling)
-      else if (label === fieldId || label.toLowerCase() === fieldId.toLowerCase()) {
+      else if (
+        label === fieldId ||
+        label.toLowerCase() === fieldId.toLowerCase()
+      ) {
         poorLabels.push({
           fieldId,
           label,
-          section: fieldDef.section || 'unknown',
-          type: fieldDef.type || 'unknown'
+          section: fieldDef.section || "unknown",
+          type: fieldDef.type || "unknown",
         });
-        console.log(`  ⚠️  ${fieldId} [${fieldDef.section || 'unknown'}] - Label is same as field ID: "${label}"`);
+        console.log(
+          `  ⚠️  ${fieldId} [${fieldDef.section || "unknown"}] - Label is same as field ID: "${label}"`
+        );
       }
     });
 
-    console.log('\n📊 [ZenMaster] Label Validation Summary:');
+    console.log("\n📊 [ZenMaster] Label Validation Summary:");
     console.log(`Fields without labels: ${unlabeled.length}`);
     console.log(`Fields with poor labels: ${poorLabels.length}`);
-    console.log('==========================================================\n');
+    console.log("==========================================================\n");
 
     return { unlabeled, poorLabels };
   }
@@ -647,11 +725,13 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @returns {Object} Report of potential typos with suggestions
    */
   detectDependencyTypos() {
-    console.log('\n🔍 [ZenMaster] ========== DEPENDENCY TYPO DETECTION ==========');
+    console.log(
+      "\n🔍 [ZenMaster] ========== DEPENDENCY TYPO DETECTION =========="
+    );
 
     const fieldManager = window.TEUI?.FieldManager;
     if (!fieldManager) {
-      console.error('[ZenMaster] FieldManager not found');
+      console.error("[ZenMaster] FieldManager not found");
       return { typos: [] };
     }
 
@@ -663,7 +743,7 @@ window.TEUI.ZenMaster = class ZenMaster {
       const declaredDeps = [
         ...(fieldDef.dependencies || []),
         ...(fieldDef.conditionalDeps || []),
-        ...(fieldDef.uiDeps || [])
+        ...(fieldDef.uiDeps || []),
       ];
 
       declaredDeps.forEach(dep => {
@@ -677,19 +757,23 @@ window.TEUI.ZenMaster = class ZenMaster {
               fieldId,
               invalidDep: dep,
               suggestions,
-              section: fieldDef.section || 'unknown'
+              section: fieldDef.section || "unknown",
             });
 
-            console.log(`  ⚠️  ${fieldId} [${fieldDef.section || 'unknown'}] depends on "${dep}" (NOT FOUND)`);
-            console.log(`      💡 Did you mean: ${suggestions.map(s => `"${s}"`).join(' or ')}?`);
+            console.log(
+              `  ⚠️  ${fieldId} [${fieldDef.section || "unknown"}] depends on "${dep}" (NOT FOUND)`
+            );
+            console.log(
+              `      💡 Did you mean: ${suggestions.map(s => `"${s}"`).join(" or ")}?`
+            );
           }
         }
       });
     });
 
-    console.log('\n📊 [ZenMaster] Typo Detection Summary:');
+    console.log("\n📊 [ZenMaster] Typo Detection Summary:");
     console.log(`Potential typos found: ${typos.length}`);
-    console.log('==========================================================\n');
+    console.log("==========================================================\n");
 
     return { typos };
   }
@@ -734,14 +818,18 @@ window.TEUI.ZenMaster = class ZenMaster {
 
       // 2. Same column, transposed row digits (d_38 -> d_83)
       if (col === fieldCol && hasRefPrefix === fieldHasRefPrefix) {
-        const rowReversed = row.split('').reverse().join('');
+        const rowReversed = row.split("").reverse().join("");
         if (fieldRow === rowReversed) {
           suggestions.push(fieldId);
         }
       }
 
       // 3. Missing/extra ref_ prefix (ref_d_38 <-> d_38)
-      if (col === fieldCol && row === fieldRow && hasRefPrefix !== fieldHasRefPrefix) {
+      if (
+        col === fieldCol &&
+        row === fieldRow &&
+        hasRefPrefix !== fieldHasRefPrefix
+      ) {
         suggestions.push(fieldId);
       }
     });
@@ -756,27 +844,31 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   generateReport() {
     const lines = [];
-    lines.push('');
-    lines.push('🧘 ZenMaster Dependency Discovery Report');
-    lines.push('========================================');
-    lines.push('');
+    lines.push("");
+    lines.push("🧘 ZenMaster Dependency Discovery Report");
+    lines.push("========================================");
+    lines.push("");
     lines.push(`Total fields traced: ${this.dependencies.size}`);
     lines.push(`Total access events: ${this.accessLog.length}`);
-    lines.push('');
-    lines.push('Discovered Dependencies:');
-    lines.push('');
+    lines.push("");
+    lines.push("Discovered Dependencies:");
+    lines.push("");
 
     // Sort by field ID
-    const sorted = Array.from(this.dependencies.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    const sorted = Array.from(this.dependencies.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
 
     sorted.forEach(([fieldId, deps]) => {
       const depsArray = Array.from(deps).sort();
       lines.push(`${fieldId}:`);
-      lines.push(`  dependencies: [${depsArray.map(d => `"${d}"`).join(', ')}]`);
-      lines.push('');
+      lines.push(
+        `  dependencies: [${depsArray.map(d => `"${d}"`).join(", ")}]`
+      );
+      lines.push("");
     });
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -787,7 +879,7 @@ window.TEUI.ZenMaster = class ZenMaster {
     this.accessLog = [];
     this.calculationStack = [];
     this.validationResults = null;
-    console.log('🧹 [ZenMaster] Trace data cleared');
+    console.log("🧹 [ZenMaster] Trace data cleared");
   }
 
   /**
@@ -797,7 +889,7 @@ window.TEUI.ZenMaster = class ZenMaster {
    * @param {string} mode - 'target' or 'reference'
    * @returns {*} Result of the calculation
    */
-  trace(fieldId, calculationFn, mode = 'target') {
+  trace(fieldId, calculationFn, mode = "target") {
     this.startTrace(fieldId, mode);
     try {
       const result = calculationFn();
@@ -813,14 +905,17 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   exportToFile() {
     const graph = this.exportDependencyGraph();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .slice(0, -5);
     const filename = `zen-dependencies-${timestamp}.json`;
 
     const dataStr = JSON.stringify(graph, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -828,7 +923,9 @@ window.TEUI.ZenMaster = class ZenMaster {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    console.log(`📥 [ZenMaster] Exported ${graph.nodes.length} nodes and ${graph.links.length} links to ${filename}`);
+    console.log(
+      `📥 [ZenMaster] Exported ${graph.nodes.length} nodes and ${graph.links.length} links to ${filename}`
+    );
   }
 
   /**
@@ -837,8 +934,8 @@ window.TEUI.ZenMaster = class ZenMaster {
    */
   exportForSections() {
     const lines = [];
-    lines.push('// ZenMaster Discovered Dependencies');
-    lines.push('// Copy these into your section field definitions\n');
+    lines.push("// ZenMaster Discovered Dependencies");
+    lines.push("// Copy these into your section field definitions\n");
 
     // Group by section
     const bySection = new Map();
@@ -857,13 +954,15 @@ window.TEUI.ZenMaster = class ZenMaster {
       fields.forEach(({ fieldId, deps }) => {
         if (deps.length > 0) {
           lines.push(`  ${fieldId}: {`);
-          lines.push(`    dependencies: [${deps.map(d => `"${d}"`).join(', ')}],`);
+          lines.push(
+            `    dependencies: [${deps.map(d => `"${d}"`).join(", ")}],`
+          );
           lines.push(`  },`);
         }
       });
     });
 
-    const output = lines.join('\n');
+    const output = lines.join("\n");
     console.log(output);
     return output;
   }
@@ -878,7 +977,7 @@ window.TEUI.ZenMaster = class ZenMaster {
       fieldsTracked: this.dependencies.size,
       accessEvents: this.accessLog.length,
       currentCalculation: this.currentCalculation,
-      mode: this.currentMode
+      mode: this.currentMode,
     };
   }
 };

@@ -430,7 +430,7 @@ class ExcelMapper {
             ) {
               // If Excel stores "45%"
               extractedValue = parseFloat(
-                extractedValue.replace("%", ""),
+                extractedValue.replace("%", "")
               ).toString();
             } else if (typeof extractedValue === "number") {
               // If Excel stores just the number 45 for 45%
@@ -573,12 +573,16 @@ class ExcelMapper {
           const percentage2dpFields = ["d_118"];
           if (percentage2dpFields.includes(fieldId)) {
             let numVal;
-            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+            if (
+              typeof extractedValue === "string" &&
+              extractedValue.endsWith("%")
+            ) {
               numVal = parseFloat(extractedValue.replace("%", ""));
             } else if (typeof extractedValue === "number") {
-              numVal = (extractedValue >= 0 && extractedValue <= 1)
-                ? extractedValue * 100 // 0.048 → 4.80
-                : extractedValue;
+              numVal =
+                extractedValue >= 0 && extractedValue <= 1
+                  ? extractedValue * 100 // 0.048 → 4.80
+                  : extractedValue;
             } else {
               numVal = parseFloat(extractedValue);
             }
@@ -595,19 +599,26 @@ class ExcelMapper {
           const integerPercentageFields = ["d_97", "k_120"];
           if (integerPercentageFields.includes(fieldId)) {
             let numVal;
-            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+            if (
+              typeof extractedValue === "string" &&
+              extractedValue.endsWith("%")
+            ) {
               numVal = parseFloat(extractedValue.replace("%", ""));
             } else if (typeof extractedValue === "number") {
-              numVal = (extractedValue >= 0 && extractedValue <= 1)
-                ? extractedValue * 100 // 0.3 → 30
-                : extractedValue;
+              numVal =
+                extractedValue >= 0 && extractedValue <= 1
+                  ? extractedValue * 100 // 0.3 → 30
+                  : extractedValue;
             } else {
               numVal = parseFloat(extractedValue);
             }
 
             if (!isNaN(numVal)) {
               // Clamp to 0-100 range and round to integer
-              extractedValue = Math.min(Math.max(Math.round(numVal), 0), 100).toString();
+              extractedValue = Math.min(
+                Math.max(Math.round(numVal), 0),
+                100
+              ).toString();
             } else {
               const defaults = { d_97: "5", k_120: "0" };
               extractedValue = defaults[fieldId] || "0";
@@ -615,7 +626,7 @@ class ExcelMapper {
           }
           importedData[fieldId] = extractedValue;
         }
-      },
+      }
     );
 
     return importedData;
@@ -635,12 +646,12 @@ class ExcelMapper {
     const reportWorksheet = workbook.Sheets[reportSheetName];
 
     console.log(
-      `[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`,
+      `[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`
     );
 
     if (!worksheet) {
       console.warn(
-        `Sheet named '${sheetName}' not found in the workbook. Skipping reference import.`,
+        `Sheet named '${sheetName}' not found in the workbook. Skipping reference import.`
       );
       return {}; // Return empty object, not null - this is optional data
     }
@@ -649,7 +660,7 @@ class ExcelMapper {
     console.log(`[ExcelMapper] REFERENCE worksheet exists:`, !!worksheet);
     console.log(
       `[ExcelMapper] Sample cells from REFERENCE:`,
-      Object.keys(worksheet).slice(0, 20),
+      Object.keys(worksheet).slice(0, 20)
     );
 
     Object.entries(this.excelReferenceInputMapping).forEach(
@@ -668,7 +679,7 @@ class ExcelMapper {
         if (cellRef === "H15" || cellRef === "D13") {
           console.log(
             `[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`,
-            cell,
+            cell
           );
         }
 
@@ -700,7 +711,7 @@ class ExcelMapper {
             if (reportCell) {
               extractedValue = this.extractCellValue(reportCell);
               console.log(
-                `[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`,
+                `[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`
               );
             } else {
               extractedValue = this.extractCellValue(cell); // Fallback
@@ -710,7 +721,7 @@ class ExcelMapper {
             extractedValue = this.extractCellValue(cell);
             if (cellRef === "H15" || cellRef === "D13") {
               console.log(
-                `[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`,
+                `[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`
               );
             }
           }
@@ -755,7 +766,7 @@ class ExcelMapper {
               extractedValue.endsWith("%")
             ) {
               extractedValue = parseFloat(
-                extractedValue.replace("%", ""),
+                extractedValue.replace("%", "")
               ).toString();
             } else if (typeof extractedValue === "number") {
               extractedValue = extractedValue.toString();
@@ -888,12 +899,16 @@ class ExcelMapper {
           const percentage2dpFields = ["d_118"];
           if (percentage2dpFields.includes(baseFieldId)) {
             let numVal;
-            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+            if (
+              typeof extractedValue === "string" &&
+              extractedValue.endsWith("%")
+            ) {
               numVal = parseFloat(extractedValue.replace("%", ""));
             } else if (typeof extractedValue === "number") {
-              numVal = (extractedValue >= 0 && extractedValue <= 1)
-                ? extractedValue * 100
-                : extractedValue;
+              numVal =
+                extractedValue >= 0 && extractedValue <= 1
+                  ? extractedValue * 100
+                  : extractedValue;
             } else {
               numVal = parseFloat(extractedValue);
             }
@@ -909,18 +924,25 @@ class ExcelMapper {
           const integerPercentageFields = ["d_97", "k_120"];
           if (integerPercentageFields.includes(baseFieldId)) {
             let numVal;
-            if (typeof extractedValue === "string" && extractedValue.endsWith("%")) {
+            if (
+              typeof extractedValue === "string" &&
+              extractedValue.endsWith("%")
+            ) {
               numVal = parseFloat(extractedValue.replace("%", ""));
             } else if (typeof extractedValue === "number") {
-              numVal = (extractedValue >= 0 && extractedValue <= 1)
-                ? extractedValue * 100
-                : extractedValue;
+              numVal =
+                extractedValue >= 0 && extractedValue <= 1
+                  ? extractedValue * 100
+                  : extractedValue;
             } else {
               numVal = parseFloat(extractedValue);
             }
 
             if (!isNaN(numVal)) {
-              extractedValue = Math.min(Math.max(Math.round(numVal), 0), 100).toString();
+              extractedValue = Math.min(
+                Math.max(Math.round(numVal), 0),
+                100
+              ).toString();
             } else {
               const defaults = { d_97: "5", k_120: "0" };
               extractedValue = defaults[baseFieldId] || "0";
@@ -929,7 +951,7 @@ class ExcelMapper {
 
           importedData[fieldId] = extractedValue;
         }
-      },
+      }
     );
 
     return importedData;
@@ -1036,11 +1058,11 @@ class ExcelMapper {
           // Note: Data validation input messages are NOT directly accessible via XLSX.js
           // Use extract-validation.py script to generate full validation JSON
         }
-      },
+      }
     );
 
     console.log(
-      `[ExcelMapper] Extracted ${Object.keys(tooltips).length} cell comments from REPORT sheet`,
+      `[ExcelMapper] Extracted ${Object.keys(tooltips).length} cell comments from REPORT sheet`
     );
     return tooltips;
   }

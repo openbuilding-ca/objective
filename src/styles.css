@@ -1098,7 +1098,9 @@ table.data-table select.form-select:hover {
   color: var(--user-input-color) !important; /* Blue text like dropdowns */
   font-weight: 500 !important; /* Match dropdown font weight */
   font-size: inherit;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   transition: all 0.2s ease;
   cursor: pointer;
   margin: 2px 0;
@@ -1805,7 +1807,9 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   border-radius: 8px;
   /* Removed box-shadow for frameless appearance */
   max-width: 390px; /* Increased by 10px more to prevent text clipping */
-  max-height: calc(100% - 80px); /* Ensure legend never exceeds container height minus margins */
+  max-height: calc(
+    100% - 80px
+  ); /* Ensure legend never exceeds container height minus margins */
   overflow-y: auto; /* Allow scrolling if content is too tall */
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

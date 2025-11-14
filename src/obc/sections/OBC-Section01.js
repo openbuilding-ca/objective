@@ -60,7 +60,7 @@ window.OBC.SectionModules.sect01 = (function () {
           "auto-populated-text",
           "auto-populated-url",
           "oaa-validation-status",
-          "oaa-license-number",
+          "oaa-license-number"
         );
         element.classList.add("editable", "user-input");
         // Remove manual-entry class to use standard graceful input styling
@@ -77,7 +77,7 @@ window.OBC.SectionModules.sect01 = (function () {
   function updateFieldsForMode(mode) {
     const smartFields = ["c_10", "c_11", "c_12"];
 
-    smartFields.forEach((fieldId) => {
+    smartFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         if (mode === "manual") {
@@ -89,7 +89,7 @@ window.OBC.SectionModules.sect01 = (function () {
             "auto-populated-url",
             "oaa-validation-status",
             "oaa-license-number",
-            "manual-entry",
+            "manual-entry"
           );
           element.title = "Click to edit - Manual entry mode";
         } else {
@@ -448,9 +448,9 @@ window.OBC.SectionModules.sect01 = (function () {
 
   function getFields() {
     const fields = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.fieldId) {
           fields[cell.fieldId] = {
@@ -475,9 +475,9 @@ window.OBC.SectionModules.sect01 = (function () {
 
   function getDropdownOptions() {
     const dropdowns = {};
-    Object.keys(sectionRows).forEach((rowKey) => {
+    Object.keys(sectionRows).forEach(rowKey => {
       const row = sectionRows[rowKey];
-      Object.keys(row.cells).forEach((cellKey) => {
+      Object.keys(row.cells).forEach(cellKey => {
         const cell = row.cells[cellKey];
         if (cell.type === "dropdown" && cell.options) {
           dropdowns[cell.dropdownId || cell.fieldId] = cell.options;
@@ -538,7 +538,7 @@ window.OBC.SectionModules.sect01 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -596,7 +596,7 @@ window.OBC.SectionModules.sect01 = (function () {
       updateValidationStatus(
         "Checking OAA member status and cross-referencing practice name...",
         "⏳",
-        "validation-pending",
+        "validation-pending"
       );
 
       // Get practice name from row 1.03 for cross-validation
@@ -664,12 +664,12 @@ window.OBC.SectionModules.sect01 = (function () {
       if (!query || query.length < 2) return [];
 
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const searchTerm = query.toLowerCase().trim();
 
       // PRECISION-FIRST filtering - prevent false positives like "Tardis" → "Thomson"
-      const results = this.directory.filter((record) => {
+      const results = this.directory.filter(record => {
         const firmLower = record.firm.toLowerCase();
         const nameLower = record.name.toLowerCase();
 
@@ -679,7 +679,7 @@ window.OBC.SectionModules.sect01 = (function () {
         }
 
         // Tier 2: EXACT word matches (high confidence)
-        const queryWords = searchTerm.split(/\s+/).filter((w) => w.length > 2); // Require min 3 chars
+        const queryWords = searchTerm.split(/\s+/).filter(w => w.length > 2); // Require min 3 chars
         if (queryWords.length === 0) return false; // Reject very short queries
 
         const firmWords = firmLower.split(/\s+/);
@@ -688,17 +688,17 @@ window.OBC.SectionModules.sect01 = (function () {
 
         if (queryWords.length === 1) {
           // Single word - must START with the query (prevent "tard" matching "thomson")
-          return allWords.some((word) => word.startsWith(queryWords[0]));
+          return allWords.some(word => word.startsWith(queryWords[0]));
         } else {
           // Multi-word - require EXACT word matches, not substring includes
-          const exactMatches = queryWords.filter((queryWord) =>
+          const exactMatches = queryWords.filter(queryWord =>
             allWords.some(
-              (recordWord) =>
+              recordWord =>
                 // Exact match OR legitimate architectural abbreviations
                 recordWord === queryWord ||
                 recordWord.startsWith(queryWord) ||
-                this.isLegitimateVariation(queryWord, recordWord),
-            ),
+                this.isLegitimateVariation(queryWord, recordWord)
+            )
           );
 
           // Require at least 70% exact matches (stricter than previous 50%)
@@ -780,7 +780,7 @@ window.OBC.SectionModules.sect01 = (function () {
    */
   async function simulateOAAValidation(url, practiceName = "") {
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Extract member name from URL for demo purposes
     const memberMatch = url.match(/\/([^/]+)$/);
@@ -793,10 +793,10 @@ window.OBC.SectionModules.sect01 = (function () {
 
     // Check if this URL matches one of our known architects
     const matchingRecord = OAALookup.directory.find(
-      (record) =>
+      record =>
         url.includes(record.url.split("/").pop()) ||
         record.name.toLowerCase().includes(memberName.toLowerCase()) ||
-        url === record.url,
+        url === record.url
     );
 
     if (matchingRecord) {
@@ -846,25 +846,25 @@ window.OBC.SectionModules.sect01 = (function () {
     const memberWords = memberName
       .toLowerCase()
       .split(/[\s\-_]+/)
-      .filter((w) => w.length > 1);
+      .filter(w => w.length > 1);
     const practiceWords = practiceName
       .toLowerCase()
       .split(/[\s\-_]+/)
-      .filter((w) => w.length > 1);
+      .filter(w => w.length > 1);
 
     // Check for direct name matches
     let matchCount = 0;
     let totalWords = memberWords.length;
 
-    memberWords.forEach((memberWord) => {
+    memberWords.forEach(memberWord => {
       if (
         practiceWords.some(
-          (practiceWord) =>
+          practiceWord =>
             practiceWord.includes(memberWord) ||
             memberWord.includes(practiceWord) ||
             // Handle common name variations
             (memberWord === "andrew" && practiceWord.includes("andy")) ||
-            (memberWord === "andy" && practiceWord.includes("andrew")),
+            (memberWord === "andy" && practiceWord.includes("andrew"))
         )
       ) {
         matchCount++;
@@ -891,7 +891,7 @@ window.OBC.SectionModules.sect01 = (function () {
     memberName,
     practiceName,
     nameMatch,
-    validationType,
+    validationType
   ) {
     const baseStatus =
       validationType === "success"
@@ -918,7 +918,7 @@ window.OBC.SectionModules.sect01 = (function () {
     statusText,
     indicator,
     cssClass,
-    licenseNumber = null,
+    licenseNumber = null
   ) {
     // Update status text (indicator icon is now embedded in statusText)
     const statusField = document.querySelector('[data-field-id="c_11"]');
@@ -946,7 +946,7 @@ window.OBC.SectionModules.sect01 = (function () {
         window.OBC.StateManager.setValue(
           "c_12",
           `License: ${licenseNumber}`,
-          "auto-populated",
+          "auto-populated"
         );
       }
     }
@@ -968,7 +968,7 @@ window.OBC.SectionModules.sect01 = (function () {
       updateValidationStatus(
         "Enter practice or architect name to begin lookup",
         "⚪",
-        "validation-empty",
+        "validation-empty"
       );
       return;
     }
@@ -977,7 +977,7 @@ window.OBC.SectionModules.sect01 = (function () {
     updateValidationStatus(
       "🔍 Searching OAA directory...",
       "⏳",
-      "validation-pending",
+      "validation-pending"
     );
 
     try {
@@ -988,7 +988,7 @@ window.OBC.SectionModules.sect01 = (function () {
         updateValidationStatus(
           "❌ No OAA member found matching this name/firm",
           "❌",
-          "validation-error",
+          "validation-error"
         );
         urlField.textContent = "No OAA record found";
         if (licenseField) {
@@ -1013,12 +1013,12 @@ window.OBC.SectionModules.sect01 = (function () {
         window.OBC.StateManager.setValue(
           "c_10",
           bestMatch.url,
-          "auto-populated",
+          "auto-populated"
         );
         window.OBC.StateManager.setValue(
           "c_12",
           `License: ${bestMatch.license}`,
-          "auto-populated",
+          "auto-populated"
         );
       }
 
@@ -1036,7 +1036,7 @@ window.OBC.SectionModules.sect01 = (function () {
         statusWithDisclaimer,
         validationResult.indicator,
         validationResult.class,
-        validationResult.licenseNumber,
+        validationResult.licenseNumber
       );
       updateClickableURL(urlField, validationResult.valid);
     } catch (error) {
@@ -1044,7 +1044,7 @@ window.OBC.SectionModules.sect01 = (function () {
       updateValidationStatus(
         "⚠️ Error performing OAA lookup - please try again",
         "⚠️",
-        "validation-warning",
+        "validation-warning"
       );
     }
   }
@@ -1082,7 +1082,7 @@ window.OBC.SectionModules.sect01 = (function () {
       let lookupTimeout;
 
       // Trigger lookup on Enter key
-      practiceField.addEventListener("keypress", (e) => {
+      practiceField.addEventListener("keypress", e => {
         if (e.key === "Enter" && getOAAMode() === "smart") {
           clearTimeout(lookupTimeout);
           setTimeout(() => {
@@ -1112,7 +1112,7 @@ window.OBC.SectionModules.sect01 = (function () {
             result.status,
             result.indicator,
             result.class,
-            result.licenseNumber,
+            result.licenseNumber
           );
           updateClickableURL(urlField, result.valid);
         }
@@ -1125,7 +1125,7 @@ window.OBC.SectionModules.sect01 = (function () {
         updateValidationStatus(
           "Enter practice name in row 1.03 and press Enter to search OAA directory and view auto-complete options",
           "⚪",
-          "validation-empty",
+          "validation-empty"
         );
       }
     }, 500);
@@ -1234,13 +1234,13 @@ window.OBC.SectionModules.sect01 = (function () {
       // Build suggestions HTML - clean dropdown presentation with demo data warning
       const suggestionsHTML = results
         .map(
-          (result) => `
+          result => `
          <div class="autocomplete-item" data-url="${result.url}" data-firm="${result.firm}" data-name="${result.name}" data-license="${result.license}">
            <div class="autocomplete-firm">${result.firm}</div>
            <div class="autocomplete-architect">${result.name} (License: ${result.license})</div>
            <div class="autocomplete-status ${result.status.toLowerCase()}">${result.status}</div>
          </div>
-       `,
+       `
         )
         .join("");
 
@@ -1250,12 +1250,12 @@ window.OBC.SectionModules.sect01 = (function () {
         `<div class="autocomplete-disclaimer">⚠️ Demo data - verify with official OAA directory</div>`;
 
       // Add click handlers
-      container.querySelectorAll(".autocomplete-item").forEach((item) => {
+      container.querySelectorAll(".autocomplete-item").forEach(item => {
         item.addEventListener("click", () => {
           const selectedURL = item.dataset.url;
           const selectedFirm = item.dataset.firm;
           const selectedArchitect = item.querySelector(
-            ".autocomplete-architect",
+            ".autocomplete-architect"
           ).textContent;
 
           // Extract license number from architect text (e.g., "John Smith (License: 1234)")
@@ -1280,27 +1280,27 @@ window.OBC.SectionModules.sect01 = (function () {
             window.OBC.StateManager.setValue(
               "c_3",
               selectedFirm,
-              "user-modified",
+              "user-modified"
             );
             window.OBC.StateManager.setValue(
               "c_10",
               selectedURL,
-              "user-modified",
+              "user-modified"
             );
             window.OBC.StateManager.setValue(
               "c_12",
               `License: ${licenseNumber}`,
-              "calculated",
+              "calculated"
             );
           }
 
           // Trigger validation
-          validateOAAMembership(selectedURL).then((result) => {
+          validateOAAMembership(selectedURL).then(result => {
             updateValidationStatus(
               result.status,
               result.indicator,
               result.class,
-              result.licenseNumber,
+              result.licenseNumber
             );
             updateClickableURL(urlField, result.valid);
           });
@@ -1348,8 +1348,8 @@ window.OBC.SectionModules.sect01 = (function () {
           "Lara McKendrick Architecture Inc.",
           "Independent Practice",
         ];
-        const matchedFirm = firmNames.find((firm) =>
-          currentContent.includes(firm),
+        const matchedFirm = firmNames.find(firm =>
+          currentContent.includes(firm)
         );
         if (matchedFirm) {
           practiceField.textContent = matchedFirm; // Clean it up
@@ -1474,7 +1474,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
   function addFloatingStampUpload() {
     const sectionContent = document.querySelector(
-      '[data-render-section="buildingInfo"]',
+      '[data-render-section="buildingInfo"]'
     );
     if (!sectionContent || document.getElementById("floating-stamp-upload"))
       return;
@@ -1524,11 +1524,11 @@ window.OBC.SectionModules.sect01 = (function () {
       fileInput.click();
     });
 
-    fileInput.addEventListener("change", (e) => {
+    fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
           preview.src = e.target.result;
           preview.style.display = "block";
           placeholder.style.display = "none";

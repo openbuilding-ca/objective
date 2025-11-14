@@ -759,7 +759,7 @@ This two-factor verification approach significantly enhances security while main
    ```javascript
    // OBC Matrix will NOT store ANY firm data except applicant's own
    const OAALookup = {
-     search: async (query) => {
+     search: async query => {
        // Query OAA API for single record
        const result = await fetch("https://api.oaa.on.ca/v1/search", {
          headers: { Authorization: "Bearer OBJECTIVE_OBC_MATRIX_KEY" },
@@ -780,7 +780,7 @@ This two-factor verification approach significantly enhances security while main
    const response = await fetch(apiEndpoint, { body: encryptedQuery });
    const decryptedResult = await decryptWithPrivateKey(
      response,
-     OBC_PRIVATE_KEY,
+     OBC_PRIVATE_KEY
    );
 
    // Even if intercepted, transmission contains only meaningless encrypted code
@@ -860,7 +860,7 @@ The [OAA Directory](https://oaa.on.ca/oaa-directory) provides publicly available
 async function updateOAADatabase() {
   // Download public Excel file of practices
   const response = await fetch(
-    "https://oaa.on.ca/oaa-directory/practices-listing.xlsx",
+    "https://oaa.on.ca/oaa-directory/practices-listing.xlsx"
   );
   const workbook = XLSX.read(await response.arrayBuffer());
 
@@ -945,7 +945,7 @@ async function handleStampUpload(file) {
     // Show success with member details
     updateStampStatus(
       `✓ Verified: ${validation.name} (License ${validation.license})`,
-      "success",
+      "success"
     );
 
     // Optional: Auto-populate other form fields
@@ -954,7 +954,7 @@ async function handleStampUpload(file) {
     // Show validation warning with manual override
     updateStampStatus(
       `⚠ ${validation.reason}. Please verify manually.`,
-      "warning",
+      "warning"
     );
 
     // Provide suggested matches if available
@@ -1072,17 +1072,17 @@ window.TEUI.DataBridge = {
   fieldMappings: {
     obc_gross_area: {
       maps_to: "teui_conditioned_area",
-      transform: (grossArea) => grossArea * 0.9, // Gross to conditioned
+      transform: grossArea => grossArea * 0.9, // Gross to conditioned
       notes: "OBC uses gross area, TEUI uses conditioned area",
     },
     obc_window_area: {
       maps_to: "teui_glazing_area",
-      transform: (area) => area, // Direct mapping
-      validation: (value) => value > 0 && value < 10000,
+      transform: area => area, // Direct mapping
+      validation: value => value > 0 && value < 10000,
     },
     obc_occupancy_class: {
       maps_to: "teui_building_type",
-      transform: (obcClass) => mapOBCToTEUIClass(obcClass),
+      transform: obcClass => mapOBCToTEUIClass(obcClass),
     },
   },
 
@@ -1268,13 +1268,13 @@ function loadState() {
     console.log(
       "🔍 RESTORE DEBUG: Found saved state with",
       stateData.fields?.length,
-      "fields",
+      "fields"
     );
 
     stateData.fields?.forEach(([fieldId, fieldData]) => {
       fields.set(fieldId, fieldData);
       console.log(
-        `🔍 RESTORE: ${fieldId} = "${fieldData.value}" (${fieldData.state})`,
+        `🔍 RESTORE: ${fieldId} = "${fieldData.value}" (${fieldData.state})`
       );
 
       // CHECK: Is updateUI being called?
@@ -1316,7 +1316,7 @@ function updateUI(fieldId, value) {
 document.addEventListener("DOMContentLoaded", function () {
   console.log(
     "🔍 TIMING: DOM loaded, field elements exist:",
-    document.querySelectorAll("[data-field-id]").length,
+    document.querySelectorAll("[data-field-id]").length
   );
 
   // Delay state restoration to ensure all sections are rendered
@@ -1358,7 +1358,7 @@ function debugStateUISync() {
   console.log(`StateManager fields: ${stateManagerFields.length}`);
   console.log(`DOM elements: ${domElements.length}`);
 
-  stateManagerFields.slice(0, 5).forEach((fieldId) => {
+  stateManagerFields.slice(0, 5).forEach(fieldId => {
     const stateValue = StateManager.getValue(fieldId);
     const domElement = document.querySelector(`[data-field-id="${fieldId}"]`);
     const domValue = domElement
@@ -1366,7 +1366,7 @@ function debugStateUISync() {
       : "NOT FOUND";
 
     console.log(
-      `${fieldId}: State="${stateValue}" | DOM="${domValue}" | Match=${stateValue === domValue}`,
+      `${fieldId}: State="${stateValue}" | DOM="${domValue}" | Match=${stateValue === domValue}`
     );
   });
 }
@@ -1423,7 +1423,7 @@ function debugOBJECTIVEStateLoss() {
   const saved = localStorage.getItem("TEUI_Calculator_State");
   console.log(
     "1. localStorage check:",
-    saved ? "✅ State exists" : "❌ No state found",
+    saved ? "✅ State exists" : "❌ No state found"
   );
 
   if (saved) {
@@ -1434,10 +1434,10 @@ function debugOBJECTIVEStateLoss() {
 
     // Check specific user-modified fields
     const testFields = ["h_15", "h_13", "d_12", "i_16"];
-    testFields.forEach((fieldId) => {
+    testFields.forEach(fieldId => {
       if (parsedState[fieldId]) {
         console.log(
-          `   - ${fieldId}: "${parsedState[fieldId].value}" (${parsedState[fieldId].state})`,
+          `   - ${fieldId}: "${parsedState[fieldId].value}" (${parsedState[fieldId].state})`
         );
       }
     });
@@ -1449,7 +1449,7 @@ function debugOBJECTIVEStateLoss() {
     console.log(`2. StateManager field count: ${debugInfo.fieldCount}`);
 
     const testFields = ["h_15", "h_13", "d_12", "i_16"];
-    testFields.forEach((fieldId) => {
+    testFields.forEach(fieldId => {
       const value = TEUI.StateManager.getValue(fieldId);
       const state = TEUI.StateManager.getDebugInfo(fieldId);
       console.log(`   - ${fieldId}: "${value}" (${state?.state || "unknown"})`);
@@ -1459,7 +1459,7 @@ function debugOBJECTIVEStateLoss() {
   // 3. Check actual DOM elements
   console.log("3. DOM element check:");
   const testFields = ["h_15", "h_13", "d_12", "i_16"];
-  testFields.forEach((fieldId) => {
+  testFields.forEach(fieldId => {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
       const domValue =
@@ -1481,7 +1481,7 @@ function debugOBJECTIVEStateLoss() {
   // Store values before calculation
   const beforeCalc = {};
   const testFields = ["h_15", "h_13", "d_12", "i_16"];
-  testFields.forEach((fieldId) => {
+  testFields.forEach(fieldId => {
     beforeCalc[fieldId] = TEUI.StateManager.getValue(fieldId);
   });
 
@@ -1491,11 +1491,11 @@ function debugOBJECTIVEStateLoss() {
 
     // Check values after calculation
     console.log("   - After calculateAll():");
-    testFields.forEach((fieldId) => {
+    testFields.forEach(fieldId => {
       const afterValue = TEUI.StateManager.getValue(fieldId);
       const changed = beforeCalc[fieldId] !== afterValue;
       console.log(
-        `     - ${fieldId}: "${beforeCalc[fieldId]}" → "${afterValue}" ${changed ? "❌ CHANGED" : "✅ preserved"}`,
+        `     - ${fieldId}: "${beforeCalc[fieldId]}" → "${afterValue}" ${changed ? "❌ CHANGED" : "✅ preserved"}`
       );
     });
   }
@@ -1919,7 +1919,7 @@ function initializeEventHandlers() {
   // ✅ REQUIRED: Only add calculation listeners (if needed)
   if (window.OBC?.StateManager?.addListener) {
     const calculationTriggers = ["field_1", "field_2"]; // Your calculation fields
-    calculationTriggers.forEach((fieldId) => {
+    calculationTriggers.forEach(fieldId => {
       window.OBC.StateManager.addListener(fieldId, performCalculations);
     });
   }
@@ -2165,9 +2165,9 @@ window.OBC.SectionModules.sectXX = (function () {
   function getDropdownOptions() {
     const options = {};
 
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -2221,7 +2221,7 @@ window.OBC.SectionModules.sectXX = (function () {
       "o",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
 
@@ -2277,7 +2277,7 @@ window.OBC.SectionModules.sectXX = (function () {
   function setCalculatedValue(
     fieldId,
     rawValue,
-    formatType = "number-2dp-comma",
+    formatType = "number-2dp-comma"
   ) {
     // Use global formatNumber function
     const formattedValue = window.OBC.formatNumber
@@ -2295,7 +2295,7 @@ window.OBC.SectionModules.sectXX = (function () {
       window.OBC.StateManager.setValue(
         fieldId,
         rawValue.toString(),
-        "calculated",
+        "calculated"
       );
     }
   }
@@ -2327,7 +2327,7 @@ window.OBC.SectionModules.sectXX = (function () {
     // ✅ OPTIONAL: Add calculation listeners (if needed)
     if (SECTION_CONFIG.hasCalculations) {
       const calculationTriggers = ["d_39", "d_40"]; // Replace with actual field IDs
-      calculationTriggers.forEach((fieldId) => {
+      calculationTriggers.forEach(fieldId => {
         if (window.OBC.StateManager?.addListener) {
           window.OBC.StateManager.addListener(fieldId, performCalculations);
         }
@@ -2529,7 +2529,7 @@ The Section 03 pattern consists of **5 critical components** that work together:
 function setCalculatedValue(
   fieldId,
   rawValue,
-  formatType = "number-2dp-comma",
+  formatType = "number-2dp-comma"
 ) {
   // Recursion protection
   if (window.sectionCalculationInProgress) return;
@@ -2555,7 +2555,7 @@ function setCalculatedValue(
     window.OBC.StateManager.setValue(
       fieldId,
       rawValue.toString(),
-      "calculated",
+      "calculated"
     );
   }
 }
@@ -2600,17 +2600,17 @@ function initializeEventHandlers() {
 
   // ✅ CRITICAL: StateManager listeners for cross-component communication
   const calculationTriggers = ["h_59", "h_60", "h_61"]; // Update with your field IDs
-  calculationTriggers.forEach((fieldId) => {
+  calculationTriggers.forEach(fieldId => {
     if (window.OBC.StateManager?.addListener) {
       window.OBC.StateManager.addListener(fieldId, performCalculations);
     }
   });
 
   // ✅ CRITICAL: Direct DOM listeners with delay for immediate UI feedback
-  calculationTriggers.forEach((fieldId) => {
+  calculationTriggers.forEach(fieldId => {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
-      ["input", "blur", "change"].forEach((eventType) => {
+      ["input", "blur", "change"].forEach(eventType => {
         element.addEventListener(eventType, () => {
           // 50ms delay allows StateManager to process first
           setTimeout(performCalculations, 50);
@@ -2725,7 +2725,7 @@ function getNumericValue(fieldId, defaultValue = 0) {
 function setCalculatedValue(
   fieldId,
   rawValue,
-  formatType = "number-2dp-comma",
+  formatType = "number-2dp-comma"
 ) {
   // Recursion protection
   if (window.sectionCalculationInProgress) return;
@@ -2751,7 +2751,7 @@ function setCalculatedValue(
     window.OBC.StateManager.setValue(
       fieldId,
       rawValue.toString(),
-      "calculated",
+      "calculated"
     );
   }
 }
@@ -2800,17 +2800,17 @@ function initializeEventHandlers() {
   const calculationTriggers = ["d_22", "e_22", "f_22"]; // REPLACE WITH YOUR FIELD IDs
 
   // ✅ CRITICAL: StateManager listeners for cross-component communication
-  calculationTriggers.forEach((fieldId) => {
+  calculationTriggers.forEach(fieldId => {
     if (window.OBC.StateManager?.addListener) {
       window.OBC.StateManager.addListener(fieldId, performCalculations);
     }
   });
 
   // ✅ CRITICAL: Direct DOM listeners with delay for immediate UI feedback
-  calculationTriggers.forEach((fieldId) => {
+  calculationTriggers.forEach(fieldId => {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
-      ["input", "blur", "change"].forEach((eventType) => {
+      ["input", "blur", "change"].forEach(eventType => {
         element.addEventListener(eventType, () => {
           // 50ms delay allows StateManager to process first
           setTimeout(performCalculations, 50);
@@ -2937,7 +2937,7 @@ function handleFieldBlur(event) {
     window.TEUI.StateManager.setValue(
       currentFieldId,
       rawValueToStore,
-      "user-modified",
+      "user-modified"
     );
   }
 
@@ -2961,7 +2961,7 @@ function calculateTargetModel() {
   let totals = { loss: 0, gain: 0, areaD: 0 };
 
   // Calculate each component independently
-  componentConfig.forEach((config) => {
+  componentConfig.forEach(config => {
     calculateComponentRow(config.row, config, false);
     const area = getNumericValue(`d_${config.row}`) || 0;
     totals.loss += getNumericValue(`i_${config.row}`) || 0;
@@ -2991,7 +2991,7 @@ function setCalculatedValue(fieldId, rawValue, format = "number") {
     window.TEUI.StateManager.setValue(
       fieldId,
       rawValue.toString(),
-      "calculated",
+      "calculated"
     );
   }
 }
@@ -3030,17 +3030,17 @@ function initializeEventHandlers() {
   // 1. Register StateManager listeners for dependencies
   if (window.TEUI?.StateManager?.addListener) {
     const dependencies = ["d_20", "d_21", "h_22"]; // Your dependency fields
-    dependencies.forEach((fieldId) => {
+    dependencies.forEach(fieldId => {
       window.TEUI.StateManager.addListener(fieldId, calculateAll);
     });
   }
 
   // 2. Set up direct field event handlers
-  editableFields.forEach((fieldId) => {
+  editableFields.forEach(fieldId => {
     const field = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (field?.classList.contains("editable")) {
       field.addEventListener("blur", handleFieldBlur.bind(field));
-      field.addEventListener("keydown", (e) => {
+      field.addEventListener("keydown", e => {
         if (e.key === "Enter") {
           e.preventDefault();
           field.blur();

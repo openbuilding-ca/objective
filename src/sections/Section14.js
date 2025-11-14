@@ -77,7 +77,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       };
 
       console.log(
-        `S14: Reference defaults loaded from standard: ${currentStandard}`,
+        `S14: Reference defaults loaded from standard: ${currentStandard}`
       );
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
@@ -154,7 +154,7 @@ window.TEUI.SectionModules.sect14 = (function () {
         "h_132",
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           let value;
@@ -209,12 +209,12 @@ window.TEUI.SectionModules.sect14 = (function () {
       // S14-specific fields to sync (minimal user inputs)
       const fieldsToSync = ["d_142"]; // Only one user input field
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -236,7 +236,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S14');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S14");
     },
   };
 
@@ -255,7 +255,7 @@ window.TEUI.SectionModules.sect14 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#tediSummary .section-header, #tediSummary .section-title",
+      "#tediSummary .section-header, #tediSummary .section-title"
     );
     if (
       !sectionHeader ||
@@ -276,11 +276,11 @@ window.TEUI.SectionModules.sect14 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 14.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 14."
         )
       ) {
         ModeManager.resetState();
@@ -304,9 +304,10 @@ window.TEUI.SectionModules.sect14 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -319,7 +320,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 
@@ -418,7 +419,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     window.TEUI.StateManager?.setValue(
       fieldId,
       rawValue.toString(),
-      "calculated",
+      "calculated"
     );
 
     // Update DOM with formatted value
@@ -756,10 +757,10 @@ window.TEUI.SectionModules.sect14 = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -826,7 +827,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -882,16 +883,16 @@ window.TEUI.SectionModules.sect14 = (function () {
     const sm = window.TEUI.StateManager;
 
     // D127 (TED Targeted): =(I97+I98+I103+M121)-I80
-    ["i_97", "i_98", "i_103", "m_121", "i_80"].forEach((dep) =>
-      sm.registerDependency(dep, "d_127"),
+    ["i_97", "i_98", "i_103", "m_121", "i_80"].forEach(dep =>
+      sm.registerDependency(dep, "d_127")
     );
     // H127 (TEDI): =D127/H15
     sm.registerDependency("d_127", "h_127");
     sm.registerDependency("h_15", "h_127");
 
     // D128 (TED Envelope): =(I97+I98+I103)-I80
-    ["i_97", "i_98", "i_103", "i_80"].forEach((dep) =>
-      sm.registerDependency(dep, "d_128"),
+    ["i_97", "i_98", "i_103", "i_80"].forEach(dep =>
+      sm.registerDependency(dep, "d_128")
     );
     // H128 (TEDI Envelope): =D128/H15
     sm.registerDependency("d_128", "h_128");
@@ -922,8 +923,8 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     // d_131: TEL Heatloss (Total Envelope Heatloss)
     // Excel formula: =SUM(I97:I98)+I103 which is i_97 + i_98 + i_103 in app terms
-    ["i_97", "i_98", "i_103"].forEach((dep) =>
-      sm.registerDependency(dep, "d_131"),
+    ["i_97", "i_98", "i_103"].forEach(dep =>
+      sm.registerDependency(dep, "d_131")
     );
     // h_131: TELI Heatloss Intensity kWh/m²/yr
     sm.registerDependency("d_131", "h_131");
@@ -931,8 +932,8 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     // d_132 & h_132: CEG and CEGI
     // Excel formula: =SUM(K97:K98)+K103
-    ["k_97", "k_98", "k_103"].forEach((dep) =>
-      sm.registerDependency(dep, "d_132"),
+    ["k_97", "k_98", "k_103"].forEach(dep =>
+      sm.registerDependency(dep, "d_132")
     ); // Added k_103 dependency
     sm.registerDependency("d_132", "h_132");
     sm.registerDependency("h_15", "h_132");
@@ -961,7 +962,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     try {
       // Get Reference values from upstream sections with debugging
-      const getRefValue = (fieldId) => {
+      const getRefValue = fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
         const fallbackValue =
@@ -973,7 +974,7 @@ window.TEUI.SectionModules.sect14 = (function () {
         // TEMPORARY DEBUG: Only log problematic values now that we know the issue
         if (!finalValue || isNaN(finalValue)) {
           console.log(
-            `[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`,
+            `[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`
           );
         }
 
@@ -1020,7 +1021,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
         ref_tedHeatloss_d127.toString(),
-        "calculated",
+        "calculated"
       );
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
@@ -1028,7 +1029,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_h_127",
         ref_tedi_h127.toString(),
-        "calculated",
+        "calculated"
       );
 
       // d_128: TED Envelope (Heating Load - Envelope Only)
@@ -1037,7 +1038,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_128",
         ref_tediEnvelope_d128.toString(),
-        "calculated",
+        "calculated"
       );
 
       // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only kWh/m²/yr)
@@ -1045,7 +1046,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_h_128",
         ref_tediEnvelope_h128.toString(),
-        "calculated",
+        "calculated"
       );
 
       // d_129 and related cooling calculations
@@ -1053,7 +1054,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_129",
         ref_cedCoolingUnmitigated_d129.toString(),
-        "calculated",
+        "calculated"
       );
 
       // h_129: CEDI Unmitigated (kWh/m²/yr)
@@ -1062,7 +1063,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_h_129",
         ref_cediUnmitigated_h129.toString(),
-        "calculated",
+        "calculated"
       );
 
       // ✅ PHASE 3: ref_m_129 now calculated by S13 (hybrid architecture)
@@ -1075,7 +1076,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_130",
         ref_cediCoolingWm2_d130.toString(),
-        "calculated",
+        "calculated"
       );
 
       // h_130: CEDI Mitigated W/m2 (depends on S13's ref_m_129)
@@ -1086,7 +1087,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_h_130",
         ref_cediMitigated_h130.toString(),
-        "calculated",
+        "calculated"
       );
 
       // d_131: TEL Heatloss
@@ -1094,7 +1095,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_131",
         ref_telHeatloss_d131.toString(),
-        "calculated",
+        "calculated"
       );
 
       // h_131: TELI Heatloss Intensity
@@ -1102,7 +1103,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_h_131",
         ref_teli_h131.toString(),
-        "calculated",
+        "calculated"
       );
 
       // d_132 & h_132: CEG and CEGI
@@ -1110,21 +1111,21 @@ window.TEUI.SectionModules.sect14 = (function () {
       window.TEUI?.StateManager?.setValue(
         "ref_d_132",
         ref_cegHeatgain_d132.toString(),
-        "calculated",
+        "calculated"
       );
 
       const ref_cegi_h132 = area > 0 ? ref_cegHeatgain_d132 / area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_132",
         ref_cegi_h132.toString(),
-        "calculated",
+        "calculated"
       );
 
       // console.log("[Section14] Reference Model calculations stored");
     } catch (error) {
       console.error(
         "[Section14] Error in Reference Model calculations:",
-        error,
+        error
       );
     }
   }
@@ -1335,7 +1336,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     const fields = getFields();
 
-    Object.keys(fields).forEach((fieldId) => {
+    Object.keys(fields).forEach(fieldId => {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -1427,12 +1428,12 @@ window.TEUI.SectionModules.sect14 = (function () {
     const uniqueDependencies = [...new Set(dependencies)];
 
     // ✅ S15 PROVEN PATTERN: Add listeners with complete calculation + UI update
-    const addCalculationListener = (key) => {
+    const addCalculationListener = key => {
       sm.addListener(key, () => {
         // ✅ DEBUG: Log critical S13 dependency changes
         if (["d_122", "ref_d_122", "m_121", "ref_m_121"].includes(key)) {
           console.log(
-            `[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`,
+            `[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`
           );
         }
         calculateAll();
@@ -1441,13 +1442,13 @@ window.TEUI.SectionModules.sect14 = (function () {
     };
 
     // Add listeners for all unique dependencies
-    uniqueDependencies.forEach((dep) => {
+    uniqueDependencies.forEach(dep => {
       addCalculationListener(dep);
     });
 
     // ✅ CONSISTENT PATTERN: Add climate listeners using same pattern
     const climateFields = ["d_20", "d_21", "h_22", "d_22"];
-    climateFields.forEach((field) => {
+    climateFields.forEach(field => {
       addCalculationListener(field);
       addCalculationListener(`ref_${field}`); // Add Reference versions too
     });
@@ -1459,7 +1460,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     });
 
     console.log(
-      `[Section14] ✅ Added comprehensive listeners for ${uniqueDependencies.length} dependencies + ${climateFields.length * 2} climate fields`,
+      `[Section14] ✅ Added comprehensive listeners for ${uniqueDependencies.length} dependencies + ${climateFields.length * 2} climate fields`
     );
   }
 
@@ -1468,7 +1469,7 @@ window.TEUI.SectionModules.sect14 = (function () {
    */
   function onSectionRendered() {
     console.log(
-      "S14: Section rendered - initializing Pattern A Dual-State Module.",
+      "S14: Section rendered - initializing Pattern A Dual-State Module."
     );
 
     // 1. Initialize the ModeManager and its internal states
@@ -1482,7 +1483,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       registerDependencies();
     } else {
       console.warn(
-        "StateManager not ready during sect14 onSectionRendered dependency registration.",
+        "StateManager not ready during sect14 onSectionRendered dependency registration."
       );
     }
 

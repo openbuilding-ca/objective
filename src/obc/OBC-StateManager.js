@@ -103,7 +103,7 @@ window.OBC.StateManager = (function () {
     } catch (e) {
       console.error(
         `Error formatting value ${value} with format ${formatType}:`,
-        e,
+        e
       );
       return String(value);
     }
@@ -256,7 +256,7 @@ window.OBC.StateManager = (function () {
   function notifyListeners(fieldId, newValue, oldValue, state) {
     const fieldListeners = listeners.get(fieldId);
     if (fieldListeners) {
-      fieldListeners.forEach((callback) => {
+      fieldListeners.forEach(callback => {
         try {
           callback(newValue, oldValue, state);
         } catch (e) {
@@ -304,7 +304,7 @@ window.OBC.StateManager = (function () {
             // This is a numeric value - apply proper formatting for display
             const formattedValue = window.OBC.formatNumber(
               numericValue,
-              "number-2dp-comma",
+              "number-2dp-comma"
             );
             element.textContent = formattedValue;
           } else {
@@ -404,7 +404,7 @@ window.OBC.StateManager = (function () {
     } catch (e) {
       console.error(
         "OBC StateManager: Failed to save state to localStorage:",
-        e,
+        e
       );
     }
   }
@@ -446,7 +446,7 @@ window.OBC.StateManager = (function () {
     } catch (e) {
       console.error(
         "OBC StateManager: Failed to load state from localStorage:",
-        e,
+        e
       );
     }
     return false;
@@ -532,13 +532,13 @@ window.OBC.StateManager = (function () {
 
     // Find all editable fields across all sections
     const editableFields = document.querySelectorAll(
-      ".editable[data-field-id]",
+      ".editable[data-field-id]"
     );
 
-    editableFields.forEach((field) => {
+    editableFields.forEach(field => {
       if (!field.hasOBCGlobalListeners) {
         // Prevent enter key from creating newlines
-        field.addEventListener("keydown", (e) => {
+        field.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             field.blur();

@@ -52,7 +52,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
-        "S03: Target defaults set from field definitions - single source of truth",
+        "S03: Target defaults set from field definitions - single source of truth"
       );
     },
     saveState: function () {
@@ -79,16 +79,16 @@ window.TEUI.SectionModules.sect03 = (function () {
     },
     notifyListeners: function (fieldId, value) {
       if (this.listeners[fieldId]) {
-        this.listeners[fieldId].forEach((callback) => callback(value));
+        this.listeners[fieldId].forEach(callback => callback(value));
       }
     },
     syncFromGlobalState: function (fieldIds = ["d_19", "h_19", "i_21"]) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -135,7 +135,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
-        "S03: Reference defaults set from field definitions - single source of truth",
+        "S03: Reference defaults set from field definitions - single source of truth"
       );
     },
     saveState: function () {
@@ -162,17 +162,17 @@ window.TEUI.SectionModules.sect03 = (function () {
     },
     notifyListeners: function (fieldId, value) {
       if (this.listeners[fieldId]) {
-        this.listeners[fieldId].forEach((callback) => callback(value));
+        this.listeners[fieldId].forEach(callback => callback(value));
       }
     },
     syncFromGlobalState: function (fieldIds = ["d_19", "h_19", "i_21"]) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S03 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+            `S03 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
           );
         }
       });
@@ -210,11 +210,11 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S03');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S03");
     },
     resetState: function () {
       console.log(
-        "S03: Resetting state and clearing localStorage for Section 3.",
+        "S03: Resetting state and clearing localStorage for Section 3."
       );
       TargetState.setDefaults();
       TargetState.saveState();
@@ -242,7 +242,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value,
-          "user-modified",
+          "user-modified"
         );
       }
     },
@@ -254,7 +254,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // Update province dropdown
       const provinceSelect = sectionElement.querySelector(
-        '[data-dropdown-id="dd_d_19"]',
+        '[data-dropdown-id="dd_d_19"]'
       );
       if (provinceSelect && currentState.getValue("d_19")) {
         provinceSelect.value = currentState.getValue("d_19");
@@ -264,7 +264,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // Update city dropdown
       const citySelect = sectionElement.querySelector(
-        '[data-dropdown-id="dd_h_19"]',
+        '[data-dropdown-id="dd_h_19"]'
       );
       if (citySelect && currentState.getValue("h_19")) {
         citySelect.value = currentState.getValue("h_19");
@@ -272,7 +272,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // Update timeframe dropdown
       const timeframeSelect = sectionElement.querySelector(
-        '[data-dropdown-id="dd_h_20"]',
+        '[data-dropdown-id="dd_h_20"]'
       );
       if (timeframeSelect && currentState.getValue("h_20")) {
         timeframeSelect.value = currentState.getValue("h_20");
@@ -280,7 +280,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // Update capacitance dropdown - CRITICAL for GFCDD calculation
       const capacitanceSelect = sectionElement.querySelector(
-        '[data-dropdown-id="dd_h_21"]',
+        '[data-dropdown-id="dd_h_21"]'
       );
       const capacitanceValue = currentState.getValue("h_21") || "Capacitance";
       if (capacitanceSelect) {
@@ -290,7 +290,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
       const percentageSlider = sectionElement.querySelector(
-        'input.form-range[data-field-id="i_21"]',
+        'input.form-range[data-field-id="i_21"]'
       );
       const percentageValue = currentState.getValue("i_21");
       if (
@@ -310,7 +310,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // Update all other editable fields from current state
       const editableFields = sectionElement.querySelectorAll("[data-field-id]");
-      editableFields.forEach((field) => {
+      editableFields.forEach(field => {
         const fieldId = field.getAttribute("data-field-id");
         const stateValue = currentState.getValue(fieldId);
         if (stateValue !== undefined && stateValue !== null) {
@@ -355,14 +355,14 @@ window.TEUI.SectionModules.sect03 = (function () {
         "n_24",
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           let valueToDisplay;
           if (this.currentMode === "reference") {
             // Reference mode: Read ONLY ref_ prefixed values.
             valueToDisplay = window.TEUI.StateManager.getValue(
-              `ref_${fieldId}`,
+              `ref_${fieldId}`
             );
           } else {
             valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
@@ -399,7 +399,7 @@ window.TEUI.SectionModules.sect03 = (function () {
               }
               formattedValue = window.TEUI.formatNumber(
                 numericValue,
-                formatType,
+                formatType
               );
             }
             element.textContent = formattedValue;
@@ -516,7 +516,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const checkData = () => {
         attempts++;
         console.log(
-          `S03: Checking climate data availability (attempt ${attempts}/${maxRetries})`,
+          `S03: Checking climate data availability (attempt ${attempts}/${maxRetries})`
         );
 
         if (
@@ -525,7 +525,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         ) {
           console.log(
             "S03: Climate data available",
-            Object.keys(window.TEUI.ClimateData),
+            Object.keys(window.TEUI.ClimateData)
           );
           callback(window.TEUI.ClimateData);
           return;
@@ -533,7 +533,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
         if (attempts >= maxRetries) {
           console.error(
-            "S03: Error - Climate data not available after max retries",
+            "S03: Error - Climate data not available after max retries"
           );
           return;
         }
@@ -654,7 +654,8 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     const climateValues = {
       d_20: hdd !== null && hdd !== undefined && hdd !== 666 ? hdd : "N/A",
-      d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed for user-editable field
+      d_21:
+        cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed for user-editable field
       j_19: determineClimateZone(hdd),
       d_23: selectedJanTemp, // ✅ Now uses occupancy-aware temperature selection
       d_24: cityData.July_2_5_Tdb || "34",
@@ -710,7 +711,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {
             const provinces = ClimateDataService.getProvinces();
-            return provinces.map((province) => ({
+            return provinces.map(province => ({
               value: province,
               name: ClimateDataService.getProvinceFullName(province),
             }));
@@ -737,7 +738,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
             const cities =
               ClimateDataService.getCitiesForProvince(provinceValue);
-            return cities.map((city) => ({
+            return cities.map(city => ({
               value: city,
               name: city,
             }));
@@ -821,9 +822,10 @@ window.TEUI.SectionModules.sect03 = (function () {
       label: "Cooling Degree Days (CDD)",
       cells: {
         c: {
-          content: 'Cooling Degree Days (<a href="https://climateatlas.ca/map/canada/cooldd_2060_85#" target="_blank" rel="noopener noreferrer">CDD</a>)',
+          content:
+            'Cooling Degree Days (<a href="https://climateatlas.ca/map/canada/cooldd_2060_85#" target="_blank" rel="noopener noreferrer">CDD</a>)',
           type: "label",
-          htmlContent: true  // ✅ Enable HTML rendering for clickable link
+          htmlContent: true, // ✅ Enable HTML rendering for clickable link
         },
         d: {
           fieldId: "d_21",
@@ -1059,10 +1061,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     const fields = {};
 
     // Extract field definitions from layout rows
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.fieldId && cell.type) {
           // Create a field definition with relevant properties
           fields[cell.fieldId] = {
@@ -1098,10 +1100,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     const options = {};
 
     // Extract dropdown options from cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -1164,7 +1166,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -1280,7 +1282,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     }
 
     // Add city options
-    cities.forEach((city) => {
+    cities.forEach(city => {
       const option = document.createElement("option");
       option.value = city;
       option.textContent = city;
@@ -1308,7 +1310,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       "City dropdown updated for",
       provinceValue,
       "- selected:",
-      cityDropdown.value,
+      cityDropdown.value
     );
   }
 
@@ -1700,7 +1702,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         "Seasonal",
       ];
 
-      categoryOrder.forEach((category) => {
+      categoryOrder.forEach(category => {
         if (categorizedData[category] && categorizedData[category].length > 0) {
           formattedData += `<div style="margin-top: 16px; margin-bottom: 8px; font-weight: bold; color: #0066cc; border-bottom: 2px solid #0066cc;">${category}</div>`;
 
@@ -1826,7 +1828,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         if (key === "d_21" && value === "Unavailable") {
           const currentValue = TargetState.getValue("d_21");
           // Don't overwrite numeric user values with "Unavailable"
-          if (currentValue && currentValue !== "Unavailable" && currentValue !== "N/A" && !isNaN(parseFloat(currentValue))) {
+          if (
+            currentValue &&
+            currentValue !== "Unavailable" &&
+            currentValue !== "N/A" &&
+            !isNaN(parseFloat(currentValue))
+          ) {
             // console.log(`[S03] Preserving user-entered Target CDD: ${currentValue}`);
             return; // Skip this update - keep user value
           }
@@ -1896,7 +1903,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         if (key === "d_21" && value === "Unavailable") {
           const currentValue = ReferenceState.getValue("d_21");
           // Don't overwrite numeric user values with "Unavailable"
-          if (currentValue && currentValue !== "Unavailable" && currentValue !== "N/A" && !isNaN(parseFloat(currentValue))) {
+          if (
+            currentValue &&
+            currentValue !== "Unavailable" &&
+            currentValue !== "N/A" &&
+            !isNaN(parseFloat(currentValue))
+          ) {
             // console.log(`[S03] Preserving user-entered Reference CDD: ${currentValue}`);
             return; // Skip this update - keep user value
           }
@@ -1969,7 +1981,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           String(value),
-          "calculated",
+          "calculated"
         );
       }
     });
@@ -2017,7 +2029,11 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Check if the reference standard indicates a Passive House related standard
     // Defensive: Check if referenceStandard exists and is a string before calling methods
-    if (referenceStandard && typeof referenceStandard === 'string' && referenceStandard.toUpperCase().includes("PH")) {
+    if (
+      referenceStandard &&
+      typeof referenceStandard === "string" &&
+      referenceStandard.toUpperCase().includes("PH")
+    ) {
       // Case-insensitive check for "PH"
       heatingSetpoint = 18;
     } else {
@@ -2184,7 +2200,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         : window.TEUI.StateManager?.getValue("d_12") || ""; // ✅ Target mode: read d_12
 
     const sectionHeader = document.querySelector(
-      "#climateCalculations .section-header",
+      "#climateCalculations .section-header"
     ); // Target the main header
     if (!sectionHeader) {
       console.warn("Section 3 header not found for critical flag.");
@@ -2192,7 +2208,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     }
 
     let flagSpan = sectionHeader.querySelector(
-      ".critical-occupancy-header-flag",
+      ".critical-occupancy-header-flag"
     );
     let isCritical = occupancyType.includes("Care");
 
@@ -2223,13 +2239,13 @@ window.TEUI.SectionModules.sect03 = (function () {
             // Insert after icon and title text
             iconSpan.parentNode.insertBefore(
               flagSpan,
-              iconSpan.nextSibling.nextSibling || null,
+              iconSpan.nextSibling.nextSibling || null
             );
           } else {
             // Fallback: insert at beginning
             sectionHeader.insertBefore(
               flagSpan,
-              sectionHeader.firstChild.nextSibling,
+              sectionHeader.firstChild.nextSibling
             );
           }
         }
@@ -2253,7 +2269,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#climateCalculations .section-header",
+      "#climateCalculations .section-header"
     );
     if (
       !sectionHeader ||
@@ -2274,12 +2290,12 @@ window.TEUI.SectionModules.sect03 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       // Use a confirmation dialog to prevent accidental resets
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 3.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 3."
         )
       ) {
         ModeManager.resetState();
@@ -2315,9 +2331,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -2332,7 +2349,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
 
     console.log("S03: Header controls setup complete");
@@ -2349,7 +2366,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const newProvinceDropdown = provinceDropdown.cloneNode(true);
       provinceDropdown.parentNode.replaceChild(
         newProvinceDropdown,
-        provinceDropdown,
+        provinceDropdown
       );
 
       // Add new listener
@@ -2384,7 +2401,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const newTimeframeDropdown = timeframeDropdown.cloneNode(true);
       timeframeDropdown.parentNode.replaceChild(
         newTimeframeDropdown,
-        timeframeDropdown,
+        timeframeDropdown
       );
 
       // Add new listener - ✅ PHASE 3: Simplified to match h_21 working pattern
@@ -2403,7 +2420,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const newCapacitanceDropdown = capacitanceDropdown.cloneNode(true);
       capacitanceDropdown.parentNode.replaceChild(
         newCapacitanceDropdown,
-        capacitanceDropdown,
+        capacitanceDropdown
       );
 
       // Add new listener
@@ -2423,7 +2440,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     }
 
     // Weather data buttons
-    ["showWeatherDataBtn", "weatherDataBtn"].forEach((id) => {
+    ["showWeatherDataBtn", "weatherDataBtn"].forEach(id => {
       const btn = document.getElementById(id);
       if (btn) {
         btn.removeEventListener("click", showWeatherData);
@@ -2435,9 +2452,9 @@ window.TEUI.SectionModules.sect03 = (function () {
     const sectionElement = document.getElementById("climateCalculations");
     if (sectionElement) {
       const editableFields = sectionElement.querySelectorAll(
-        ".editable.user-input",
+        ".editable.user-input"
       );
-      editableFields.forEach((field) => {
+      editableFields.forEach(field => {
         if (!field.hasEditableListeners) {
           // Add a flag to prevent duplicate listeners
           field.setAttribute("contenteditable", "true");
@@ -2481,7 +2498,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
           // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
           updateCriticalOccupancyFlag();
-        },
+        }
       );
 
       // ✅ NEW: Listener for ref_d_12 (Reference Occupancy) changes
@@ -2497,28 +2514,22 @@ window.TEUI.SectionModules.sect03 = (function () {
 
           // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
           updateCriticalOccupancyFlag();
-        },
+        }
       );
 
       // ✅ NEW: Listener for d_13 (Target Reference Standard) changes
       // Required for PH override logic in h_23 calculation
-      window.TEUI.StateManager.addListener(
-        "d_13",
-        function () {
-          // Trigger full recalculation to update h_23 based on PH override logic
-          calculateAll();
-        },
-      );
+      window.TEUI.StateManager.addListener("d_13", function () {
+        // Trigger full recalculation to update h_23 based on PH override logic
+        calculateAll();
+      });
 
       // ✅ NEW: Listener for ref_d_13 (Reference Reference Standard) changes
       // Required for PH override logic in Reference mode h_23 calculation
-      window.TEUI.StateManager.addListener(
-        "ref_d_13",
-        function () {
-          // Trigger full recalculation to update ref_h_23 based on PH override logic
-          calculateAll();
-        },
-      );
+      window.TEUI.StateManager.addListener("ref_d_13", function () {
+        // Trigger full recalculation to update ref_h_23 based on PH override logic
+        calculateAll();
+      });
 
       // ✅ REMOVED: Self-listeners cause recursion anti-pattern per 4012-CHEATSHEET.md
       // ✅ ANTI-PATTERN 7 FIX: S03 should NOT listen to its own input fields
@@ -2564,7 +2575,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         : "number-2dp";
       this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
       console.warn(
-        `Invalid input for ${fieldId}: ${newValue}. Reverted to ${this.textContent}.`,
+        `Invalid input for ${fieldId}: ${newValue}. Reverted to ${this.textContent}.`
       );
     }
   }
@@ -2582,7 +2593,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     }
 
     const provinces = ClimateDataService.getProvinces();
-    provinces.forEach((province) => {
+    provinces.forEach(province => {
       const option = document.createElement("option");
       option.value = province;
       option.textContent = ClimateDataService.getProvinceFullName(province);
@@ -2606,10 +2617,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         window.TEUI.StateManager.setValue(
           "dd_d_19",
           provinceSelect.value,
-          "default",
+          "default"
         );
         console.log(
-          `S03: Synced province "${provinceSelect.value}" to StateManager for cross-section communication`,
+          `S03: Synced province "${provinceSelect.value}" to StateManager for cross-section communication`
         );
       }
 
@@ -2623,7 +2634,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function onSectionRendered() {
     console.log(
-      "S03: Section rendered - initializing Self-Contained State Module.",
+      "S03: Section rendered - initializing Self-Contained State Module."
     );
 
     // 1. Initialize the ModeManager and its internal states
@@ -2637,7 +2648,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       window.TEUI.sect03 = window.TEUI.sect03 || {};
       window.TEUI.sect03.ModeManager = ModeManager;
       console.log(
-        "S03: ModeManager exposed globally for cross-section integration.",
+        "S03: ModeManager exposed globally for cross-section integration."
       );
     }
 
@@ -2659,10 +2670,24 @@ window.TEUI.SectionModules.sect03 = (function () {
       // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
       // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
       if (window.TEUI?.StateManager) {
-        ["d_19", "h_19", "h_20", "h_21", "i_21", "m_19", "l_20", "l_21", "l_24"].forEach(id => {
+        [
+          "d_19",
+          "h_19",
+          "h_20",
+          "h_21",
+          "i_21",
+          "m_19",
+          "l_20",
+          "l_21",
+          "l_24",
+        ].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });

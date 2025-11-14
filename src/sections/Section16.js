@@ -27,7 +27,7 @@ window.TEUI.SectionModules.sect16 = (function () {
   // --- Ported from SANKEY3035.html ---
   const NodeReferenceHandler = {
     convertToIndices(links, nodes) {
-      return links.map((link) => ({
+      return links.map(link => ({
         source:
           typeof link.source === "object"
             ? nodes.indexOf(link.source)
@@ -41,7 +41,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       }));
     },
     convertToObjects(links, nodes) {
-      return links.map((link) => ({
+      return links.map(link => ({
         source:
           typeof link.source === "number" ? nodes[link.source] : link.source,
         target:
@@ -51,7 +51,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       }));
     },
     validateNodeReferences(links, nodes) {
-      return links.every((link) => {
+      return links.every(link => {
         const sourceValid =
           typeof link.source === "number"
             ? link.source >= 0 && link.source < nodes.length
@@ -198,7 +198,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           .append("g")
           .attr(
             "transform",
-            `translate(${this.margin.left},${this.margin.top})`,
+            `translate(${this.margin.left},${this.margin.top})`
           );
 
         // Create layers for different parts of the diagram
@@ -221,7 +221,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
         // Define element resize observer
         if (typeof ResizeObserver !== "undefined") {
-          const ro = new ResizeObserver((entries) => {
+          const ro = new ResizeObserver(entries => {
             if (entries.length > 0 && entries[0].target === containerEl) {
               const { width, height } = entries[0].contentRect;
               if (width > 0 && height > 0) {
@@ -259,7 +259,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       };
 
       // Pre-process links to ensure consistent references - CRITICAL to prevent disappearing links
-      d3Data.links = d3Data.links.map((link) => {
+      d3Data.links = d3Data.links.map(link => {
         if (typeof link.source === "number") {
           link.source = d3Data.nodes[link.source];
         }
@@ -280,12 +280,12 @@ window.TEUI.SectionModules.sect16 = (function () {
         const { nodes, links } = this.sankey(d3Data);
 
         // Add display color property for consistency
-        nodes.forEach((node) => {
+        nodes.forEach(node => {
           node.displayColor = d3.color(node.color || "#999").darker(0.3);
         });
 
         // Calculate maxX for animation sequencing
-        const maxX = nodes.length > 0 ? d3.max(nodes, (d) => d.x0) : 0;
+        const maxX = nodes.length > 0 ? d3.max(nodes, d => d.x0) : 0;
 
         if (isInitialLoad) {
           // TWO-PHASE APPROACH FOR INITIAL ACTIVATION
@@ -309,13 +309,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         this.linkGroup
           .selectAll(".link")
           .style("stroke-opacity", 0.6)
-          .style("stroke-width", (d) => Math.max(1, d.width || 1)); // CHANGED FROM attr TO style
+          .style("stroke-width", d => Math.max(1, d.width || 1)); // CHANGED FROM attr TO style
 
         this.nodeGroup
           .selectAll(".node")
           .style("opacity", 1)
-          .attr("width", (d) =>
-            Math.max(1, (d.x1 - d.x0) * this.widthMultiplier),
+          .attr("width", d =>
+            Math.max(1, (d.x1 - d.x0) * this.widthMultiplier)
           );
 
         this.labelGroup.selectAll(".node-label").style("opacity", 1);
@@ -332,23 +332,23 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Render nodes at final positions but invisible
       this.nodeGroup
         .selectAll(".node")
-        .data(nodes, (d) => d.name)
+        .data(nodes, d => d.name)
         .enter()
         .append("rect")
         .attr("class", "node s16-sankey-node")
-        .style("fill", (d) => d.displayColor)
-        .style("stroke", (d) => d3.color(d.color || "#999").darker(0.5))
+        .style("fill", d => d.displayColor)
+        .style("stroke", d => d3.color(d.color || "#999").darker(0.5))
         .style("stroke-width", 2)
-        .attr("x", (d) => d.x0)
-        .attr("y", (d) => d.y0)
-        .attr("height", (d) => Math.max(1, d.y1 - d.y0))
-        .attr("width", (d) => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier))
+        .attr("x", d => d.x0)
+        .attr("y", d => d.y0)
+        .attr("height", d => Math.max(1, d.y1 - d.y0))
+        .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier))
         .style("opacity", 0) // Invisible
         .on("mouseover", (event, d) => {
           d3.select(event.target).style("fill-opacity", 0.8);
           this.showNodeTooltip(event, d);
         })
-        .on("mouseout", (event) => {
+        .on("mouseout", event => {
           d3.select(event.target).style("fill-opacity", 1);
           this.hideTooltip();
         });
@@ -356,7 +356,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Render links at final positions but invisible
       const linkSelection = this.linkGroup
         .selectAll(".link")
-        .data(links, (d) => {
+        .data(links, d => {
           const source =
             typeof d.source === "object" ? d.source.index : d.source;
           const target =
@@ -367,15 +367,15 @@ window.TEUI.SectionModules.sect16 = (function () {
         .append("path")
         .attr("class", "link")
         .attr("d", d3.sankeyLinkHorizontal())
-        .style("stroke", (d) => this.getLinkColor(d))
+        .style("stroke", d => this.getLinkColor(d))
         .style("fill", "none")
-        .style("stroke-width", (d) => Math.max(1, d.width || 1))
+        .style("stroke-width", d => Math.max(1, d.width || 1))
         .style("stroke-opacity", 0) // Invisible
         .on("mouseover", (event, d) => {
           d3.select(event.target).style("stroke-opacity", 0.9);
           this.showLinkTooltip(event, d);
         })
-        .on("mouseout", (event) => {
+        .on("mouseout", event => {
           d3.select(event.target).style("stroke-opacity", 0.6);
           this.hideTooltip();
         });
@@ -389,15 +389,15 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Render labels at final positions but invisible
       this.labelGroup
         .selectAll(".node-label")
-        .data(nodes, (d) => d.name)
+        .data(nodes, d => d.name)
         .enter()
         .append("text")
         .attr("class", "node-label")
-        .attr("text-anchor", (d) => (d.x0 < this.width / 2 ? "start" : "end"))
-        .attr("x", (d) => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
-        .attr("y", (d) => (d.y1 + d.y0) / 2)
+        .attr("text-anchor", d => (d.x0 < this.width / 2 ? "start" : "end"))
+        .attr("x", d => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
+        .attr("y", d => (d.y1 + d.y0) / 2)
         .attr("dy", "0.35em")
-        .text((d) => this.formatNodeLabel(d))
+        .text(d => this.formatNodeLabel(d))
         .style("opacity", 0); // Invisible
     }
 
@@ -408,15 +408,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         .selectAll(".node")
         .transition("appear")
         .duration(300)
-        .delay((d) => (d.x0 / maxX) * 600)
+        .delay(d => (d.x0 / maxX) * 600)
         .ease(d3.easeCubicInOut)
         .style("opacity", 1)
         .transition("expand")
         .duration(600)
         .ease(d3.easeBackOut.overshoot(1.2)) // Spring effect
-        .attr("width", (d) =>
-          Math.max(1, (d.x1 - d.x0) * this.widthMultiplier),
-        );
+        .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier));
 
       // 2. Animate links with dash array flowing effect
       const linkSelection = this.linkGroup.selectAll(".link");
@@ -435,7 +433,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       linkSelection
         .transition()
         .duration(1500)
-        .delay((d) => 300 + (d.source.x0 / maxX) * 800)
+        .delay(d => 300 + (d.source.x0 / maxX) * 800)
         .ease(d3.easeQuadInOut)
         .attr("stroke-dashoffset", 0)
         .on("end", function () {
@@ -450,7 +448,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         .selectAll(".node-label")
         .transition("fade")
         .duration(300)
-        .delay((d) => 900 + (d.x0 / maxX) * 300)
+        .delay(d => 900 + (d.x0 / maxX) * 300)
         .style("opacity", 1);
 
       // Safety measure - ensure everything is visible after all animations
@@ -467,7 +465,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     renderNodes(nodes, isInitialLoad, maxX) {
       // Select all existing nodes and bind data
-      const node = this.nodeGroup.selectAll(".node").data(nodes, (d) => d.name);
+      const node = this.nodeGroup.selectAll(".node").data(nodes, d => d.name);
 
       // Remove any old nodes that are no longer in the data
       node
@@ -485,15 +483,15 @@ window.TEUI.SectionModules.sect16 = (function () {
         .attr("class", "node s16-sankey-node")
         .style(
           "fill",
-          (d) => d.displayColor || d3.color(d.color || "#999").darker(0.3),
+          d => d.displayColor || d3.color(d.color || "#999").darker(0.3)
         )
-        .style("stroke", (d) => d3.color(d.color || "#999").darker(0.5))
+        .style("stroke", d => d3.color(d.color || "#999").darker(0.5))
         .style("fill-opacity", 1)
         .on("mouseover", (event, d) => {
           d3.select(event.target).style("fill-opacity", 0.8);
           this.showNodeTooltip(event, d);
         })
-        .on("mouseout", (event) => {
+        .on("mouseout", event => {
           d3.select(event.target).style("fill-opacity", 1);
           this.hideTooltip();
         });
@@ -505,9 +503,9 @@ window.TEUI.SectionModules.sect16 = (function () {
       if (isInitialLoad) {
         // Initial state - invisible but positioned
         nodeUpdate
-          .attr("x", (d) => d.x0)
-          .attr("y", (d) => d.y0)
-          .attr("height", (d) => Math.max(1, d.y1 - d.y0))
+          .attr("x", d => d.x0)
+          .attr("y", d => d.y0)
+          .attr("height", d => Math.max(1, d.y1 - d.y0))
           .attr("width", 0)
           .style("opacity", 0);
 
@@ -516,13 +514,13 @@ window.TEUI.SectionModules.sect16 = (function () {
           .transition()
           .duration(900) // Longer duration for smoother appearance
           .ease(d3.easeCubicInOut) // Add easing function
-          .delay((d) => (d.x0 / maxX) * 1200) // Slightly shorter delay to avoid feeling slow
+          .delay(d => (d.x0 / maxX) * 1200) // Slightly shorter delay to avoid feeling slow
           .style("opacity", 1) // First show node
           .transition()
           .duration(600) // Smoother width expansion
           .ease(d3.easeCubicOut) // Add easing function
-          .attr("width", (d) =>
-            Math.max(1, (d.x1 - d.x0) * this.widthMultiplier),
+          .attr("width", d =>
+            Math.max(1, (d.x1 - d.x0) * this.widthMultiplier)
           ); // Then expand width
       } else {
         // More gentle transition for updates
@@ -530,12 +528,10 @@ window.TEUI.SectionModules.sect16 = (function () {
           .transition()
           .duration(750)
           .ease(d3.easeCubicOut)
-          .attr("x", (d) => d.x0)
-          .attr("y", (d) => d.y0)
-          .attr("height", (d) => Math.max(1, d.y1 - d.y0))
-          .attr("width", (d) =>
-            Math.max(1, (d.x1 - d.x0) * this.widthMultiplier),
-          )
+          .attr("x", d => d.x0)
+          .attr("y", d => d.y0)
+          .attr("height", d => Math.max(1, d.y1 - d.y0))
+          .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier))
           .style("opacity", 1);
       }
 
@@ -548,7 +544,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
       // Pre-processing to ensure consistent link formatting
       // CRITICAL: Convert all links to have object references to ensure consistent handling
-      const processedLinks = links.map((link) => ({
+      const processedLinks = links.map(link => ({
         source:
           typeof link.source === "number"
             ? nodes
@@ -589,13 +585,11 @@ window.TEUI.SectionModules.sect16 = (function () {
       // }
 
       // Select and bind links with consistent key function
-      const link = this.linkGroup
-        .selectAll(".link")
-        .data(processedLinks, (d) => {
-          const sourceIndex = d.source.index;
-          const targetIndex = d.target.index;
-          return `${sourceIndex}-${targetIndex}`;
-        });
+      const link = this.linkGroup.selectAll(".link").data(processedLinks, d => {
+        const sourceIndex = d.source.index;
+        const targetIndex = d.target.index;
+        return `${sourceIndex}-${targetIndex}`;
+      });
 
       // Remove old links
       link.exit().remove();
@@ -606,7 +600,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         .append("path")
         .attr("class", "link")
         .attr("d", linkGenerator)
-        .style("stroke", (d) => this.getLinkColor(d) || "#999")
+        .style("stroke", d => this.getLinkColor(d) || "#999")
         .style("fill", "none")
         .style("stroke-opacity", 0)
         .style("stroke-width", 0); // Always use style() for stroke width
@@ -617,7 +611,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           d3.select(event.target).style("stroke-opacity", 0.9);
           this.showLinkTooltip(event, d);
         })
-        .on("mouseout", (event) => {
+        .on("mouseout", event => {
           d3.select(event.target).style("stroke-opacity", 0.6);
           this.hideTooltip();
         });
@@ -633,7 +627,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Set up dash array for animation
       linkUpdate
         .style("stroke-opacity", 0.6)
-        .style("stroke-width", (d) => Math.max(1, d.width || 1))
+        .style("stroke-width", d => Math.max(1, d.width || 1))
         .attr("stroke-dasharray", function () {
           return `${this._pathLength} ${this._pathLength}`;
         })
@@ -645,7 +639,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       linkUpdate
         .transition()
         .duration(1500)
-        .delay((d) => (d.source.x0 / maxX) * 800)
+        .delay(d => (d.source.x0 / maxX) * 800)
         .ease(d3.easeQuadInOut)
         .attr("stroke-dashoffset", 0)
         .on("end", function () {
@@ -660,7 +654,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         this.linkGroup
           .selectAll(".link")
           .style("stroke-opacity", 0.6)
-          .style("stroke-width", (d) => Math.max(1, d.width || 1))
+          .style("stroke-width", d => Math.max(1, d.width || 1))
           .attr("stroke-dasharray", null)
           .attr("stroke-dashoffset", null);
       }, 2500);
@@ -678,7 +672,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Select and bind labels
       const text = this.labelGroup
         .selectAll(".node-label")
-        .data(nodes, (d) => d.name);
+        .data(nodes, d => d.name);
 
       // Remove old labels
       text.exit().remove();
@@ -688,27 +682,27 @@ window.TEUI.SectionModules.sect16 = (function () {
         .enter()
         .append("text")
         .attr("class", "node-label")
-        .attr("text-anchor", (d) => (d.x0 < this.width / 2 ? "start" : "end"))
-        .attr("x", (d) => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
-        .attr("y", (d) => (d.y1 + d.y0) / 2)
+        .attr("text-anchor", d => (d.x0 < this.width / 2 ? "start" : "end"))
+        .attr("x", d => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
+        .attr("y", d => (d.y1 + d.y0) / 2)
         .attr("dy", "0.35em")
-        .text((d) => this.formatNodeLabel(d))
+        .text(d => this.formatNodeLabel(d))
         .style("opacity", 0); // Start invisible
 
       // Merge new and existing labels for updates
       const textUpdate = text
         .merge(textEnter)
-        .attr("text-anchor", (d) => (d.x0 < this.width / 2 ? "start" : "end"))
-        .attr("x", (d) => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
-        .attr("y", (d) => (d.y1 + d.y0) / 2)
-        .text((d) => this.formatNodeLabel(d)); // Update text on refresh
+        .attr("text-anchor", d => (d.x0 < this.width / 2 ? "start" : "end"))
+        .attr("x", d => (d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6))
+        .attr("y", d => (d.y1 + d.y0) / 2)
+        .text(d => this.formatNodeLabel(d)); // Update text on refresh
 
       // EXACT SANKEY3035ORIGINAL ANIMATION PATTERN FOR LABELS
       if (isInitialLoad) {
         textUpdate
           .transition()
           .duration(500)
-          .delay((d) => (d.x0 / maxX) * 1500 + 500) // Slightly after nodes appear
+          .delay(d => (d.x0 / maxX) * 1500 + 500) // Slightly after nodes appear
           .style("opacity", 1);
       } else {
         textUpdate.transition().duration(750).style("opacity", 1);
@@ -735,7 +729,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
       if (incoming.length > 0) {
         content += `<div style="margin-top:8px;"><strong>Incoming:</strong></div>`;
-        incoming.forEach((link) => {
+        incoming.forEach(link => {
           const sourceNodeName =
             typeof link.source === "object" ? link.source.name : "";
           const targetNodeName =
@@ -758,7 +752,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
       if (outgoing.length > 0) {
         content += `<div style="margin-top:8px;"><strong>Outgoing:</strong></div>`;
-        outgoing.forEach((link) => {
+        outgoing.forEach(link => {
           const sourceNodeName =
             typeof link.source === "object" ? link.source.name : "";
           const targetNodeName =
@@ -798,13 +792,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         const valueInKg = valueInGrams / 1000;
         formattedDisplayValue = window.TEUI.formatNumber(
           valueInKg,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         unitLabel = "kg CO2e/yr";
       } else {
         formattedDisplayValue = window.TEUI.formatNumber(
           valueInGrams,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         unitLabel = "kWh";
       }
@@ -826,12 +820,12 @@ window.TEUI.SectionModules.sect16 = (function () {
       if (originalNodeName.includes("Emissions")) {
         const totalEmissionsInGrams = incoming.reduce(
           (sum, link) => sum + link.value,
-          0,
+          0
         );
         const kgValue = totalEmissionsInGrams / 1000;
         const formattedKgValue = window.TEUI.formatNumber(
           kgValue,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         const scope = originalNodeName.includes("1")
           ? "Direct emissions from gas combustion"
@@ -840,7 +834,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       } else {
         const formattedNodeValue = window.TEUI.formatNumber(
           totalNodeValue,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         html += `<div class="tooltip-value">Total Value: ${formattedNodeValue} kWh</div>`;
       }
@@ -865,13 +859,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         const valueInKg = valueInGrams / 1000;
         formattedDisplayValue = window.TEUI.formatNumber(
           valueInKg,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         unitLabel = "kg CO2e/yr";
       } else {
         formattedDisplayValue = window.TEUI.formatNumber(
           valueInGrams,
-          "number-2dp-comma",
+          "number-2dp-comma"
         ); // Assuming non-emission links are kWh
         unitLabel = "kWh";
       }
@@ -881,7 +875,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     buildFlowSectionTooltip(title, flows, isIncoming, isD3Node = false) {
       let html = `<div style="margin-top: 8px;"><strong>${title}:</strong></div>`;
-      flows.forEach((flow) => {
+      flows.forEach(flow => {
         const nodeName = isIncoming
           ? isD3Node
             ? flow.source.name
@@ -911,13 +905,13 @@ window.TEUI.SectionModules.sect16 = (function () {
           const valueInKg = valueInGrams / 1000;
           formattedDisplayValue = window.TEUI.formatNumber(
             valueInKg,
-            "number-2dp-comma",
+            "number-2dp-comma"
           );
           unitLabel = "kg CO2e/yr";
         } else {
           formattedDisplayValue = window.TEUI.formatNumber(
             valueInGrams,
-            "number-2dp-comma",
+            "number-2dp-comma"
           );
           unitLabel = "kWh";
         }
@@ -934,7 +928,9 @@ window.TEUI.SectionModules.sect16 = (function () {
         // These values are calculated by other sections and are always available
         if (node.name.includes("Scope 1")) {
           // Scope 1: Gas/Oil emissions from Space Heating and DHW
-          const spaceHeatingEmissionsKg = parseFloat(getModeAwareValue("f_114") || 0);
+          const spaceHeatingEmissionsKg = parseFloat(
+            getModeAwareValue("f_114") || 0
+          );
           const dhwEmissionsKg = parseFloat(getModeAwareValue("k_49") || 0);
           totalEmissionsKg = spaceHeatingEmissionsKg + dhwEmissionsKg;
         } else if (node.name.includes("Scope 2")) {
@@ -944,7 +940,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
         const formattedKgValue = window.TEUI.formatNumber(
           totalEmissionsKg,
-          "number-2dp-comma",
+          "number-2dp-comma"
         );
         return `${node.name} (${formattedKgValue} kg CO2e/yr)`;
       }
@@ -1056,13 +1052,13 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     updateEmissionsFlows(dataObjectToModify) {
       const scope1NodeIndex = dataObjectToModify.nodes.findIndex(
-        (n) => n.name === "E1 Scope 1 Emissions",
+        n => n.name === "E1 Scope 1 Emissions"
       );
       const scope2NodeIndex = dataObjectToModify.nodes.findIndex(
-        (n) => n.name === "E2 Scope 2 Emissions",
+        n => n.name === "E2 Scope 2 Emissions"
       );
       const buildingNodeIndex = dataObjectToModify.nodes.findIndex(
-        (n) => n.name === "Building",
+        n => n.name === "Building"
       );
 
       if (
@@ -1075,7 +1071,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       }
 
       // Remove existing emission links going to emission nodes
-      dataObjectToModify.links = dataObjectToModify.links.filter((link) => {
+      dataObjectToModify.links = dataObjectToModify.links.filter(link => {
         // Check target based on original node reference or index if already processed
         let targetNodeToCheck =
           typeof link.target === "object"
@@ -1104,13 +1100,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         const isDhwGasOrOil = dhwSystem === "Gas" || dhwSystem === "Oil";
 
         const energyInputNodeIndex = dataObjectToModify.nodes.findIndex(
-          (n) => n.name === "M.2.1.D Energy Input",
+          n => n.name === "M.2.1.D Energy Input"
         );
         const tedNodeIndex = dataObjectToModify.nodes.findIndex(
-          (n) => n.name === "Thermal Energy Demand",
+          n => n.name === "Thermal Energy Demand"
         );
         const shwNetDemandIndex = dataObjectToModify.nodes.findIndex(
-          (n) => n.name === "W.5.2 SHW Net Demand",
+          n => n.name === "W.5.2 SHW Net Demand"
         );
 
         if (energyInputNodeIndex === -1) {
@@ -1138,7 +1134,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
         // Handle Space Heating emissions (Scope 1) using dedicated field f_114 - MODE AWARE
         const spaceHeatingEmissionsKg = parseFloat(
-          getModeAwareValue("f_114") || 0,
+          getModeAwareValue("f_114") || 0
         );
         if (spaceHeatingEmissionsKg > 0 && isHeatingGasOrOil) {
           const spaceHeatingEmissionsGrams = spaceHeatingEmissionsKg * 1000;
@@ -1212,15 +1208,15 @@ window.TEUI.SectionModules.sect16 = (function () {
       // If other parts need it, they should operate on this._cleanDataInput.
       if (!this._cleanDataInput) return 0;
       const sourceNode = this._cleanDataInput.nodes.find(
-        (n) => n.name === sourceName,
+        n => n.name === sourceName
       );
       const targetNode = this._cleanDataInput.nodes.find(
-        (n) => n.name === targetName,
+        n => n.name === targetName
       );
       if (!sourceNode || !targetNode) return 0;
       const sourceIdx = this._cleanDataInput.nodes.indexOf(sourceNode);
       const targetIdx = this._cleanDataInput.nodes.indexOf(targetNode);
-      const link = this._cleanDataInput.links.find((l) => {
+      const link = this._cleanDataInput.links.find(l => {
         const lSourceIdx =
           typeof l.source === "number"
             ? l.source
@@ -1347,7 +1343,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       id,
       iconClass,
       text,
-      initialDisplay = "inline-flex",
+      initialDisplay = "inline-flex"
     ) {
       const button = document.createElement("button");
       button.id = id;
@@ -1389,7 +1385,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     const activateBtn = createStyledButton(
       "s16ActivateBtn",
       "bi bi-arrow-clockwise",
-      "Activate Sankey",
+      "Activate Sankey"
     );
     controlsContainer.appendChild(activateBtn);
 
@@ -1398,7 +1394,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       "s16ModeToggleBtn",
       "bi bi-snow",
       "Cooling",
-      "none",
+      "none"
     );
     // Set initial blue background for cooling option
     modeToggleBtn.style.backgroundColor = "#4A96BA";
@@ -1410,7 +1406,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       "s16ToggleEmissionsBtn",
       "bi bi-cloud",
       "Show Emissions",
-      "none",
+      "none"
     );
     controlsContainer.appendChild(emissionsBtn);
 
@@ -1419,7 +1415,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       "s16ToggleSpacingBtn",
       "bi bi-arrows-angle-contract",
       "Energy Balance",
-      "none",
+      "none"
     );
     controlsContainer.appendChild(spacingBtn);
 
@@ -1428,7 +1424,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       "s16FullscreenBtn",
       "bi bi-arrows-fullscreen",
       "Fullscreen",
-      "none",
+      "none"
     );
     controlsContainer.appendChild(fullscreenBtn);
 
@@ -1456,7 +1452,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     // Create the SVG element for the Sankey diagram
     const svgElement = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "svg",
+      "svg"
     );
     svgElement.id = "sankeySection16Svg";
     svgElement.style.cssText = "width: 100%; height: 100%; display: block;";
@@ -1513,7 +1509,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     const fullscreenCloseBtn = createStyledButton(
       "s16FullscreenCloseBtn",
       "bi bi-x-lg",
-      "Close",
+      "Close"
     );
     fullscreenControlsRight.appendChild(fullscreenCloseBtn);
 
@@ -1523,7 +1519,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     // Create the fullscreen SVG
     const fullscreenSvg = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "svg",
+      "svg"
     );
     fullscreenSvg.id = "sankeySection16FullscreenSvg";
     fullscreenSvg.style.cssText =
@@ -1556,7 +1552,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     const spacingBtn = document.getElementById("s16ToggleSpacingBtn");
     const widthSlider = document.getElementById("s16WidthMultiplierSlider");
     const widthToggleContainer = document.getElementById(
-      "s16WidthToggleContainer",
+      "s16WidthToggleContainer"
     );
     const loadingPlaceholder = document.getElementById("s16LoadingPlaceholder");
     const fullscreenBtn = document.getElementById("s16FullscreenBtn");
@@ -1567,7 +1563,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       const buttons = document.querySelectorAll(".sankey-control-button");
 
       // Add hover effect (but exclude mode toggle button which has custom colors)
-      buttons.forEach((button) => {
+      buttons.forEach(button => {
         // Skip mode toggle button - it has custom blue/red colors
         if (button.id === "s16ModeToggleBtn") return;
 
@@ -1720,7 +1716,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     }
     if (widthSlider) {
       const widthValueText = document.querySelector(
-        "#s16WidthToggleContainer span",
+        "#s16WidthToggleContainer span"
       );
 
       widthSlider.addEventListener("input", function () {
@@ -1740,7 +1736,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           if (window.TEUI.sect16.sankeyInstance._cleanDataInput) {
             window.TEUI.sect16.sankeyInstance.render(
               window.TEUI.sect16.sankeyInstance._cleanDataInput,
-              false,
+              false
             );
           }
         }
@@ -1750,10 +1746,10 @@ window.TEUI.SectionModules.sect16 = (function () {
     // Add fullscreen functionality
     if (fullscreenBtn) {
       const fullscreenContainer = document.getElementById(
-        "s16FullscreenContainer",
+        "s16FullscreenContainer"
       );
       const fullscreenCloseBtn = document.getElementById(
-        "s16FullscreenCloseBtn",
+        "s16FullscreenCloseBtn"
       );
 
       // Fullscreen Sankey instance
@@ -1766,7 +1762,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         document.body.style.overflow = "hidden"; // Prevent scrolling behind fullscreen
 
         const fullscreenSvg = document.getElementById(
-          "sankeySection16FullscreenSvg",
+          "sankeySection16FullscreenSvg"
         );
         if (!fullscreenSvg) return;
 
@@ -1798,7 +1794,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           // Render with the same data as the main view
           window.TEUI.sect16.fullscreenSankeyInstance.render(
             window.TEUI.sect16.sankeyInstance._cleanDataInput,
-            true,
+            true
           );
         } else {
           // Fallback to fetch new data
@@ -1812,7 +1808,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           if (window.TEUI.sect16.fullscreenSankeyInstance) {
             window.TEUI.sect16.fullscreenSankeyInstance.resize(
               fullscreenContainer.clientWidth - 40,
-              fullscreenContainer.clientHeight - 100,
+              fullscreenContainer.clientHeight - 100
             );
           }
         };
@@ -1825,7 +1821,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
         // Add fullscreen width slider functionality
         const fullscreenWidthSlider = document.getElementById(
-          "s16FullscreenWidthSlider",
+          "s16FullscreenWidthSlider"
         );
         if (fullscreenWidthSlider) {
           const fullscreenWidthValueText = getFullscreenWidthValueText(); // document.querySelector('#s16FullscreenWidthToggle span');
@@ -1851,7 +1847,7 @@ window.TEUI.SectionModules.sect16 = (function () {
               if (window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput) {
                 window.TEUI.sect16.fullscreenSankeyInstance.render(
                   window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput,
-                  false,
+                  false
                 );
               }
             }
@@ -1877,13 +1873,13 @@ window.TEUI.SectionModules.sect16 = (function () {
         if (wrapper && window.TEUI.sect16.sankeyInstance.resize) {
           window.TEUI.sect16.sankeyInstance.resize(
             wrapper.clientWidth,
-            wrapper.clientHeight,
+            wrapper.clientHeight
           );
         }
 
         // Also update fullscreen if active
         const fullscreenContainer = document.getElementById(
-          "s16FullscreenContainer",
+          "s16FullscreenContainer"
         );
         if (
           fullscreenContainer &&
@@ -1895,7 +1891,7 @@ window.TEUI.SectionModules.sect16 = (function () {
           const fullscreenHeight = fullscreenContainer.clientHeight - 70;
           window.TEUI.sect16.fullscreenSankeyInstance.resize(
             fullscreenWidth,
-            fullscreenHeight,
+            fullscreenHeight
           );
         }
       }
@@ -1932,7 +1928,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       "s16WidthToggleContainer",
       "s16FullscreenBtn",
     ];
-    controls.forEach((id) => {
+    controls.forEach(id => {
       const el = document.getElementById(id);
       if (el)
         el.style.display =
@@ -1987,7 +1983,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S16');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S16");
     },
 
     /**
@@ -2041,7 +2037,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     toggleSwitch.appendChild(slider);
 
     // Toggle Switch Click Handler
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
       const targetMode =
         ModeManager.currentMode === "target" ? "reference" : "target";
@@ -2138,9 +2134,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     const isDhwGasOrOil = dhwSystem === "Gas" || dhwSystem === "Oil";
 
     // Configure the GasExhaust node visibility
-    const gasExhaustNode = sankeyData.nodes.find(
-      (n) => n.name === "GasExhaust",
-    );
+    const gasExhaustNode = sankeyData.nodes.find(n => n.name === "GasExhaust");
     if (gasExhaustNode) {
       gasExhaustNode.hidden = !(isPrimaryGasOrOil || isDhwGasOrOil);
     }
@@ -2182,7 +2176,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     };
 
     // Process each link to get values from StateManager
-    sankeyData.links.forEach((link) => {
+    sankeyData.links.forEach(link => {
       if (!link.id) return; // Skip links without IDs
 
       let teuiFieldId = linkIdToTeuiField[link.id];
@@ -2236,7 +2230,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     // Now ensure all nodes and links have the correct structure
     // This converts node references to indexes for D3 to process properly
-    sankeyData.links = sankeyData.links.map((link) => {
+    sankeyData.links = sankeyData.links.map(link => {
       if (typeof link.source === "number" && typeof link.target === "number") {
         // Keep direct numeric indices
         return link;
@@ -2246,11 +2240,11 @@ window.TEUI.SectionModules.sect16 = (function () {
           source:
             typeof link.source === "number"
               ? link.source
-              : sankeyData.nodes.findIndex((n) => n.name === link.source.name),
+              : sankeyData.nodes.findIndex(n => n.name === link.source.name),
           target:
             typeof link.target === "number"
               ? link.target
-              : sankeyData.nodes.findIndex((n) => n.name === link.target.name),
+              : sankeyData.nodes.findIndex(n => n.name === link.target.name),
           value: link.value,
           id: link.id,
           isEmissions: link.isEmissions,
@@ -2278,7 +2272,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         sankeyData = window.TEUI.CoolingSankey.getCoolingSankeyData();
       } else {
         console.error(
-          "Section 16: Cooling module not loaded. Falling back to heating.",
+          "Section 16: Cooling module not loaded. Falling back to heating."
         );
         sankeyData = buildSankeyDataFromStateManager();
       }
@@ -2379,10 +2373,10 @@ window.TEUI.SectionModules.sect16 = (function () {
       const emissionsBtn = document.getElementById("s16ToggleEmissionsBtn");
       const spacingBtn = document.getElementById("s16ToggleSpacingBtn");
       const widthToggleContainer = document.getElementById(
-        "s16WidthToggleContainer",
+        "s16WidthToggleContainer"
       );
       const loadingPlaceholder = document.getElementById(
-        "s16LoadingPlaceholder",
+        "s16LoadingPlaceholder"
       );
       if (loadingPlaceholder) loadingPlaceholder.style.display = "none";
       if (modeToggleBtn) modeToggleBtn.style.display = "inline-flex";

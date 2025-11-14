@@ -64,12 +64,12 @@ window.TEUI.SectionModules.sect05 = (function () {
      * Bridges global StateManager → isolated TargetState for imported values
      */
     syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S05 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S05 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -101,7 +101,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       };
 
       console.log(
-        `S05: Reference defaults loaded from standard: ${currentStandard}`,
+        `S05: Reference defaults loaded from standard: ${currentStandard}`
       );
     },
 
@@ -150,13 +150,13 @@ window.TEUI.SectionModules.sect05 = (function () {
      * i_41 is user-editable in Target mode only
      */
     syncFromGlobalState: function (fieldIds = ["d_39"]) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S05 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+            `S05 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
           );
         }
       });
@@ -173,10 +173,14 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
       if (window.TEUI?.StateManager) {
-        ["d_39", "i_41"].forEach((id) => {
+        ["d_39", "i_41"].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });
@@ -208,7 +212,11 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       // ✅ BRIDGE: Sync Reference changes to StateManager (WITH ref_ PREFIX)
       if (this.currentMode === "reference" && window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          value,
+          "user-modified"
+        );
       }
     },
 
@@ -230,7 +238,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S05');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S05");
     },
 
     refreshUI: function () {
@@ -240,12 +248,12 @@ window.TEUI.SectionModules.sect05 = (function () {
       const currentState = this.getCurrentState();
       const fieldsToSync = ["d_39", "i_41"]; // Input fields only
 
-      fieldsToSync.forEach((fieldId) => {
+      fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -284,10 +292,10 @@ window.TEUI.SectionModules.sect05 = (function () {
         "n_41", // N column: status checkmarks
       ];
       console.log(
-        `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`,
+        `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`
       );
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Read the correct value from StateManager based on mode
@@ -669,7 +677,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -743,10 +751,10 @@ window.TEUI.SectionModules.sect05 = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -960,33 +968,54 @@ window.TEUI.SectionModules.sect05 = (function () {
   function calculatePercentages(isReferenceCalculation = false) {
     // ALWAYS use Target numerators and Reference denominators
     // Target values (numerators)
-    const target_i_39 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_39")) || 350;
-    const target_i_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_40"));
-    const target_d_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_40")) || 0;
-    const target_i_41 = window.TEUI.parseNumeric(getSectionValue("i_41", false)) || 0;
+    const target_i_39 =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_39")) ||
+      350;
+    const target_i_40 = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue("i_40")
+    );
+    const target_d_40 =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_40")) || 0;
+    const target_i_41 =
+      window.TEUI.parseNumeric(getSectionValue("i_41", false)) || 0;
 
     // Reference values (denominators)
-    const ref_i_39 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_39")) || 650;
-    const ref_i_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_40"));
-    const ref_d_40 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_40")) || 0;
-    const ref_i_41 = window.TEUI.parseNumeric(getSectionValue("i_41", true)) || 0;
+    const ref_i_39 =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_39")) ||
+      650;
+    const ref_i_40 = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue("ref_i_40")
+    );
+    const ref_d_40 =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_d_40")) ||
+      0;
+    const ref_i_41 =
+      window.TEUI.parseNumeric(getSectionValue("i_41", true)) || 0;
 
     // Handle N/A case for i_40 (carbonTarget)
     if (target_i_40 === "N/A" || isNaN(target_i_40)) {
       const naFields = ["m_39", "m_40", "m_41"];
       const okFields = ["n_38", "n_39", "n_40", "n_41"];
 
-      naFields.forEach((fieldId) => {
+      naFields.forEach(fieldId => {
         if (isReferenceCalculation) {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "N/A", "calculated");
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            "N/A",
+            "calculated"
+          );
         } else {
           window.TEUI.StateManager.setValue(fieldId, "N/A", "calculated");
         }
       });
 
-      okFields.forEach((fieldId) => {
+      okFields.forEach(fieldId => {
         if (isReferenceCalculation) {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "✓", "calculated");
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            "✓",
+            "calculated"
+          );
         } else {
           window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
         }
@@ -995,7 +1024,11 @@ window.TEUI.SectionModules.sect05 = (function () {
       // m_38 when N/A
       const m_38_result = isReferenceCalculation ? "100%" : "N/A";
       if (isReferenceCalculation) {
-        window.TEUI.StateManager.setValue("ref_m_38", m_38_result, "calculated");
+        window.TEUI.StateManager.setValue(
+          "ref_m_38",
+          m_38_result,
+          "calculated"
+        );
       } else {
         window.TEUI.StateManager.setValue("m_38", m_38_result, "calculated");
       }
@@ -1025,7 +1058,11 @@ window.TEUI.SectionModules.sect05 = (function () {
         : Math.round(value * 100) + "%";
 
       if (isReferenceCalculation) {
-        window.TEUI.StateManager.setValue(`ref_${field}`, formattedValue, "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${field}`,
+          formattedValue,
+          "calculated"
+        );
       } else {
         window.TEUI.StateManager.setValue(field, formattedValue, "calculated");
       }
@@ -1056,12 +1093,18 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       // Determine pass/fail based on percentage
       let status, isCompliant;
-      if (percentValue === "N/A" || percentValue === null || percentValue === undefined) {
+      if (
+        percentValue === "N/A" ||
+        percentValue === null ||
+        percentValue === undefined
+      ) {
         status = "✓"; // Pass by default if N/A
         isCompliant = true;
       } else {
         // Parse percentage (remove % sign and convert to number)
-        const numericPercent = parseFloat(String(percentValue).replace("%", ""));
+        const numericPercent = parseFloat(
+          String(percentValue).replace("%", "")
+        );
         isCompliant = numericPercent <= 100;
         status = isCompliant ? "✓" : "✗";
       }
@@ -1172,10 +1215,10 @@ window.TEUI.SectionModules.sect05 = (function () {
   function initializeEventHandlers() {
     // 1. Event handler for the Typology dropdown
     const typologyDropdown = document.querySelector(
-      '[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]',
+      '[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]'
     );
     if (typologyDropdown) {
-      typologyDropdown.addEventListener("change", (e) => {
+      typologyDropdown.addEventListener("change", e => {
         const typology = e.target.value;
         ModeManager.setValue("d_39", typology, "user-modified");
         calculateAll(); // Trigger both engines
@@ -1183,17 +1226,17 @@ window.TEUI.SectionModules.sect05 = (function () {
       });
     } else {
       console.warn(
-        `⚠️ [S05] Typology dropdown not found! Selector: [data-field-id="d_39"], [data-dropdown-id="dd_d_39"]`,
+        `⚠️ [S05] Typology dropdown not found! Selector: [data-field-id="d_39"], [data-dropdown-id="dd_d_39"]`
       );
     }
 
     // 2. Event handlers for editable fields
     const editableFields = ["i_41"];
-    editableFields.forEach((fieldId) => {
+    editableFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
         // ✅ CRITICAL: Prevent newlines on Enter key (copy from S04/S08/S09 pattern)
-        field.addEventListener("keydown", (e) => {
+        field.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault(); // Prevent adding a newline
             field.blur(); // Remove focus to trigger the blur event
@@ -1234,13 +1277,13 @@ window.TEUI.SectionModules.sect05 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       };
 
-      dependencies.forEach((depId) => {
+      dependencies.forEach(depId => {
         window.TEUI.StateManager.removeListener(depId, calculateAndRefresh);
         window.TEUI.StateManager.addListener(depId, calculateAndRefresh);
       });
 
       // 4. ✅ S05→S02 RELATIONSHIP: Listen for Carbon Standard changes and update d_16
-      const updateCarbonTarget = (fieldId) => {
+      const updateCarbonTarget = fieldId => {
         const isReference = fieldId === "ref_d_15";
         const d_15_value = window.TEUI.StateManager.getValue(fieldId);
         let d_16_value;
@@ -1276,25 +1319,25 @@ window.TEUI.SectionModules.sect05 = (function () {
         window.TEUI.StateManager.setValue(
           targetField,
           d_16_value,
-          "calculated",
+          "calculated"
         );
         console.log(
-          `[S05→S02] Updated ${targetField} = ${d_16_value} based on ${fieldId} = ${d_15_value}`,
+          `[S05→S02] Updated ${targetField} = ${d_16_value} based on ${fieldId} = ${d_15_value}`
         );
       };
 
       // Listen for both Target and Reference Carbon Standard changes
       window.TEUI.StateManager.removeListener("d_15", () =>
-        updateCarbonTarget("d_15"),
+        updateCarbonTarget("d_15")
       );
       window.TEUI.StateManager.addListener("d_15", () =>
-        updateCarbonTarget("d_15"),
+        updateCarbonTarget("d_15")
       );
       window.TEUI.StateManager.removeListener("ref_d_15", () =>
-        updateCarbonTarget("ref_d_15"),
+        updateCarbonTarget("ref_d_15")
       );
       window.TEUI.StateManager.addListener("ref_d_15", () =>
-        updateCarbonTarget("ref_d_15"),
+        updateCarbonTarget("ref_d_15")
       );
     }
   }
@@ -1323,11 +1366,11 @@ window.TEUI.SectionModules.sect05 = (function () {
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
 
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (
         confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 05.",
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 05."
         )
       ) {
         ModeManager.resetState();
@@ -1351,9 +1394,10 @@ window.TEUI.SectionModules.sect05 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -1367,7 +1411,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 

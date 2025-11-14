@@ -25,7 +25,7 @@
       message:
         "Select a Building Code Prescriptive Path option, or NECB Base Tier, or any other noted or 'Use Your Own' baseline scenario. References values in the 'ReferenceValues.js file_x000a_Then press 'Set Values' to over-write Insulation, Airtightness, and System Efficiencies as per the Code Minimums required by the Selected Standard",
     },
-      e_13: {
+    e_13: {
       cell: "E13",
       title: "Set Defaults",
       message:
@@ -94,10 +94,11 @@
       title: "Select a Province",
       message: "Enter the 2-digit Province abbreviation",
     },
-        d_21: {
+    d_21: {
       cell: "D21",
       title: "Cooling Degree Days",
-      message: "If Unavailable, you can enter a value here. Click the Link on the CDD text left to find values from the Climate Atlas of Canada.",
+      message:
+        "If Unavailable, you can enter a value here. Click the Link on the CDD text left to find values from the Climate Atlas of Canada.",
     },
     d_25: {
       cell: "D25",
@@ -694,7 +695,7 @@
     applyTooltip(element, fieldId, config = true) {
       if (!element) {
         console.warn(
-          `[TooltipManager] No element provided for field: ${fieldId}`,
+          `[TooltipManager] No element provided for field: ${fieldId}`
         );
         return;
       }
@@ -719,7 +720,7 @@
 
       if (!cleanMessage) {
         console.warn(
-          `[TooltipManager] Empty tooltip message for field: ${fieldId}`,
+          `[TooltipManager] Empty tooltip message for field: ${fieldId}`
         );
         return;
       }
@@ -742,7 +743,7 @@
       } catch (error) {
         console.error(
           `[TooltipManager] Error initializing popover for ${fieldId}:`,
-          error,
+          error
         );
       }
     }
@@ -754,7 +755,7 @@
     applyTooltipsToSection(sectionRows) {
       if (!this.initialized) {
         console.warn(
-          "[TooltipManager] Tooltips not loaded yet. Call loadTooltips() first.",
+          "[TooltipManager] Tooltips not loaded yet. Call loadTooltips() first."
         );
         return;
       }
@@ -768,7 +769,7 @@
           if (cell.fieldId && cell.tooltip) {
             // Find the DOM element (fields use data-field-id attribute, not id)
             const element = document.querySelector(
-              `[data-field-id="${cell.fieldId}"]`,
+              `[data-field-id="${cell.fieldId}"]`
             );
 
             if (element) {
@@ -786,10 +787,10 @@
      */
     initializeAllPopovers() {
       const popoverTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="popover"]'),
+        document.querySelectorAll('[data-bs-toggle="popover"]')
       );
 
-      popoverTriggerList.map((popoverTriggerEl) => {
+      popoverTriggerList.map(popoverTriggerEl => {
         return new bootstrap.Popover(popoverTriggerEl, {
           delay: { show: 500, hide: 100 },
           container: "body",
@@ -808,7 +809,7 @@
       // Enable all existing popovers
       document
         .querySelectorAll('[data-bs-toggle="popover"]')
-        .forEach((element) => {
+        .forEach(element => {
           const popover = bootstrap.Popover.getInstance(element);
           if (popover) {
             popover.enable();
@@ -826,7 +827,7 @@
       // Disable all existing popovers
       document
         .querySelectorAll('[data-bs-toggle="popover"]')
-        .forEach((element) => {
+        .forEach(element => {
           const popover = bootstrap.Popover.getInstance(element);
           if (popover) {
             popover.hide();

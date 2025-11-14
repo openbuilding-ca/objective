@@ -670,9 +670,9 @@ window.TEUI.SectionModules.sect04 = (function () {
      * Bridges global StateManager → isolated TargetState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"],
+      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
@@ -746,9 +746,9 @@ window.TEUI.SectionModules.sect04 = (function () {
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
     syncFromGlobalState: function (
-      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"],
+      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -773,10 +773,25 @@ window.TEUI.SectionModules.sect04 = (function () {
       // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
       // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
       if (window.TEUI?.StateManager) {
-        ["d_27", "d_28", "d_29", "d_30", "d_31", "l_28", "l_29", "l_30", "l_31", "h_35"].forEach(id => {
+        [
+          "d_27",
+          "d_28",
+          "d_29",
+          "d_30",
+          "d_31",
+          "l_28",
+          "l_29",
+          "l_30",
+          "l_31",
+          "h_35",
+        ].forEach(id => {
           const refId = `ref_${id}`;
           const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
             window.TEUI.StateManager.setValue(refId, val, "calculated");
           }
         });
@@ -802,7 +817,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S04');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S04");
     },
 
     getCurrentState: function () {
@@ -847,12 +862,12 @@ window.TEUI.SectionModules.sect04 = (function () {
         "h_35",
       ];
 
-      editableFields.forEach((fieldId) => {
+      editableFields.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -927,7 +942,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         "f_35", // Row 35 (primary energy)
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
@@ -952,7 +967,7 @@ window.TEUI.SectionModules.sect04 = (function () {
             }
             const formattedValue = window.TEUI.formatNumber(
               numericValue,
-              formatType,
+              formatType
             );
             element.textContent = formattedValue;
           }
@@ -1013,7 +1028,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           valueToStore,
-          "calculated",
+          "calculated"
         );
       }
     }
@@ -1317,8 +1332,10 @@ window.TEUI.SectionModules.sect04 = (function () {
             section: cell.section || "actualTargetEnergy",
           };
           if (cell.classes) fields[cell.fieldId].classes = cell.classes;
-          if (cell.dependencies) fields[cell.fieldId].dependencies = cell.dependencies;
-          if (cell.conditionalDeps) fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
+          if (cell.dependencies)
+            fields[cell.fieldId].dependencies = cell.dependencies;
+          if (cell.conditionalDeps)
+            fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
         }
       });
     });
@@ -1351,7 +1368,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       "m",
       "n",
     ];
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         if (col === "c" && !cell.label && cell.content) {
@@ -1375,7 +1392,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#actualTargetEnergy .section-header",
+      "#actualTargetEnergy .section-header"
     );
     if (
       !sectionHeader ||
@@ -1393,7 +1410,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     resetButton.textContent = "Reset";
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (confirm("Reset all utility bill values to defaults?")) {
         TargetState.setDefaults();
@@ -1421,9 +1438,10 @@ window.TEUI.SectionModules.sect04 = (function () {
     toggleSwitch.appendChild(slider);
 
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -1436,7 +1454,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
   }
 
@@ -1462,9 +1480,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Set up editable field handlers (from working S04 pattern)
     const editableFields = sectionElement.querySelectorAll(
-      ".editable.user-input",
+      ".editable.user-input"
     );
-    editableFields.forEach((field) => {
+    editableFields.forEach(field => {
       if (!field.hasEditableListeners) {
         field.setAttribute("contenteditable", "true");
 
@@ -1485,7 +1503,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           // Only update if value has changed
           if (this.dataset.originalValue !== newValue) {
             console.log(
-              `[S04-RF] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`,
+              `[S04-RF] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`
             );
 
             // Parse and validate
@@ -1494,13 +1512,13 @@ window.TEUI.SectionModules.sect04 = (function () {
               // Format and store
               const formattedValue = window.TEUI.formatNumber(
                 numericValue,
-                "number-2dp-comma",
+                "number-2dp-comma"
               );
               this.textContent = formattedValue;
               ModeManager.setValue(
                 fieldId,
                 numericValue.toString(),
-                "user-modified",
+                "user-modified"
               );
               calculateAll();
               ModeManager.updateCalculatedDisplayValues();
@@ -1509,11 +1527,11 @@ window.TEUI.SectionModules.sect04 = (function () {
               const previousValue = ModeManager.getValue(fieldId) || "0";
               const prevNumericValue = window.TEUI.parseNumeric(
                 previousValue,
-                0,
+                0
               );
               this.textContent = window.TEUI.formatNumber(
                 prevNumericValue,
-                "number-2dp-comma",
+                "number-2dp-comma"
               );
             }
           }
@@ -1572,7 +1590,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         "ref_f_115", // S13 space oil volume
       ];
 
-      dependencies.forEach((fieldId) => {
+      dependencies.forEach(fieldId => {
         window.TEUI.StateManager.addListener(fieldId, calculateAndRefresh);
       });
     }

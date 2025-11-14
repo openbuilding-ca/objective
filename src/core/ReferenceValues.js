@@ -10,10 +10,10 @@
  * which were previously formula-based, have been intentionally omitted from this structure.
  * A revised calculation method for dependent cells (e.g., M10) no longer requires
  * these complex lookups to be resolved here.
- * 
- * 
+ *
+ *
  * Need to establish a cascading method to apply to unprefixed Target model, AND reference model, AND T-Cells (helper) as required, ie d_52, ref_d_52, t_52
- * 
+ *
  */
 
 window.TEUI = window.TEUI || {};

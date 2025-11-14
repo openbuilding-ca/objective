@@ -38,7 +38,7 @@ window.TEUI = window.TEUI || {};
 // DependencyGraph class for rendering dependency visualizations
 window.TEUI.DependencyGraph = class DependencyGraph {
   constructor(
-    containerSelector = "#dependencyDiagram .section-content .dependency-graph-container",
+    containerSelector = "#dependencyDiagram .section-content .dependency-graph-container"
   ) {
     // Target specific container
     this.containerSelector = containerSelector;
@@ -95,7 +95,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     if (!stateManager || !fieldManager) {
       console.error(
-        "[DependencyGraph] StateManager or FieldManager is required.",
+        "[DependencyGraph] StateManager or FieldManager is required."
       );
       this.showErrorMessage("Initialization failed: Core modules not found.");
       return false; // Indicate failure
@@ -105,7 +105,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     try {
       if (typeof stateManager.exportDependencyGraph !== "function") {
         throw new Error(
-          "StateManager does not have exportDependencyGraph method.",
+          "StateManager does not have exportDependencyGraph method."
         );
       }
       this.data = stateManager.exportDependencyGraph();
@@ -117,7 +117,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         this.data.nodes.length,
         "nodes,",
         this.data.links.length,
-        "links",
+        "links"
       );
 
       // Add group/type info to nodes
@@ -125,7 +125,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     } catch (error) {
       console.error(
         "[DependencyGraph] Failed to get or process dependency data:",
-        error,
+        error
       );
       this.showErrorMessage(`Data loading failed: ${error.message}`);
       return false; // Indicate failure
@@ -137,7 +137,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
   /** Helper to add group/type info */
   enhanceNodeData(fieldManager) {
-    this.data.nodes.forEach((node) => {
+    this.data.nodes.forEach(node => {
       const fieldDef = fieldManager.getField(node.id);
       node.type = fieldDef?.type || "unknown";
       // Basic grouping (can be refined)
@@ -308,7 +308,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     const container = document.querySelector(this.containerSelector);
     if (!container) {
       console.error(
-        `[DependencyGraph] Container not found: ${this.containerSelector}`,
+        `[DependencyGraph] Container not found: ${this.containerSelector}`
       );
       return;
     }
@@ -318,7 +318,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Create main container for the graph itself (ensure it's added)
     const graphContainer = document.createElement("div");
-    graphContainer.className = "dependency-graph-svg-wrapper";    container.appendChild(graphContainer);
+    graphContainer.className = "dependency-graph-svg-wrapper";
+    container.appendChild(graphContainer);
 
     // Check dimensions AFTER adding to DOM
     this.width = graphContainer.clientWidth;
@@ -366,7 +367,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     this.zoom = d3
       .zoom()
       .scaleExtent([0.1, 4])
-      .on("zoom", (event) => {
+      .on("zoom", event => {
         this.svg
           .select("g.graph-content") // Target the correct group
           .attr("transform", event.transform);
@@ -388,7 +389,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       if (
         document.fullscreenElement &&
         document.fullscreenElement.classList.contains(
-          "dependency-graph-svg-wrapper",
+          "dependency-graph-svg-wrapper"
         )
       ) {
         // Re-enable zoom in fullscreen mode without overlay
@@ -408,7 +409,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
   createFilterControls(parentElement) {
     // DUPLICATE FIX: Clear any existing controls first to prevent double headers
     const existingControls = parentElement.querySelector(
-      ".dependency-graph-controls",
+      ".dependency-graph-controls"
     );
     if (existingControls) {
       existingControls.remove();
@@ -476,7 +477,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     const fullscreenButton = document.createElement("button");
     fullscreenButton.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>'; // Bootstrap icon
     fullscreenButton.title = "Toggle Fullscreen";
-    fullscreenButton.className = "btn btn-outline-secondary btn-sm dependency-graph-fullscreen-button";    this.fullscreenButton = fullscreenButton; // Store ref
+    fullscreenButton.className =
+      "btn btn-outline-secondary btn-sm dependency-graph-fullscreen-button";
+    this.fullscreenButton = fullscreenButton; // Store ref
 
     // Toggle legend button
     const legendToggleButton = document.createElement("button");
@@ -509,11 +512,13 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     }
 
     const infoPanel = document.createElement("div");
-    infoPanel.className = "dependency-info-panel alert alert-secondary";    infoPanel.style.display = "none"; // Hidden by default, toggled by JS
+    infoPanel.className = "dependency-info-panel alert alert-secondary";
+    infoPanel.style.display = "none"; // Hidden by default, toggled by JS
     infoPanel.setAttribute("role", "alert");
 
     const title = document.createElement("h6"); // Use h6 for less emphasis
-    title.className = "info-title alert-heading";    title.textContent = "Field Information";
+    title.className = "info-title alert-heading";
+    title.textContent = "Field Information";
 
     const value = document.createElement("p");
     value.className = "info-value";
@@ -540,7 +545,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       this.searchInput.addEventListener("input", () => {
         this.filterGraph(
           this.searchInput.value,
-          this.groupSelect?.value || "all",
+          this.groupSelect?.value || "all"
         );
       });
     }
@@ -607,23 +612,23 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     const { nodes, links } = this.data;
 
     // Pre-process nodes to enhance labels and handle duplicates
-    nodes.forEach((node) => {
+    nodes.forEach(node => {
       node.enhancedLabel = this.enhanceNodeLabel(node);
     });
 
     // Calculate node sizes only if not already assigned
     // This ensures sizes don't get recalculated when rerendering
     if (
-      !nodes.some((node) => Object.prototype.hasOwnProperty.call(node, "size"))
+      !nodes.some(node => Object.prototype.hasOwnProperty.call(node, "size"))
     ) {
       console.log("[DependencyGraph] Calculating node sizes...");
       // Calculate in-degree (dependencies) and out-degree (dependents) for each node
       const counts = {};
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         counts[node.id] = { dependencies: 0, dependents: 0, total: 0 };
       });
 
-      links.forEach((link) => {
+      links.forEach(link => {
         const sourceId =
           typeof link.source === "object" ? link.source.id : link.source;
         const targetId =
@@ -634,7 +639,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       });
 
       // Calculate total connections and assign node sizes
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         // Architectural modules get special sizing and styling
         if (node.type === "module") {
           node.size = this.settings.moduleNodeRadius;
@@ -669,17 +674,17 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         "link",
         d3
           .forceLink(links)
-          .id((d) => d.id)
-          .distance(this.settings.linkDistance),
+          .id(d => d.id)
+          .distance(this.settings.linkDistance)
       )
       .force(
         "charge",
-        d3.forceManyBody().strength(this.settings.chargeStrength),
+        d3.forceManyBody().strength(this.settings.chargeStrength)
       )
       .force("center", d3.forceCenter(this.width / 2, this.height / 2))
       .force(
         "collision",
-        d3.forceCollide().radius((d) => d.size * 2.5),
+        d3.forceCollide().radius(d => d.size * 2.5)
       ) // Use dynamic collision radius
       // Add gentle centering forces to keep disconnected components closer
       .force("x", d3.forceX(this.width / 2).strength(0.05))
@@ -689,12 +694,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     // --- Links --- Use curved paths instead of straight lines
     this.links = graphContent
       .selectAll("path.link")
-      .data(
-        links,
-        (d) => `${d.source.id || d.source}-${d.target.id || d.target}`,
-      ) // Key function for object constancy
+      .data(links, d => `${d.source.id || d.source}-${d.target.id || d.target}`) // Key function for object constancy
       .join(
-        (enter) =>
+        enter =>
           enter
             .append("path")
             .attr("class", "link")
@@ -703,35 +705,35 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .style("stroke-width", 1.5)
             .style("fill", "none")
             .attr("marker-end", "url(#arrowhead)"),
-        (update) => update, // No update needed for static properties
-        (exit) => exit.remove(),
+        update => update, // No update needed for static properties
+        exit => exit.remove()
       );
 
     // --- Nodes ---
     this.nodeGroups = graphContent
       .selectAll("g.node")
-      .data(nodes, (d) => d.id) // Key function for object constancy
+      .data(nodes, d => d.id) // Key function for object constancy
       .join(
-        (enter) => {
+        enter => {
           const g = enter.append("g").attr("class", "node");
 
           // Add a white background circle for node labels
           g.append("circle")
             .attr("class", "node-background")
-            .attr("r", (d) => d.size + 10) // Slightly larger than the node
+            .attr("r", d => d.size + 10) // Slightly larger than the node
             .style("fill", "white")
             .style("opacity", 0) // Hidden by default
             .style("pointer-events", "none"); // Don't interfere with clicks
 
           // Add main circle for node
           g.append("circle")
-            .attr("r", (d) => d.size) // Use dynamic size
+            .attr("r", d => d.size) // Use dynamic size
             .style("stroke", "#fff")
             .style("stroke-width", 2) // Thicker stroke for better definition
             .style("cursor", "pointer");
 
           g.append("text")
-            .attr("dx", (d) => d.size + 5) // Dynamic offset based on node size
+            .attr("dx", d => d.size + 5) // Dynamic offset based on node size
             .attr("dy", ".35em")
             .style("font-size", `${this.settings.labelFontSize}px`)
             .style("fill", "#000") // Black text for better contrast
@@ -749,20 +751,20 @@ window.TEUI.DependencyGraph = class DependencyGraph {
               .drag()
               .on("start", (event, d) => this.dragstarted(event, d))
               .on("drag", (event, d) => this.dragged(event, d))
-              .on("end", (event, d) => this.dragended(event, d)),
+              .on("end", (event, d) => this.dragended(event, d))
           );
 
           return g;
         },
-        (update) => update, // Most updates handled by ticked()
-        (exit) => exit.remove(),
+        update => update, // Most updates handled by ticked()
+        exit => exit.remove()
       );
 
     // --- Update Node Appearance (for enter and update selections) ---
     this.nodeGroups
       .select("circle:not(.node-background)")
-      .attr("r", (d) => d.size) // Update radius for existing nodes
-      .style("fill", (d) => {
+      .attr("r", d => d.size) // Update radius for existing nodes
+      .style("fill", d => {
         // Architectural modules use their group color with special styling
         if (d.isArchitectural) {
           const color =
@@ -778,7 +780,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
           this.settings.colorScheme[d.group] || this.settings.colorScheme.Other;
         return color;
       })
-      .style("stroke", (d) => {
+      .style("stroke", d => {
         if (d.isArchitectural) {
           // Use colored borders to indicate architectural layer
           return d.architecturalLayer === "Foundation"
@@ -789,8 +791,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         }
         return "#fff"; // White border for regular nodes
       })
-      .style("stroke-width", (d) => (d.isArchitectural ? 4 : 2)) // Thicker border for modules
-      .style("filter", (d) => {
+      .style("stroke-width", d => (d.isArchitectural ? 4 : 2)) // Thicker border for modules
+      .style("filter", d => {
         if (d.isArchitectural) {
           return "drop-shadow(0px 0px 16px rgba(0,0,0,0.8))"; // Strong shadow for architectural modules
         } else if (d.isInfluential) {
@@ -801,18 +803,18 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       });
 
     // Update the background circle size to match node size
-    this.nodeGroups.select(".node-background").attr("r", (d) => d.size + 10);
+    this.nodeGroups.select(".node-background").attr("r", d => d.size + 10);
 
     this.nodeGroups
       .select("text")
-      .attr("dx", (d) => d.size + 5) // Update text position
-      .text((d) => d.enhancedLabel || d.label || d.id) // Use enhanced label
+      .attr("dx", d => d.size + 5) // Update text position
+      .text(d => d.enhancedLabel || d.label || d.id) // Use enhanced label
       .style(
         "text-shadow",
-        "0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white",
+        "0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white"
       ); // Add text shadow for better readability
 
-    this.nodeGroups.select("title").text((d) => {
+    this.nodeGroups.select("title").text(d => {
       let tooltip = `${d.enhancedLabel || d.label || d.id}`;
       tooltip += `\nID: ${d.id}`;
       tooltip += `\nGroup: ${d.group}`;
@@ -852,7 +854,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     if (!this.links || !this.nodeGroups) return;
 
     // Update links as curved paths
-    this.links.attr("d", (d) => {
+    this.links.attr("d", d => {
       const sourceX = d.source.x;
       const sourceY = d.source.y;
       const targetX = d.target.x;
@@ -898,7 +900,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       return `M${sourceX},${sourceY}Q${cpX},${cpY},${endX},${endY}`;
     });
 
-    this.nodeGroups.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+    this.nodeGroups.attr("transform", d => `translate(${d.x}, ${d.y})`);
   }
 
   dragstarted(event, d) {
@@ -924,14 +926,14 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     const searchLower = searchText.toLowerCase();
 
-    this.nodeGroups.style("opacity", (d) => {
+    this.nodeGroups.style("opacity", d => {
       const matchesSearch =
         searchLower === "" || d.id.toLowerCase().includes(searchLower);
       const matchesGroup = group === "all" || d.group === group;
       return matchesSearch && matchesGroup ? 1 : 0.1;
     });
 
-    this.links.style("opacity", (d) => {
+    this.links.style("opacity", d => {
       const sourceVisible = this.isNodeVisible(d.source, searchLower, group);
       const targetVisible = this.isNodeVisible(d.target, searchLower, group);
       return sourceVisible && targetVisible ? 0.6 : 0.05;
@@ -963,7 +965,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     // Update button states
     document
       .querySelectorAll(".layout-button")
-      .forEach((button) => button.classList.remove("active"));
+      .forEach(button => button.classList.remove("active"));
     if (layout === "force" && this.forceButton)
       this.forceButton.classList.add("active");
     if (layout === "dagre" && this.dagreButton)
@@ -977,17 +979,17 @@ window.TEUI.DependencyGraph = class DependencyGraph {
           "link",
           d3
             .forceLink(this.data.links)
-            .id((d) => d.id)
-            .distance(this.settings.linkDistance),
+            .id(d => d.id)
+            .distance(this.settings.linkDistance)
         )
         .force(
           "charge",
-          d3.forceManyBody().strength(this.settings.chargeStrength),
+          d3.forceManyBody().strength(this.settings.chargeStrength)
         )
         .force("center", d3.forceCenter(this.width / 2, this.height / 2))
         .force(
           "collision",
-          d3.forceCollide().radius(this.settings.nodeRadius * 2),
+          d3.forceCollide().radius(this.settings.nodeRadius * 2)
         )
         // Add gentle centering forces to keep disconnected components closer
         .force("x", d3.forceX(this.width / 2).strength(0.05))
@@ -1002,10 +1004,10 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       // Check if dagre library is loaded
       if (typeof dagre === "undefined") {
         console.error(
-          "Dagre library not loaded. Cannot apply hierarchical layout.",
+          "Dagre library not loaded. Cannot apply hierarchical layout."
         );
         alert(
-          "Hierarchical layout library (Dagre) is not loaded. Please ensure it is included.",
+          "Hierarchical layout library (Dagre) is not loaded. Please ensure it is included."
         );
         this.switchLayout("force"); // Revert to force layout
         return;
@@ -1018,7 +1020,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
   /** Apply dagre hierarchical layout */
   applyDagreLayout(callback) {
     if (!this.data || !this.nodeGroups || !this.links) {
-      console.warn("[DependencyGraph] Cannot apply Dagre layout - missing data/elements");
+      console.warn(
+        "[DependencyGraph] Cannot apply Dagre layout - missing data/elements"
+      );
       return;
     }
 
@@ -1035,7 +1039,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Add nodes to the graph. The first argument is the node id.
     // We link the node object from our data to the graph node.
-    this.data.nodes.forEach((node) => {
+    this.data.nodes.forEach(node => {
       // Use node-specific sizes for layout calculation
       const nodeSize = node.size || this.settings.nodeRadius;
       g.setNode(node.id, {
@@ -1046,7 +1050,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     });
 
     // Add edges to the graph.
-    this.data.links.forEach((link) => {
+    this.data.links.forEach(link => {
       // Ensure source and target are IDs
       const sourceId = link.source.id || link.source;
       const targetId = link.target.id || link.target;
@@ -1057,7 +1061,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     dagre.layout(g);
 
     // Apply the calculated positions immediately (no transition on initial load)
-    this.nodeGroups.attr("transform", (d) => {
+    this.nodeGroups.attr("transform", d => {
       const nodeInfo = g.node(d.id);
       if (nodeInfo) {
         d.x = nodeInfo.x; // Update data positions immediately
@@ -1122,8 +1126,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
       // Use the already processed links data for connections
       const fieldDependencies = this.data.links
-        .filter((link) => (link.target.id || link.target) === node.id)
-        .map((link) => link.source.id || link.source);
+        .filter(link => (link.target.id || link.target) === node.id)
+        .map(link => link.source.id || link.source);
 
       if (dependencies) {
         dependencies.innerHTML = `<strong>Depends on:</strong> ${fieldDependencies.length > 0 ? fieldDependencies.join(", ") : "None"}`;
@@ -1132,8 +1136,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       }
 
       const fieldDependents = this.data.links
-        .filter((link) => (link.source.id || link.source) === node.id)
-        .map((link) => link.target.id || link.target);
+        .filter(link => (link.source.id || link.source) === node.id)
+        .map(link => link.target.id || link.target);
 
       if (dependents) {
         dependents.innerHTML = `<strong>Influences:</strong> ${fieldDependents.length > 0 ? fieldDependents.join(", ") : "None"}`;
@@ -1172,7 +1176,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       .select("circle:not(.node-background)")
       .style("stroke", "#fff")
       .style("stroke-width", 2)
-      .attr("r", (d) => d.size); // Use the node's stored size instead of this.settings.nodeRadius
+      .attr("r", d => d.size); // Use the node's stored size instead of this.settings.nodeRadius
 
     this.nodeGroups.select(".node-background").style("opacity", 0); // Hide backgrounds
 
@@ -1195,54 +1199,54 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     this.links.style("opacity", 0.1); // More faded for better contrast
 
     const connectedLinks = this.data.links.filter(
-      (l) =>
+      l =>
         (l.source.id || l.source) === node.id ||
-        (l.target.id || l.target) === node.id,
+        (l.target.id || l.target) === node.id
     );
 
     const connectedNodeIds = new Set([node.id]);
-    connectedLinks.forEach((l) => {
+    connectedLinks.forEach(l => {
       connectedNodeIds.add(l.source.id || l.source);
       connectedNodeIds.add(l.target.id || l.target);
     });
 
     // Highlight connected nodes
     this.nodeGroups
-      .filter((d) => connectedNodeIds.has(d.id))
+      .filter(d => connectedNodeIds.has(d.id))
       .style("opacity", 1)
       .select("text")
       .style("display", null); // Show labels for highlighted
 
     // Highlight background for connected nodes
     this.nodeGroups
-      .filter((d) => connectedNodeIds.has(d.id))
+      .filter(d => connectedNodeIds.has(d.id))
       .select(".node-background")
       .style("opacity", 0.7); // Show background for text readability
 
     // Bold stroke for the selected node but keep its original size
     this.nodeGroups
-      .filter((d) => d.id === node.id)
+      .filter(d => d.id === node.id)
       .select("circle:not(.node-background)")
       .style("stroke", "#333")
       .style("stroke-width", 3)
-      .attr("r", (d) => d.size * 1.4); // Increase from 1.2 to 1.4 for more emphasis
+      .attr("r", d => d.size * 1.4); // Increase from 1.2 to 1.4 for more emphasis
 
     // Highlight connected links
     this.links
       .filter(
-        (l) =>
+        l =>
           (l.source.id || l.source) === node.id ||
-          (l.target.id || l.target) === node.id,
+          (l.target.id || l.target) === node.id
       )
       .style("opacity", 0.8)
       .style("stroke-width", 2)
-      .style("stroke", (l) =>
-        (l.source.id || l.source) === node.id ? "#cc0000" : "#0077cc",
+      .style("stroke", l =>
+        (l.source.id || l.source) === node.id ? "#cc0000" : "#0077cc"
       ); // Red outgoing, Blue incoming
   }
 
   getNodeById(id) {
-    return this.data?.nodes.find((node) => node.id === id);
+    return this.data?.nodes.find(node => node.id === id);
   }
 
   focusOnNode(nodeId) {
@@ -1265,35 +1269,37 @@ window.TEUI.DependencyGraph = class DependencyGraph {
   toggleFullscreen() {
     // Target the SVG wrapper directly for fullscreen
     const graphWrapper = document.querySelector(
-      "#dependencyDiagram .dependency-graph-svg-wrapper",
+      "#dependencyDiagram .dependency-graph-svg-wrapper"
     );
     if (!graphWrapper) return;
 
     const controlsContainer = document.querySelector(
-      "#dependencyDiagram .dependency-graph-controls-wrapper",
+      "#dependencyDiagram .dependency-graph-controls-wrapper"
     );
     const _infoPanel = document.querySelector(
-      "#dependencyDiagram .dependency-graph-info-wrapper",
+      "#dependencyDiagram .dependency-graph-info-wrapper"
     );
 
     // Create or get our floating controls container for fullscreen mode
     let floatingControls = graphWrapper.querySelector(
-      ".dependency-graph-floating-controls",
+      ".dependency-graph-floating-controls"
     );
     if (!floatingControls) {
       floatingControls = document.createElement("div");
-      floatingControls.className = "dependency-graph-floating-controls";      floatingControls.style.display = "none"; // Hidden by default, shown in fullscreen
+      floatingControls.className = "dependency-graph-floating-controls";
+      floatingControls.style.display = "none"; // Hidden by default, shown in fullscreen
       graphWrapper.appendChild(floatingControls);
     }
 
     // Create a visible floating info panel for fullscreen mode
     // IMPORTANT: Create and append to the graph wrapper, not document.body
     let floatingInfoPanel = graphWrapper.querySelector(
-      ".dependency-graph-floating-info",
+      ".dependency-graph-floating-info"
     );
     if (!floatingInfoPanel) {
       floatingInfoPanel = document.createElement("div");
-      floatingInfoPanel.className = "dependency-graph-floating-info";      floatingInfoPanel.style.display = "none"; // Hidden by default, shown in fullscreen
+      floatingInfoPanel.className = "dependency-graph-floating-info";
+      floatingInfoPanel.style.display = "none"; // Hidden by default, shown in fullscreen
 
       // Create an always-visible info panel structure in fullscreen
       floatingInfoPanel.innerHTML = `
@@ -1343,7 +1349,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
               // Extract just the inner controls (not the wrapper)
               const innerControls = controlsClone.querySelector(
-                ".dependency-graph-controls",
+                ".dependency-graph-controls"
               );
               if (innerControls) {
                 floatingControls.appendChild(innerControls);
@@ -1355,7 +1361,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                   searchInput.addEventListener("input", () => {
                     this.filterGraph(
                       searchInput.value,
-                      floatingControls.querySelector("select")?.value || "all",
+                      floatingControls.querySelector("select")?.value || "all"
                     );
                   });
                 }
@@ -1366,21 +1372,21 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                     this.filterGraph(
                       floatingControls.querySelector('input[type="text"]')
                         ?.value || "",
-                      groupSelect.value,
+                      groupSelect.value
                     );
                   });
                 }
 
                 // Re-attach layout buttons
                 const forceButton = floatingControls.querySelector(
-                  "button:nth-child(1)",
+                  "button:nth-child(1)"
                 );
                 if (forceButton) {
                   forceButton.onclick = () => this.switchLayout("force");
                 }
 
                 const dagreButton = floatingControls.querySelector(
-                  "button:nth-child(2)",
+                  "button:nth-child(2)"
                 );
                 if (dagreButton) {
                   dagreButton.onclick = () => this.switchLayout("dagre");
@@ -1388,14 +1394,14 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
                 // Reset button in fullscreen
                 const resetButton = floatingControls.querySelector(
-                  "button:nth-child(3)",
+                  "button:nth-child(3)"
                 );
                 if (resetButton) {
                   resetButton.onclick = () => this.resetView();
                 }
 
                 const legendButton = floatingControls.querySelector(
-                  "button:nth-child(4)",
+                  "button:nth-child(4)"
                 );
                 if (legendButton) {
                   legendButton.onclick = () => this.toggleLegend();
@@ -1403,7 +1409,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
                 // Replace fullscreen button with exit button
                 const fullscreenButton = floatingControls.querySelector(
-                  "button:nth-child(5)",
+                  "button:nth-child(5)"
                 );
                 if (fullscreenButton) {
                   fullscreenButton.innerHTML =
@@ -1430,7 +1436,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             } else {
               // Update with default message if no node selected
               const panel = this.floatingInfoPanel.querySelector(
-                ".dependency-info-panel",
+                ".dependency-info-panel"
               );
               if (panel) {
                 const title = panel.querySelector(".info-title");
@@ -1448,7 +1454,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             }
           }
         },
-        { once: true },
+        { once: true }
       );
     } else {
       // Exit fullscreen
@@ -1490,9 +1496,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Get unique, sorted groups from the enhanced node data
     const groupsInData = [
-      ...new Set(this.data.nodes.map((n) => n.group).filter((g) => g)),
+      ...new Set(this.data.nodes.map(n => n.group).filter(g => g)),
     ].sort();
-    groupsInData.forEach((group) => {
+    groupsInData.forEach(group => {
       const option = document.createElement("option");
       option.value = group;
       option.text = group; // Use the full section name now
@@ -1510,11 +1516,13 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Create the legend container
     const legend = document.createElement("div");
-    legend.className = "dependency-graph-legend";    legend.style.display = "none"; // Hidden by default, toggled by JS
+    legend.className = "dependency-graph-legend";
+    legend.style.display = "none"; // Hidden by default, toggled by JS
 
     // Create legend title
     const title = document.createElement("div");
-    title.className = "dependency-graph-legend-title";    title.textContent = "Section Groups";
+    title.className = "dependency-graph-legend-title";
+    title.textContent = "Section Groups";
     legend.appendChild(title);
 
     // Add legend items
@@ -1534,17 +1542,23 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     // Create legend items (exclude architectural layers as they appear in separate section below)
     entries.forEach(([group, color]) => {
       // Skip architectural layer groups (they're shown in the Architectural Layers section)
-      if (group === "🏗️ Foundation" || group === "🧮 Coordination" || group === "🎯 Application") {
+      if (
+        group === "🏗️ Foundation" ||
+        group === "🧮 Coordination" ||
+        group === "🎯 Application"
+      ) {
         return;
       }
 
       const item = document.createElement("div");
       item.className = "dependency-graph-legend-item";
       const colorBox = document.createElement("span");
-      colorBox.className = "dependency-graph-legend-color-box";      colorBox.style.backgroundColor = color;
+      colorBox.className = "dependency-graph-legend-color-box";
+      colorBox.style.backgroundColor = color;
 
       const label = document.createElement("span");
-      label.className = "dependency-graph-legend-label";      label.textContent = group;
+      label.className = "dependency-graph-legend-label";
+      label.textContent = group;
 
       item.appendChild(colorBox);
       item.appendChild(label);
@@ -1555,7 +1569,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Add architectural layer legend section
     const archTitle = document.createElement("div");
-    archTitle.className = "dependency-graph-legend-arch-title";    archTitle.textContent = "Architectural Layers";
+    archTitle.className = "dependency-graph-legend-arch-title";
+    archTitle.textContent = "Architectural Layers";
     legend.appendChild(archTitle);
 
     // Add architectural layer items
@@ -1577,14 +1592,16 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       },
     ];
 
-    archItems.forEach((item) => {
+    archItems.forEach(item => {
       const itemDiv = document.createElement("div");
       itemDiv.className = "dependency-graph-legend-arch-item";
       const indicator = document.createElement("div");
-      indicator.className = "dependency-graph-legend-arch-indicator";      indicator.style.border = `3px solid ${item.color}`;
+      indicator.className = "dependency-graph-legend-arch-indicator";
+      indicator.style.border = `3px solid ${item.color}`;
 
       const label = document.createElement("span");
-      label.className = "dependency-graph-legend-arch-label";      label.textContent = item.name;
+      label.className = "dependency-graph-legend-arch-label";
+      label.textContent = item.name;
 
       itemDiv.appendChild(indicator);
       itemDiv.appendChild(label);
@@ -1593,7 +1610,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Add to the graph container (which should be a relatively positioned parent)
     const graphContainer = document.querySelector(
-      `${this.containerSelector} .dependency-graph-svg-wrapper`,
+      `${this.containerSelector} .dependency-graph-svg-wrapper`
     );
     if (graphContainer) {
       graphContainer.appendChild(legend);
@@ -1643,7 +1660,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
           minY = Infinity,
           maxY = -Infinity;
 
-        this.data.nodes.forEach((node) => {
+        this.data.nodes.forEach(node => {
           if (node.x < minX) minX = node.x;
           if (node.x > maxX) maxX = node.x;
           if (node.y < minY) minY = node.y;
@@ -1677,7 +1694,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 {
                   graph: { width: graphWidth, height: graphHeight },
                   container: { width: containerWidth, height: containerHeight },
-                },
+                }
               );
               return;
             }
@@ -1704,7 +1721,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                     this.zoom.transform,
                     d3.zoomIdentity
                       .translate(translateX, translateY)
-                      .scale(scale),
+                      .scale(scale)
                   );
 
                 // console.log(
@@ -1714,21 +1731,21 @@ window.TEUI.DependencyGraph = class DependencyGraph {
               } catch (error) {
                 console.error(
                   "[DependencyGraph] Error applying graph transform",
-                  error,
+                  error
                 );
               }
             });
           } catch (error) {
             console.error(
               "[DependencyGraph] Error calculating graph dimensions",
-              error,
+              error
             );
           }
         });
       } catch (error) {
         console.error(
           "[DependencyGraph] Error calculating graph bounds",
-          error,
+          error
         );
       }
     });
@@ -1742,7 +1759,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     if (!stateManager) return;
 
     const panel = this.floatingInfoPanel.querySelector(
-      ".dependency-info-panel",
+      ".dependency-info-panel"
     );
     if (!panel) return;
 
@@ -1786,11 +1803,11 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Use the already processed links data for connections
     const fieldDependencies = this.data.links
-      .filter((link) => (link.target.id || link.target) === node.id)
-      .map((link) => {
+      .filter(link => (link.target.id || link.target) === node.id)
+      .map(link => {
         // Try to get enhanced labels for dependencies
         const sourceNode = this.data.nodes.find(
-          (n) => n.id === (link.source.id || link.source),
+          n => n.id === (link.source.id || link.source)
         );
         return sourceNode?.enhancedLabel || link.source.id || link.source;
       });
@@ -1800,8 +1817,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       if (fieldDependencies.length > 0) {
         const depList = fieldDependencies
           .map(
-            (dep) =>
-              `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #f1f8ff; border-radius: 4px; border: 1px solid #cfe4ff;">${dep}</span>`,
+            dep =>
+              `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #f1f8ff; border-radius: 4px; border: 1px solid #cfe4ff;">${dep}</span>`
           )
           .join(" ");
         dependencies.innerHTML = `<strong>Depends on:</strong><div style="margin-top: 4px;">${depList}</div>`;
@@ -1811,11 +1828,11 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     }
 
     const fieldDependents = this.data.links
-      .filter((link) => (link.source.id || link.source) === node.id)
-      .map((link) => {
+      .filter(link => (link.source.id || link.source) === node.id)
+      .map(link => {
         // Try to get enhanced labels for dependents
         const targetNode = this.data.nodes.find(
-          (n) => n.id === (link.target.id || link.target),
+          n => n.id === (link.target.id || link.target)
         );
         return targetNode?.enhancedLabel || link.target.id || link.target;
       });
@@ -1825,8 +1842,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       if (fieldDependents.length > 0) {
         const depList = fieldDependents
           .map(
-            (dep) =>
-              `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #fff8f1; border-radius: 4px; border: 1px solid #ffe6cf;">${dep}</span>`,
+            dep =>
+              `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #fff8f1; border-radius: 4px; border: 1px solid #ffe6cf;">${dep}</span>`
           )
           .join(" ");
         dependents.innerHTML = `<strong>Influences:</strong><div style="margin-top: 4px;">${depList}</div>`;
@@ -1891,7 +1908,8 @@ function createInitialControlsRow(controlsWrapper) {
 
   const dagreButton = document.createElement("button");
   dagreButton.textContent = "Hierarchical";
-  dagreButton.className = "btn btn-outline-secondary btn-sm layout-button active";
+  dagreButton.className =
+    "btn btn-outline-secondary btn-sm layout-button active";
   dagreButton.disabled = true;
 
   const resetButton = document.createElement("button");
@@ -1934,8 +1952,10 @@ function createLoadingPlaceholder(graphContainer) {
   const placeholder = document.createElement("div");
   placeholder.id = "s17LoadingPlaceholder";
   placeholder.className = "teui-loading-placeholder";
-  placeholder.innerHTML = "<p>Click 'Activate Graph' to visualize field dependencies and architectural relationships.</p>";
-  placeholder.style.cssText = "padding: 40px 20px; text-align: center; background: #f9f9f9; border-radius: 4px; color: #666;";
+  placeholder.innerHTML =
+    "<p>Click 'Activate Graph' to visualize field dependencies and architectural relationships.</p>";
+  placeholder.style.cssText =
+    "padding: 40px 20px; text-align: center; background: #f9f9f9; border-radius: 4px; color: #666;";
 
   // Insert at the beginning of graph container
   graphContainer.insertBefore(placeholder, graphContainer.firstChild);
@@ -1946,7 +1966,7 @@ function createLoadingPlaceholder(graphContainer) {
  */
 function activateDependencyGraph() {
   const graphContainer = document.querySelector(
-    "#dependencyDiagram .section-content .dependency-graph-container",
+    "#dependencyDiagram .section-content .dependency-graph-container"
   );
   const placeholder = document.getElementById("s17LoadingPlaceholder");
   const activateBtn = document.getElementById("s17ActivateBtn");
@@ -1960,20 +1980,23 @@ function activateDependencyGraph() {
 
   // Update button text
   if (activateBtn) {
-    activateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Graph';
+    activateBtn.innerHTML =
+      '<i class="bi bi-arrow-clockwise"></i> Refresh Graph';
   }
 
   // If graph not yet created, create it now
   if (!teuiDependencyGraphInstance) {
     const controlsContainer = document.querySelector(
-      "#dependencyDiagram .dependency-graph-controls-wrapper",
+      "#dependencyDiagram .dependency-graph-controls-wrapper"
     );
     const infoPanelContainer = document.querySelector(
-      "#dependencyDiagram .dependency-graph-info-wrapper",
+      "#dependencyDiagram .dependency-graph-info-wrapper"
     );
 
     // Remove the initial placeholder controls
-    const existingControls = controlsContainer.querySelector(".dependency-graph-controls");
+    const existingControls = controlsContainer.querySelector(
+      ".dependency-graph-controls"
+    );
     if (existingControls) {
       existingControls.remove();
     }
@@ -1988,7 +2011,9 @@ function activateDependencyGraph() {
       teuiDependencyGraphInstance.populateGroupFilter();
 
       // Move activation button to the beginning of the new controls row
-      const controlsRow = controlsContainer.querySelector(".dependency-graph-controls");
+      const controlsRow = controlsContainer.querySelector(
+        ".dependency-graph-controls"
+      );
       if (controlsRow && activateBtn) {
         controlsRow.insertBefore(activateBtn, controlsRow.firstChild);
       }
@@ -2038,7 +2063,7 @@ function initializeDependencyGraph() {
   if (typeof d3 === "undefined") {
     console.error("D3.js not found. Ensure it is included in index.html.");
     const container = document.querySelector(
-      "#dependencyDiagram .section-content",
+      "#dependencyDiagram .section-content"
     );
     if (container)
       container.innerHTML =
@@ -2059,23 +2084,25 @@ let graphInitialized = false;
 function initializeGraphInstanceAndUI() {
   // Prevent double initialization
   if (graphInitialized) {
-    console.log("[DependencyGraph] Already initialized, skipping re-initialization");
+    console.log(
+      "[DependencyGraph] Already initialized, skipping re-initialization"
+    );
     return;
   }
 
   const graphContainer = document.querySelector(
-    "#dependencyDiagram .section-content .dependency-graph-container",
+    "#dependencyDiagram .section-content .dependency-graph-container"
   );
   const controlsContainer = document.querySelector(
-    "#dependencyDiagram .dependency-graph-controls-wrapper",
+    "#dependencyDiagram .dependency-graph-controls-wrapper"
   ); // Separate container for controls
   const infoPanelContainer = document.querySelector(
-    "#dependencyDiagram .dependency-graph-info-wrapper",
+    "#dependencyDiagram .dependency-graph-info-wrapper"
   ); // Separate container for info
 
   if (!graphContainer || !controlsContainer || !infoPanelContainer) {
     console.warn(
-      "[DependencyGraph] Required containers not found. Initialization deferred.",
+      "[DependencyGraph] Required containers not found. Initialization deferred."
     );
     return;
   }
@@ -2113,7 +2140,7 @@ document.addEventListener("shown.bs.tab", function (event) {
 // Export utility functions for global access if needed
 window.TEUI.DependencyGraphUtils = {
   initialize: initializeDependencyGraph,
-  focusOnNode: (nodeId) => {
+  focusOnNode: nodeId => {
     teuiDependencyGraphInstance?.focusOnNode(nodeId);
   },
   getInstance: () => teuiDependencyGraphInstance,

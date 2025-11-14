@@ -1,12 +1,12 @@
 // @ts-check
-const { defineConfig, devices } = require('@playwright/test');
+const { defineConfig, devices } = require("@playwright/test");
 
 /**
  * Playwright configuration for OBJECTIVE Calculator tests
  * @see https://playwright.dev/docs/test-configuration
  */
 module.exports = defineConfig({
-  testDir: './test',
+  testDir: "./test",
 
   // Maximum time one test can run
   timeout: 30 * 1000,
@@ -24,27 +24,24 @@ module.exports = defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter to use
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'playwright-report' }]
-  ],
+  reporter: [["list"], ["html", { outputFolder: "playwright-report" }]],
 
   use: {
     // Base URL for all tests
-    baseURL: 'file://' + __dirname,
+    baseURL: "file://" + __dirname,
 
     // Collect trace when retrying the failed test
-    trace: 'on-first-retry',
+    trace: "on-first-retry",
 
     // Screenshot only on failure
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
   },
 
   // Configure projects for major browsers
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
 
     // Uncomment to test on Firefox and Safari

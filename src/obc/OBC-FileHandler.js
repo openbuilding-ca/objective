@@ -13,7 +13,7 @@ OBC.FileHandler = (function () {
   function parseCSV(csvString) {
     // Simple CSV parser
     const lines = csvString.split("\n");
-    const headers = lines[0].split(",").map((header) => header.trim());
+    const headers = lines[0].split(",").map(header => header.trim());
     const result = [];
 
     for (let i = 1; i < lines.length; i++) {
@@ -39,7 +39,7 @@ OBC.FileHandler = (function () {
     // Convert form data to CSV format
     const fields = Object.keys(formData);
     const headers = ["field_id", "value"];
-    const rows = fields.map((field) => `${field},${formData[field]}`);
+    const rows = fields.map(field => `${field},${formData[field]}`);
 
     return headers.join(",") + "\n" + rows.join("\n");
   }
@@ -87,12 +87,12 @@ OBC.FileHandler = (function () {
                 alert("Excel data imported successfully.");
               } else {
                 alert(
-                  'Failed to map data from Excel file. The required "REPORT" sheet might be missing or empty.',
+                  'Failed to map data from Excel file. The required "REPORT" sheet might be missing or empty.'
                 );
               }
             } else {
               alert(
-                "Excel Mapper is not available. Could not process .xlsx file.",
+                "Excel Mapper is not available. Could not process .xlsx file."
               );
             }
           } else {
@@ -131,14 +131,14 @@ OBC.FileHandler = (function () {
     // Check if data is in field_id,value format
     if (parsedData.data[0].field_id && parsedData.data[0].value) {
       // Field-value pairs
-      parsedData.data.forEach((item) => {
+      parsedData.data.forEach(item => {
         formData[item.field_id] = item.value;
       });
     } else {
       // Data keyed by field names
       // For each item in data, extract its properties
-      parsedData.data.forEach((item) => {
-        Object.keys(item).forEach((key) => {
+      parsedData.data.forEach(item => {
+        Object.keys(item).forEach(key => {
           formData[key] = item[key];
         });
       });
@@ -159,7 +159,7 @@ OBC.FileHandler = (function () {
     const validIdRegex = /^[a-zA-Z]_\d+$/; // Matches patterns like d_12, c_3, etc.
 
     // Iterate through form data
-    Object.keys(formData).forEach((fieldId) => {
+    Object.keys(formData).forEach(fieldId => {
       // VALIDATION: Ensure the fieldId is a valid format before using it in a selector.
       if (
         !fieldId ||

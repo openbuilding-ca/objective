@@ -11,6 +11,7 @@ OBJECTIVE is a web-based Total Energy Use Intensity (TEUI) and Thermal Energy De
 ## Overview
 
 OBJECTIVE helps architects and engineers:
+
 - Calculate TEUI and TEDI for building designs
 - Compare target designs against code reference models
 - Model energy performance across Canadian climate zones
@@ -91,6 +92,7 @@ objective/
 ```
 
 Key architectural features:
+
 - **No build step necessary** - Direct HTML/JS/CSS
 - **Pure functional calculations** - Tuple-based dual-state logic
 - **Modular sections** - Each section is independent
@@ -103,6 +105,7 @@ See [docs/TECHNICAL.md](docs/TECHNICAL.md) for detailed architecture information
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+
 - Code of conduct
 - Development setup
 - Testing guidelines
@@ -130,10 +133,12 @@ Supported by the Ontario Association of Architects (OAA).
 **Contributors:** Mark H Pavlidis
 
 **Mentors & Advisors:**
+
 - Dr. Ted Kesik, P.Eng
 - Evelyne Bouchard, OAQ, CPHD
 
 **Peer Review:**
+
 - INVISIJ Architects
 - Tandem Architecture
 - Pamela DeMelo, P.Eng.

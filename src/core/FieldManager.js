@@ -188,7 +188,7 @@ TEUI.FieldManager = (function () {
     if (!sectionId) {
       // Fallback to legacy direct StateManager write if section not found
       console.warn(
-        `[FieldManager] Field ${fieldId} not found in any section - using legacy direct write`,
+        `[FieldManager] Field ${fieldId} not found in any section - using legacy direct write`
       );
       if (TEUI.StateManager && TEUI.StateManager.setValue) {
         TEUI.StateManager.setValue(fieldId, value, source);
@@ -206,22 +206,25 @@ TEUI.FieldManager = (function () {
       ) {
         sectionModule.ModeManager.setValue(fieldId, value, source);
         console.log(
-          `[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`,
+          `[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`
         );
 
         // ✅ FIX: Call section's calculateAll() after slider changes
         // This matches the pattern used for editable fields (handleFieldBlur)
         // and eliminates the need for sections to have self-listeners (Anti-Pattern 7)
-        if (sectionModule.calculateAll && typeof sectionModule.calculateAll === 'function') {
+        if (
+          sectionModule.calculateAll &&
+          typeof sectionModule.calculateAll === "function"
+        ) {
           sectionModule.calculateAll();
           console.log(
-            `[FieldManager] Called ${sectionId}.calculateAll() after ${fieldId} change`,
+            `[FieldManager] Called ${sectionId}.calculateAll() after ${fieldId} change`
           );
         }
       } else {
         // Fallback: section exists but no ModeManager - direct StateManager write
         console.warn(
-          `[FieldManager] Section ${sectionId} has no ModeManager - using direct write for ${fieldId}`,
+          `[FieldManager] Section ${sectionId} has no ModeManager - using direct write for ${fieldId}`
         );
         if (TEUI.StateManager && TEUI.StateManager.setValue) {
           TEUI.StateManager.setValue(fieldId, value, source);
@@ -230,7 +233,7 @@ TEUI.FieldManager = (function () {
     } catch (e) {
       console.error(
         `[FieldManager] Error routing ${fieldId} to ${sectionId}:`,
-        e,
+        e
       );
       // Final fallback to legacy direct write
       if (TEUI.StateManager && TEUI.StateManager.setValue) {
@@ -257,7 +260,7 @@ TEUI.FieldManager = (function () {
   function getDropdownOptions(dropdownId, context = {}) {
     // First check if there's a field with this dropdown ID
     const fieldId = Object.keys(allFields).find(
-      (id) => allFields[id].dropdownId === dropdownId,
+      id => allFields[id].dropdownId === dropdownId
     );
 
     // If field found and it has options, use those first
@@ -397,7 +400,7 @@ TEUI.FieldManager = (function () {
       } catch (error) {
         console.error(
           `Error in ${sectionId} module initializeEventHandlers:`,
-          error,
+          error
         );
       }
     }
@@ -431,7 +434,7 @@ TEUI.FieldManager = (function () {
 
     if (!TEUI.SectionModules[internalSectionId]) {
       console.error(
-        `Module not found for section ${sectionId} (${internalSectionId})`,
+        `Module not found for section ${sectionId} (${internalSectionId})`
       );
       return false;
     }
@@ -456,7 +459,7 @@ TEUI.FieldManager = (function () {
       document.dispatchEvent(
         new CustomEvent(`teui-section-rendered`, {
           detail: { sectionId: sectionId },
-        }),
+        })
       );
 
       return true;
@@ -476,7 +479,7 @@ TEUI.FieldManager = (function () {
     }
 
     // Render each section
-    Object.keys(sections).forEach((sectionId) => {
+    Object.keys(sections).forEach(sectionId => {
       renderSection(sectionId);
     });
 
@@ -484,7 +487,7 @@ TEUI.FieldManager = (function () {
     document.dispatchEvent(
       new CustomEvent("teui-rendering-complete", {
         detail: { message: "All sections rendered successfully" },
-      }),
+      })
     );
 
     return true;
@@ -509,7 +512,7 @@ TEUI.FieldManager = (function () {
 
     // If there's a render hook, use it instead of creating a new table
     const renderHook = contentContainer.querySelector(
-      `[data-render-section="${sectionId}"]`,
+      `[data-render-section="${sectionId}"]`
     );
     const containerElement = renderHook || contentContainer;
 
@@ -553,7 +556,7 @@ TEUI.FieldManager = (function () {
       tbody.innerHTML = "";
 
       // Generate rows based on layout definition
-      layout.rows.forEach((rowDef) => {
+      layout.rows.forEach(rowDef => {
         const rowElement = document.createElement("tr");
         rowElement.setAttribute("data-id", rowDef.id);
 
@@ -609,7 +612,7 @@ TEUI.FieldManager = (function () {
                 if (cellDef.dropdownId) {
                   selectElement.setAttribute(
                     "data-dropdown-id",
-                    cellDef.dropdownId,
+                    cellDef.dropdownId
                   );
                 }
 
@@ -691,7 +694,7 @@ TEUI.FieldManager = (function () {
                   routeToSectionModeManager(
                     fieldId,
                     this.value,
-                    "user-modified",
+                    "user-modified"
                   );
                 });
 
@@ -706,12 +709,15 @@ TEUI.FieldManager = (function () {
                 // Add button ID if specified
                 if (cellDef.buttonId) {
                   buttonElement.id = cellDef.buttonId;
-                  buttonElement.setAttribute("data-button-id", cellDef.buttonId);
+                  buttonElement.setAttribute(
+                    "data-button-id",
+                    cellDef.buttonId
+                  );
                 }
 
                 // Apply button classes
                 if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                  cellDef.classes.forEach((className) => {
+                  cellDef.classes.forEach(className => {
                     buttonElement.classList.add(className);
                   });
                 }
@@ -731,7 +737,7 @@ TEUI.FieldManager = (function () {
 
               // Apply any custom classes to this cell
               if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellDef.classes.forEach((className) => {
+                cellDef.classes.forEach(className => {
                   cellElement.classList.add(className);
                 });
               }
@@ -749,7 +755,7 @@ TEUI.FieldManager = (function () {
 
               // Apply button classes
               if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellDef.classes.forEach((className) => {
+                cellDef.classes.forEach(className => {
                   buttonElement.classList.add(className);
                 });
               }
@@ -767,7 +773,7 @@ TEUI.FieldManager = (function () {
               // --- ADDED DEBUG LOG for initial textContent ---
               if (cellDef.fieldId === "d_119" || cellDef.fieldId === "j_115") {
                 console.log(
-                  `[FieldManager] Setting initial textContent for ${cellDef.fieldId} to: "${cellElement.textContent}"`,
+                  `[FieldManager] Setting initial textContent for ${cellDef.fieldId} to: "${cellElement.textContent}"`
                 );
               }
               // --- END DEBUG LOG ---
@@ -784,7 +790,7 @@ TEUI.FieldManager = (function () {
 
               // Apply any custom classes to this cell
               if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellDef.classes.forEach((className) => {
+                cellDef.classes.forEach(className => {
                   cellElement.classList.add(className);
                 });
               }
@@ -812,15 +818,15 @@ TEUI.FieldManager = (function () {
 
     // Add event listeners for dropdowns with dependencies
     const fields = getFieldsBySection(sectionId);
-    Object.values(fields).forEach((field) => {
+    Object.values(fields).forEach(field => {
       if (field.type === "dropdown" && field.dropdownId) {
         const dropdown = document.querySelector(
-          `[data-dropdown-id="${field.dropdownId}"]`,
+          `[data-dropdown-id="${field.dropdownId}"]`
         );
         if (dropdown) {
           dropdown.addEventListener("change", () => {
             const fieldId = Object.keys(fields).find(
-              (key) => fields[key] === field,
+              key => fields[key] === field
             );
             if (fieldId) {
               updateDependentDropdowns(fieldId);
@@ -872,7 +878,7 @@ TEUI.FieldManager = (function () {
       ];
 
       // Add value cells
-      fieldEntries.forEach((entry) => {
+      fieldEntries.forEach(entry => {
         cells.push({
           fieldId: entry.fieldId,
           label: entry.field.label,
@@ -983,12 +989,12 @@ TEUI.FieldManager = (function () {
           } else if (field.type === "coefficient_slider") {
             displayValue = window.TEUI.formatNumber(
               parseFloat(value),
-              "number-2dp",
+              "number-2dp"
             );
           } else if (field.type === "year_slider") {
             displayValue = window.TEUI.formatNumber(
               parseFloat(value),
-              "integer-nocomma",
+              "integer-nocomma"
             );
           }
 
@@ -1019,17 +1025,17 @@ TEUI.FieldManager = (function () {
           }
           initialDisplayValue = window.TEUI.formatNumber(
             valToFormat,
-            "percent-0dp",
+            "percent-0dp"
           );
         } else if (field.type === "coefficient_slider") {
           initialDisplayValue = window.TEUI.formatNumber(
             parseFloat(rangeInput.value),
-            "number-2dp",
+            "number-2dp"
           );
         } else if (field.type === "year_slider") {
           initialDisplayValue = window.TEUI.formatNumber(
             parseFloat(rangeInput.value),
-            "integer-nocomma",
+            "integer-nocomma"
           );
         }
         displaySpan.textContent = initialDisplayValue;
@@ -1042,8 +1048,8 @@ TEUI.FieldManager = (function () {
 
         // CRITICAL PROTECTION: Apply a mutation observer to ensure the slider cell
         // never gets the contenteditable attribute applied after initialization
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
+        const observer = new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
             if (
               mutation.type === "attributes" &&
               (mutation.attributeName === "contenteditable" ||
@@ -1116,18 +1122,18 @@ TEUI.FieldManager = (function () {
         // <<<< ADD LOGGING FOR k_120 RELATED DROPDOWNS >>>>
         if (field.dropdownId === "dd_k_120" || fieldId === "k_120") {
           console.log(
-            `[FieldManager InitDropdowns] Found field related to k_120. fieldId: ${fieldId}, dropdownId: ${field.dropdownId}, type: ${field.type}`,
+            `[FieldManager InitDropdowns] Found field related to k_120. fieldId: ${fieldId}, dropdownId: ${field.dropdownId}, type: ${field.type}`
           );
           const tempOptions = getDropdownOptions(field.dropdownId); // Check what options it would get
           console.log(
             `[FieldManager InitDropdowns] Options for ${field.dropdownId}:`,
-            JSON.stringify(tempOptions),
+            JSON.stringify(tempOptions)
           );
         }
         // <<<< END LOGGING >>>>
 
         const selectElement = document.querySelector(
-          `[data-dropdown-id="${field.dropdownId}"]`,
+          `[data-dropdown-id="${field.dropdownId}"]`
         );
         if (!selectElement) return;
 
@@ -1161,7 +1167,7 @@ TEUI.FieldManager = (function () {
         }
 
         // Add options to select element
-        options.forEach((option) => {
+        options.forEach(option => {
           const optionEl = document.createElement("option");
 
           // Handle both object and primitive options
@@ -1199,20 +1205,20 @@ TEUI.FieldManager = (function () {
   function updateDependentDropdowns(fieldId) {
     // Find all fields that depend on this field
     const dependentFields = Object.values(allFields).filter(
-      (f) =>
+      f =>
         f.type === "dropdown" &&
         f.dependencies &&
-        f.dependencies.includes(fieldId),
+        f.dependencies.includes(fieldId)
     );
 
-    dependentFields.forEach((depField) => {
+    dependentFields.forEach(depField => {
       const dependentId = Object.keys(allFields).find(
-        (id) => allFields[id] === depField,
+        id => allFields[id] === depField
       );
       if (!dependentId) return;
 
       const dropdown = document.querySelector(
-        `[data-field-id="${dependentId}"]`,
+        `[data-field-id="${dependentId}"]`
       );
       if (!dropdown) return;
 
@@ -1229,7 +1235,7 @@ TEUI.FieldManager = (function () {
         } catch (error) {
           console.error(
             `Error getting dependent options for ${dependentId}:`,
-            error,
+            error
           );
         }
       }
@@ -1239,7 +1245,7 @@ TEUI.FieldManager = (function () {
 
       // Add new options
       if (options && options.length > 0) {
-        options.forEach((option) => {
+        options.forEach(option => {
           const optionEl = document.createElement("option");
           const value = typeof option === "object" ? option.value : option;
           const text =
@@ -1284,7 +1290,7 @@ TEUI.FieldManager = (function () {
 
     // Add options from the options list
     if (options && options.length > 0) {
-      options.forEach((option) => {
+      options.forEach(option => {
         const optionEl = document.createElement("option");
         // Support both { value, name } and simple string options
         const value = typeof option === "object" ? option.value : option;
@@ -1389,7 +1395,7 @@ TEUI.FieldManager = (function () {
           : element.querySelector('input[type="range"]');
         const displaySpan =
           element.parentNode.querySelector(
-            `span[data-field-id='${fieldId}-value']`,
+            `span[data-field-id='${fieldId}-value']`
           ) || element.querySelector(`span`);
 
         if (sliderInput) {
@@ -1409,12 +1415,12 @@ TEUI.FieldManager = (function () {
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue) / 100,
-                "percent-0dp",
+                "percent-0dp"
               ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue),
-                "number-2dp",
+                "number-2dp"
               ); // Default for others
             }
           }
@@ -1432,7 +1438,7 @@ TEUI.FieldManager = (function () {
           : element.querySelector('input[type="range"]');
         const displaySpan =
           element.parentNode.querySelector(
-            `span[data-field-id='${fieldId}-value']`,
+            `span[data-field-id='${fieldId}-value']`
           ) || element.querySelector(`span`);
 
         if (sliderInput) {
@@ -1452,12 +1458,12 @@ TEUI.FieldManager = (function () {
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue) / 100,
-                "percent-0dp",
+                "percent-0dp"
               ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue),
-                "number-2dp",
+                "number-2dp"
               ); // Default for others
             }
           }

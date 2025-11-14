@@ -583,7 +583,7 @@ window.OBC.ClassificationFilter = (function () {
   function getSelectedMajorOccupancies() {
     const selectedOccupancies = [];
 
-    OCCUPANCY_FIELD_IDS.forEach((fieldId) => {
+    OCCUPANCY_FIELD_IDS.forEach(fieldId => {
       const value = window.OBC?.StateManager?.getValue(fieldId);
       if (
         value &&
@@ -603,7 +603,7 @@ window.OBC.ClassificationFilter = (function () {
   function getRelevantClassificationGroups(selectedOccupancies) {
     const relevantGroups = new Set();
 
-    selectedOccupancies.forEach((occupancy) => {
+    selectedOccupancies.forEach(occupancy => {
       const group = OCCUPANCY_TO_CLASSIFICATION_MAP[occupancy];
       if (group) {
         relevantGroups.add(group);
@@ -626,7 +626,7 @@ window.OBC.ClassificationFilter = (function () {
     ];
 
     // Add classifications from relevant groups
-    ALL_BUILDING_CLASSIFICATIONS.forEach((classification) => {
+    ALL_BUILDING_CLASSIFICATIONS.forEach(classification => {
       if (classification.value === "-") return; // Skip duplicate default
 
       if (relevantGroups.includes(classification.group)) {
@@ -642,14 +642,14 @@ window.OBC.ClassificationFilter = (function () {
    * NO direct DOM manipulation - works through FieldManager
    */
   function updateClassificationDropdowns(filteredOptions) {
-    CLASSIFICATION_FIELD_IDS.forEach((fieldId) => {
+    CLASSIFICATION_FIELD_IDS.forEach(fieldId => {
       // Store filtered options for this field
       currentFilteredOptions[fieldId] = filteredOptions;
 
       // Get current value to preserve selection if still valid
       const currentValue = window.OBC?.StateManager?.getValue(fieldId) || "-";
       const isCurrentValueValid = filteredOptions.some(
-        (option) => option.value === currentValue,
+        option => option.value === currentValue
       );
 
       // Update dropdown through FieldManager (proper OBC architecture)
@@ -697,7 +697,7 @@ window.OBC.ClassificationFilter = (function () {
     }
 
     // Set up listeners for all occupancy dropdowns
-    OCCUPANCY_FIELD_IDS.forEach((fieldId) => {
+    OCCUPANCY_FIELD_IDS.forEach(fieldId => {
       window.OBC.StateManager.addListener(fieldId, function (_value) {
         // Use requestAnimationFrame for better performance than setTimeout
         requestAnimationFrame(updateClassificationFilters);

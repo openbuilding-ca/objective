@@ -699,9 +699,9 @@ window.OBC.SectionModules.sect07 = (function () {
   function getDropdownOptions() {
     const options = {};
 
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -764,7 +764,7 @@ window.OBC.SectionModules.sect07 = (function () {
       "o",
     ];
 
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;

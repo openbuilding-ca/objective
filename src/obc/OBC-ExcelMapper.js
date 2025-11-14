@@ -257,7 +257,7 @@ class ExcelMapper {
             ) {
               // If Excel stores "45%"
               extractedValue = parseFloat(
-                extractedValue.replace("%", ""),
+                extractedValue.replace("%", "")
               ).toString();
             } else if (typeof extractedValue === "number") {
               // If Excel stores just the number 45 for 45%
@@ -399,7 +399,7 @@ class ExcelMapper {
             ) {
               // If Excel stores "30%"
               extractedValue = parseFloat(
-                extractedValue.replace("%", ""),
+                extractedValue.replace("%", "")
               ).toString();
             } else if (typeof extractedValue === "number") {
               // If Excel stores just the number 30 for 30%
@@ -460,7 +460,7 @@ class ExcelMapper {
                 // Ensure it's within the slider's typical 0-100 range if it's a percentage
                 extractedValue = Math.min(
                   Math.max(Math.round(numVal), 0),
-                  100,
+                  100
                 ).toString();
               }
             } else {
@@ -469,7 +469,7 @@ class ExcelMapper {
           }
           importedData[fieldId] = extractedValue;
         }
-      },
+      }
     );
 
     return importedData;

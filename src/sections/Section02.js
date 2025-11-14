@@ -438,8 +438,7 @@ window.TEUI.SectionModules.sect02 = (function () {
             fields[cell.fieldId].dependencies = cell.dependencies;
           if (cell.conditionalDeps)
             fields[cell.fieldId].conditionalDeps = cell.conditionalDeps;
-          if (cell.uiDeps)
-            fields[cell.fieldId].uiDeps = cell.uiDeps;
+          if (cell.uiDeps) fields[cell.fieldId].uiDeps = cell.uiDeps;
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
           if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
@@ -458,10 +457,10 @@ window.TEUI.SectionModules.sect02 = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -528,7 +527,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -667,7 +666,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),
-          fieldType,
+          fieldType
         );
       }
     }
@@ -702,7 +701,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         }
 
         // Register conditional dependencies (used in specific scenarios)
-        if (fieldDef.conditionalDeps && Array.isArray(fieldDef.conditionalDeps)) {
+        if (
+          fieldDef.conditionalDeps &&
+          Array.isArray(fieldDef.conditionalDeps)
+        ) {
           fieldDef.conditionalDeps.forEach(depId => {
             window.TEUI.StateManager.registerDependency(depId, fieldId);
           });
@@ -725,7 +727,7 @@ window.TEUI.SectionModules.sect02 = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector(
-      "#buildingInfo .section-header",
+      "#buildingInfo .section-header"
     );
     if (
       !sectionHeader ||
@@ -745,7 +747,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     resetButton.textContent = "Reset";
     resetButton.style.cssText =
       "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (confirm("Reset all values to defaults?")) {
         TargetState.setDefaults();
@@ -774,10 +776,11 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Toggle Switch Click Handler
     // ✅ REFACTORED: Just toggle mode, let switchMode() handle all UI updates via syncToggleUI()
-    toggleSwitch.addEventListener("click", (event) => {
+    toggleSwitch.addEventListener("click", event => {
       event.stopPropagation();
       // Determine target mode by checking current mode (don't rely on classList)
-      const targetMode = ModeManager.currentMode === "target" ? "reference" : "target";
+      const targetMode =
+        ModeManager.currentMode === "target" ? "reference" : "target";
       ModeManager.switchMode(targetMode);
     });
 
@@ -791,7 +794,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     ModeManager._toggleElements = {
       toggleSwitch: toggleSwitch,
       slider: slider,
-      stateIndicator: stateIndicator
+      stateIndicator: stateIndicator,
     };
 
     console.log("✅ S02: Header controls injected successfully");
@@ -860,7 +863,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     } catch (error) {
       console.error(
         "[Section02] Error in Reference Model calculations:",
-        error,
+        error
       );
     } finally {
       ModeManager.currentMode = originalMode; // Restore original mode directly
@@ -895,13 +898,13 @@ window.TEUI.SectionModules.sect02 = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           String(value),
-          "calculated",
+          "calculated"
         );
       }
     });
 
     console.log(
-      "[S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)",
+      "[S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)"
     );
   }
 
@@ -977,7 +980,7 @@ window.TEUI.SectionModules.sect02 = (function () {
   function calculateAll() {
     if (!isSect02Initialized) {
       console.warn(
-        "[S02] calculateAll() called before initialization completed. Aborting to prevent race condition.",
+        "[S02] calculateAll() called before initialization completed. Aborting to prevent race condition."
       );
       return;
     }
@@ -991,7 +994,7 @@ window.TEUI.SectionModules.sect02 = (function () {
    */
   function setupCarbonStandardDropdown() {
     const dropdown = document.querySelector(
-      'select[data-dropdown-id="dd_d_15"], select[data-field-id="d_15"]',
+      'select[data-dropdown-id="dd_d_15"], select[data-field-id="d_15"]'
     );
     if (!dropdown) return;
 
@@ -1106,7 +1109,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Set initial values on dropdown if not already set
     if (!window.TEUI.sect02.initialized) {
       const dropdown = document.querySelector(
-        'select[data-dropdown-id="dd_d_15"], select[data-field-id="d_15"]',
+        'select[data-dropdown-id="dd_d_15"], select[data-field-id="d_15"]'
       );
       if (dropdown && window.TEUI?.StateManager) {
         const currentValue = window.TEUI.StateManager.getValue("d_15");
@@ -1167,7 +1170,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ CRITICAL FIX: Service life slider events (h_13)
     const serviceLifeSlider = document.querySelector(
-      'input[data-field-id="h_13"]',
+      'input[data-field-id="h_13"]'
     );
     if (serviceLifeSlider) {
       serviceLifeSlider.addEventListener("input", function (e) {
@@ -1212,7 +1215,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.StateManager.addListener("d_12", updateCriticalOccupancyFlag);
       window.TEUI.StateManager.addListener(
         "ref_d_12",
-        updateCriticalOccupancyFlag,
+        updateCriticalOccupancyFlag
       );
     }
   }
@@ -1253,7 +1256,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         ? window.TEUI.StateManager?.getValue("ref_d_12") || "" // ✅ FIXED: No fallback to Target values
         : window.TEUI.StateManager?.getValue("d_12") || "";
     const sectionHeader = document.querySelector(
-      "#buildingInfo .section-header",
+      "#buildingInfo .section-header"
     ); // Target the Section 2 header
     if (!sectionHeader) {
       console.warn("Section 2 header not found for critical flag.");
@@ -1261,7 +1264,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
 
     let flagSpan = sectionHeader.querySelector(
-      ".critical-occupancy-header-flag",
+      ".critical-occupancy-header-flag"
     );
     let isCritical = occupancyType.includes("Care");
 
@@ -1290,13 +1293,13 @@ window.TEUI.SectionModules.sect02 = (function () {
             // Insert after icon and title text
             iconSpan.parentNode.insertBefore(
               flagSpan,
-              iconSpan.nextSibling.nextSibling || null,
+              iconSpan.nextSibling.nextSibling || null
             );
           } else {
             // Fallback: insert at beginning
             sectionHeader.insertBefore(
               flagSpan,
-              sectionHeader.firstChild.nextSibling,
+              sectionHeader.firstChild.nextSibling
             );
           }
         }
@@ -1416,7 +1419,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     ];
 
     // Apply proper classes to all user input fields
-    userInputFields.forEach((fieldId) => {
+    userInputFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field) {
         // Make sure it's properly styled and editable
@@ -1473,7 +1476,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     ];
 
     // Apply proper classes to derived fields
-    derivedFields.forEach((fieldId) => {
+    derivedFields.forEach(fieldId => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field) {
         // Remove editable attributes
@@ -1506,7 +1509,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       // S04 and S09 have h_15/ref_h_15 listeners that will trigger their calculateAll()
       // S02 doesn't need to call calculateAll() - it just publishes the area change
       console.log(
-        `[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`,
+        `[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`
       );
     }
   }
@@ -1607,7 +1610,7 @@ window.TEUI.SectionModules.sect02 = (function () {
    */
   function syncCostFieldDisplays() {
     const costFields = ["l_12", "l_13", "l_14", "l_15", "l_16"];
-    costFields.forEach((fieldId) => {
+    costFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         // Get the current displayed value
@@ -1626,13 +1629,13 @@ window.TEUI.SectionModules.sect02 = (function () {
             // Extract numeric value from the displayed currency and store it
             const numericValue = window.TEUI?.parseNumeric?.(
               currentDisplayValue,
-              0,
+              0
             );
             if (numericValue > 0 && window.TEUI?.StateManager) {
               window.TEUI.StateManager.setValue(
                 fieldId,
                 numericValue.toString(),
-                "default",
+                "default"
               );
             }
           }
@@ -1720,7 +1723,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         l_16: getFieldDefault("l_16"),
       };
       console.log(
-        `S02: Target defaults set from field definitions - single source of truth`,
+        `S02: Target defaults set from field definitions - single source of truth`
       );
     },
 
@@ -1745,14 +1748,14 @@ window.TEUI.SectionModules.sect02 = (function () {
         "l_14",
         "l_15",
         "l_16",
-      ],
+      ]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S02 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+            `S02 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
           );
         }
       });
@@ -1774,14 +1777,14 @@ window.TEUI.SectionModules.sect02 = (function () {
           // ✅ CRITICAL FIX: Merge saved data with defaults, don't replace defaults
           this.data = { ...this.data, ...savedData };
           console.log(
-            `S02: Loaded and merged Reference state from localStorage`,
+            `S02: Loaded and merged Reference state from localStorage`
           );
         }
       } catch (error) {
         console.warn(`S02: Error loading Reference state:`, error);
         // ✅ CRITICAL FIX: Don't wipe defaults on error, keep existing defaults
         console.log(
-          `S02: Keeping Reference defaults due to localStorage error`,
+          `S02: Keeping Reference defaults due to localStorage error`
         );
       }
     },
@@ -1829,7 +1832,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         h_12: getFieldDefault("h_12"), // Same reporting period as Target for S02
       };
       console.log(
-        `S02: Reference defaults set from field definitions - single source of truth with mode overrides`,
+        `S02: Reference defaults set from field definitions - single source of truth with mode overrides`
       );
     },
 
@@ -1854,15 +1857,15 @@ window.TEUI.SectionModules.sect02 = (function () {
         "l_14",
         "l_15",
         "l_16",
-      ],
+      ]
     ) {
-      fieldIds.forEach((fieldId) => {
+      fieldIds.forEach(fieldId => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
           console.log(
-            `S02 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (ref_${fieldId})`,
+            `S02 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (ref_${fieldId})`
           );
         }
       });
@@ -1886,11 +1889,30 @@ window.TEUI.SectionModules.sect02 = (function () {
         // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
         // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
         if (window.TEUI?.StateManager) {
-          ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15",
-           "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"].forEach(id => {
+          [
+            "d_12",
+            "d_13",
+            "d_14",
+            "d_15",
+            "h_12",
+            "h_13",
+            "h_14",
+            "h_15",
+            "i_16",
+            "i_17",
+            "l_12",
+            "l_13",
+            "l_14",
+            "l_15",
+            "l_16",
+          ].forEach(id => {
             const refId = `ref_${id}`;
             const val = ReferenceState.getValue(id);
-            if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            if (
+              !window.TEUI.StateManager.getValue(refId) &&
+              val != null &&
+              val !== ""
+            ) {
               window.TEUI.StateManager.setValue(refId, val, "calculated");
             }
           });
@@ -1926,7 +1948,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Called both when user clicks local toggle AND when global toggle switches mode
     syncToggleUI: function (mode) {
       // Use centralized ToggleUISync utility
-      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, 'S02');
+      window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S02");
     },
 
     getValue: function (fieldId) {
@@ -1954,7 +1976,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Update UI input fields based on current mode's state (✅ S03 Pattern)
     refreshUI: function () {
       console.log(
-        `[S02] Refreshing UI for ${this.currentMode.toUpperCase()} mode`,
+        `[S02] Refreshing UI for ${this.currentMode.toUpperCase()} mode`
       );
 
       const sectionElement = document.getElementById("buildingInfo");
@@ -1965,7 +1987,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // ✅ S03 PATTERN: Update Reference Standard dropdown using specific selector
       const referenceStandardDropdown = sectionElement.querySelector(
-        '[data-dropdown-id="dd_d_13"]',
+        '[data-dropdown-id="dd_d_13"]'
       );
       const d13Value = currentState.getValue("d_13");
       if (referenceStandardDropdown && d13Value) {
@@ -1974,7 +1996,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // ✅ S03 PATTERN: Update Carbon Standard dropdown using specific selector
       const carbonStandardDropdown = sectionElement.querySelector(
-        '[data-dropdown-id="dd_d_15"]',
+        '[data-dropdown-id="dd_d_15"]'
       );
       const d15Value = currentState.getValue("d_15");
       if (carbonStandardDropdown && d15Value) {
@@ -1983,7 +2005,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // ✅ CRITICAL FIX: Update Major Occupancy dropdown using specific selector
       const majorOccupancyDropdown = sectionElement.querySelector(
-        '[data-dropdown-id="dd_d_12"]',
+        '[data-dropdown-id="dd_d_12"]'
       );
       const d12Value = currentState.getValue("d_12");
       if (majorOccupancyDropdown && d12Value) {
@@ -1992,7 +2014,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // ✅ CRITICAL FIX: Update Actual/Target Use dropdown using specific selector
       const actualTargetDropdown = sectionElement.querySelector(
-        '[data-dropdown-id="dd_d_14"]',
+        '[data-dropdown-id="dd_d_14"]'
       );
       const d14Value = currentState.getValue("d_14");
       if (actualTargetDropdown && d14Value) {
@@ -2001,7 +2023,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // ✅ CRITICAL: Update reporting year slider (h_12, displayed as d_1)
       const yearSlider = sectionElement.querySelector(
-        'input[data-field-id="h_12"]',
+        'input[data-field-id="h_12"]'
       );
       const yearValue = currentState.getValue("h_12"); // Actual field is h_12
       if (yearSlider && yearValue) {
@@ -2012,13 +2034,13 @@ window.TEUI.SectionModules.sect02 = (function () {
           yearDisplay.textContent = yearValue;
         }
         console.log(
-          `[S02] Updated h_12 (reporting year) slider = "${yearValue}" (${this.currentMode} mode)`,
+          `[S02] Updated h_12 (reporting year) slider = "${yearValue}" (${this.currentMode} mode)`
         );
       }
 
       // ✅ CRITICAL FIX: Update service life slider (h_13)
       const serviceLifeSlider = sectionElement.querySelector(
-        'input[data-field-id="h_13"]',
+        'input[data-field-id="h_13"]'
       );
       const serviceLifeValue = currentState.getValue("h_13"); // Service life field
       if (serviceLifeSlider && serviceLifeValue) {
@@ -2029,7 +2051,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           serviceLifeDisplay.textContent = serviceLifeValue;
         }
         console.log(
-          `[S02] Updated h_13 (service life) slider = "${serviceLifeValue}" (${this.currentMode} mode)`,
+          `[S02] Updated h_13 (service life) slider = "${serviceLifeValue}" (${this.currentMode} mode)`
         );
       }
 
@@ -2044,12 +2066,12 @@ window.TEUI.SectionModules.sect02 = (function () {
         "l_16",
       ];
 
-      editableFields.forEach((fieldId) => {
+      editableFields.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -2079,7 +2101,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
           element.textContent = displayValue;
           console.log(
-            `[S02] Updated ${fieldId} = "${displayValue}" (${this.currentMode} mode)`,
+            `[S02] Updated ${fieldId} = "${displayValue}" (${this.currentMode} mode)`
           );
         }
       });
@@ -2095,7 +2117,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       // Update calculated fields to show values for current mode
       const calculatedFields = ["d_16"]; // Embodied Carbon Target
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Read the correct value from StateManager based on mode

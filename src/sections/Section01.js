@@ -327,7 +327,7 @@ window.TEUI.SectionModules.sect01 = (function () {
   function setCalculatedValue(
     fieldId,
     rawValue,
-    formatType = "number-2dp-comma",
+    formatType = "number-2dp-comma"
   ) {
     // Store raw value as string in StateManager for precision
     if (window.TEUI?.StateManager?.setValue) {
@@ -375,7 +375,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     k_6,
     k_8,
     k_10,
-    useType,
+    useType
   ) {
     // ========================================
     // M_6 CALCULATION: Lifetime Carbon % (Excel formula)
@@ -390,18 +390,18 @@ window.TEUI.SectionModules.sect01 = (function () {
     const i_41 =
       window.TEUI?.parseNumeric?.(
         window.TEUI?.StateManager?.getValue("i_41"),
-        0,
+        0
       ) ?? 0; // Embodied carbon from S05
     const h_13 =
       window.TEUI?.parseNumeric?.(
         window.TEUI?.StateManager?.getValue("h_13"),
-        50,
+        50
       ) ?? 50; // Service life from S02
     const k_8_calc = useType === "Utility Bills" && !isNaN(k_8) ? k_8 : h_8; // Annual carbon (calculated above)
     const i_39 =
       window.TEUI?.parseNumeric?.(
         window.TEUI?.StateManager?.getValue("i_39"),
-        0,
+        0
       ) ?? 0; // TGS4 value from S05
 
     // Excel formula logic: IF(I$40="N/A","N/A",...)
@@ -525,12 +525,12 @@ window.TEUI.SectionModules.sect01 = (function () {
       // Debug logging to trace the calculation
       if (fieldId === "h_6") {
         console.log(
-          `🔍 [S01] h_6 explanation: target=${targetValue}, ref=${referenceValue}, reduction=${reduction}, percent=${reductionPercent}%`,
+          `🔍 [S01] h_6 explanation: target=${targetValue}, ref=${referenceValue}, reduction=${reduction}, percent=${reductionPercent}%`
         );
       }
 
       const explanationSpan = document.querySelector(
-        `[data-field-id="${fieldId}"] .key-explanation`,
+        `[data-field-id="${fieldId}"] .key-explanation`
       );
       if (explanationSpan) {
         explanationSpan.textContent = explanationText;
@@ -542,10 +542,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     fieldId,
     actualValue,
     referenceValue,
-    useType,
+    useType
   ) {
     const explanationSpan = document.querySelector(
-      `[data-field-id="${fieldId}"] .key-explanation`,
+      `[data-field-id="${fieldId}"] .key-explanation`
     );
     if (!explanationSpan) return;
 
@@ -579,7 +579,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       const clone = element.cloneNode(true);
       clone
         .querySelectorAll(".tier-indicator, .checkmark")
-        .forEach((el) => el.remove());
+        .forEach(el => el.remove());
       textContent = clone.textContent;
     }
 
@@ -589,7 +589,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
     const element = document.querySelector(
-      `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`,
+      `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`
     );
     if (!element) {
       return;
@@ -621,7 +621,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           cancelAnimationFrame(activeAnimations[fieldId]);
         }
         const startTime = performance.now();
-        const animateStep = (timestamp) => {
+        const animateStep = timestamp => {
           const elapsedTime = timestamp - startTime;
           const progress = Math.min(1, elapsedTime / duration);
           const easedProgress = 1 - Math.pow(1 - progress, 2);
@@ -769,7 +769,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     const current_e_10 = window.TEUI.StateManager?.getValue("e_10") || "0.0";
     const current_h_10 = window.TEUI.StateManager?.getValue("h_10") || "0.0";
     console.log(
-      `🔍 [S01DB] updateTEUIDisplay START: e_10=${current_e_10}, h_10=${current_h_10}, useType=${useType}`,
+      `🔍 [S01DB] updateTEUIDisplay START: e_10=${current_e_10}, h_10=${current_h_10}, useType=${useType}`
     );
 
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
@@ -839,7 +839,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Debug logging for T.1 Lifetime Carbon
     console.log(
-      `🔍 [S01] T.1 Calculation: e_6=${e_6} (ref), h_6=${h_6} (target) → reduction should be ${Math.round((1 - h_6 / e_6) * 100)}%`,
+      `🔍 [S01] T.1 Calculation: e_6=${e_6} (ref), h_6=${h_6} (target) → reduction should be ${Math.round((1 - h_6 / e_6) * 100)}%`
     );
 
     // ========================================
@@ -938,7 +938,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // 🔍 CONTAMINATION TRACE: Log h_10 updates to track contamination source
     console.log(
-      `🔍 [S01DB] UPDATING h_10: ${h10Formatted} (from j_32=${targetEnergy}, area=${targetArea})`,
+      `🔍 [S01DB] UPDATING h_10: ${h10Formatted} (from j_32=${targetEnergy}, area=${targetArea})`
     );
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
@@ -994,7 +994,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       k_6,
       k_8,
       k_10,
-      useType,
+      useType
     );
 
     // Update gauges and warnings
@@ -1190,7 +1190,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       "gauge-poor": "#d9534f",
     };
 
-    indicators.forEach((indicator) => {
+    indicators.forEach(indicator => {
       const textElement = document.querySelector(indicator.textElId);
       const gaugeBarElement = document.querySelector(indicator.gaugeBarElId);
 
@@ -1263,7 +1263,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         }
 
         console.log(
-          "✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10",
+          "✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10"
         );
         // console.log("🚀 [S01] =================================");
       } finally {
@@ -1290,7 +1290,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     ];
 
     // Listen to user input fields
-    inputFieldsToWatch.forEach((fieldId) => {
+    inputFieldsToWatch.forEach(fieldId => {
       window.TEUI.StateManager.addListener(
         fieldId,
         // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
@@ -1304,7 +1304,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           } else {
             runAllCalculations();
           }
-        },
+        }
       );
     });
 
@@ -1332,7 +1332,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       "ref_i_39", // Reference embodied carbon
     ];
 
-    calculatedFieldsToWatch.forEach((fieldId) => {
+    calculatedFieldsToWatch.forEach(fieldId => {
       window.TEUI.StateManager.addListener(
         fieldId,
         // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
@@ -1345,7 +1345,7 @@ window.TEUI.SectionModules.sect01 = (function () {
             }
             runAllCalculations();
           }
-        },
+        }
       );
     });
 
@@ -1364,7 +1364,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   function removeToggleIcon() {
     const toggleIcon = document.querySelector(
-      "#keyValues .section-header .toggle-icon",
+      "#keyValues .section-header .toggle-icon"
     );
     toggleIcon?.remove();
   }

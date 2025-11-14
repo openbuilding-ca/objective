@@ -367,10 +367,10 @@ window.TEUI.SectionModules.sectXX = (function () {
     const options = {};
 
     // Extract dropdown options from all cells with dropdownId
-    Object.values(sectionRows).forEach((row) => {
+    Object.values(sectionRows).forEach(row => {
       if (!row.cells) return;
 
-      Object.values(row.cells).forEach((cell) => {
+      Object.values(row.cells).forEach(cell => {
         if (cell.dropdownId && cell.options) {
           options[cell.dropdownId] = cell.options;
         }
@@ -437,7 +437,7 @@ window.TEUI.SectionModules.sectXX = (function () {
     ];
 
     // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
+    columns.forEach(col => {
       if (row.cells && row.cells[col]) {
         // Create a simplified cell definition for the renderer
         // without the extra field properties
@@ -503,7 +503,7 @@ window.TEUI.SectionModules.sectXX = (function () {
         // Add your section's user input fields here
       };
       console.log(
-        "SXX: Target defaults set from field definitions - single source of truth",
+        "SXX: Target defaults set from field definitions - single source of truth"
       );
     },
 
@@ -574,7 +574,7 @@ window.TEUI.SectionModules.sectXX = (function () {
       // this.data.d_yy = "Reference_System_Type"; // System type overrides
 
       console.log(
-        `SXX: Reference defaults loaded from standard: ${currentStandard}`,
+        `SXX: Reference defaults loaded from standard: ${currentStandard}`
       );
     },
 
@@ -682,7 +682,7 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     refreshUI: function () {
       console.log(
-        `[SXX] Refreshing UI for ${this.currentMode.toUpperCase()} mode`,
+        `[SXX] Refreshing UI for ${this.currentMode.toUpperCase()} mode`
       );
 
       const sectionElement = document.getElementById("sectionXX"); // Replace with actual section ID
@@ -693,12 +693,12 @@ window.TEUI.SectionModules.sectXX = (function () {
       // Update user-editable input fields from current state
       const editableFields = []; // Add your section's editable field IDs here
 
-      editableFields.forEach((fieldId) => {
+      editableFields.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
+          `[data-field-id="${fieldId}"]`
         );
         if (!element) return;
 
@@ -723,7 +723,7 @@ window.TEUI.SectionModules.sectXX = (function () {
       if (!window.TEUI?.StateManager) return;
 
       console.log(
-        `[SXX] 🔄 Updating calculated display values for ${this.currentMode} mode`,
+        `[SXX] 🔄 Updating calculated display values for ${this.currentMode} mode`
       );
 
       // All calculated fields in this section
@@ -732,7 +732,7 @@ window.TEUI.SectionModules.sectXX = (function () {
         // Example: "f_xx", "g_xx", "h_xx"
       ];
 
-      calculatedFields.forEach((fieldId) => {
+      calculatedFields.forEach(fieldId => {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
@@ -752,7 +752,7 @@ window.TEUI.SectionModules.sectXX = (function () {
           if (!isNaN(numericValue)) {
             const formattedValue = window.TEUI.formatNumber(
               numericValue,
-              "number-2dp-comma",
+              "number-2dp-comma"
             );
             element.textContent = formattedValue;
           }
@@ -814,7 +814,7 @@ window.TEUI.SectionModules.sectXX = (function () {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           valueToStore,
-          "calculated",
+          "calculated"
         );
       }
     }
@@ -833,7 +833,7 @@ window.TEUI.SectionModules.sectXX = (function () {
           // ✅ USE GLOBAL: window.TEUI.formatNumber() from StateManager
           const formattedValue = window.TEUI.formatNumber(
             numericValue,
-            formatType,
+            formatType
           );
           element.textContent = formattedValue;
         }
@@ -945,7 +945,7 @@ window.TEUI.SectionModules.sectXX = (function () {
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
     resetButton.className = "btn btn-sm btn-outline-secondary";
-    resetButton.addEventListener("click", (event) => {
+    resetButton.addEventListener("click", event => {
       event.stopPropagation();
       if (confirm("Reset all values to defaults?")) {
         TargetState.setDefaults();
@@ -979,7 +979,7 @@ window.TEUI.SectionModules.sectXX = (function () {
     toggleSwitch.appendChild(toggleInput);
     toggleSwitch.appendChild(toggleLabel);
 
-    toggleInput.addEventListener("change", (event) => {
+    toggleInput.addEventListener("change", event => {
       event.stopPropagation();
       const isReference = toggleInput.checked;
       if (isReference) {
@@ -1016,7 +1016,7 @@ window.TEUI.SectionModules.sectXX = (function () {
     if (valueCell) {
       valueCell.classList.toggle("disabled-input", shouldBeGhosted);
       const input = valueCell.querySelector(
-        'input, select, [contenteditable="true"]',
+        'input, select, [contenteditable="true"]'
       );
       if (input) {
         if (input.hasAttribute("contenteditable"))
@@ -1080,9 +1080,9 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     // ✅ CRITICAL: Set up editable field handlers (from Section04 pattern)
     const editableFields = sectionElement.querySelectorAll(
-      ".editable.user-input",
+      ".editable.user-input"
     );
-    editableFields.forEach((field) => {
+    editableFields.forEach(field => {
       if (!field.hasEditableListeners) {
         field.setAttribute("contenteditable", "true");
 
@@ -1103,7 +1103,7 @@ window.TEUI.SectionModules.sectXX = (function () {
           // Only update if value has changed
           if (this.dataset.originalValue !== newValue) {
             console.log(
-              `[SXX] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`,
+              `[SXX] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`
             );
 
             // Parse and validate
@@ -1112,7 +1112,7 @@ window.TEUI.SectionModules.sectXX = (function () {
               // Format and store
               const formattedValue = window.TEUI.formatNumber(
                 numericValue,
-                "number-2dp-comma",
+                "number-2dp-comma"
               );
               this.textContent = formattedValue;
 
@@ -1123,7 +1123,7 @@ window.TEUI.SectionModules.sectXX = (function () {
               ModeManager.setValue(
                 fieldId,
                 numericValue.toString(),
-                "user-modified",
+                "user-modified"
               );
 
               // ✅ CRITICAL: Recalculate and update display
@@ -1134,11 +1134,11 @@ window.TEUI.SectionModules.sectXX = (function () {
               const previousValue = ModeManager.getValue(fieldId) || "0";
               const prevNumericValue = window.TEUI.parseNumeric(
                 previousValue,
-                0,
+                0
               );
               this.textContent = window.TEUI.formatNumber(
                 prevNumericValue,
-                "number-2dp-comma",
+                "number-2dp-comma"
               );
 
               // ✅ ELEGANT FORMATTING: Remove user-modified for default grey styling
@@ -1166,7 +1166,7 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     // ✅ CRITICAL: Set up dropdown handlers
     const dropdowns = sectionElement.querySelectorAll("select[data-field-id]");
-    dropdowns.forEach((dropdown) => {
+    dropdowns.forEach(dropdown => {
       if (!dropdown.hasDropdownListeners) {
         dropdown.addEventListener("change", function (e) {
           const fieldId = this.getAttribute("data-field-id");
@@ -1194,9 +1194,9 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     // ✅ CRITICAL: Set up slider handlers
     const sliders = sectionElement.querySelectorAll(
-      'input[type="range"][data-field-id]',
+      'input[type="range"][data-field-id]'
     );
-    sliders.forEach((slider) => {
+    sliders.forEach(slider => {
       if (!slider.hasSliderListeners) {
         slider.addEventListener("input", function (e) {
           const fieldId = this.getAttribute("data-field-id");
@@ -1262,17 +1262,17 @@ window.TEUI.SectionModules.sectXX = (function () {
 
       // Remove duplicates and add listeners for all dependencies
       const uniqueDependencies = [...new Set(dependencies)];
-      uniqueDependencies.forEach((fieldId) => {
+      uniqueDependencies.forEach(fieldId => {
         window.TEUI.StateManager.addListener(fieldId, calculateAndRefresh);
       });
 
       console.log(
-        `[SXX] Added ${uniqueDependencies.length} dual-engine dependency listeners`,
+        `[SXX] Added ${uniqueDependencies.length} dual-engine dependency listeners`
       );
     }
 
     console.log(
-      "SXX: Event handlers initialized with proper dual-state handling",
+      "SXX: Event handlers initialized with proper dual-state handling"
     );
   }
 
@@ -1283,7 +1283,7 @@ window.TEUI.SectionModules.sectXX = (function () {
    */
   function onSectionRendered() {
     console.log(
-      "SXX: Section rendered - initializing Pattern A dual-state module",
+      "SXX: Section rendered - initializing Pattern A dual-state module"
     );
 
     // ✅ CRITICAL: Initialize dual-state architecture first

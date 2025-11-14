@@ -57,13 +57,13 @@ window.TEUI.Clock = {
       this.initDisplayed = true;
       window.TEUI.timing.isInitialLoad = false;
       console.log(
-        `🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: ${this.initTime.toFixed(0)}ms (all calculations finalized)`,
+        `🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: ${this.initTime.toFixed(0)}ms (all calculations finalized)`
       );
     } else if (window.TEUI.timing.currentStartTime) {
       const currentTime = now - window.TEUI.timing.currentStartTime;
       window.TEUI.timing.lastCalculationTime = currentTime;
       console.log(
-        `🕐 [CLOCK] ⚡ CALCULATION COMPLETE: ${currentTime.toFixed(0)}ms (subsequent update)`,
+        `🕐 [CLOCK] ⚡ CALCULATION COMPLETE: ${currentTime.toFixed(0)}ms (subsequent update)`
       );
     }
 
@@ -144,7 +144,7 @@ window.TEUI.Clock = {
       // Only track subsequent interactions after init
       window.TEUI.timing.currentStartTime = performance.now();
       console.log(
-        "[CLOCK] 🎯 User interaction started - timing to h_10 settlement",
+        "[CLOCK] 🎯 User interaction started - timing to h_10 settlement"
       );
     }
   },
@@ -159,7 +159,7 @@ window.TEUI.Clock = {
         performance.now() - window.TEUI.timing.currentStartTime;
       window.TEUI.timing.lastCalculationTime = currentTime;
       console.log(
-        `🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: ${currentTime.toFixed(0)}ms (interaction → h_10 settlement)`,
+        `🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: ${currentTime.toFixed(0)}ms (interaction → h_10 settlement)`
       );
       this.updateDisplay();
     }
