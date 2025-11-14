@@ -798,9 +798,21 @@ Section03 is a **Climate Foundation Section** that:
   - Correctly adds to d_43 to increase total renewable/removal offset
 - **No M/N Compliance**: Section has no compliance fields (simple energy accounting)
 
+#### Section 09: Occupant + Internal Gains
+**Status**: ✅ **COMPLETE** (2025-11-14)
+- **Dependencies**: 41 dependency declarations verified
+  - All calculated fields properly declare dependencies
+  - Cross-section dependencies mapped (reads from S02, S03, etc.)
+- **Labels**: 68 unique, descriptive labels added
+  - Example: "Occupant Count"
+  - Example: "Occupied Hours/Day"
+  - Example: "Annual Occupied Hours"
+- **Dual-State Architecture**: Properly implemented TargetState and ReferenceState
+- **Pattern**: Declarative field definitions with integrated dependencies/labels
+
 ### 🔄 In Progress
 
-- Remaining sections (S07-S18) pending dependency mapping per workplan
+- Remaining sections (S10-S15) pending dependency mapping per workplan
 
 ### 📋 Upcoming Workplan (Nov 9-10, 2025)
 
