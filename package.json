@@ -51,5 +51,5 @@
     "doc": "docs",
     "test": "test"
   },
-  "type": "commonjs"
+  "type": "module"
 }
