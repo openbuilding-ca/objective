@@ -958,6 +958,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "225.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_73", "f_73", "g_73", "m_73"],
+          label: "Doors: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_73",
@@ -965,6 +966,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here?
           section: "envelopeRadiantGains",
           dependencies: ["i_73", "i_79"], // Fixed: was h_79 (doesn't exist), should be i_79 (Sum of Gains)
+          label: "Doors: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_73",
@@ -972,6 +974,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_73", "f_73", "h_73", "m_73"],
+          label: "Doors: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_73",
@@ -1071,6 +1074,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "106.29",
           section: "envelopeRadiantGains",
           dependencies: ["d_74", "f_74", "g_74", "m_74"],
+          label: "Window Area North: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_74",
@@ -1078,6 +1082,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.73%",
           section: "envelopeRadiantGains",
           dependencies: ["i_74", "h_79"],
+          label: "Window Area North: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_74",
@@ -1085,6 +1090,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_74", "f_74", "h_74", "m_74"],
+          label: "Window Area North: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_74",
@@ -1181,6 +1187,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "294.68",
           section: "envelopeRadiantGains",
           dependencies: ["d_75", "f_75", "g_75", "m_75"],
+          label: "Window Area East: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_75",
@@ -1188,6 +1195,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "2.04%",
           section: "envelopeRadiantGains",
           dependencies: ["i_75", "h_79"],
+          label: "Window Area East: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_75",
@@ -1195,6 +1203,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_75", "f_75", "h_75", "m_75"],
+          label: "Window Area East: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_75",
@@ -1290,6 +1299,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "11,247.66",
           section: "envelopeRadiantGains",
           dependencies: ["d_76", "f_76", "g_76", "m_76"],
+          label: "Window Area South: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_76",
@@ -1297,6 +1307,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "77.69%",
           section: "envelopeRadiantGains",
           dependencies: ["i_76", "i_79"],
+          label: "Window Area South: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_76",
@@ -1304,6 +1315,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_76", "f_76", "h_76", "m_76"],
+          label: "Window Area South: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_76",
@@ -1399,6 +1411,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "2,603.07",
           section: "envelopeRadiantGains",
           dependencies: ["d_77", "f_77", "g_77", "m_77"],
+          label: "Window Area West: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_77",
@@ -1406,6 +1419,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "17.98%",
           section: "envelopeRadiantGains",
           dependencies: ["i_77", "i_79"],
+          label: "Window Area West: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_77",
@@ -1413,6 +1427,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "130.15",
           section: "envelopeRadiantGains",
           dependencies: ["d_77", "f_77", "h_77", "m_77"],
+          label: "Window Area West: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_77",
@@ -1508,6 +1523,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_78", "f_78", "g_78", "m_78"],
+          label: "Skylights: Solar Gain Heating kWh/yr",
         },
         j: {
           fieldId: "j_78",
@@ -1515,6 +1531,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00%",
           section: "envelopeRadiantGains",
           dependencies: ["i_78", "i_79"],
+          label: "Skylights: Solar Gain Heating %",
         },
         k: {
           fieldId: "k_78",
@@ -1522,6 +1539,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "0.00",
           section: "envelopeRadiantGains",
           dependencies: ["d_78", "f_78", "h_78", "m_78"],
+          label: "Skylights: Solar Gain Cooling kWh/yr",
         },
         l: {
           fieldId: "l_78",
@@ -1566,6 +1584,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "14,626.70",
           section: "radiantGains",
           dependencies: ["i_73", "i_74", "i_75", "i_76", "i_77", "i_78"],
+          label: "Subtotal: Solar Gains Heating kWh/yr",
         },
         j: {
           fieldId: "j_79",
@@ -1582,6 +1601,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "130.15",
           section: "radiantGains",
           dependencies: ["k_73", "k_74", "k_75", "k_76", "k_77", "k_78"],
+          label: "Subtotal: Solar Gains Cooling kWh/yr",
         },
         l: {
           fieldId: "l_79",
@@ -1597,6 +1617,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "14,626.70",
           section: "radiantGains",
           dependencies: ["i_79", "j_79", "k_79", "l_79"],
+          label: "Subtotal: Net Cooling Gain Factor",
         },
         p: {
           fieldId: "p_79",
@@ -1604,6 +1625,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "14,626.70",
           section: "radiantGains",
           dependencies: ["i_79", "j_79", "k_79", "l_79"],
+          label: "Subtotal: Cooling vs Heating Cost Impact",
         },
       },
     },
@@ -1636,6 +1658,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "114,698.37",
           section: "radiantGains",
           dependencies: ["i_79", "i_71"],
+          label: "Total Gains at n-Factor kWh/yr",
         },
         f: { content: "Total Gains" },
         g: {
@@ -1645,6 +1668,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           tooltip: true, // A Note on Methods
           dependencies: ["d_80"],
+          label: "n-Factor Percentage Value",
         },
         h: { content: "" }, // Empty cell
         i: {
@@ -1653,6 +1677,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           value: "45,879.35",
           section: "radiantGains",
           dependencies: ["e_80", "g_80"],
+          label: "Usable Gains kWh/yr",
         },
         j: {
           content: "G.3 nGains",
@@ -1680,6 +1705,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           dependencies: ["e_80"],
           classes: ["reference-value"], // Apply reference styling
+          label: "Total Gains Reference kWh/yr",
         },
         f: {
           content: "Total Gains",
@@ -1702,6 +1728,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           dependencies: ["e_81", "g_81"],
           classes: ["reference-value"], // Apply reference styling
+          label: "Net Usable Gains Reference kWh/yr",
         },
         j: {
           content: "G.4 nGains",
