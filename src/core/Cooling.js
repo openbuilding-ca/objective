@@ -1163,3 +1163,134 @@ document.addEventListener("teui-statemanager-ready", function () {
   // Initialize with StateManager values
   window.TEUI.CoolingCalculations.initialize();
 });
+
+/**
+ * ============================================================================
+ * FIELD DEFINITIONS: Natural Language Labels for Dependency Graphs
+ * ============================================================================
+ *
+ * Provides metadata for Cooling.js calculated values to enable:
+ * - Natural language labels for dependency graphs and documentation
+ * - IDE autocomplete support
+ * - Consistent formatting rules
+ * - Integration with FieldManager and ZenMaster tools
+ */
+window.TEUI.CoolingFields = {
+  // Stage 1: Psychrometric Calculations (Independent)
+  cooling_wetBulbTemperature: {
+    label: "Wet Bulb Temperature",
+    description: "Psychrometric wet bulb temperature from dry bulb temp and RH",
+    type: "calculated",
+    format: "number-2dp",
+    unit: "°C",
+    excelRef: "COOLING-TARGET A50/E64",
+    dependencies: ["l_20", "l_21"],
+    stage: 1,
+  },
+  ref_cooling_wetBulbTemperature: {
+    label: "Wet Bulb Temperature (Reference)",
+    description: "Reference model psychrometric wet bulb temperature",
+    type: "calculated",
+    format: "number-2dp",
+    unit: "°C",
+    dependencies: ["ref_l_20", "ref_l_21"],
+    stage: 1,
+  },
+
+  cooling_latentLoadFactor: {
+    label: "Latent Load Factor (A6)",
+    description: "Psychrometric factor for latent cooling load calculation",
+    type: "calculated",
+    format: "number-3dp",
+    unit: "",
+    excelRef: "COOLING-TARGET A6",
+    dependencies: ["l_20", "l_21", "h_24"],
+    consumedBy: ["i_122"],
+    stage: 1,
+  },
+  ref_cooling_latentLoadFactor: {
+    label: "Latent Load Factor (Reference)",
+    description: "Reference model latent load factor",
+    type: "calculated",
+    format: "number-3dp",
+    unit: "",
+    dependencies: ["ref_l_20", "ref_l_21", "ref_h_24"],
+    consumedBy: ["ref_i_122"],
+    stage: 1,
+  },
+
+  cooling_h_124: {
+    label: "Free Cooling Limit (h_124)",
+    description: "Maximum free cooling capacity from natural ventilation",
+    type: "calculated",
+    format: "number-2dp-comma",
+    unit: "kWh/yr",
+    excelRef: "COOLING-TARGET A33 * M19",
+    dependencies: ["l_20", "h_24", "m_19", "g_118", "k_120"],
+    consumedBy: ["h_124", "d_124"],
+    stage: 1,
+  },
+  ref_cooling_h_124: {
+    label: "Free Cooling Limit (Reference)",
+    description: "Reference model maximum free cooling capacity",
+    type: "calculated",
+    format: "number-2dp-comma",
+    unit: "kWh/yr",
+    dependencies: ["ref_l_20", "ref_h_24", "ref_m_19", "ref_g_118", "ref_k_120"],
+    consumedBy: ["ref_h_124", "ref_d_124"],
+    stage: 1,
+  },
+
+  // Stage 2: Active Cooling System (Conditional - requires m_129)
+  cooling_m_124: {
+    label: "Days Active Cooling (m_124)",
+    description: "Days per year requiring active mechanical cooling",
+    type: "calculated",
+    format: "number-2dp",
+    unit: "days/yr",
+    excelRef: "COOLING-TARGET E55",
+    dependencies: ["m_129", "cooling_h_124", "m_19"],
+    consumedBy: ["m_124"],
+    stage: 2,
+  },
+  ref_cooling_m_124: {
+    label: "Days Active Cooling (Reference)",
+    description: "Reference model days requiring active cooling",
+    type: "calculated",
+    format: "number-2dp",
+    unit: "days/yr",
+    dependencies: ["ref_m_129", "ref_cooling_h_124", "ref_m_19"],
+    consumedBy: ["ref_m_124"],
+    stage: 2,
+  },
+
+  cooling_d_124: {
+    label: "Free Cooling Percentage (d_124)",
+    description: "Percentage of cooling load met by free ventilation",
+    type: "calculated",
+    format: "percent-0dp",
+    unit: "%",
+    excelRef: "COOLING-TARGET H124/M129",
+    dependencies: ["cooling_h_124", "m_129"],
+    consumedBy: ["d_124"],
+    stage: 2,
+  },
+  ref_cooling_d_124: {
+    label: "Free Cooling Percentage (Reference)",
+    description: "Reference model free cooling percentage",
+    type: "calculated",
+    format: "percent-0dp",
+    unit: "%",
+    dependencies: ["ref_cooling_h_124", "ref_m_129"],
+    consumedBy: ["ref_d_124"],
+    stage: 2,
+  },
+};
+
+// Register with FieldManager if available
+if (window.TEUI?.FieldManager?.registerFields) {
+  window.TEUI.FieldManager.registerFields(window.TEUI.CoolingFields);
+  console.log(
+    "[CoolingFields] ✅ Registered 10 cooling calculation fields with FieldManager",
+  );
+}
