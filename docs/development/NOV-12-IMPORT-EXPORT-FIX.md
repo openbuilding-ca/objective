@@ -2149,6 +2149,21 @@ When switching from "Heatpump" to any other fuel type in Reference mode, j_116 s
 - Result: Did not work, stale value persisted
 - Reverted: Back to clean state
 
+**Attempt 3 (Session Nov 13, 2025):** Changed `refreshUI()` contenteditable check from `=== "true"` to `hasAttribute()`
+- **Rationale:** Thought j_116 was being skipped during mode switch due to contenteditable="false" (ghosted state)
+- **Change:** Line 485: `element.getAttribute("contenteditable") === "true"` → `element.hasAttribute("contenteditable")`
+- **Result:** Did not fix the issue - j_116 still shows 2.66 instead of 3.30
+- **Reverted:** git checkout src/sections/Section13.js
+
+**Attempt 4 (Session Nov 13, 2025):** Modified `refreshUI()` to read j_116 from StateManager instead of ReferenceState
+- **Rationale:** Discovered ReferenceState.state.j_116 has stale "2.66" while StateManager has correct "3.30"
+- **Change:** Lines 439-447: Added special case to read `ref_j_116` from StateManager for j_116 in Reference mode
+- **Assumption:** Thought j_116 was "calculated and stored in StateManager"
+- **User Correction:** j_116 is NOT calculated - it has Reference default 3.30 from ReferenceValues.js overlay/fallback
+- **Result:** Did not fix the issue
+- **Reverted:** git checkout src/sections/Section13.js
+- **Key Learning:** The 3.30 value comes from **ReferenceValues.js defaults**, not from calculations
+
 ### Baseline for Next Session
 
 **Clean Commit:** d3d750d (Docs: Add DEBUG-J116-FLOW.js test script)
@@ -2167,3 +2182,85 @@ When switching from "Heatpump" to any other fuel type in Reference mode, j_116 s
 
 **Priority:** Low (cosmetic issue, doesn't affect calculations)
 **Impact:** Minor UX issue requiring mode toggle workaround
+
+---
+
+## 🔍 NEW ANALYSIS: Fresh Eyes Review (Session Nov 13, 2025 Continued)
+
+### Key Discovery: The Real Data Flow
+
+After reverting failed attempts and re-reading the code with fresh eyes, here's what actually happens:
+
+**The Source of Truth for j_116 in Reference Mode:**
+
+1. **ReferenceValues.js** contains the standard defaults (e.g., `j_116: "3.30"` for OBC SB10)
+2. **ReferenceState.setDefaults()** (line 148) initializes: `this.state.j_116 = referenceValues.j_116 || "2.66"`
+3. **When d_113="Heatpump":** Calculations compute COP and write to BOTH:
+   - `StateManager.setValue("ref_j_116", calculatedValue)` ✅
+   - The DOM gets updated via `updateCalculatedDisplayValues()` ✅
+   - BUT: Does it also update `ReferenceState.state.j_116`? **Need to verify**
+4. **When switching d_113 from "Heatpump" to "Gas":**
+   - `refreshUI()` is called
+   - Reads `ReferenceState.getValue("j_116")`
+   - If ReferenceState.state.j_116 still has stale calculated value → shows wrong value ❌
+
+### Critical Question: Where Does ReferenceState.state.j_116 Get Updated?
+
+**Search needed:**
+- Does any calculation function write to `ReferenceState.state.j_116`?
+- Or does it ONLY get written during initialization (line 148)?
+- When mode toggle works, what syncs it back to the correct default?
+
+### New Hypothesis: The d_113 Dropdown Handler Missing Reset Logic
+
+When d_113 changes from "Heatpump" to any other fuel type in Reference mode, the dropdown change handler should:
+
+1. Detect the change: "Heatpump" → "Gas/Oil/Electric"
+2. Reset `ReferenceState.state.j_116` back to the ReferenceValues default
+3. Call `refreshUI()` to update DOM
+
+**BUT:** The current d_113 listener (lines 1822-1838) likely doesn't have this reset logic.
+
+### Proposed Investigation Path
+
+**Step 1:** Check if ReferenceValues.js actually has j_116: "3.30"
+- Add console.log in setDefaults() to verify what `referenceValues.j_116` returns
+- Confirm it's not using the fallback "2.66"
+
+**Step 2:** Trace what happens during mode toggle that fixes it
+- Add logging to switchMode() to see if it calls setDefaults() or syncFromGlobalState()
+- Identify the mechanism that restores the correct value
+
+**Step 3:** Implement targeted fix in d_113 change handler
+- When switching FROM "Heatpump" TO anything else in Reference mode:
+  - Reset ReferenceState.state.j_116 to ReferenceValues default
+  - Call refreshUI() to update DOM
+
+### Potential Solution (Untested)
+
+Add to d_113 dropdown change listener around line 1822:
+
+```javascript
+dropdown.addEventListener("change", function () {
+  const newValue = this.value;
+  const oldValue = currentState.getValue("d_113"); // Get previous value
+
+  // ... existing code ...
+
+  // ✅ NEW: Reset j_116 to Reference default when switching FROM Heatpump
+  if (ModeManager.currentMode === "reference" &&
+      oldValue === "Heatpump" &&
+      newValue !== "Heatpump") {
+    const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+    const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
+    const defaultJ116 = referenceValues.j_116 || "3.30";
+
+    ReferenceState.setValue("j_116", defaultJ116);
+    // refreshUI() is already called below
+  }
+
+  // ... existing refreshUI() call ...
+});
+```
+
+**Next Session:** Verify ReferenceValues.js has correct defaults, then test this targeted fix.
