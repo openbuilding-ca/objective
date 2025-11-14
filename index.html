@@ -859,7 +859,9 @@ Select a province and city to view weather data.</pre
               !document.querySelector(".modal.show")
             ) {
               console.log("Cleaning up lingering modal backdrops");
-              document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+              document
+                .querySelectorAll(".modal-backdrop")
+                .forEach(el => el.remove());
               document.body.classList.remove("modal-open");
               document.body.style.overflow = "";
               document.body.style.paddingRight = "";
@@ -1001,7 +1003,8 @@ Select a province and city to view weather data.</pre
         // Create toggle
         const toggleDiv = document.createElement("div");
         toggleDiv.className = "reference-toggle";
-        toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
+        toggleDiv.style.cssText =
+          "display: flex; align-items: center; gap: 10px;";
 
         const toggleLabel = document.createElement("label");
         toggleLabel.textContent = "Show Reference";
@@ -1252,12 +1255,18 @@ Select a province and city to view weather data.</pre
           const updateButtonState = () => {
             const isEnabled = window.TEUI.TooltipManager.isEnabled();
             if (isEnabled) {
-              toggleHelpBtn.classList.remove("btn-outline-secondary", "btn-danger");
+              toggleHelpBtn.classList.remove(
+                "btn-outline-secondary",
+                "btn-danger"
+              );
               toggleHelpBtn.classList.add("btn-success");
               toggleHelpBtn.innerHTML =
                 '<i class="bi bi-question-circle-fill"></i> Help On';
             } else {
-              toggleHelpBtn.classList.remove("btn-success", "btn-outline-secondary");
+              toggleHelpBtn.classList.remove(
+                "btn-success",
+                "btn-outline-secondary"
+              );
               toggleHelpBtn.classList.add("btn-danger");
               toggleHelpBtn.innerHTML =
                 '<i class="bi bi-question-circle"></i> Help Off';

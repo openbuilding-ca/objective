@@ -297,18 +297,6 @@
       message:
         "Enter Value Required by Reference Standard. Typ. range is 7-14. Only applies when 'Heatpump' Option is Selected from the dropdown to the left. _x000a__x000a_You may use the HSPF or HSPF2 equipment rating, noting HSPF2 is ~0.85 of HSPF due to harsher test conditions. This value an outsized influence on TEUI - Choose Well!",
     },
-    e_49: {
-      cell: "E49",
-      title: "Litres/Per-Person/Day",
-      message:
-        "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. ",
-    },
-    e_50: {
-      cell: "E50",
-      title: "Litres/Per-Person/Day",
-      message:
-        "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. ",
-    },
     f_73: {
       cell: "F73",
       title: "Solar Heat Gain Coefficient",

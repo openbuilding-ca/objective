@@ -331,8 +331,12 @@
 
           // Additional debugging to see the structure
           if (!obcTable && attempts === 1) {
-            const buildingAreasSection = document.querySelector("#buildingAreas");
-            console.log("🔍 buildingAreas section found:", !!buildingAreasSection);
+            const buildingAreasSection =
+              document.querySelector("#buildingAreas");
+            console.log(
+              "🔍 buildingAreas section found:",
+              !!buildingAreasSection
+            );
             if (buildingAreasSection) {
               console.log(
                 "🔍 buildingAreas innerHTML:",
@@ -361,7 +365,11 @@
             );
             setTimeout(findAndAnalyzeTable, 200);
           } else {
-            console.error("❌ Failed to find table after", maxAttempts, "attempts");
+            console.error(
+              "❌ Failed to find table after",
+              maxAttempts,
+              "attempts"
+            );
             console.error("Container HTML:", container?.innerHTML);
             document.getElementById("findings").innerHTML =
               `<p class="text-danger">❌ Failed to find generated table after ${maxAttempts} attempts.<br>
@@ -415,7 +423,9 @@
             }
 
             // Create the complete section structure that FieldManager expects
-            const container = document.getElementById("obc-app-table-container");
+            const container = document.getElementById(
+              "obc-app-table-container"
+            );
             container.innerHTML = `
                         <div id="buildingAreas" class="section">
                             <div class="section-content">
@@ -426,7 +436,8 @@
 
             // Simulate what happens in the real app
             console.log("🎯 Rendering buildingAreas section...");
-            const success = window.TEUI.FieldManager.renderSection("buildingAreas");
+            const success =
+              window.TEUI.FieldManager.renderSection("buildingAreas");
 
             if (success) {
               console.log("✅ OBC app structure generated successfully");
@@ -485,9 +496,8 @@
         const obcTable = document.getElementById("obc-app-table");
 
         if (pureTable) {
-          document.getElementById("pure-dom-structure").textContent = formatHTML(
-      pureTable.outerHTML
-    );
+          document.getElementById("pure-dom-structure").textContent =
+            formatHTML(pureTable.outerHTML);
         }
 
         if (obcTable) {
@@ -786,10 +796,15 @@
       }
 
       function testWidthMeasurement() {
-        console.log("📏 Measuring column widths after sub-nuclear treatment...");
+        console.log(
+          "📏 Measuring column widths after sub-nuclear treatment..."
+        );
 
         // Measure both pure and OBC tables
-        const pureWidths = measureTableWidths("pure-test-table", "pure-subnuclear");
+        const pureWidths = measureTableWidths(
+          "pure-test-table",
+          "pure-subnuclear"
+        );
         const obcTable = document.querySelector("#buildingAreas .data-table");
 
         let results = "<strong>📏 Width Measurement Results:</strong><br><br>";
@@ -836,7 +851,9 @@
 
       // Initialize when page loads
       document.addEventListener("DOMContentLoaded", () => {
-        console.log('🧪 DOM Debug page loaded. Click "Run Full Analysis" to start.');
+        console.log(
+          '🧪 DOM Debug page loaded. Click "Run Full Analysis" to start.'
+        );
 
         // Initialize TEUI namespace
         window.TEUI = window.TEUI || {};

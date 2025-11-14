@@ -201,7 +201,8 @@
         const minCol = widths.find(w => w.width === minWidth);
 
         // Detect goalpost behavior
-        const avgWidth = widths.reduce((sum, w) => sum + w.width, 0) / widths.length;
+        const avgWidth =
+          widths.reduce((sum, w) => sum + w.width, 0) / widths.length;
         const expansion = maxWidth - avgWidth;
 
         console.log(`=== ${tableId.toUpperCase()} ANALYSIS ===`);
@@ -213,7 +214,10 @@
         console.log("Min width:", minWidth, "Column:", minCol.text);
         console.log("Average width:", avgWidth.toFixed(1));
         console.log("Expansion amount:", expansion.toFixed(1), "pixels");
-        console.log("Goalpost detected:", expansion > avgWidth * 0.5 ? "YES" : "NO");
+        console.log(
+          "Goalpost detected:",
+          expansion > avgWidth * 0.5 ? "YES" : "NO"
+        );
 
         return {
           widths,
@@ -232,7 +236,9 @@
 
           // Update summary
           document.getElementById("equal-distribution").textContent =
-            !citiesResult.goalposts && !obcResult.goalposts ? "✅ YES" : "❌ NO";
+            !citiesResult.goalposts && !obcResult.goalposts
+              ? "✅ YES"
+              : "❌ NO";
 
           document.getElementById("goalpost-detected").textContent =
             citiesResult.goalposts || obcResult.goalposts ? "🚨 YES" : "✅ NO";

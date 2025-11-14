@@ -627,7 +627,9 @@ Select a province and city to view weather data.</pre
               document.querySelectorAll(".modal-backdrop").length > 0 &&
               !document.querySelector(".modal.show")
             ) {
-              document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+              document
+                .querySelectorAll(".modal-backdrop")
+                .forEach(el => el.remove());
               document.body.classList.remove("modal-open");
               document.body.style.overflow = "";
               document.body.style.paddingRight = "";
@@ -642,6 +644,7 @@ Select a province and city to view weather data.</pre
 
     <!-- Initialize components on page load -->
     <script>
+      /* global OBC */
       document.addEventListener("DOMContentLoaded", function () {
         // Initialize FieldManager (core requirement for OBC Matrix)
         if (OBC && OBC.FieldManager) {
