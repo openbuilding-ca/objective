@@ -1668,7 +1668,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           tooltip: true, // A Note on Methods
           dependencies: ["d_80"],
-          label: "n-Factor Percentage Value",
+          label: "n-Factor Value %",
         },
         h: { content: "" }, // Empty cell
         i: {
@@ -1705,7 +1705,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           dependencies: ["e_80"],
           classes: ["reference-value"], // Apply reference styling
-          label: "Total Gains Reference kWh/yr",
+          label: "Total Gains PHPP Method kWh/yr",
         },
         f: {
           content: "Total Gains",
@@ -1718,7 +1718,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           section: "radiantGains",
           dependencies: ["i_79", "i_71", "i_97", "i_103", "m_121", "i_98"],
           classes: ["reference-value"], // Apply reference styling
-          label: "PHPP Method: n-Factor Value",
+          label: "PHPP Method: n-Factor Value %",
         },
         h: { content: "", classes: ["reference-value"] }, // Empty cell
         i: {
