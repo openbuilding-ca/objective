@@ -2191,6 +2191,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       "ref_d_114", // M.2.1Heating demand
       "j_115",
       "ref_j_115", // AFUE Efficiency
+      "d_116",  // ✅ NOV14-COOLFIX: Cooling system type (affects d117_effective calculation)
+      "ref_d_116",  // ✅ NOV14-COOLFIX: Reference cooling system type
       "d_117",
       "ref_d_117", // M.3.5
       "m_121",

@@ -70,6 +70,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           "d_113",
           "d_116",
           "f_113",
+          "j_116",  // ✅ NOV14-COOLFIX: Added for cooling calculation convergence
           "d_118",
           "g_118",
           "d_119",
