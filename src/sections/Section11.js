@@ -696,7 +696,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Roof",
       cells: {
         c: { label: "Roof" },
-        d: { fieldId: "d_85", type: "editable", value: "1411.52" },
+        d: { fieldId: "d_85", type: "editable", value: "1411.52", label: "Roof: Area m²" },
         e: { fieldId: "e_85", type: "calculated", value: "0.00", dependencies: ["f_85"], label: "Roof: R-Value Imperial" },
         f: { fieldId: "f_85", type: "editable", value: "9.35", label: "Roof: RSI Value K·m²/W" },
         g: { fieldId: "g_85", type: "calculated", value: "0.00", dependencies: ["f_85"], label: "Roof: U-Value W/m²·K" },
@@ -715,7 +715,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Walls Above Grade (Exclude Openings!)",
       cells: {
         c: { label: "Walls Above Grade (Exclude Openings!)" },
-        d: { fieldId: "d_86", type: "editable", value: "712.97" },
+        d: { fieldId: "d_86", type: "editable", value: "712.97", label: "Walls Above Grade: Area m²" },
         e: { fieldId: "e_86", type: "calculated", value: "0.00", dependencies: ["f_86"], label: "Walls Above Grade: R-Value Imperial" },
         f: { fieldId: "f_86", type: "editable", value: "6.69", label: "Walls Above Grade: RSI Value K·m²/W" },
         g: { fieldId: "g_86", type: "calculated", value: "0.00", dependencies: ["f_86"], label: "Walls Above Grade: U-Value W/m²·K" },
@@ -734,7 +734,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Floor Exposed",
       cells: {
         c: { label: "Floor Exposed" },
-        d: { fieldId: "d_87", type: "editable", value: "0.00" },
+        d: { fieldId: "d_87", type: "editable", value: "0.00", label: "Floor Exposed: Area m²" },
         e: { fieldId: "e_87", type: "calculated", value: "0.00", dependencies: ["f_87"], label: "Floor Exposed: R-Value Imperial" },
         f: { fieldId: "f_87", type: "editable", value: "9.52", label: "Floor Exposed: RSI Value K·m²/W" },
         g: { fieldId: "g_87", type: "calculated", value: "0.00", dependencies: ["f_87"], label: "Floor Exposed: U-Value W/m²·K" },
@@ -753,7 +753,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Doors",
       cells: {
         c: { label: "Doors" },
-        d: { fieldId: "d_88", type: "calculated", value: "", dependencies: ["d_73"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_73
+        d: { fieldId: "d_88", type: "calculated", value: "", dependencies: ["d_73"], label: "Doors: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_73
         e: { fieldId: "e_88", type: "calculated", value: "0.00", dependencies: ["f_88"], label: "Doors: R-Value Imperial" },
         f: { fieldId: "f_88", type: "calculated", value: "0.00", dependencies: ["g_88"], label: "Doors: RSI Value K·m²/W" },
         g: { fieldId: "g_88", type: "editable", value: "1.990", label: "Doors: U-Value W/m²·K" },
@@ -772,7 +772,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area North",
       cells: {
         c: { label: "Window Area North" },
-        d: { fieldId: "d_89", type: "calculated", value: "", dependencies: ["d_74"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_74
+        d: { fieldId: "d_89", type: "calculated", value: "", dependencies: ["d_74"], label: "Window Area North: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_74
         e: { fieldId: "e_89", type: "calculated", value: "0.00", dependencies: ["f_89"], label: "Window Area North: R-Value Imperial" },
         f: { fieldId: "f_89", type: "calculated", value: "0.00", dependencies: ["g_89"], label: "Window Area North: RSI Value K·m²/W" },
         g: { fieldId: "g_89", type: "editable", value: "1.420", label: "Window Area North: U-Value W/m²·K" },
@@ -791,7 +791,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area East",
       cells: {
         c: { label: "Window Area East" },
-        d: { fieldId: "d_90", type: "calculated", value: "", dependencies: ["d_75"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_75
+        d: { fieldId: "d_90", type: "calculated", value: "", dependencies: ["d_75"], label: "Window Area East: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_75
         e: { fieldId: "e_90", type: "calculated", value: "0.00", dependencies: ["f_90"], label: "Window Area East: R-Value Imperial" },
         f: { fieldId: "f_90", type: "calculated", value: "0.00", dependencies: ["g_90"], label: "Window Area East: RSI Value K·m²/W" },
         g: { fieldId: "g_90", type: "editable", value: "1.420", label: "Window Area East: U-Value W/m²·K" },
@@ -810,7 +810,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area South",
       cells: {
         c: { label: "Window Area South" },
-        d: { fieldId: "d_91", type: "calculated", value: "", dependencies: ["d_76"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_76
+        d: { fieldId: "d_91", type: "calculated", value: "", dependencies: ["d_76"], label: "Window Area South: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_76
         e: { fieldId: "e_91", type: "calculated", value: "0.00", dependencies: ["f_91"], label: "Window Area South: R-Value Imperial" },
         f: { fieldId: "f_91", type: "calculated", value: "0.00", dependencies: ["g_91"], label: "Window Area South: RSI Value K·m²/W" },
         g: { fieldId: "g_91", type: "editable", value: "1.420", label: "Window Area South: U-Value W/m²·K" },
@@ -829,7 +829,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area West",
       cells: {
         c: { label: "Window Area West" },
-        d: { fieldId: "d_92", type: "calculated", value: "", dependencies: ["d_77"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_77
+        d: { fieldId: "d_92", type: "calculated", value: "", dependencies: ["d_77"], label: "Window Area West: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_77
         e: { fieldId: "e_92", type: "calculated", value: "0.00", dependencies: ["f_92"], label: "Window Area West: R-Value Imperial" },
         f: { fieldId: "f_92", type: "calculated", value: "0.00", dependencies: ["g_92"], label: "Window Area West: RSI Value K·m²/W" },
         g: { fieldId: "g_92", type: "editable", value: "1.420", label: "Window Area West: U-Value W/m²·K" },
@@ -848,7 +848,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Skylights",
       cells: {
         c: { label: "Skylights" },
-        d: { fieldId: "d_93", type: "calculated", value: "", dependencies: ["d_78"] }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_78
+        d: { fieldId: "d_93", type: "calculated", value: "", dependencies: ["d_78"], label: "Skylights: Area m²" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_78
         e: { fieldId: "e_93", type: "calculated", value: "0.00", dependencies: ["f_93"], label: "Skylights: R-Value Imperial" },
         f: { fieldId: "f_93", type: "calculated", value: "0.00", dependencies: ["g_93"], label: "Skylights: RSI Value K·m²/W" },
         g: { fieldId: "g_93", type: "editable", value: "1.420", label: "Skylights: U-Value W/m²·K" },
@@ -867,7 +867,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Walls Below Grade (Conditioned Space)",
       cells: {
         c: { label: "Walls Below Grade (Conditioned Space)" },
-        d: { fieldId: "d_94", type: "editable", value: "0.00" },
+        d: { fieldId: "d_94", type: "editable", value: "0.00", label: "Walls Below Grade: Area m²" },
         e: { fieldId: "e_94", type: "calculated", value: "0.00", dependencies: ["f_94"], label: "Walls Below Grade: R-Value Imperial" },
         f: { fieldId: "f_94", type: "editable", value: "4.00", label: "Walls Below Grade: RSI Value K·m²/W" },
         g: { fieldId: "g_94", type: "calculated", value: "0.00", dependencies: ["f_94"], label: "Walls Below Grade: U-Value W/m²·K" },
@@ -886,7 +886,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Floor Slab (Conditioned Space)",
       cells: {
         c: { label: "Floor Slab (Conditioned Space)" },
-        d: { fieldId: "d_95", type: "editable", value: "1100.42" },
+        d: { fieldId: "d_95", type: "editable", value: "1100.42", label: "Floor Slab: Area m²" },
         e: { fieldId: "e_95", type: "calculated", value: "0.00", dependencies: ["f_95"], label: "Floor Slab: R-Value Imperial" },
         f: { fieldId: "f_95", type: "editable", value: "3.70", label: "Floor Slab: RSI Value K·m²/W" },
         g: { fieldId: "g_95", type: "calculated", value: "0.00", dependencies: ["f_95"], label: "Floor Slab: U-Value W/m²·K" },
@@ -905,7 +905,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "B.11 Interior Floors (incl. garages)",
       cells: {
         c: { label: "B.11 Interior Floors (incl. garages)" },
-        d: { fieldId: "d_96", type: "editable", value: "29.70", tooltip: true },
+        d: { fieldId: "d_96", type: "editable", value: "29.70", tooltip: true, label: "Interior Floors: Area m²" },
         e: { content: "-" },
         f: { content: "-" },
         g: { content: "-" },
@@ -931,6 +931,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           min: 5, // **** CHANGED: Set min to 5 ****
           max: 100, // Max 100%
           step: 5, // Step 5%
+          label: "Thermal Bridge Penalty: Factor %",
           section: "envelope",
           tooltip: true, // TB Penalty
         },
