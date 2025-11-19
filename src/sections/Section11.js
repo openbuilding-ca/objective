@@ -3092,34 +3092,27 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD (affects ground gain)
       window.TEUI.StateManager.addListener("d_22", calculateAll); // GF HDD (affects ground loss)
 
-      // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
-      window.TEUI.StateManager.addListener("ref_d_20", () => calculateAll());
-      window.TEUI.StateManager.addListener("ref_d_21", () => calculateAll());
-      window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll());
-      window.TEUI.StateManager.addListener("ref_d_22", () => calculateAll());
+      // Listeners for REFERENCE climate data - update UI only
+      window.TEUI.StateManager.addListener("ref_d_20", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("ref_d_21", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("ref_h_22", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("ref_d_22", () => ModeManager.updateCalculatedDisplayValues());
 
-      // Listen for S03 Capacitance changes (Target and Reference)
-      window.TEUI.StateManager.addListener("h_21", calculateAll); // Capacitance Type
-      window.TEUI.StateManager.addListener("ref_h_21", calculateAll);
-      window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
-      window.TEUI.StateManager.addListener("ref_i_21", calculateAll); // ✅ ADDED
+      // Listen for S03 Capacitance changes (Target and Reference) - update UI only
+      window.TEUI.StateManager.addListener("h_21", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("ref_h_21", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("i_21", () => ModeManager.updateCalculatedDisplayValues());
+      window.TEUI.StateManager.addListener("ref_i_21", () => ModeManager.updateCalculatedDisplayValues());
 
-      window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
-        console.log(
-          `[S11] Listener: d_97 changed → recalculating (src=${src})`
-        );
-        calculateAll();
+      // Thermal bridge penalty listeners - update UI only (Calculator handles recalculation)
+      window.TEUI.StateManager.addListener("d_97", () => {
+        // Update UI only - Calculator.calculateAll() handles recalculation
+        ModeManager.updateCalculatedDisplayValues();
       });
-      // Reference-side TB% (if written as ref_d_97) should also trigger recalculation
-      window.TEUI.StateManager.addListener(
-        "ref_d_97",
-        (val, _old, _id, src) => {
-          console.log(
-            `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`
-          );
-          calculateAll();
-        }
-      );
+      window.TEUI.StateManager.addListener("ref_d_97", () => {
+        // Update UI only - Calculator.calculateAll() handles recalculation
+        ModeManager.updateCalculatedDisplayValues();
+      });
       // console.log("Section 11 listeners for climate data added.");
     } else {
       // console.warn("Section 11: StateManager not available to add climate listeners.");
