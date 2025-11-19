@@ -1098,7 +1098,8 @@ window.TEUI.SectionModules.sect02 = (function () {
    * No need to duplicate that logic here - Section02 handles UI events only
    */
   function applyReferenceValuesOverlay() {
-    const currentMode = window.TEUI?.ModeManager?.currentMode || "target";
+    // 🐛 FIX: Use local ModeManager reference (section-specific), not global window.TEUI.ModeManager
+    const currentMode = ModeManager.currentMode || "target";
 
     // Get the selected standard for current mode
     const standard = currentMode === "reference"

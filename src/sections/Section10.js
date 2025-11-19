@@ -2979,19 +2979,21 @@ window.TEUI.SectionModules.sect10 = (function () {
         // Listen for Target external dependencies
         window.TEUI.StateManager.addListener(fieldId, function () {
           console.log(
-            `S10: Target listener triggered by ${fieldId}, recalculating all.`
+            `S10: Target listener triggered by ${fieldId}, updating UI only.`
           );
-          calculateAll();
-          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
+          // 🐛 FIX: Don't call calculateAll() here - causes recursion during FileHandler.applyReferenceValuesFromStandard()
+          // FileHandler (and user edits) already trigger Calculator.calculateAll() which handles all sections
+          ModeManager.updateCalculatedDisplayValues();
         });
 
         // ✅ ADD: Listen for Reference external dependencies
         window.TEUI.StateManager.addListener(`ref_${fieldId}`, function () {
           console.log(
-            `S10: Reference listener triggered by ref_${fieldId}, recalculating all.`
+            `S10: Reference listener triggered by ref_${fieldId}, updating UI only.`
           );
-          calculateAll();
-          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
+          // 🐛 FIX: Don't call calculateAll() here - causes recursion during FileHandler.applyReferenceValuesFromStandard()
+          // FileHandler (and user edits) already trigger Calculator.calculateAll() which handles all sections
+          ModeManager.updateCalculatedDisplayValues();
         });
       });
 
