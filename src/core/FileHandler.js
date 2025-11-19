@@ -742,7 +742,9 @@
      * @param {string} targetMode - Either "target" or "reference"
      */
     applyReferenceValuesFromStandard(standard, targetMode) {
+      console.log(`[FileHandler] ========== SET VALUES DEBUG START ==========`);
       console.log(`[FileHandler] Applying ReferenceValues from "${standard}" to ${targetMode.toUpperCase()} model`);
+      console.log(`[FileHandler] Current ModeManager state:`, window.TEUI?.ModeManager?.currentMode);
 
       // Get reference values for the selected standard
       const referenceValues = window.TEUI?.ReferenceValues?.[standard];
@@ -750,6 +752,7 @@
         console.error(`[FileHandler] No ReferenceValues found for standard: "${standard}"`);
         return;
       }
+      console.log(`[FileHandler] ReferenceValues loaded, sample field d_66:`, referenceValues.d_66);
 
       const sectionsWithReferenceValues = [5, 6, 9, 11, 12, 13]; // S14/S15 excluded - data consumers only
 
@@ -768,17 +771,29 @@
             return;
           }
 
+          console.log(`[FileHandler] PHASE 2a: Processing ${sectionId}, targetMode="${targetMode}"`);
+
           if (targetMode === "reference") {
             // Reference mode: Apply to ReferenceState (writes to ref_ fields)
+            console.log(`[FileHandler] → Reference mode path for ${sectionId}`);
+            console.log(`[FileHandler] → ReferenceState exists?`, !!section?.ReferenceState);
+            console.log(`[FileHandler] → onReferenceStandardChange exists?`, !!section?.ReferenceState?.onReferenceStandardChange);
+
             if (section?.ReferenceState?.onReferenceStandardChange) {
+              const beforeState = {...section.ReferenceState.state};
               section.ReferenceState.onReferenceStandardChange(standard);
-              console.log(`[FileHandler] Applied ReferenceValues to ${sectionId} ReferenceState`);
+              const afterState = {...section.ReferenceState.state};
+              console.log(`[FileHandler] ✅ Applied ReferenceValues to ${sectionId} ReferenceState`);
+              console.log(`[FileHandler] → Sample before d_66:`, beforeState.d_66, `after:`, afterState.d_66);
+            } else {
+              console.warn(`[FileHandler] ⚠️ ${sectionId} missing ReferenceState.onReferenceStandardChange()`);
             }
           } else {
             // Target mode: Apply to TargetState (writes to unprefixed fields)
+            console.log(`[FileHandler] → Target mode path for ${sectionId}`);
             if (section?.TargetState?.applyReferenceValues) {
               section.TargetState.applyReferenceValues(standard);
-              console.log(`[FileHandler] Applied ReferenceValues to ${sectionId} TargetState`);
+              console.log(`[FileHandler] ✅ Applied ReferenceValues to ${sectionId} TargetState`);
             }
           }
         });
@@ -789,18 +804,34 @@
           const sectionId = `sect${String(sectionNum).padStart(2, '0')}`;
           const section = window.TEUI?.SectionModules?.[sectionId];
 
+          console.log(`[FileHandler] PHASE 2b: Syncing ${sectionId} to StateManager, targetMode="${targetMode}"`);
+
           if (targetMode === "reference") {
             // Reference mode: Sync ReferenceState to StateManager (ref_ prefixed fields)
             // ReferenceState stores values locally but doesn't auto-sync to StateManager
             // We need to manually copy each field from ReferenceState to StateManager with ref_ prefix
+            console.log(`[FileHandler] → Reference mode sync path for ${sectionId}`);
+            console.log(`[FileHandler] → ReferenceState.state exists?`, !!section?.ReferenceState?.state);
+
             if (section?.ReferenceState?.state) {
+              const fieldsToSync = Object.keys(section.ReferenceState.state);
+              console.log(`[FileHandler] → Found ${fieldsToSync.length} fields to sync`);
+
+              let syncCount = 0;
               Object.keys(section.ReferenceState.state).forEach(fieldId => {
                 const value = section.ReferenceState.state[fieldId];
                 if (value !== null && value !== undefined) {
-                  window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "import");
+                  const smKey = `ref_${fieldId}`;
+                  window.TEUI.StateManager.setValue(smKey, value, "import");
+                  syncCount++;
+                  if (fieldId === 'd_66') {
+                    console.log(`[FileHandler] → SAMPLE: Wrote ${smKey} = ${value} to StateManager`);
+                  }
                 }
               });
-              console.log(`[FileHandler] ${sectionId} ReferenceState synced to StateManager`);
+              console.log(`[FileHandler] ✅ ${sectionId} ReferenceState synced ${syncCount} fields to StateManager`);
+            } else {
+              console.warn(`[FileHandler] ⚠️ ${sectionId} has no ReferenceState.state object!`);
             }
           } else {
             // Target mode: Sync TargetState to StateManager (unprefixed fields)
@@ -860,6 +891,7 @@
         });
 
         console.log(`[FileHandler] ✅ ReferenceValues from "${standard}" applied to ${targetMode.toUpperCase()} model`);
+        console.log(`[FileHandler] ========== SET VALUES DEBUG END ==========`);
       } else {
         console.error("[FileHandler] Calculator.calculateAll() not available - calculations not triggered");
       }
