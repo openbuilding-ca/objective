@@ -483,21 +483,65 @@ When implementing M-N compliance:
 
 ---
 
-## Implementation Status
+## Implementation Status Audit (Nov 19, 2025)
 
-### ✅ Completed Sections
-- **S03** (Climate Calculations): Code-based comparison (m_23/n_23, m_24/n_24)
-- **S05** (Envelope): Component performance comparison
-- **S07** (Lighting): Lighting performance comparison
-- **S08** (Indoor Air Quality): Health threshold comparison (m_56-59/n_56-59)
+### ✅ Fully Implemented (Calculations Working)
 
-### 🚧 Pending Implementation
-- **S09** (Renewables): M/N compliance not yet implemented
-- **S11** (Embodied Carbon): Reference model comparison (m_85-95/n_85-95) - partial implementation
-- **S13** (Costs): Cost comparison - not yet implemented
+**S03 (Climate Calculations)** - Lines 2068-2174
+- **M Fields**: m_23 (OBC Heating Setpoint), m_24 (NBC Cooling Limit)
+- **N Fields**: n_23 (Heating Compliance), n_24 (Cooling Compliance)
+- **Pattern**: Code lookup (m_23) + static limit (m_24), boolean pass/fail
+- **Status**: ✅ Complete and functional
 
-### ❌ Not Applicable
-- **S01, S02, S04, S06, S10, S12**: Do not require M/N compliance fields
+**S08 (Indoor Air Quality)** - Lines 373-410
+- **M Fields**: m_56 (Radon %), m_57 (CO2 %), m_58 (TVOC %), m_59 (Humidity %)
+- **N Fields**: n_56-59 (Pass/Fail indicators)
+- **Pattern**: Simple division (value / threshold), dual-mode styling implemented
+- **Status**: ✅ Complete and functional
+
+**S09 (Internal Gains)** - Lines 1053-1068
+- **M Fields**: m_65 (Plug Load %), m_66 (Lighting %), m_67 (Equipment %)
+- **N Fields**: n_65-67 (Pass/Fail indicators)
+- **Pattern**: Fields defined, calculations exist (ref_d_65 / d_65 ratio)
+- **Status**: ✅ Fields exist, ready for simple division pattern
+
+**S11 (Embodied Carbon)** - Lines 2431-2510
+- **M Fields**: m_85-87 (RSI %), m_88-93 (U-value %), m_97 (Penalty %)
+- **N Fields**: n_85-87, n_88-93, n_97 (Pass/Fail indicators)
+- **Pattern**: Simple division already implemented! (currentValue / referenceNumeric × 100)
+- **Status**: ✅ Complete and functional (Reference mode always shows 100%)
+
+**S13 (Mechanical Systems)** - Lines 1029-1286
+- **M Fields**: m_113 (HSPF Ratio), m_115 (Cooling Ratio), m_116 (COPc Ratio), m_117 (ERV/HRV Ratio)
+- **N Fields**: None defined (no compliance checkmarks)
+- **Pattern**: Ratio calculations exist, but no N column pass/fail
+- **Status**: ⚠️ Partial - M columns calculated, N columns not implemented
+
+### 🔧 Needs Implementation
+
+**S05 (Envelope/Emissions)** - Lines 452-467
+- **M Fields**: m_38 (Operational B6 %), m_39 (A1-3 %), m_40 (A4-5 %), m_41 (C1-4 %)
+- **N Fields**: n_38-41 (Status indicators)
+- **Pattern**: Fields defined but hardcoded to "N/A" or "100%"
+- **Dependencies**: Empty array - no calculation logic wired
+- **Status**: ⚠️ Stub implementation - fields exist but not calculated
+
+**S10 (Glazing/Gains)** - Lines 994-1002
+- **M Fields**: m_73-78 (Gain Factor kWh/m²/yr for each orientation)
+- **N Fields**: None defined
+- **Pattern**: M columns show calculated gain factors (not compliance ratios)
+- **Status**: ⚠️ Not compliance fields - these are intermediate calculations
+
+### ❌ Not Applicable / No M-N Fields
+
+**S01** (Summary): No M/N compliance needed (aggregation section)
+**S02** (Project Info): No M/N compliance needed (input section)
+**S04** (Geometry): No M/N compliance needed (dimensional section)
+**S06** (Thermal Mass): No M/N compliance needed (calculation section)
+**S07** (Lighting): No M/N fields found (contrary to documentation)
+**S12** (Loads): No M/N compliance fields
+**S14** (TEDI/CEDI): m_129 is an intermediate calculation, not compliance
+**S15** (Bills): No M/N compliance fields (references m_19, m_43, m_121 from other sections)
 
 ---
 
@@ -715,6 +759,120 @@ This pattern applies to any section where:
 
 ---
 
-**Last Updated**: 2025-11-10
-**Sections Using Pattern**: S03, S05, S07, S08
+## M-N Completion Workplan (Future Work)
+
+### Priority 1: Complete S13 N-Columns (High Value, Low Effort)
+
+**Task**: Add N column pass/fail indicators to S13 Mechanical Systems
+**Impact**: Provides visual compliance feedback for HVAC system efficiency
+
+**Fields to Implement:**
+- n_113: HSPF compliance (f_113 >= ref_f_113 or code minimum)
+- n_115: Cooling compliance (compare against reference)
+- n_116: COPc compliance (j_116 >= ref_j_116 or code minimum)
+- n_117: ERV/HRV compliance (compare against reference)
+
+**Pattern**: Simple boolean (≥ 100% = pass)
+**Effort**: 1-2 hours
+**Files**: `src/sections/Section13.js`
+
+---
+
+### Priority 2: Implement S05 Emissions Compliance (Medium Priority)
+
+**Task**: Replace stub "N/A" values with actual emissions calculations
+**Impact**: Provides carbon compliance tracking for envelope components
+
+**Fields to Implement:**
+- m_38: Operational (B6) emissions ratio to code baseline
+- n_38: Pass/fail indicator
+- m_39-41: Embodied carbon phases (A1-3, A4-5, C1-4)
+- n_39-41: Pass/fail indicators
+
+**Pattern**: Depends on carbon baseline source (TBD - need code requirements)
+**Effort**: 4-6 hours (requires defining carbon baselines)
+**Dependencies**: Need to establish what "code baseline" means for emissions
+**Files**: `src/sections/Section05.js`
+
+---
+
+### Priority 3: Complete S09 N-Column Logic (Low Priority)
+
+**Task**: Verify and complete pass/fail logic for Internal Gains
+**Impact**: Visual compliance for plug/lighting/equipment loads
+
+**Current Status**:
+- Fields exist (m_65-67, n_65-67)
+- Dependencies defined
+- May just need calculation function wiring
+
+**Pattern**: Simple division (ref_d_65 / d_65), Reference mode = 100%
+**Effort**: 2-3 hours
+**Files**: `src/sections/Section09.js`
+
+---
+
+### Priority 4: Audit and Simplify Existing Implementations (Refactoring)
+
+**Task**: Review S03, S08, S11 for consistency with simple division pattern
+**Impact**: Code consistency and maintainability
+
+**Specific Reviews:**
+1. **S03**: Currently uses occupancy lookup - keep as-is (not simple division)
+2. **S08**: Already uses simple division - ✅ Good pattern
+3. **S11**: Already uses simple division - ✅ Good pattern
+
+**Pattern Standardization:**
+- Document when to use lookup vs. simple division
+- Ensure all N-columns use consistent `setElementClass()` helper
+- Verify dual-mode styling works in all sections
+
+**Effort**: 3-4 hours
+**Files**: Review all sections with M/N fields
+
+---
+
+### Future Consideration: S10 Glazing Compliance
+
+**Task**: Determine if m_73-78 should have companion N-columns
+**Impact**: TBD - need to define compliance criteria
+
+**Current Status**: m_73-78 show "Gain Factor kWh/m²/yr" (intermediate calculations)
+**Question**: What would compliance mean here? Compare to reference glazing strategy?
+**Decision Needed**: Is this architectural (compare orientations) or code compliance?
+
+**Effort**: TBD (depends on requirements definition)
+**Files**: `src/sections/Section10.js`
+
+---
+
+## Implementation Guidelines Summary
+
+### When to Use Simple Division Pattern
+
+✅ **Use when:**
+- Comparing Target value to Reference value (e.g., f_85 / ref_f_85)
+- Comparing actual value to threshold (e.g., d_56 / 150 for radon)
+- Result should be percentage (100% = meets baseline, >100% = exceeds)
+
+❌ **Don't use when:**
+- Value depends on occupancy type or conditional logic (use lookup)
+- Threshold is dynamic based on multiple factors
+- Compliance is boolean range check (e.g., 30% ≤ humidity ≤ 60%)
+
+### Code Consistency Checklist
+
+For any new M-N implementation:
+- [ ] M column calculates BEFORE N column in calculation order
+- [ ] N column uses `setElementClass()` helper for styling
+- [ ] Dual-mode sections use `updateCalculatedDisplayValues()` pattern from S08
+- [ ] Reference mode shows 100% compliance (if applicable)
+- [ ] Field definitions include proper `dependencies` array
+- [ ] Tooltips explain pass/fail criteria
+
+---
+
+**Last Updated**: 2025-11-19 (Audit complete, workplan added)
+**Sections Using M-N Pattern**: S03, S08, S09, S11, S13 (partial)
 **Global CSS Defined**: src/styles.css lines 2097-2112
+**Simple Division Pattern**: Already implemented in S08, S11
