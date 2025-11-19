@@ -2978,21 +2978,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       dependencies.forEach(fieldId => {
         // Listen for Target external dependencies
         window.TEUI.StateManager.addListener(fieldId, function () {
-          console.log(
-            `S10: Target listener triggered by ${fieldId}, updating UI only.`
-          );
-          // 🐛 FIX: Don't call calculateAll() here - causes recursion during FileHandler.applyReferenceValuesFromStandard()
-          // FileHandler (and user edits) already trigger Calculator.calculateAll() which handles all sections
+          // Update UI only - Calculator.calculateAll() handles recalculation
           ModeManager.updateCalculatedDisplayValues();
         });
 
-        // ✅ ADD: Listen for Reference external dependencies
+        // Listen for Reference external dependencies
         window.TEUI.StateManager.addListener(`ref_${fieldId}`, function () {
-          console.log(
-            `S10: Reference listener triggered by ref_${fieldId}, updating UI only.`
-          );
-          // 🐛 FIX: Don't call calculateAll() here - causes recursion during FileHandler.applyReferenceValuesFromStandard()
-          // FileHandler (and user edits) already trigger Calculator.calculateAll() which handles all sections
+          // Update UI only - Calculator.calculateAll() handles recalculation
           ModeManager.updateCalculatedDisplayValues();
         });
       });

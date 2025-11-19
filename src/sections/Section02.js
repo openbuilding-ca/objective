@@ -1098,7 +1098,7 @@ window.TEUI.SectionModules.sect02 = (function () {
    * No need to duplicate that logic here - Section02 handles UI events only
    */
   function applyReferenceValuesOverlay() {
-    // 🐛 FIX: Use local ModeManager reference (section-specific), not global window.TEUI.ModeManager
+    // Use local ModeManager reference (section-specific), not global window.TEUI.ModeManager
     const currentMode = ModeManager.currentMode || "target";
 
     // Get the selected standard for current mode
@@ -1106,10 +1106,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       ? window.TEUI.StateManager.getValue("ref_d_13")
       : window.TEUI.StateManager.getValue("d_13");
 
-    console.log(`[S02] "Set Values" button clicked - delegating to FileHandler`);
-    console.log(`[S02] Mode: ${currentMode}, Standard: ${standard}`);
-
-    // Delegate to FileHandler - it knows how to do this correctly!
+    // Delegate to FileHandler
     if (window.TEUI?.FileHandler?.applyReferenceValuesFromStandard) {
       window.TEUI.FileHandler.applyReferenceValuesFromStandard(standard, currentMode);
     } else {

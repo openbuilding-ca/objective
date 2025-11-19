@@ -205,7 +205,7 @@ These are **not bugs** but rather limitations of the current calculation order (
 
 ## Key Reference Documents
 
-1. **[SETTING-VALUES.md](./SETTING-VALUES.md)** - Complete code examples and pattern explanation
+1. **[D13-SETTING-VALUES.md](./D13-SETTING-VALUES.md)** - Complete code examples and pattern explanation
 2. **[D13-ARCHITECTURE-OPTIONS.md](./D13-ARCHITECTURE-OPTIONS.md)** - Full workplan (read "IMPLEMENTATION READY" section at top)
 3. **[ReferenceValues.js](../../src/core/ReferenceValues.js)** - The internal "import" source
 

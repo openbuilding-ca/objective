@@ -1437,17 +1437,10 @@ window.TEUI.SectionModules.sect14 = (function () {
     // Remove duplicates
     const uniqueDependencies = [...new Set(dependencies)];
 
-    // ✅ S15 PROVEN PATTERN: Add listeners with UI update only
+    // Add listeners with UI update only
     const addCalculationListener = key => {
       sm.addListener(key, () => {
-        // ✅ DEBUG: Log critical S13 dependency changes
-        if (["d_122", "ref_d_122", "m_121", "ref_m_121"].includes(key)) {
-          console.log(
-            `[S14 LISTENER] 🔥 ${key} changed - updating UI only`
-          );
-        }
-        // 🐛 FIX: Don't call calculateAll() here - causes recursion during FileHandler.applyReferenceValuesFromStandard()
-        // FileHandler (and user edits) already trigger Calculator.calculateAll() which handles all sections
+        // Update UI only - Calculator.calculateAll() handles recalculation
         ModeManager.updateCalculatedDisplayValues();
       });
     };

@@ -742,26 +742,20 @@
      * @param {string} targetMode - Either "target" or "reference"
      */
     applyReferenceValuesFromStandard(standard, targetMode) {
-      console.log(`[FileHandler] ========== SET VALUES DEBUG START ==========`);
-      console.log(`[FileHandler] Applying ReferenceValues from "${standard}" to ${targetMode.toUpperCase()} model`);
-      console.log(`[FileHandler] Current ModeManager state:`, window.TEUI?.ModeManager?.currentMode);
-
       // Get reference values for the selected standard
       const referenceValues = window.TEUI?.ReferenceValues?.[standard];
       if (!referenceValues) {
         console.error(`[FileHandler] No ReferenceValues found for standard: "${standard}"`);
         return;
       }
-      console.log(`[FileHandler] ReferenceValues loaded, sample field d_66:`, referenceValues.d_66);
 
       const sectionsWithReferenceValues = [5, 6, 9, 11, 12, 13]; // S14/S15 excluded - data consumers only
 
-      // 🔒 PHASE 1: IMPORT QUARANTINE START - Mute listeners
-      console.log("[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners");
+      // PHASE 1: IMPORT QUARANTINE START - Mute listeners
       window.TEUI.StateManager.muteListeners();
 
       try {
-        // ✅ PHASE 2a: Apply values to isolated section states
+        // PHASE 2a: Apply values to isolated section states
         sectionsWithReferenceValues.forEach(sectionNum => {
           const sectionId = `sect${String(sectionNum).padStart(2, '0')}`;
           const section = window.TEUI?.SectionModules?.[sectionId];
@@ -771,72 +765,40 @@
             return;
           }
 
-          console.log(`[FileHandler] PHASE 2a: Processing ${sectionId}, targetMode="${targetMode}"`);
-
           if (targetMode === "reference") {
             // Reference mode: Apply to ReferenceState (writes to ref_ fields)
-            console.log(`[FileHandler] → Reference mode path for ${sectionId}`);
-            console.log(`[FileHandler] → ReferenceState exists?`, !!section?.ReferenceState);
-            console.log(`[FileHandler] → onReferenceStandardChange exists?`, !!section?.ReferenceState?.onReferenceStandardChange);
-
             if (section?.ReferenceState?.onReferenceStandardChange) {
-              const beforeState = {...section.ReferenceState.state};
               section.ReferenceState.onReferenceStandardChange(standard);
-              const afterState = {...section.ReferenceState.state};
-              console.log(`[FileHandler] ✅ Applied ReferenceValues to ${sectionId} ReferenceState`);
-              console.log(`[FileHandler] → Sample before d_66:`, beforeState.d_66, `after:`, afterState.d_66);
             } else {
-              console.warn(`[FileHandler] ⚠️ ${sectionId} missing ReferenceState.onReferenceStandardChange()`);
+              console.warn(`[FileHandler] ${sectionId} missing ReferenceState.onReferenceStandardChange()`);
             }
           } else {
             // Target mode: Apply to TargetState (writes to unprefixed fields)
-            console.log(`[FileHandler] → Target mode path for ${sectionId}`);
             if (section?.TargetState?.applyReferenceValues) {
               section.TargetState.applyReferenceValues(standard);
-              console.log(`[FileHandler] ✅ Applied ReferenceValues to ${sectionId} TargetState`);
             }
           }
         });
 
-        // ✅ PHASE 2b: Sync isolated states TO global StateManager (MODE-AWARE)
-        // (Required so other sections and calculations can see the changes)
+        // PHASE 2b: Sync isolated states TO global StateManager (MODE-AWARE)
         sectionsWithReferenceValues.forEach(sectionNum => {
           const sectionId = `sect${String(sectionNum).padStart(2, '0')}`;
           const section = window.TEUI?.SectionModules?.[sectionId];
 
-          console.log(`[FileHandler] PHASE 2b: Syncing ${sectionId} to StateManager, targetMode="${targetMode}"`);
-
           if (targetMode === "reference") {
             // Reference mode: Sync ReferenceState to StateManager (ref_ prefixed fields)
-            // ReferenceState stores values locally but doesn't auto-sync to StateManager
-            // We need to manually copy each field from ReferenceState to StateManager with ref_ prefix
-            console.log(`[FileHandler] → Reference mode sync path for ${sectionId}`);
-            console.log(`[FileHandler] → ReferenceState.state exists?`, !!section?.ReferenceState?.state);
-
             if (section?.ReferenceState?.state) {
-              const fieldsToSync = Object.keys(section.ReferenceState.state);
-              console.log(`[FileHandler] → Found ${fieldsToSync.length} fields to sync`);
-
-              let syncCount = 0;
               Object.keys(section.ReferenceState.state).forEach(fieldId => {
                 const value = section.ReferenceState.state[fieldId];
                 if (value !== null && value !== undefined) {
-                  const smKey = `ref_${fieldId}`;
-                  window.TEUI.StateManager.setValue(smKey, value, "import");
-                  syncCount++;
-                  if (fieldId === 'd_66') {
-                    console.log(`[FileHandler] → SAMPLE: Wrote ${smKey} = ${value} to StateManager`);
-                  }
+                  window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "import");
                 }
               });
-              console.log(`[FileHandler] ✅ ${sectionId} ReferenceState synced ${syncCount} fields to StateManager`);
             } else {
-              console.warn(`[FileHandler] ⚠️ ${sectionId} has no ReferenceState.state object!`);
+              console.warn(`[FileHandler] ${sectionId} has no ReferenceState.state object`);
             }
           } else {
             // Target mode: Sync TargetState to StateManager (unprefixed fields)
-            // TargetState stores values locally but doesn't auto-sync to StateManager
-            // We need to manually copy each field from TargetState to StateManager
             if (section?.TargetState?.state) {
               Object.keys(section.TargetState.state).forEach(fieldId => {
                 const value = section.TargetState.state[fieldId];
@@ -844,35 +806,30 @@
                   window.TEUI.StateManager.setValue(fieldId, value, "import");
                 }
               });
-              console.log(`[FileHandler] ${sectionId} TargetState synced to StateManager`);
             }
           }
         });
 
-        // ✅ PHASE 2c: First DOM refresh (show new input values)
+        // PHASE 2c: First DOM refresh (show new input values)
         sectionsWithReferenceValues.forEach(sectionNum => {
           const sectionId = `sect${String(sectionNum).padStart(2, '0')}`;
           const section = window.TEUI?.SectionModules?.[sectionId];
 
           if (section?.ModeManager?.refreshUI) {
             section.ModeManager.refreshUI();
-            console.log(`[FileHandler] ${sectionId} DOM refreshed (input values)`);
           }
         });
 
       } finally {
-        // 🔓 PHASE 3: IMPORT QUARANTINE END - Always unmute, even if errors occur
-        console.log("[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners");
+        // PHASE 3: IMPORT QUARANTINE END - Always unmute, even if errors occur
         window.TEUI.StateManager.unmuteListeners();
       }
 
-      // ✅ PHASE 4: Trigger complete calculation cascade
-      console.log("[FileHandler] Triggering calculateAll() with complete data...");
+      // PHASE 4: Trigger complete calculation cascade
       if (this.calculator && typeof this.calculator.calculateAll === "function") {
         this.calculator.calculateAll();
 
-        // ✅ PHASE 5: Final DOM refresh (show calculated results)
-        console.log("[FileHandler] 🔄 Refreshing all section UIs after calculations...");
+        // PHASE 5: Final DOM refresh (show calculated results)
         const allSections = [
           "sect02", "sect03", "sect04", "sect05", "sect06",
           "sect07", "sect08", "sect09", "sect10", "sect11",
@@ -884,16 +841,14 @@
           if (section?.ModeManager?.refreshUI) {
             section.ModeManager.refreshUI();
           }
-          // Some sections need both refreshUI() AND updateCalculatedDisplayValues()
           if (section?.ModeManager?.updateCalculatedDisplayValues) {
             section.ModeManager.updateCalculatedDisplayValues();
           }
         });
 
-        console.log(`[FileHandler] ✅ ReferenceValues from "${standard}" applied to ${targetMode.toUpperCase()} model`);
-        console.log(`[FileHandler] ========== SET VALUES DEBUG END ==========`);
+        console.log(`[FileHandler] Applied ReferenceValues from "${standard}" to ${targetMode} model`);
       } else {
-        console.error("[FileHandler] Calculator.calculateAll() not available - calculations not triggered");
+        console.error("[FileHandler] Calculator.calculateAll() not available");
       }
     }
 
