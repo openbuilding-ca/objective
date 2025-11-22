@@ -51,7 +51,7 @@
     </script>
 
     <!-- Mobile Detection Script (Must load before other scripts) -->
-    <script src="../../src/core/MobileDetect.js"></script>
+    <script src="src/core/MobileDetect.js"></script>
 
     <!-- Core Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -63,73 +63,73 @@
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
     <!-- Core Logic & Managers FIRST -->
-    <script src="../../src/core/AppendixE.js"></script>
-    <script src="../../src/core/StateManager.js"></script>
-    <script src="../../src/core/QCMonitor.js"></script>
+    <script src="src/core/AppendixE.js"></script>
+    <script src="src/core/StateManager.js"></script>
+    <script src="src/core/QCMonitor.js"></script>
     <!-- QC Monitor instruments StateManager for debugging -->
 
     <!-- ✅ GERMAN LOCALIZATION: Load German reference data -->
-    <script src="4012-ReferenzWerten-DE.js"></script>
+    <script src="localizations/Germany/4012-ReferenzWerten-DE.js"></script>
     <!-- German building standards (replaces Canadian ReferenceValues.js) -->
-    <script src="KlimaWerten.js"></script>
+    <script src="localizations/Germany/KlimaWerten.js"></script>
     <!-- German climate data (future Phase 0.2 - not yet wired to Section03) -->
 
-    <script src="../../src/core/ReferenceManager.js"></script>
-    <script src="../../src/core/ToggleUISync.js"></script>
+    <script src="src/core/ReferenceManager.js"></script>
+    <script src="src/core/ToggleUISync.js"></script>
     <!-- Centralized utility for Reference/Target toggle UI synchronization -->
-    <script src="../../src/core/ReferenceToggle.js"></script>
+    <script src="src/core/ReferenceToggle.js"></script>
 
     <!-- ✅ GERMAN LOCALIZATION: Load German FieldManager -->
-    <script src="FieldManager-DE.js"></script>
+    <script src="localizations/Germany/FieldManager-DE.js"></script>
     <!-- German field definitions (replaces Canadian FieldManager.js) -->
     <!-- FieldManager depends on StateManager -->
-    <script src="../../src/core/SectionIntegrator.js"></script>
+    <script src="src/core/SectionIntegrator.js"></script>
     <!-- Integrator might depend on managers -->
-    <script src="../../src/core/Calculator.js"></script>
+    <script src="src/core/Calculator.js"></script>
     <!-- Calculator logic -->
-    <!-- <script src="../../src/core/ComponentBridge.js"></script> -->
+    <!-- <script src="src/core/ComponentBridge.js"></script> -->
     <!-- ExcelLocationHandler.js RETIRED - Weather data now handled by ClimateValues.js -->
-    <script src="../../src/core/ExcelMapper.js"></script>
-    <script src="../../src/core/FileHandler.js"></script>
-    <script src="../../src/core/TooltipManager.js"></script>
+    <script src="src/core/ExcelMapper.js"></script>
+    <script src="src/core/FileHandler.js"></script>
+    <script src="src/core/TooltipManager.js"></script>
     <!-- TooltipManager loads validation tooltips from Excel -->
-    <script src="../../src/core/Dependency.js"></script>
-    <script src="../../src/core/ZenMaster.js"></script>
+    <script src="src/core/Dependency.js"></script>
+    <script src="src/core/ZenMaster.js"></script>
     <!-- ZenMaster: Runtime dependency discovery & validation -->
 
     <!-- Performance Monitoring -->
-    <script src="../../src/core/Clock.js"></script>
+    <script src="src/core/Clock.js"></script>
 
     <!-- Climate Data for S03 DualState Architecture -->
-    <script src="../../src/core/ClimateValues.js"></script>
+    <script src="src/core/ClimateValues.js"></script>
 
     <!-- Cooling Calculations - Restored ARCHIVE chassis for S13 simplification -->
-    <script src="../../src/core/Cooling.js"></script>
+    <script src="src/core/Cooling.js"></script>
 
     <!-- Initialize everything AFTER core scripts are loaded -->
-    <script src="../../src/core/init.js"></script>
+    <script src="src/core/init.js"></script>
 
     <!-- Section modules LAST (they depend on core managers/utils) -->
-    <script src="../../src/sections/Section01.js"></script>
-    <script src="../../src/sections/Section02.js"></script>
-    <script src="../../src/sections/Section03.js"></script>
-    <script src="../../src/sections/Section04.js"></script>
-    <script src="../../src/sections/Section05.js"></script>
-    <script src="../../src/sections/Section06.js"></script>
-    <script src="../../src/sections/Section07.js"></script>
-    <script src="../../src/sections/Section08.js"></script>
-    <script src="../../src/sections/Section09.js"></script>
-    <script src="../../src/sections/Section10.js"></script>
-    <script src="../../src/sections/Section11.js"></script>
-    <script src="../../src/sections/Section12.js"></script>
-    <script src="../../src/sections/Section13.js"></script>
-    <script src="../../src/sections/Section14.js"></script>
-    <script src="../../src/sections/Section15.js"></script>
-    <script src="../../src/sections/Section16.js"></script>
-    <script src="../../src/sections/Section16C.js"></script>
+    <script src="src/sections/Section01.js"></script>
+    <script src="src/sections/Section02.js"></script>
+    <script src="src/sections/Section03.js"></script>
+    <script src="src/sections/Section04.js"></script>
+    <script src="src/sections/Section05.js"></script>
+    <script src="src/sections/Section06.js"></script>
+    <script src="src/sections/Section07.js"></script>
+    <script src="src/sections/Section08.js"></script>
+    <script src="src/sections/Section09.js"></script>
+    <script src="src/sections/Section10.js"></script>
+    <script src="src/sections/Section11.js"></script>
+    <script src="src/sections/Section12.js"></script>
+    <script src="src/sections/Section13.js"></script>
+    <script src="src/sections/Section14.js"></script>
+    <script src="src/sections/Section15.js"></script>
+    <script src="src/sections/Section16.js"></script>
+    <script src="src/sections/Section16C.js"></script>
     <!-- Cooling Sankey Module -->
-    <script src="../../src/sections/Section17.js"></script>
-    <script src="../../src/sections/Section18.js"></script>
+    <script src="src/sections/Section17.js"></script>
+    <script src="src/sections/Section18.js"></script>
   </head>
   <body>
     <!-- Main container -->
@@ -141,7 +141,7 @@
           class="text-dark text-decoration-none"
         >
           <img
-            src="../../src/assets/image041.png"
+            src="src/assets/image041.png"
             class="logo"
             title="OBJECTIVE Logo"
             alt="OBJECTIVE 4.012 (Beta) TEUI Calculator"
@@ -756,7 +756,7 @@
                 rel="noopener noreferrer"
               >
                 <img
-                  src="../../src/assets/imageOB.png"
+                  src="src/assets/imageOB.png"
                   alt="OpenBuilding Logo"
                   style="height: 60px"
                 />
@@ -772,7 +772,7 @@
                 rel="noopener noreferrer"
               >
                 <img
-                  src="../../src/assets/imageOAA.png"
+                  src="src/assets/imageOAA.png"
                   alt="OAA Logo - Ontario Association of Architects / Ordre des architectes de l'Ontario"
                   style="height: 60px"
                 />
@@ -1439,7 +1439,7 @@ Select a province and city to view weather data.</pre
               }
               // Navigate back to Canadian version
               else if (text.includes('Canada')) {
-                window.location.href = '../../index.html';
+                window.location.href = 'index.html';
               }
             });
           });
