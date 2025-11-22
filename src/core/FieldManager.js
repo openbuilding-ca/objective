@@ -47,6 +47,43 @@ TEUI.FieldManager = (function () {
   let isInitialized = false;
 
   /**
+   * ✅ PHASE 0: Country-specific field definitions
+   * This registry allows FieldManager to override Section field definitions
+   * for localization purposes. Only fields that differ between countries
+   * are defined here (e.g., d_13 Reference Standards, d_19 Region/Province).
+   *
+   * For Canadian version, this defines default values and options.
+   * For German version, FieldManager-DE.js will override this with German data.
+   */
+  const fieldDefinitions = {
+    d_13: {
+      fieldId: "d_13",
+      type: "dropdown",
+      value: "OBC SB10 5.5-6 Z6", // Canadian default
+      options: [
+        { value: "OBC SB12 3.1.1.2.C4", name: "OBC SB12 3.1.1.2.C4" },
+        { value: "OBC SB12 3.1.1.2.C1", name: "OBC SB12 3.1.1.2.C1" },
+        { value: "OBC SB12 3.1.1.2.A3", name: "OBC SB12 3.1.1.2.A3" },
+        { value: "OBC SB10 5.5-6 Z6", name: "OBC SB10 5.5-6 Z6" },
+        { value: "OBC SB10 5.5-6 Z5 (2010)", name: "OBC SB10 5.5-6 Z5 (2010)" },
+        { value: "NBC T1", name: "NBC T1" },
+        { value: "NECB T1 (Z6)", name: "NECB T1 (Z6)" },
+        { value: "CaGBC ZCB", name: "CaGBC ZCB" },
+        { value: "PH Classic", name: "PH Classic" },
+        { value: "PH Plus", name: "PH Plus" },
+        { value: "PH Premium", name: "PH Premium" },
+        { value: "EnerPHit", name: "EnerPHit" },
+        { value: "PH Low Energy", name: "PH Low Energy" },
+        { value: "ADD YOUR OWN HERE", name: "ADD YOUR OWN HERE" },
+      ],
+    },
+    // Additional fields will be added here in future phases:
+    // d_12: { ... }, // Building type
+    // d_19: { ... }, // Region/Province
+    // h_19: { ... }, // City
+  };
+
+  /**
    * Create an empty module for sections without implementations
    * @param {string} sectionId - Section identifier
    * @returns {Object} - Empty module with required methods
@@ -135,7 +172,7 @@ TEUI.FieldManager = (function () {
   }
 
   /**
-   * Get fields for a specific section
+   * Get fields for a specific section with FieldManager overrides
    * @param {string} sectionId - Section ID (original name, e.g., "buildingInfo")
    * @returns {Object} - Field definitions for the section
    */
@@ -146,11 +183,47 @@ TEUI.FieldManager = (function () {
     }
 
     try {
-      return TEUI.SectionModules[internalSectionId].getFields() || {};
+      // Get base field definitions from section module
+      const sectionFields = TEUI.SectionModules[internalSectionId].getFields() || {};
+
+      // ✅ PHASE 0: Apply FieldManager overrides for country-specific fields
+      // This allows FieldManager to override Section defaults with localized data
+      Object.keys(sectionFields).forEach(fieldId => {
+        if (fieldDefinitions[fieldId]) {
+          // Merge FieldManager definition into section field (FieldManager wins)
+          Object.assign(sectionFields[fieldId], fieldDefinitions[fieldId]);
+          console.log(`[FieldManager] Applied override for ${fieldId}:`, {
+            value: fieldDefinitions[fieldId].value,
+            optionsCount: fieldDefinitions[fieldId].options?.length
+          });
+        }
+      });
+
+      return sectionFields;
     } catch (e) {
       console.error(`Error getting fields for section ${sectionId}:`, e);
       return {};
     }
+  }
+
+  /**
+   * ✅ PHASE 0: Get default value for a field from FieldManager
+   * This is used by sections to initialize TargetState and ReferenceState
+   * @param {string} fieldId - Field ID (e.g., "d_13")
+   * @returns {*} - Default value from FieldManager, or undefined if not defined
+   */
+  function getFieldDefault(fieldId) {
+    return fieldDefinitions[fieldId]?.value;
+  }
+
+  /**
+   * ✅ PHASE 0: Get dropdown options for a field from FieldManager
+   * This is used by sections to populate dynamic dropdowns
+   * @param {string} fieldId - Field ID (e.g., "d_13")
+   * @returns {Array} - Options array from FieldManager, or undefined if not defined
+   */
+  function getFieldOptions(fieldId) {
+    return fieldDefinitions[fieldId]?.options;
   }
 
   /**
@@ -1532,6 +1605,10 @@ TEUI.FieldManager = (function () {
     getField,
     getDropdownOptions,
     getAllUserEditableFields,
+
+    // ✅ PHASE 0: Localization support
+    getFieldDefault, // Get default value for a field from FieldManager
+    getFieldOptions, // Get dropdown options for a field from FieldManager
 
     // Section handling
     getSections: function () {
