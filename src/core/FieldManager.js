@@ -56,6 +56,22 @@ TEUI.FieldManager = (function () {
    * For German version, FieldManager-DE.js will override this with German data.
    */
   const fieldDefinitions = {
+    d_12: {
+      fieldId: "d_12",
+      type: "dropdown",
+      value: "A-Assembly", // Canadian/Universal default
+      options: [
+        { value: "A-Assembly", name: "A-Assembly" },
+        { value: "B1-Detention", name: "B1-Detention" },
+        { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+        { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+        { value: "C-Residential", name: "C-Residential" },
+        { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+        { value: "E-Mercantile", name: "E-Mercantile" },
+        { value: "F-Industrial", name: "F-Industrial" },
+      ],
+    },
+
     d_13: {
       fieldId: "d_13",
       type: "dropdown",
@@ -77,8 +93,8 @@ TEUI.FieldManager = (function () {
         { value: "ADD YOUR OWN HERE", name: "ADD YOUR OWN HERE" },
       ],
     },
-    // Additional fields will be added here in future phases:
-    // d_12: { ... }, // Building type
+
+    // Additional fields will be added in future phases:
     // d_19: { ... }, // Region/Province
     // h_19: { ... }, // City
   };
@@ -192,10 +208,6 @@ TEUI.FieldManager = (function () {
         if (fieldDefinitions[fieldId]) {
           // Merge FieldManager definition into section field (FieldManager wins)
           Object.assign(sectionFields[fieldId], fieldDefinitions[fieldId]);
-          console.log(`[FieldManager] Applied override for ${fieldId}:`, {
-            value: fieldDefinitions[fieldId].value,
-            optionsCount: fieldDefinitions[fieldId].options?.length
-          });
         }
       });
 
