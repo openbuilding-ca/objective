@@ -155,6 +155,51 @@
             class="col text-end controls-container d-flex align-items-center justify-content-end"
           >
             <!-- Weather Location Buttons RETIRED - Now using ClimateValues.js -->
+
+            <!-- Country/Localization Selector (Unwired - Future Use) -->
+            <div class="btn-group me-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                title="International Localizations In Development"
+              >
+                🇨🇦 Canada
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                title="International Localizations In Development"
+              >
+                <span class="visually-hidden">Select Country/Language</span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header">Select Country & Language</h6></li>
+                <li>
+                  <a class="dropdown-item" href="#" onclick="event.preventDefault();">
+                    🇨🇦 Canada (English)
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" onclick="event.preventDefault();">
+                    🇨🇦 Canada (Français)
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" onclick="event.preventDefault();">
+                    🇩🇪 Germany (Deutsch)
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" onclick="event.preventDefault();">
+                    🇩🇪 Germany (English)
+                  </a>
+                </li>
+              </ul>
+            </div>
+
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm me-2"
