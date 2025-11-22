@@ -29,52 +29,54 @@ window.TEUI = window.TEUI || {};
 
 TEUI.ReferenceValues = {
   "DIN18599_Klimazone_1": { //Klimazone 1 – mild, norddeutsche Küsten und Rhein-Main-Region (Hamburg, Bremen, Düsseldorf, Köln, Bremerhaven, Sylt)
-    h_23: "20",
-    d_52: "100",
-    k_52: "92",
-    d_53: "0.00",
-    d_56: "300",
-    d_57: "1000",
-    d_58: "150",
-    d_59: "45",
-    d_65: "2.1",
-    d_66: "1.1",
-    g_67: "Effizient",
-    f_73: "0.50",
+    h_23: "20", // Heiztemperatur-Sollwert nach GEG (typisch 20 °C)
+    d_52: "100", // Warmwasserbereitung elektrisch – Systemwirkungsgrad (%)
+    k_52: "92", // Warmwasser AFUE für Gas/Öl (%)
+    d_53: "0.00", // DWHR – in Deutschland kaum normativ berücksichtigt
+    d_56: "300", // Radon-Referenzwert in Deutschland (BfS: 300 Bq/m³)
+    d_57: "1000", // CO₂-Grenzwert Innenraum (EN 16798, Kategorie II)
+    d_58: "150", // CO-Grenzwert (weiterhin nach PH-Standard)
+    d_59: "45", // Relative Feuchte (Jahresmittel)
+    d_65: "2.1", // Leistungsdichte für Geräte (DIN 18599)
+    d_66: "1.1", // Beleuchtungsleistungsdichte (DIN 18599-4)
+    g_67: "Effizient", // Systemwirkungsgrad-Einstufung
+    f_73: "0.50", // g-Wert Obergrenze (SHGC)
     f_74: "0.50",
     f_75: "0.50",
     f_76: "0.50",
     f_77: "0.50",
     f_78: "0.50",
 
-    d_80: "DIN 18599",
+    d_80: "DIN 18599", // Berechnungsmethode für Neubau GEG
 
-    /* Bauteile (GEG – einheitlich bundesweit) */
-    f_85: "5.000",
-    f_86: "4.167",
-    f_87: "3.333",
+    // --- Bauteile: RSI-Werte (m²K/W) aus GEG-Maximal-U-Werten ---
+    f_85: "5.000", // Mindest-RSI Dach (U=0.20 W/m²K)
+    f_86: "4.167", // Mindest-RSI Wand (U=0.24 W/m²K)
+    f_87: "3.333", // Mindest-RSI Bodenplatte/Decke gegen Erdreich (U=0.30 W/m²K)
 
-    g_88: "1.300",
+    // --- Fenster: max. U-Werte (W/m²K), alle auf 3 Dezimalstellen ---
+    g_88: "1.300", // Fenster Uw nach GEG Neubau
     g_89: "1.300",
     g_90: "1.300",
     g_91: "1.300",
     g_92: "1.300",
     g_93: "1.300",
 
-    f_94: "3.333",
-    f_95: "3.333",
+    // --- Weitere RSI-Werte falls getrennt nötig ---
+    f_94: "3.333", // Boden/Platte (U=0.30)
+    f_95: "3.333", // Gleich wie oben
 
-    d_97: "5",
-    d_108: "GEG_n50",
-    j_115: "0.90",
-    j_116: "3.0",
+    d_97: "5", // Wärmebrückenzuschlag (vereinfacht, DIN 4108 Beiblatt 2)
+    d_108: "GEG_n50", // Luftdichtheit: GEG n50 ≤ 3.0 (oder ≤1.5 mit Lüftungsanlage)
+    j_115: "0.90", // AFUE Heizen Gas/Öl Mindestwert (konservativ übernommen)
+    j_116: "3.0", // COP für Kühlung (DIN 18599 Mindestwert)
 
     /* Wärmepumpe effizienter in warmen Regionen */
-    f_113: "4.0",
+    f_113: "4.0", // Heizungs-SCOP (typischer Wert für Luft-WP, DIN 18599)
 
-    d_118: "75",
-    l_118: "0.45",
-    d_119: "8.33",
+    d_118: "75", // Wärmerückgewinnungsgrad Lüftung (%)
+    l_118: "0.45", // Mindest-Volumenstrom pro Volumenmethode (l/(s·m²))
+    d_119: "8.33", // Mindest-Volumenstrom pro Person (l/s·Person)
 
     /* --- Klimazone 1 Spezifisch --- */
     c_200: "2000",  // Heizgradtage (HDD)
@@ -89,53 +91,55 @@ TEUI.ReferenceValues = {
   },
 
   "DIN18599_Klimazone_2": { //Beispielstädte: Berlin, Frankfurt, Leipzig, Köln, Nürnberg).
-    h_23: "20",
-    d_52: "100",
-    k_52: "92",
-    d_53: "0.00",
-    d_56: "300",
-    d_57: "1000",
-    d_58: "150",
-    d_59: "45",
-    d_65: "2.1",
-    d_66: "1.1",
-    g_67: "Effizient",
+    h_23: "20", // Heiztemperatur-Sollwert nach GEG (typisch 20 °C)
+    d_52: "100", // Warmwasserbereitung elektrisch – Systemwirkungsgrad (%)
+    k_52: "92", // Warmwasser AFUE für Gas/Öl (%)
+    d_53: "0.00", // DWHR – in Deutschland kaum normativ berücksichtigt
+    d_56: "300", // Radon-Referenzwert in Deutschland (BfS: 300 Bq/m³)
+    d_57: "1000", // CO₂-Grenzwert Innenraum (EN 16798, Kategorie II)
+    d_58: "150", // CO-Grenzwert (weiterhin nach PH-Standard)
+    d_59: "45", // Relative Feuchte (Jahresmittel)
+    d_65: "2.1", // Leistungsdichte für Geräte (DIN 18599)
+    d_66: "1.1", // Beleuchtungsleistungsdichte (DIN 18599-4)
+    g_67: "Effizient", // Systemwirkungsgrad-Einstufung
 
-    f_73: "0.50",
+    f_73: "0.50", // g-Wert Obergrenze (SHGC)
     f_74: "0.50",
     f_75: "0.50",
     f_76: "0.50",
     f_77: "0.50",
     f_78: "0.50",
 
-    d_80: "DIN 18599",
+    d_80: "DIN 18599", // Berechnungsmethode für Neubau GEG
 
-    /* Bauteile (GEG – überall gleich) */
-    f_85: "5.000",
-    f_86: "4.167",
-    f_87: "3.333",
+    // --- Bauteile: RSI-Werte (m²K/W) aus GEG-Maximal-U-Werten ---
+    f_85: "5.000", // Mindest-RSI Dach (U=0.20 W/m²K)
+    f_86: "4.167", // Mindest-RSI Wand (U=0.24 W/m²K)
+    f_87: "3.333", // Mindest-RSI Bodenplatte/Decke gegen Erdreich (U=0.30 W/m²K)
 
-    g_88: "1.300",
+    // --- Fenster: max. U-Werte (W/m²K), alle auf 3 Dezimalstellen ---
+    g_88: "1.300", // Fenster Uw nach GEG Neubau
     g_89: "1.300",
     g_90: "1.300",
     g_91: "1.300",
     g_92: "1.300",
     g_93: "1.300",
 
-    f_94: "3.333",
-    f_95: "3.333",
+    // --- Weitere RSI-Werte falls getrennt nötig ---
+    f_94: "3.333", // Boden/Platte (U=0.30)
+    f_95: "3.333", // Gleich wie oben
 
-    d_97: "5",
-    d_108: "GEG_n50",
-    j_115: "0.90",
-    j_116: "3.0",
+    d_97: "5", // Wärmebrückenzuschlag (vereinfacht, DIN 4108 Beiblatt 2)
+    d_108: "GEG_n50", // Luftdichtheit: GEG n50 ≤ 3.0 (oder ≤1.5 mit Lüftungsanlage)
+    j_115: "0.90", // AFUE Heizen Gas/Öl Mindestwert (konservativ übernommen)
+    j_116: "3.0", // COP für Kühlung (DIN 18599 Mindestwert)
 
     /* Wärmepumpen realistisch in mittelkaltem Klima */
-    f_113: "3.5",
+    f_113: "3.5", // Heizungs-SCOP (typischer Wert für Luft-WP, DIN 18599)
 
-    d_118: "75",
-    l_118: "0.45",
-    d_119: "8.33",
+    d_118: "75", // Wärmerückgewinnungsgrad Lüftung (%)
+    l_118: "0.45", // Mindest-Volumenstrom pro Volumenmethode (l/(s·m²))
+    d_119: "8.33", // Mindest-Volumenstrom pro Person (l/s·Person)
 
     /* --- Klimazone 2 Spezifisch --- */
     c_200: "3000",  // Heizgradtage (HDD)
@@ -150,53 +154,55 @@ TEUI.ReferenceValues = {
   },
 
   "DIN18599_Klimazone_3": { //Typische Regionen: Oberpfalz, Thüringer Wald, Erzgebirge, Schwarzwaldhöhen, Alpenvorland.
-    h_23: "20",
-    d_52: "100",
-    k_52: "92",
-    d_53: "0.00",
-    d_56: "300",
-    d_57: "1000",
-    d_58: "150",
-    d_59: "45",
-    d_65: "2.1",
-    d_66: "1.1",
-    g_67: "Effizient",
+    h_23: "20", // Heiztemperatur-Sollwert nach GEG (typisch 20 °C)
+    d_52: "100", // Warmwasserbereitung elektrisch – Systemwirkungsgrad (%)
+    k_52: "92", // Warmwasser AFUE für Gas/Öl (%)
+    d_53: "0.00", // DWHR – in Deutschland kaum normativ berücksichtigt
+    d_56: "300", // Radon-Referenzwert in Deutschland (BfS: 300 Bq/m³)
+    d_57: "1000", // CO₂-Grenzwert Innenraum (EN 16798, Kategorie II)
+    d_58: "150", // CO-Grenzwert (weiterhin nach PH-Standard)
+    d_59: "45", // Relative Feuchte (Jahresmittel)
+    d_65: "2.1", // Leistungsdichte für Geräte (DIN 18599)
+    d_66: "1.1", // Beleuchtungsleistungsdichte (DIN 18599-4)
+    g_67: "Effizient", // Systemwirkungsgrad-Einstufung
 
-    f_73: "0.50",
+    f_73: "0.50", // g-Wert Obergrenze (SHGC)
     f_74: "0.50",
     f_75: "0.50",
     f_76: "0.50",
     f_77: "0.50",
     f_78: "0.50",
 
-    d_80: "DIN 18599",
+    d_80: "DIN 18599", // Berechnungsmethode für Neubau GEG
 
-    /* Bauteile (GEG-unabhängig von der Klimazone identisch) */
-    f_85: "5.000",
-    f_86: "4.167",
-    f_87: "3.333",
+    // --- Bauteile: RSI-Werte (m²K/W) aus GEG-Maximal-U-Werten ---
+    f_85: "5.000", // Mindest-RSI Dach (U=0.20 W/m²K)
+    f_86: "4.167", // Mindest-RSI Wand (U=0.24 W/m²K)
+    f_87: "3.333", // Mindest-RSI Bodenplatte/Decke gegen Erdreich (U=0.30 W/m²K)
 
-    g_88: "1.300",
+    // --- Fenster: max. U-Werte (W/m²K), alle auf 3 Dezimalstellen ---
+    g_88: "1.300", // Fenster Uw nach GEG Neubau
     g_89: "1.300",
     g_90: "1.300",
     g_91: "1.300",
     g_92: "1.300",
     g_93: "1.300",
 
-    f_94: "3.333",
-    f_95: "3.333",
+    // --- Weitere RSI-Werte falls getrennt nötig ---
+    f_94: "3.333", // Boden/Platte (U=0.30)
+    f_95: "3.333", // Gleich wie oben
 
-    d_97: "5",
-    d_108: "GEG_n50",
-    j_115: "0.90",
-    j_116: "3.0",
+    d_97: "5", // Wärmebrückenzuschlag (vereinfacht, DIN 4108 Beiblatt 2)
+    d_108: "GEG_n50", // Luftdichtheit: GEG n50 ≤ 3.0 (oder ≤1.5 mit Lüftungsanlage)
+    j_115: "0.90", // AFUE Heizen Gas/Öl Mindestwert (konservativ übernommen)
+    j_116: "3.0", // COP für Kühlung (DIN 18599 Mindestwert)
 
     /* Wärmepumpen schlechter in kalten Regionen */
-    f_113: "3.2",
+    f_113: "3.2", // Heizungs-SCOP (typischer Wert für Luft-WP, DIN 18599)
 
-    d_118: "75",
-    l_118: "0.45",
-    d_119: "8.33",
+    d_118: "75", // Wärmerückgewinnungsgrad Lüftung (%)
+    l_118: "0.45", // Mindest-Volumenstrom pro Volumenmethode (l/(s·m²))
+    d_119: "8.33", // Mindest-Volumenstrom pro Person (l/s·Person)
 
     /* --- Klimazone 3 Spezifisch --- */
     c_200: "4000",   // Heizgradtage (HDD)

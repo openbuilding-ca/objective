@@ -134,8 +134,28 @@ function getAllLocations() {
   return locations;
 }
 
-// Funktionen zum globalen Namespace hinzufügen
-window.TEUI.ClimateData.getClimateData = getClimateData;
-window.TEUI.ClimateData.getAllRegions = getAllRegions;
-window.TEUI.ClimateData.getLocationsByRegion = getLocationsByRegion;
-window.TEUI.ClimateData.getAllLocations = getAllLocations;
+// Funktionen zum globalen Namespace hinzufügen (nicht-aufzählbar, damit sie nicht in Dropdowns erscheinen)
+Object.defineProperty(window.TEUI.ClimateData, 'getClimateData', {
+  value: getClimateData,
+  enumerable: false,
+  writable: false,
+  configurable: false
+});
+Object.defineProperty(window.TEUI.ClimateData, 'getAllRegions', {
+  value: getAllRegions,
+  enumerable: false,
+  writable: false,
+  configurable: false
+});
+Object.defineProperty(window.TEUI.ClimateData, 'getLocationsByRegion', {
+  value: getLocationsByRegion,
+  enumerable: false,
+  writable: false,
+  configurable: false
+});
+Object.defineProperty(window.TEUI.ClimateData, 'getAllLocations', {
+  value: getAllLocations,
+  enumerable: false,
+  writable: false,
+  configurable: false
+});
