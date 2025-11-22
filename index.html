@@ -114,8 +114,6 @@
     <script src="src/sections/Section11.js"></script>
     <script src="src/sections/Section12.js"></script>
     <script src="src/sections/Section13.js"></script>
-    <!-- <script src="src/sections/Section13.js"></script> -->
-    <!-- BACKUP: S13 for testing -->
     <script src="src/sections/Section14.js"></script>
     <script src="src/sections/Section15.js"></script>
     <script src="src/sections/Section16.js"></script>
@@ -189,7 +187,7 @@
                 <li><hr class="dropdown-divider" /></li>
                 <li>
                   <a class="dropdown-item" href="#" onclick="event.preventDefault();">
-                    🇩🇪 Germany (Deutsch)
+                    🇩🇪 Deutschland (Deutsch)
                   </a>
                 </li>
                 <li>
@@ -453,7 +451,7 @@
               SECTION 1. Key Values
               <div class="ms-auto d-flex align-items-center">
                 <div class="section-controls me-2">
-                  <!-- Buttons moved out, only feedback-area and potentially applyExcelBtn remain here -->
+                  <!-- Buttons moved out, good place to add global Target/Reference switch/toggle here -->
                   <div class="excel-loader">
                     <button
                       type="button"
@@ -822,30 +820,32 @@
             </p>
             <p>
               Enter your information (Blue inputs). Default values from an A2
-              Event Centre exist to speed up the process, but you must
+              Event Centre in Ontario exist to speed up the process, but you must
               over-write them with relevant values from your own project.
               Results will be calculated automatically (all Black text fields).
             </p>
             <hr />
             <p>
               <strong>Disclaimer:</strong> OBJECTIVE 4.012 is software IN
-              DEVELOPMENT. IT IS NOT YET COMPLETE! As such it is not fit for any
-              purpose, and is meant for demonstration only. Our team has made
-              every effort to have OBJECTIVE's Targeted Energy Use match
+              ACTIVE DEVELOPMENT. Our team has made
+              every effort to match the methods and results of the Excel version of
+              the tool, and to have OBJECTIVE's Targeted Energy Use calculations match
               real-world values by reviewing a wide range of actual building
               types and their utility bills, but **no** energy model can
               accurately predict energy use due to hundreds of influences beyond
               the ability to model, among other things, exact weather in a given
               year, user behaviours, or actual commissioned equipment or
               envelope efficiencies. This modelling tool aims to set Targets in
-              a way that is consistent with measured results, but our experience
-              has shown that with correct use, we can arrive at values very
-              close to real-world, utility-bill values for total energy use.
+              a way that is accurate and consistent with measured results, but not in strict
+              conformance with established BEM methods or standards. Our experience
+              has shown that with correct use, OBJECTIVE can arrive at values much
+              closer to real-world, utility-bill values for total energy use, when 
+              compared with other BEM platforms.
               'Accuracy of results' has been our primary focus, not 'similarity
               of methods' to other energy modelling tools.
             </p>
             <p>
-              Only for Canadian projects. If you are interested in a
+              Only for Canadian projects, country-specific localizations are in progress. If you are interested in a
               localization for your own country, please contact OBJECTIVE
               support at andy@openbuilding.ca
             </p>
@@ -1115,7 +1115,7 @@ Select a province and city to view weather data.</pre
           color: #1976d2;
         `;
 
-        // Create toggle
+        // Create toggle - we should move this to CSS later
         const toggleDiv = document.createElement("div");
         toggleDiv.className = "reference-toggle";
         toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
@@ -1310,14 +1310,6 @@ Select a province and city to view weather data.</pre
               }
             }
           });
-
-          // console.log("🔍 DEBUG: Field states after initialize:", {
-          //   'user-modified': userModifiedCount,
-          //   'imported': importedCount,
-          //   'default': defaultCount,
-          //   'calculated': calculatedCount,
-          //   'total': allKeys.length
-          // });
         }
 
         // Initialize FieldManager to generate content for all sections
@@ -1326,19 +1318,6 @@ Select a province and city to view weather data.</pre
           TEUI.FieldManager.renderAllSections();
           // console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
         }
-
-        // ⏸️ DISABLED: Global toggle failing with 10 retries - causing console spam
-        // Setup global toggle UI after sections are rendered and S03's DualState is available
-        // setTimeout(setupGlobalToggleUI, 1500); // Give S03 time to expose ModeManager
-        // TODO: Re-enable when migrating to unified global toggle for all Pattern A sections
-
-        // Initialize Component Bridge
-        /* if (TEUI.ComponentBridge) {
-          TEUI.ComponentBridge.initAll();
-
-          // ✅ Initialize dual-state synchronization
-          TEUI.ComponentBridge.initDualStateSync();
-        } */
 
         // Initialize Calculator
         if (TEUI.Calculator) {
@@ -1355,7 +1334,7 @@ Select a province and city to view weather data.</pre
           }, 300); // Longer delay prevents setTimeout performance violations
         }
 
-        console.log("TEUI Calculator 4.011 initialization complete");
+        console.log("TEUI Calculator initialization complete");
 
         // 🕐 ENSURE CLOCK INITIALIZATION: Force Clock init after all other initialization
         if (window.TEUI?.Clock?.init) {
@@ -1391,7 +1370,7 @@ Select a province and city to view weather data.</pre
           });
         }
 
-        // 🧘 ZEN MASTER BUTTON: Toggle dependency tracing on/off
+        // 🧘 ZEN MASTER BUTTON: Toggle dependency tracing on/off - move this to S18 as a Dev tool.
         const zenMasterBtn = document.getElementById("zenMasterBtn");
         if (zenMasterBtn && window.TEUI?.zenMaster) {
           // Set initial button state

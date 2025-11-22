@@ -62,34 +62,33 @@ Optional (minor localization):
 
 ## Architecture Overview
 
-### File Structure
+### File Structure (Option 1: File Separation - Recommended)
 
 ```
 SHARED (All countries use identical files):
 ├── src/core/
 │   ├── StateManager.js          ← Shared (no changes)
+│   ├── CalculationEngine.js     ← Shared (no changes)
 │   └── utilities/               ← Shared helpers
 ├── src/sections/
-│   ├── Section01.js             ← SHARED
+│   ├── Section01.js             ← SHARED (all 18 sections)
 │   ├── Section02.js             ← SHARED
 │   ├── Section03.js             ← SHARED
 │   ├── Section04-18.js          ← ALL SHARED
 │   └── ...
 
 COUNTRY-SPECIFIC (Minimal duplication):
+├── index.html                   ← Canadian entry point
 ├── src/core/
 │   ├── FieldManager.js          ← Canadian (default)
-│   └── FieldManager-DE.js       ← German (~50 lines different)
-│
-├── src/core/
 │   ├── ReferenceValues.js       ← Canadian standards data
 │   └── ClimateValues.js         ← Canadian climate data
 │
 └── localizations/Germany/
-    ├── FieldManager-DE.js       ← German field definitions
+    ├── index-de.html            ← German entry point
+    ├── FieldManager-DE.js       ← German field definitions (~50 lines different)
     ├── 4012-ReferenzWerten-DE.js   ← German standards data
-    ├── KlimaWerten.js              ← German climate data
-    └── index-de.html               ← Entry point
+    └── KlimaWerten.js              ← German climate data
 
 UI TRANSLATION (Lightweight - Phase 2):
 ├── localizations/Canada/
@@ -97,7 +96,13 @@ UI TRANSLATION (Lightweight - Phase 2):
 ├── localizations/Germany/
 │   └── ui-labels-de.json        ← German UI strings
 └── src/core/i18n.js             ← Simple translation layer (~50 lines)
+
+NOT NEEDED (File Separation Approach):
+├── src/core/CountryConfig.js    ← ❌ NOT NEEDED (no dynamic switching)
+└── src/core/LocalizationManager.js  ← ❌ NOT NEEDED (hardcoded in HTML)
 ```
+
+**Key Insight**: LocalizationManager.js and CountryConfig.js were designed for **dynamic country switching**. With file separation, each entry point explicitly loads its dependencies, making these unnecessary.
 
 ### What Gets Separated vs Shared
 
@@ -106,9 +111,12 @@ UI TRANSLATION (Lightweight - Phase 2):
 | **FieldManager** | ONE per country | Defines dropdown options & defaults |
 | **Section01-18** | SHARED | Rendering logic is universal |
 | **StateManager.js** | SHARED | Core application logic |
+| **CalculationEngine.js** | SHARED | Calculations are universal |
 | **ReferenceValues** | DATA per country | Building codes differ by country |
 | **ClimateValues** | DATA per country | Weather data differs by country |
 | **UI Labels** | i18n per language | String translations only |
+| **LocalizationManager** | ❌ NOT NEEDED | No dynamic switching with file separation |
+| **CountryConfig** | ❌ NOT NEEDED | Entry points hardcode their dependencies |
 
 ---
 
@@ -195,6 +203,247 @@ const fields = {
 - Everything else (thousands of lines) identical
 - No conditional logic - each file is pure
 - Sections don't know/care which FieldManager loaded
+
+---
+
+## Dual-State Architecture Integration
+
+### Executive Summary: How Localization Works with Dual-State
+
+**KEY INSIGHT**: FieldManager-DE.js defines dropdown options and defaults that are used by **BOTH** Target and Reference models. Sections read these definitions and initialize **two independent state objects** (TargetState and ReferenceState) with the same defaults. Users can then change each model independently.
+
+**In Practice**:
+- FieldManager-DE.js defines: `d_13.value = "DIN V 18599 Neubau"`, `d_13.options = [German standards]`
+- Section02 initializes: `TargetState.d_13 = "DIN V 18599 Neubau"`, `ReferenceState.d_13 = "DIN V 18599 Neubau"`
+- User changes Target: `d_13 = "PHI_DE"` (Passivhaus)
+- User changes Reference: `ref_d_13 = "DIN18599_Klimazone_2"` (Climate zone standard)
+- **Result**: Two independent models, both using German standards, but different selections
+
+**No separate ref_ field definitions needed** - FieldManager only defines unprefixed fields, sections handle the ref_ prefixing internally.
+
+---
+
+### Understanding Target vs Reference Models
+
+**CRITICAL**: TEUI 4.0 uses a **dual-state architecture** where EVERY section maintains TWO independent models:
+
+- **Target Model**: The user's actual design (e.g., Passivhaus renovation in Stuttgart)
+- **Reference Model**: A comparison scenario (e.g., code-minimum new build in Berlin)
+
+### Key Architectural Principles
+
+#### 1. Complete Independence
+
+**Target and Reference are 8 independent scenarios:**
+
+```
+Target Model:                    Reference Model:
+├─ d_13: Building standard      ├─ ref_d_13: Different standard
+├─ d_19: Climate location       ├─ ref_d_19: Different location
+├─ h_19: City                   ├─ ref_h_19: Different city
+├─ d_49: Water method           ├─ ref_d_49: Different method
+├─ d_108: Airtightness          ├─ ref_d_108: Different standard
+└─ [All other fields]           └─ [All other ref_ fields]
+```
+
+**Valid Use Cases:**
+- **Renovation Before/After**: Target = existing building, Reference = renovated building
+- **Multi-Location Comparison**: Target = IKEA store in Stuttgart, Reference = IKEA store in Berlin
+- **Code vs High-Performance**: Target = Passivhaus Classic, Reference = GEG Neubau minimum
+- **Climate Scenarios**: Target = current climate, Reference = 2050 projected climate
+
+#### 2. Field Naming Convention
+
+```javascript
+// Target Model (unprefixed)
+d_13: "DIN V 18599 Neubau"     // Target building standard
+d_19: "Berlin"                  // Target location
+h_19: "Berlin"                  // Target city
+
+// Reference Model (ref_ prefixed)
+ref_d_13: "PHI_DE"             // Reference building standard (can differ!)
+ref_d_19: "Baden-Württemberg"  // Reference location (can differ!)
+ref_h_19: "Stuttgart"          // Reference city (can differ!)
+```
+
+#### 3. StateManager Publication Pattern
+
+**Both models publish to StateManager for cross-section communication:**
+
+```javascript
+// Section writes BOTH to StateManager
+function calculateAll() {
+  calculateTargetModel();    // Writes d_20, d_21, etc.
+  calculateReferenceModel(); // Writes ref_d_20, ref_d_21, etc.
+}
+
+// Example: Section03 climate data
+window.TEUI.StateManager.setValue("d_20", targetHDD, "calculated");     // Target HDD
+window.TEUI.StateManager.setValue("ref_d_20", referenceHDD, "calculated"); // Reference HDD (different value!)
+```
+
+### How Localization Works with Dual-State
+
+#### FieldManager Provides Options, Sections Manage State
+
+**FieldManager-DE.js** defines dropdown options and defaults:
+
+```javascript
+// localizations/Germany/FieldManager-DE.js
+const fields = {
+  d_13: {
+    fieldId: "d_13",
+    type: "dropdown",
+    value: "DIN V 18599 Neubau",  // DEFAULT for BOTH Target and Reference
+    options: [
+      { value: "DIN18599_Klimazone_1", name: "DIN 18599 Klimazone 1" },
+      { value: "DIN18599_Klimazone_2", name: "DIN 18599 Klimazone 2" },
+      { value: "DIN18599_Klimazone_3", name: "DIN 18599 Klimazone 3" },
+      { value: "DIN V 18599 Neubau", name: "GEG Neubau" },
+      { value: "DIN V 18599 Sanierung_Bestand", name: "GEG Sanierung" },
+      { value: "PHI_DE", name: "Passivhaus Institut (PHI)" }
+    ]
+  },
+
+  // Same options available for BOTH Target and Reference
+  // Users can select different standards for each model
+};
+```
+
+**Section02 initializes BOTH states from FieldManager:**
+
+```javascript
+// Section02.js (SHARED between countries)
+TargetState.setDefaults = function() {
+  this.values.d_13 = ModeManager.getFieldDefault("d_13") || "DIN V 18599 Neubau";
+  // Initialize Target model with FieldManager default
+};
+
+ReferenceState.setDefaults = function() {
+  this.values.d_13 = ModeManager.getFieldDefault("d_13") || "DIN V 18599 Neubau";
+  // Initialize Reference model with SAME default (user can change independently)
+};
+```
+
+#### User Interaction Flow
+
+1. **Initial Load** (German version):
+   - FieldManager-DE.js provides German standards
+   - Section02 initializes: `d_13 = "DIN V 18599 Neubau"`, `ref_d_13 = "DIN V 18599 Neubau"`
+   - Both dropdowns show German options
+
+2. **User Changes Target Standard**:
+   - User selects `d_13 = "PHI_DE"` (Passivhaus)
+   - Section02 writes to StateManager: `d_13: "PHI_DE"`
+   - Reference model UNCHANGED: `ref_d_13` still `"DIN V 18599 Neubau"`
+
+3. **User Switches to Reference Mode**:
+   - UI toggles to show Reference model
+   - Dropdown shows `ref_d_13` value: `"DIN V 18599 Neubau"`
+   - Options are SAME (German standards from FieldManager-DE.js)
+
+4. **User Changes Reference Standard**:
+   - User selects `ref_d_13 = "DIN18599_Klimazone_2"`
+   - Section02 writes to StateManager: `ref_d_13: "DIN18599_Klimazone_2"`
+   - Target model UNCHANGED: `d_13` still `"PHI_DE"`
+
+#### ReferenceValues Overlay Pattern
+
+**German standards apply code minimums to Reference model:**
+
+```javascript
+// When ref_d_13 changes, apply building code overlay
+StateManager.addListener("ref_d_13", () => {
+  const selectedStandard = StateManager.getValue("ref_d_13");
+  ReferenceState.applyReferenceStandardOverlay(selectedStandard);
+});
+
+ReferenceState.applyReferenceStandardOverlay = function(standardKey) {
+  // Read from German ReferenzWerten-DE.js
+  const ref = window.TEUI.ReferenceValues?.[standardKey] || {};
+
+  // Overwrite ONLY Reference model with code minimums
+  Object.assign(this.state, pick(ref, [
+    'f_85', 'f_86', 'f_87',  // Building envelope U-values
+    'g_88', 'g_89', 'g_90',  // Window U-values
+    'j_115', 'j_116', 'f_113', // HVAC efficiencies
+    'd_118', 'l_118', 'd_119'  // Ventilation requirements
+  ]));
+};
+```
+
+**Climate zone handling** (Germany-specific):
+
+```javascript
+// Klimazone standards include BOTH code minimums AND climate adjustments
+"DIN18599_Klimazone_2": {
+  // Base code minimums (same as GEG Neubau)
+  f_85: "5.000",  // Roof RSI
+  g_88: "1.300",  // Window U-value
+
+  // Climate-specific adjustments
+  c_200: "3000",  // HDD for Klimazone 2
+  c_201: "-10",   // Design temperature
+  c_206: "1.00",  // Heat pump SCOP adjustment factor
+  c_208: "1.00"   // Ventilation heat loss factor
+}
+```
+
+### Localization Requirements for Dual-State
+
+#### FieldManager-DE.js Must:
+
+1. **Provide SAME options for Target and Reference** (both use same dropdown list)
+2. **Define shared default** (both models initialize with same value)
+3. **Support independent user changes** (no coupling between d_13 and ref_d_13)
+
+#### Sections Must:
+
+1. **Initialize BOTH TargetState and ReferenceState** from FieldManager defaults
+2. **Publish BOTH unprefixed and ref_ prefixed values** to StateManager
+3. **Apply overlays ONLY to ReferenceState** (code minimums don't affect Target)
+4. **Maintain perfect isolation** (Target changes never affect Reference, and vice versa)
+
+### Testing Dual-State Localization
+
+**Test Scenario 1: Independent Standard Selection**
+
+```
+1. Load German version (index-de.html)
+2. Verify d_13 dropdown shows German standards
+3. Select Target: d_13 = "PHI_DE"
+4. Switch to Reference mode
+5. Select Reference: ref_d_13 = "DIN V 18599 Neubau"
+6. Switch back to Target mode
+7. Verify Target still shows "PHI_DE" ✅
+8. Switch to Reference mode
+9. Verify Reference still shows "DIN V 18599 Neubau" ✅
+```
+
+**Test Scenario 2: Independent Location Selection**
+
+```
+1. Load German version
+2. Select Target: d_19 = "Berlin", h_19 = "Berlin"
+3. Switch to Reference mode
+4. Select Reference: ref_d_19 = "Baden-Württemberg", ref_h_19 = "Stuttgart"
+5. Verify climate data differs (Berlin HDD vs Stuttgart HDD) ✅
+6. Switch back to Target mode
+7. Verify Target still shows Berlin climate ✅
+```
+
+**Test Scenario 3: ReferenceValues Overlay Isolation**
+
+```
+1. Load German version
+2. Set Target: d_13 = "PHI_DE" (high-performance)
+3. Set Reference: ref_d_13 = "DIN V 18599 Neubau" (code minimum)
+4. Verify Target f_85 = "8.00" (Passivhaus roof insulation) ✅
+5. Verify Reference f_85 = "5.000" (GEG code minimum) ✅
+6. Change Reference to ref_d_13 = "PHI_DE"
+7. Verify Reference f_85 updates to "8.00" ✅
+8. Verify Target f_85 UNCHANGED (still "8.00") ✅
+```
 
 ---
 
@@ -531,22 +780,43 @@ function getFieldOptions(fieldId) {
 
 #### Deliverables for Phase 0
 
-- [ ] **Document current architecture** (this section) ✅
+- [x] **Document current architecture** (this section) ✅
+- [x] **Document dual-state integration** (complete understanding) ✅
 - [ ] **Prototype FieldManager data override** (proof of concept)
   - [ ] Add `fieldDefinitions` registry to FieldManager.js
   - [ ] Add override logic in `getFieldsBySection()`
   - [ ] Test with d_13 only (Canadian standards)
+  - [ ] **Test dual-state compatibility**:
+    - [ ] Verify TargetState.setDefaults() reads from FieldManager
+    - [ ] Verify ReferenceState.setDefaults() reads from FieldManager
+    - [ ] Confirm d_13 and ref_d_13 initialize independently
+    - [ ] Verify both use same dropdown options
 - [ ] **Test backwards compatibility**
   - [ ] Ensure existing fields still work
   - [ ] Verify dropdowns populate correctly
   - [ ] Check dependency cascade (d_19 → h_19)
+  - [ ] **Verify dual-state isolation**:
+    - [ ] Change d_13 in Target mode → ref_d_13 unchanged ✅
+    - [ ] Change ref_d_13 in Reference mode → d_13 unchanged ✅
+    - [ ] Switch modes → values persist independently ✅
+- [ ] **Test ReferenceValues overlay compatibility**
+  - [ ] Verify ReferenceState.applyReferenceStandardOverlay() works with FieldManager
+  - [ ] Test overlay with Canadian standards (OBC, NBC)
+  - [ ] Confirm overlay only affects ReferenceState (not TargetState)
+  - [ ] Verify d_13 listener triggers overlay correctly
+  - [ ] Verify ref_d_13 listener triggers overlay correctly
 - [ ] **Performance benchmark**
   - [ ] Measure initialization time before refactor
   - [ ] Measure after adding override system
   - [ ] Ensure <5ms overhead
+  - [ ] **Verify dual-state performance**:
+    - [ ] Measure TargetState initialization
+    - [ ] Measure ReferenceState initialization
+    - [ ] Confirm mode switching <50ms
 - [ ] **Decision point**: Proceed with Option 1 or Option 2
   - [ ] Review prototype results
   - [ ] Assess migration effort vs benefits
+  - [ ] Verify dual-state architecture fully compatible
   - [ ] Get user approval before proceeding
 
 ---
@@ -567,36 +837,52 @@ function getFieldOptions(fieldId) {
 
 #### 1.1 Copy and Modify FieldManager
 - [ ] Copy `src/core/FieldManager.js` → `localizations/Germany/FieldManager-DE.js`
-- [ ] Update `d_13` dropdown:
-  - Change `value` to `"DIN V 18599 Neubau"`
-  - Replace `options` array with German standards
-- [ ] Update `d_19` dropdown:
-  - Change `value` to `"Berlin"`
+- [ ] Update `d_13` dropdown (Reference Standards):
+  - Change `value` to `"DIN V 18599 Neubau"` (default for BOTH Target and Reference)
+  - Replace `options` array with German standards:
+    - `"DIN18599_Klimazone_1"` (Coastal climate zone)
+    - `"DIN18599_Klimazone_2"` (Central climate zone)
+    - `"DIN18599_Klimazone_3"` (Alpine climate zone)
+    - `"DIN V 18599 Neubau"` (GEG new construction)
+    - `"DIN V 18599 Sanierung_Bestand"` (GEG renovation)
+    - `"PHI_DE"` (Passivhaus Institut)
+  - **Note**: Same options used for both d_13 (Target) and ref_d_13 (Reference)
+  - **Note**: Sections will initialize both TargetState and ReferenceState with this default
+- [ ] Update `d_19` dropdown (Region/Bundesland):
+  - Change `value` to `"Berlin"` (default for BOTH Target and Reference)
   - Change `label` to `"Bundesland"`
   - Change `placeholder` to `"Bundesland wählen"`
-- [ ] Update `h_19` dropdown:
-  - Change `value` to `"Berlin"`
+  - Options populated from KlimaWerten.js (Baden-Württemberg, Berlin)
+- [ ] Update `h_19` dropdown (City/Stadt):
+  - Change `value` to `"Berlin"` (default for BOTH Target and Reference)
   - Change `label` to `"Stadt"`
   - Change `placeholder` to `"Stadt wählen"`
+  - Options populated dynamically based on d_19 selection
 - [ ] Optional: Update `d_49` (DHW method) if needed
 - [ ] Optional: Update `d_108` (airtightness) if needed
+- [ ] **Critical**: NO need to define separate ref_d_13, ref_d_19, ref_h_19 fields
+  - Sections manage ref_ prefixed state internally
+  - FieldManager only defines unprefixed field structure
+  - Same options/defaults apply to both Target and Reference models
 - [ ] Verify all other fields remain unchanged
 
 #### 1.2 Create German Entry Point
 - [ ] Copy `index.html` → `localizations/Germany/index-de.html`
-- [ ] Update script loading order:
+- [ ] Update script loading order (CRITICAL - no dynamic loading):
   ```html
-  <!-- German Data Files -->
+  <!-- German Data Files (hardcoded - no localStorage detection) -->
   <script src="4012-ReferenzWerten-DE.js"></script>
   <script src="KlimaWerten.js"></script>
 
-  <!-- German FieldManager -->
+  <!-- German FieldManager (hardcoded) -->
   <script src="FieldManager-DE.js"></script>
 
   <!-- Shared Core (no changes) -->
   <script src="../../src/core/StateManager.js"></script>
   <script src="../../src/core/CalculationEngine.js"></script>
   <!-- ... all other core files -->
+
+  <!-- NO LocalizationManager or CountryConfig - not needed! -->
 
   <!-- Shared Sections (ALL shared - no changes) -->
   <script src="../../src/sections/Section01.js"></script>
@@ -606,14 +892,42 @@ function getFieldOptions(fieldId) {
   <!-- ... -->
   ```
 - [ ] Update header subtitle: "für deutsche Projekte"
+- [ ] **Remove any references to CountryConfig or LocalizationManager**
 
 #### 1.3 Test German Version
 - [ ] Load `localizations/Germany/index-de.html`
-- [ ] Verify d_13 shows German standards (DIN/GEG)
-- [ ] Verify d_19 shows German Bundesländer (Berlin, Baden-Württemberg)
-- [ ] Verify h_19 shows German cities
-- [ ] Verify default values: "DIN V 18599 Neubau", "Berlin", "Berlin"
-- [ ] Verify calculations work correctly
+- [ ] **Test Target Model Initialization**:
+  - [ ] Verify d_13 shows German standards (DIN/GEG)
+  - [ ] Verify d_19 shows German Bundesländer (Berlin, Baden-Württemberg)
+  - [ ] Verify h_19 shows German cities
+  - [ ] Verify default values: d_13 = "DIN V 18599 Neubau", d_19 = "Berlin", h_19 = "Berlin"
+- [ ] **Test Reference Model Initialization**:
+  - [ ] Switch to Reference mode
+  - [ ] Verify ref_d_13 shows SAME German standards
+  - [ ] Verify ref_d_19 shows SAME German Bundesländer
+  - [ ] Verify ref_h_19 shows SAME German cities
+  - [ ] Verify default values: ref_d_13 = "DIN V 18599 Neubau", ref_d_19 = "Berlin", ref_h_19 = "Berlin"
+- [ ] **Test Dual-State Independence**:
+  - [ ] Set Target: d_13 = "PHI_DE", d_19 = "Berlin"
+  - [ ] Switch to Reference mode
+  - [ ] Set Reference: ref_d_13 = "DIN18599_Klimazone_2", ref_d_19 = "Baden-Württemberg", ref_h_19 = "Stuttgart"
+  - [ ] Switch back to Target mode
+  - [ ] Verify Target still shows: "PHI_DE", "Berlin", "Berlin" ✅
+  - [ ] Switch to Reference mode
+  - [ ] Verify Reference still shows: "DIN18599_Klimazone_2", "Baden-Württemberg", "Stuttgart" ✅
+- [ ] **Test ReferenceValues Overlay**:
+  - [ ] Set Target: d_13 = "PHI_DE"
+  - [ ] Set Reference: ref_d_13 = "DIN V 18599 Neubau"
+  - [ ] Inspect StateManager or UI fields
+  - [ ] Verify Target has PHI values (f_85 ≈ 8.00, g_88 ≈ 0.800)
+  - [ ] Verify Reference has GEG values (f_85 = 5.000, g_88 = 1.300)
+  - [ ] Verify overlay only affects ReferenceState, not TargetState
+- [ ] **Test Climate Data Integration**:
+  - [ ] Set Target: d_19 = "Berlin", h_19 = "Berlin"
+  - [ ] Set Reference: ref_d_19 = "Baden-Württemberg", ref_h_19 = "Stuttgart"
+  - [ ] Verify Target climate values (d_20 ≈ 3200 HDD for Berlin)
+  - [ ] Verify Reference climate values (ref_d_20 ≈ 3000 HDD for Stuttgart)
+- [ ] Verify calculations work correctly for BOTH models
 - [ ] Run Clock.js - verify <300ms initialization
 
 #### 1.4 Test Canadian Version (No Regression)
@@ -623,27 +937,41 @@ function getFieldOptions(fieldId) {
 - [ ] Verify defaults unchanged
 - [ ] Verify 220ms baseline maintained
 
-#### 1.5 Wire Country Selector
-- [ ] Update country selector menu to navigate:
+#### 1.5 Wire Country Selector (Simple Navigation)
+- [ ] Update country selector menu to navigate between entry points:
   ```javascript
-  // Canadian index.html
-  if (text.includes('Germany')) {
-    window.location.href = '/de/';
-  }
+  // In BOTH index.html and index-de.html - ultra-simple navigation
+  const countryDropdown = document.querySelector('.btn-group .dropdown-menu');
 
-  // German index-de.html
-  if (text.includes('Canada')) {
-    window.location.href = '/';
+  if (countryDropdown) {
+    countryDropdown.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const text = this.textContent.trim();
+
+        // Simple URL navigation - no localStorage, no dynamic loading
+        if (text.includes('Germany') || text.includes('Deutschland')) {
+          window.location.href = '/de/';
+        } else if (text.includes('Canada')) {
+          window.location.href = '/';
+        }
+      });
+    });
   }
   ```
+- [ ] **NO LocalizationManager.setCountry() - just navigate to URL**
+- [ ] **NO localStorage persistence - URL is the source of truth**
 
 **Success Criteria**:
 - ✅ German version loads with German data only
 - ✅ Canadian version unchanged (zero regression)
 - ✅ All 18 section files shared (no duplication)
-- ✅ Only FieldManager differs between countries
-- ✅ No conditional logic in any section
+- ✅ Only FieldManager differs between countries (~50 lines)
+- ✅ No conditional logic anywhere (no `if country === 'DE'`)
+- ✅ No LocalizationManager or CountryConfig complexity
+- ✅ No race conditions (all scripts hardcoded in HTML)
 - ✅ Performance maintained (<220ms CA, <300ms DE)
+- ✅ Simple country selector (just URL navigation)
 
 ---
 
