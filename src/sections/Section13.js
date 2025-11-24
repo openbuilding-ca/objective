@@ -3057,6 +3057,16 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ Update DOM for both Target and Reference (mode-aware via ModeManager.currentMode)
     setFieldValue("m_129", cedMitigated, "number-2dp-comma");
 
+    // ✅ M124 BUG FIX: Manually trigger Cooling.js Stage 2 after publishing m_129
+    // The m_129 listener may not fire if registered after value already exists
+    // Stage 2 calculates cooling_m_124 (Days Active Cooling Required)
+    if (window.TEUI?.CoolingCalculations) {
+      const mode = isReferenceCalculation ? "reference" : "target";
+      if (typeof window.TEUI.CoolingCalculations.calculateStage2 === "function") {
+        window.TEUI.CoolingCalculations.calculateStage2(mode);
+      }
+    }
+
     return { m_129: cedMitigated };
   }
 
