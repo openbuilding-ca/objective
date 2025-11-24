@@ -1380,13 +1380,8 @@ window.TEUI.SectionModules.sect15 = (function () {
         fieldId => !window.TEUI.StateManager.getValue(fieldId)
       );
       if (missingValues.length > 0) {
-        console.warn(
-          `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`
-        );
         // ✅ TIMING FIX: Use fallback values during initialization, values will be available later
-        console.log(
-          `[S15] Using fallback values for missing upstream dependencies (initialization timing)`
-        );
+        // Upstream Reference values will be available after initialization completes
       }
 
       // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations

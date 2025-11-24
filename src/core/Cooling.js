@@ -247,9 +247,6 @@ window.TEUI.CoolingCalculations = (function () {
     const i_59_value = window.TEUI.parseNumeric(
       getModeAwareValue("i_59", "45", mode)
     );
-    console.log(
-      `[Cooling] 🔍 i_59 READ: mode=${mode}, i_59_value=${i_59_value}, will use indoorRH=${i_59_value ? i_59_value / 100 : 0.45}`
-    );
     stateObj.indoorRH = i_59_value ? i_59_value / 100 : 0.45; // Convert percentage to decimal, default 45%
     const partialPressureIndoor = pSatIndoor * stateObj.indoorRH; // A52: Indoor RH% from S08 i_59
 
@@ -340,10 +337,6 @@ window.TEUI.CoolingCalculations = (function () {
     // Store the Excel-based calculation result
     stateObj.freeCoolingLimit = potentialLimit;
 
-    console.log(
-      `[Cooling] Free cooling calc (${mode}): massFlow=${massFlowRateKgS.toFixed(3)} kg/s, ΔT=${tempDiff.toFixed(1)}°C → ${dailySensibleCoolingKWh.toFixed(2)} kWh/day → ${potentialLimit.toFixed(2)} kWh/yr`
-    );
-
     return potentialLimit;
   }
 
@@ -360,10 +353,6 @@ window.TEUI.CoolingCalculations = (function () {
       window.TEUI.parseNumeric(getModeAwareValue("l_22", "80", mode)) || 80; // Project elevation from S03
     const seaLevelPressure = 101325; // E13 - Standard atmospheric pressure at sea level
     stateObj.atmPressure = seaLevelPressure * Math.exp(-elevation / 8434); // E15 logic
-
-    console.log(
-      `[Cooling] Atmospheric pressure updated (${mode}): elevation=${elevation}m → atmPressure=${stateObj.atmPressure.toFixed(0)}Pa`
-    );
   }
 
   /**
@@ -421,10 +410,6 @@ window.TEUI.CoolingCalculations = (function () {
     // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
     // So we preserve the raw calculation (can be negative) as per Excel methodology
 
-    console.log(
-      `[Cooling m_124 COOLING-TARGET (${mode})] m_129_annual=${m_129_annual}, E37_daily=${E37_daily_mitigated_cooling}, E45(d_21)=${d_21}, E50=${E50_seasonal_cooling_load}, E51=${E51_seasonal_free_cooling}, E52=${E52_unmet_cooling_load}, E54(m_19)=${m_19}, E55(result)=${E55_days_active_cooling}`
-    );
-
     stateObj.daysActiveCooling = E55_days_active_cooling;
     return E55_days_active_cooling; // Return exact COOLING-TARGET Excel calculation result
   }
@@ -471,10 +456,6 @@ window.TEUI.CoolingCalculations = (function () {
 
     // COOLING-TARGET A33: Heat removed in one day (kWh) = A32 / 3600000
     const A33_daily_free_cooling_kWh = A32_daily_heat_removal_joules / 3600000;
-
-    console.log(
-      `[Cooling A33 PHYSICS (${mode})] d_120=${d_120}, l_119=${l_119}, A28=${A28_ventilation_rate_ls}, A29=${A29_ventilation_rate_m3s}, A30=${A30_mass_flow_rate_kgs}, A16=${A16_temp_diff}, A31=${A31_heat_removal_watts}, A32=${A32_daily_heat_removal_joules}, A33=${A33_daily_free_cooling_kWh}`
-    );
 
     return A33_daily_free_cooling_kWh; // E36 equivalent
   }
@@ -546,9 +527,6 @@ window.TEUI.CoolingCalculations = (function () {
     }
 
     stateObj.calculatingStage1 = true;
-    console.log(
-      `[Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=${mode})...`
-    );
 
     try {
       // ✅ PATTERN A: Read fresh values with explicit mode parameter (no shared state)
@@ -605,10 +583,6 @@ window.TEUI.CoolingCalculations = (function () {
 
       // Dispatch event to notify S13 that Stage 1 cooling calculations are ready
       dispatchCoolingEvent("stage1", mode);
-
-      console.log(
-        `[Cooling Stage 1] ✅ Complete (${mode}): h_124=${stateObj.freeCoolingLimit.toFixed(2)} kWh/yr, latentLoadFactor=${stateObj.latentLoadFactor.toFixed(3)}`
-      );
     } finally {
       stateObj.calculatingStage1 = false;
     }
@@ -665,9 +639,6 @@ window.TEUI.CoolingCalculations = (function () {
     }
 
     stateObj.calculatingStage2 = true;
-    console.log(
-      `[Cooling Stage 2] 🚀 Starting active cooling calculations (mode=${mode})...`
-    );
 
     try {
       // ✅ PATTERN A: Pass explicit state object and mode
@@ -678,10 +649,6 @@ window.TEUI.CoolingCalculations = (function () {
 
       // Dispatch event to notify S13 that Stage 2 cooling calculations are ready
       dispatchCoolingEvent("stage2", mode);
-
-      console.log(
-        `[Cooling Stage 2] ✅ Complete (${mode}): m_124=${stateObj.daysActiveCooling.toFixed(2)} days`
-      );
     } finally {
       stateObj.calculatingStage2 = false;
     }
@@ -694,9 +661,6 @@ window.TEUI.CoolingCalculations = (function () {
    * @param {string} mode - "target" or "reference" to determine which state values to use
    */
   function calculateAll(mode = "target") {
-    console.log(`[Cooling] 🚀 calculateAll("${mode}") → Running Stage 1 only`);
-    console.trace(`[Cooling] 🔍 TRACE: Who called calculateAll("${mode}")?`);
-
     // Run Stage 1 (independent calculations)
     calculateStage1(mode);
 
@@ -723,9 +687,6 @@ window.TEUI.CoolingCalculations = (function () {
 
     // ✅ PATTERN A: Use explicit mode parameter (no shared state)
     const prefix = mode === "reference" ? "ref_" : "";
-    console.log(
-      `[Cooling Stage 1] 📊 Publishing results with prefix="${prefix}" (mode=${mode})`
-    );
 
     // STAGE 1 OUTPUTS: Free cooling capacity and latent load factor
     sm.setValue(
@@ -782,9 +743,6 @@ window.TEUI.CoolingCalculations = (function () {
 
     // ✅ PATTERN A: Use explicit mode parameter (no shared state)
     const prefix = mode === "reference" ? "ref_" : "";
-    console.log(
-      `[Cooling Stage 2] 📊 Publishing results with prefix="${prefix}" (mode=${mode})`
-    );
 
     // STAGE 2 OUTPUTS: Active cooling days and free cooling percentage
     sm.setValue(
@@ -837,9 +795,6 @@ window.TEUI.CoolingCalculations = (function () {
     });
 
     document.dispatchEvent(event);
-    console.log(
-      `[Cooling] 📢 Dispatched event: ${eventName}${mode ? ` (mode=${mode})` : ""}`
-    );
   }
 
   /**
@@ -1092,16 +1047,12 @@ window.TEUI.CoolingCalculations = (function () {
       // Stage 2 will update these values when m_129 becomes available
       window.TEUI.StateManager.setValue("cooling_m_124", "0", "calculated");
       window.TEUI.StateManager.setValue("ref_cooling_m_124", "0", "calculated");
-      console.log(
-        "[Cooling] 🔧 Initialized cooling_m_124=0 for both modes (will be updated by Stage 2)"
-      );
 
       // Register with StateManager
       registerWithStateManager();
     }
 
     // Run initial calculations for both Target and Reference modes
-    console.log("[Cooling] 🚀 Running initial calculations for both modes...");
     calculateAll("target");
     calculateAll("reference");
 
