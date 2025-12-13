@@ -27,6 +27,17 @@ window.TEUI.SectionModules.sect19 = (function () {
   let threejsLoaded = false;
   let currentModel = null;
 
+  // ✅ FIX: Circular update prevention (2025-12-13 code review)
+  // When S19 publishes a value, this flag prevents the S12→S19 listener
+  // from calling updateWombatDOM() on the same field (which breaks input focus)
+  // See: docs/development/S19-CODE-REVIEW-2025-12-13.md - Critical Issue 1.2
+  let s19IsPublishing = false;
+
+  // ✅ FIX: Listener deduplication (2025-12-13 code review)
+  // Prevents multiple listener registrations if initializeEventHandlers() called twice
+  // See: docs/development/S19-CODE-REVIEW-2025-12-13.md - Critical Issue 1.3
+  let s19ListenersInitialized = false;
+
   const config = {
     defaultAspectRatio: 1.0,      // Square footprint by default
     defaultAllowAsymmetry: true,   // Allow walls to deform independently
@@ -187,10 +198,17 @@ window.TEUI.SectionModules.sect19 = (function () {
     /**
      * Set value in current mode's state and publish to StateManager
      * MODE-AWARE PUBLISHING: Target publishes unprefixed, Reference publishes ref_ prefixed
+     *
+     * ✅ FIX (2025-12-13): Uses s19IsPublishing flag to prevent circular DOM updates
+     * When S19 publishes d_198, S12 catches it and publishes d_105, which S19 catches.
+     * The flag prevents S19 from calling updateWombatDOM() during this echo.
      */
     setValue: function (fieldId, value, source = "user-modified") {
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
+
+      // ✅ FIX: Set publishing flag to prevent circular DOM update
+      s19IsPublishing = true;
 
       // Mode-aware publishing to StateManager
       if (this.currentMode === "target") {
@@ -200,6 +218,12 @@ window.TEUI.SectionModules.sect19 = (function () {
         // Reference mode: publish with ref_ prefix
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
       }
+
+      // ✅ FIX: Clear publishing flag after a microtask to allow sync to complete
+      // Using setTimeout(0) ensures the flag clears after all sync listeners fire
+      setTimeout(() => {
+        s19IsPublishing = false;
+      }, 0);
     },
   };
 
@@ -1010,6 +1034,14 @@ window.TEUI.SectionModules.sect19 = (function () {
     // Per 4012-CHEATSHEET: Sections ONLY listen to their OWN input fields via DOM
     setupFieldListeners();
 
+    // ✅ FIX (2025-12-13): Check if StateManager listeners already initialized
+    // Prevents duplicate listener registration if initializeEventHandlers called twice
+    // See: docs/development/S19-CODE-REVIEW-2025-12-13.md - Critical Issue 1.3
+    if (s19ListenersInitialized) {
+      console.log("[WOMBAT] StateManager listeners already initialized, skipping");
+      return;
+    }
+
     // Aspect ratio slider
     const aspectSlider = document.querySelector('[data-field-id="d_202"] input[type="range"]');
     if (aspectSlider && !aspectSlider.hasSliderListener) {
@@ -1068,15 +1100,24 @@ window.TEUI.SectionModules.sect19 = (function () {
 
       // ⚠️ MIRROR FIELD SYNC: Section 12 → WOMBAT (d_105→d_198, d_103→d_199)
       // When S12 volume/stories change, sync to WOMBAT mirror fields AND recalculate
+      //
+      // ✅ FIX (2025-12-13): Check s19IsPublishing to prevent circular DOM updates
+      // When user edits d_198 in S19, it publishes to d_198, S12 catches and publishes d_105,
+      // which triggers this listener. Without the flag check, updateWombatDOM() would
+      // overwrite the field the user is editing, breaking input focus.
       window.TEUI.StateManager.addListener("d_105", (newValue) => {
         const currentValue = TargetState.getValue("d_198");
         console.log(`[WOMBAT SYNC] d_105 changed: ${currentValue} → ${newValue}`);
         if (currentValue !== newValue) {
           // Update TargetState
           TargetState.setValue("d_198", newValue);
-          // Update DOM
-          updateWombatDOM("d_198", newValue);
-          console.log(`[WOMBAT] ✅ Synced d_198 = ${newValue} from S12 (d_105)`);
+          // ✅ FIX: Only update DOM if this is NOT an echo from S19's own publish
+          if (!s19IsPublishing) {
+            updateWombatDOM("d_198", newValue);
+            console.log(`[WOMBAT] ✅ Synced d_198 = ${newValue} from S12 (d_105)`);
+          } else {
+            console.log(`[WOMBAT] Skipped DOM update for d_198 (self-originated change)`);
+          }
           // Recalculate (will run both engines and update visualization)
           calculateAll();
         }
@@ -1088,7 +1129,12 @@ window.TEUI.SectionModules.sect19 = (function () {
         if (currentValue !== newValue) {
           // Update ReferenceState
           ReferenceState.setValue("d_198", newValue);
-          console.log(`[WOMBAT] ✅ Synced ref_d_198 = ${newValue} from S12 (ref_d_105)`);
+          // ✅ FIX: Only update DOM if this is NOT an echo from S19's own publish
+          if (!s19IsPublishing) {
+            console.log(`[WOMBAT] ✅ Synced ref_d_198 = ${newValue} from S12 (ref_d_105)`);
+          } else {
+            console.log(`[WOMBAT] Skipped DOM update for ref_d_198 (self-originated change)`);
+          }
           // Recalculate (will run both engines and update visualization)
           calculateAll();
         }
@@ -1100,9 +1146,13 @@ window.TEUI.SectionModules.sect19 = (function () {
         if (currentValue !== newValue) {
           // Update TargetState
           TargetState.setValue("d_199", newValue);
-          // Update DOM
-          updateWombatDOM("d_199", newValue);
-          console.log(`[WOMBAT] ✅ Synced d_199 = ${newValue} from S12 (d_103)`);
+          // ✅ FIX: Only update DOM if this is NOT an echo from S19's own publish
+          if (!s19IsPublishing) {
+            updateWombatDOM("d_199", newValue);
+            console.log(`[WOMBAT] ✅ Synced d_199 = ${newValue} from S12 (d_103)`);
+          } else {
+            console.log(`[WOMBAT] Skipped DOM update for d_199 (self-originated change)`);
+          }
           // Recalculate (will run both engines and update visualization)
           calculateAll();
         }
@@ -1114,11 +1164,20 @@ window.TEUI.SectionModules.sect19 = (function () {
         if (currentValue !== newValue) {
           // Update ReferenceState
           ReferenceState.setValue("d_199", newValue);
-          console.log(`[WOMBAT] ✅ Synced ref_d_199 = ${newValue} from S12 (ref_d_103)`);
+          // ✅ FIX: Only update DOM if this is NOT an echo from S19's own publish
+          if (!s19IsPublishing) {
+            console.log(`[WOMBAT] ✅ Synced ref_d_199 = ${newValue} from S12 (ref_d_103)`);
+          } else {
+            console.log(`[WOMBAT] Skipped DOM update for ref_d_199 (self-originated change)`);
+          }
           // Recalculate (will run both engines and update visualization)
           calculateAll();
         }
       });
+
+      // ✅ FIX: Mark listeners as initialized to prevent duplicate registration
+      s19ListenersInitialized = true;
+      console.log("[WOMBAT] ✅ StateManager listeners initialized");
     }
   }
 

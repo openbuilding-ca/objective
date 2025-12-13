@@ -3502,40 +3502,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ModeManager.setValue publishes to StateManager (both ref_ and unprefixed)
     // No need for listeners to create double calculations
 
-    // ⚠️ MIRROR FIELD SYNC: WOMBAT → Section 12 (d_198→d_105, d_199→d_103)
-    // WOMBAT has mirror fields that display S12's volume/stories
-    // When edited in WOMBAT, sync back to S12's internal state and recalculate
-    window.TEUI.StateManager.addListener("d_198", (newValue) => {
-      if (TargetState.getValue("d_105") !== newValue) {
-        TargetState.setValue("d_105", newValue, "external");
-        calculateAll(); // Trigger full recalculation and UI update
-        console.log(`[S12] Synced d_105 = ${newValue} from WOMBAT (d_198)`);
-      }
-    });
-
-    window.TEUI.StateManager.addListener("ref_d_198", (newValue) => {
-      if (ReferenceState.getValue("d_105") !== newValue) {
-        ReferenceState.setValue("d_105", newValue, "external");
-        calculateAll(); // Trigger full recalculation and UI update
-        console.log(`[S12] Synced ref_d_105 = ${newValue} from WOMBAT (ref_d_198)`);
-      }
-    });
-
-    window.TEUI.StateManager.addListener("d_199", (newValue) => {
-      if (TargetState.getValue("d_103") !== newValue) {
-        TargetState.setValue("d_103", newValue, "external");
-        calculateAll(); // Trigger full recalculation and UI update
-        console.log(`[S12] Synced d_103 = ${newValue} from WOMBAT (d_199)`);
-      }
-    });
-
-    window.TEUI.StateManager.addListener("ref_d_199", (newValue) => {
-      if (ReferenceState.getValue("d_103") !== newValue) {
-        ReferenceState.setValue("d_103", newValue, "external");
-        calculateAll(); // Trigger full recalculation and UI update
-        console.log(`[S12] Synced ref_d_103 = ${newValue} from WOMBAT (ref_d_199)`);
-      }
-    });
+    // ⚠️ REMOVED: Duplicate WOMBAT sync listeners (2025-12-13 code review fix)
+    // These listeners were duplicates of the ones at lines 3086-3152 (setupFieldListeners)
+    // Keeping only the version with proper DOM updates to prevent:
+    //   1. calculateAll() running twice per user edit
+    //   2. Memory leak from listener accumulation
+    // See: docs/development/S19-CODE-REVIEW-2025-12-13.md - Critical Issue 1.1
 
     s12ListenersAdded = true;
     console.log(
