@@ -112,7 +112,7 @@ window.TEUI.WombatRender = (function () {
             { x: width / 2, y: 0, z: totalHeight }
           );
         }
-      } else if (geometry.roof.type === "shed") {
+      } else if (geometry.roof.type === "monoplane") {
         // Shed roof: asymmetric heights (short and tall eaves)
         const shedData = geometry.roof.shedData;
         if (shedData) {
@@ -2057,7 +2057,7 @@ window.TEUI.WombatRender = (function () {
     if (geometry.roof && geometry.roof.type === "gable") {
       // Gable roof (biplanar)
       renderGableRoof(svgElement, geometry, mode, scale, centerX, centerY);
-    } else if (geometry.roof && geometry.roof.type === "shed") {
+    } else if (geometry.roof && geometry.roof.type === "monoplane") {
       // Shed roof (monoplane)
       renderShedRoof(svgElement, geometry, mode, scale, centerX, centerY);
     } else if (geometry.roof && geometry.roof.type === "hip") {

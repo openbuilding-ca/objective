@@ -1263,6 +1263,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     let roofType = "flat";
     let roofHeight = 0;
     let gableEndArea = 0; // Total area of both gable ends (for gable roofs)
+    let shedEndArea = 0; // Total area of both shed end walls (for shed roofs)
     let roofGeometryData = null;
 
     console.log(
@@ -1333,22 +1334,16 @@ window.TEUI.SectionModules.sect19 = (function () {
           );
           roofType = "flat";
           roofHeight = 0;
-          wallArea = opaqueWallArea; // No end wall extraction
         } else {
           roofHeight = shedGeometry.height;
+          shedEndArea = shedGeometry.shedEndArea; // Track end wall area for later subtraction
 
-          // Extract triangular end walls from total wall area (like gable)
-          wallArea = Math.max(0, opaqueWallArea - shedGeometry.shedEndArea);
-
-          console.log(
-            `[WOMBAT] Shed roof applied:\n` +
-            `  d_86 (total wall): ${opaqueWallArea.toFixed(2)}m²\n` +
-            `  End walls: ${shedGeometry.shedEndArea.toFixed(2)}m²\n` +
-            `  Remaining wall: ${wallArea.toFixed(2)}m²\n` +
-            `  Short wall height: ${shedGeometry.shortWallHeight.toFixed(2)}m\n` +
-            `  Tall wall height: ${shedGeometry.tallWallHeight.toFixed(2)}m\n` +
-            `  Average wall height: ${shedGeometry.avgWallHeight.toFixed(2)}m`
-          );
+          console.log(`[WOMBAT] Shed roof solved:`);
+          console.log(`  Ridge height: ${roofHeight.toFixed(2)} m`);
+          console.log(`  Shed end area (both): ${shedEndArea.toFixed(2)} m²`);
+          console.log(`  Ridge orientation: ${shedGeometry.ridgeOrientation}`);
+          console.log(`  Short wall height: ${shedGeometry.shortWallHeight.toFixed(2)} m`);
+          console.log(`  Tall wall height: ${shedGeometry.tallWallHeight.toFixed(2)} m`);
 
           // Store geometry for renderer
           roofGeometryData = {
@@ -1361,6 +1356,8 @@ window.TEUI.SectionModules.sect19 = (function () {
             shortWallHeight: shedGeometry.shortWallHeight,
             tallWallHeight: shedGeometry.tallWallHeight,
             avgWallHeight: shedGeometry.avgWallHeight,
+            shedEndArea: shedEndArea,
+            isValid: true,
           };
         }
       }
@@ -1620,6 +1617,8 @@ window.TEUI.SectionModules.sect19 = (function () {
 
       if (roofType === "gable" && gableEndArea > 0) {
         effectiveWallArea = totalWallAreaGross - gableEndArea;
+      } else if (roofType === "monoplane" && shedEndArea > 0) {
+        effectiveWallArea = totalWallAreaGross - shedEndArea;
       }
 
       wallHeightFromArea = effectiveWallArea / perimeter;
@@ -1646,9 +1645,9 @@ window.TEUI.SectionModules.sect19 = (function () {
     // Verify wall height against wall area (consistency check)
     if (roofType === "gable" && gableEndArea > 0) {
       effectiveWallArea = totalWallAreaGross - gableEndArea;
-    } else if (roofType === "monoplane" && roofGeometryData?.shedEndArea) {
+    } else if (roofType === "monoplane" && shedEndArea > 0) {
       // Shed roof also has triangular end walls that need to be subtracted
-      effectiveWallArea = totalWallAreaGross - roofGeometryData.shedEndArea;
+      effectiveWallArea = totalWallAreaGross - shedEndArea;
     }
     wallHeightFromArea = effectiveWallArea / perimeter;
 
