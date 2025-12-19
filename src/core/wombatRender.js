@@ -112,6 +112,31 @@ window.TEUI.WombatRender = (function () {
             { x: width / 2, y: 0, z: totalHeight }
           );
         }
+      } else if (geometry.roof.type === "shed") {
+        // Shed roof: asymmetric heights (short and tall eaves)
+        const shedData = geometry.roof.shedData;
+        if (shedData) {
+          const shortWallHeight = shedData.shortWallHeight;
+          const tallWallHeight = shedData.tallWallHeight;
+          // Add all four corners at their respective heights
+          if (shedData.ridgeOrientation === "longitudinal") {
+            // Short wall at front (Y=-length/2), tall wall at back (Y=length/2)
+            points3D.push(
+              { x: -width / 2, y: -length / 2, z: shortWallHeight },
+              { x: width / 2, y: -length / 2, z: shortWallHeight },
+              { x: -width / 2, y: length / 2, z: tallWallHeight },
+              { x: width / 2, y: length / 2, z: tallWallHeight }
+            );
+          } else {
+            // Short wall at left (X=-width/2), tall wall at right (X=width/2)
+            points3D.push(
+              { x: -width / 2, y: -length / 2, z: shortWallHeight },
+              { x: -width / 2, y: length / 2, z: shortWallHeight },
+              { x: width / 2, y: -length / 2, z: tallWallHeight },
+              { x: width / 2, y: length / 2, z: tallWallHeight }
+            );
+          }
+        }
       } else if (geometry.roof.type === "hip") {
         // Hip roof: ridge line endpoints (shortened)
         const hipData = geometry.roof.hipData;
@@ -1244,6 +1269,178 @@ window.TEUI.WombatRender = (function () {
     svg.appendChild(roofLabel);
   }
 
+  /**
+   * Render shed roof (monoplane) geometry
+   * Shed roofs have a single slope running along the longer dimension
+   * Creates asymmetric walls (short wall at low eave, tall wall at high eave)
+   */
+  function renderShedRoof(svg, geometry, mode, scale, centerX, centerY) {
+    const isReference = mode === "reference";
+    const roofColor = isReference
+      ? config.colors.reference
+      : config.colors.target;
+
+    const { width, length } = geometry.footprint;
+    const wallHeight = geometry.height;
+    const roofHeight = geometry.roof.height;
+    const shedData = geometry.roof.shedData;
+
+    console.log("[WombatRender] renderShedRoof called with:");
+    console.log("  width:", width, "length:", length, "wallHeight:", wallHeight, "roofHeight:", roofHeight);
+    console.log("  shedData:", shedData);
+
+    // Validate roof data
+    if (!shedData || !shedData.isValid) {
+      console.error("[WombatRender] Invalid shed roof data");
+      return;
+    }
+
+    if (isNaN(roofHeight) || !isFinite(roofHeight) || roofHeight === 0) {
+      console.error("[WombatRender] Invalid roof height:", roofHeight);
+      return;
+    }
+
+    const ridgeOrientation = shedData.ridgeOrientation;
+    const shortWallHeight = shedData.shortWallHeight;
+    const tallWallHeight = shedData.tallWallHeight;
+
+    // Four corners of building at short wall height (low eave)
+    const lowEave = [
+      { x: -width / 2, y: -length / 2, z: shortWallHeight }, // SW
+      { x: width / 2, y: -length / 2, z: shortWallHeight },  // SE
+      { x: width / 2, y: length / 2, z: shortWallHeight },   // NE
+      { x: -width / 2, y: length / 2, z: shortWallHeight },  // NW
+    ];
+
+    // Four corners of building at tall wall height (high eave)
+    const highEave = [
+      { x: -width / 2, y: -length / 2, z: tallWallHeight }, // SW
+      { x: width / 2, y: -length / 2, z: tallWallHeight },  // SE
+      { x: width / 2, y: length / 2, z: tallWallHeight },   // NE
+      { x: -width / 2, y: length / 2, z: tallWallHeight },  // NW
+    ];
+
+    if (ridgeOrientation === "longitudinal") {
+      // Ridge runs along length (Y-axis)
+      // Front wall (Y=-length/2) is short, back wall (Y=length/2) is tall
+
+      // Shed roof plane (4 corners): SW_low - SE_low - NE_high - NW_high
+      const roofEdge1 = createLine(
+        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        toIsometric(lowEave[1].x, lowEave[1].y, lowEave[1].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge2 = createLine(
+        toIsometric(lowEave[1].x, lowEave[1].y, lowEave[1].z, scale, centerX, centerY),
+        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge3 = createLine(
+        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge4 = createLine(
+        toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY),
+        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      svg.appendChild(roofEdge1);
+      svg.appendChild(roofEdge2);
+      svg.appendChild(roofEdge3);
+      svg.appendChild(roofEdge4);
+
+      // Triangular end walls (left and right)
+      // Left end (X=-width/2): SW_ground - SW_low - NW_high - NW_ground
+      drawTriangle(
+        svg,
+        { x: -width / 2, y: -length / 2, z: wallHeight },
+        { x: -width / 2, y: length / 2, z: wallHeight },
+        { x: -width / 2, y: length / 2, z: tallWallHeight },
+        scale, centerX, centerY,
+        roofColor
+      );
+      // Right end (X=width/2): SE_ground - NE_high - SE_low
+      drawTriangle(
+        svg,
+        { x: width / 2, y: -length / 2, z: wallHeight },
+        { x: width / 2, y: length / 2, z: tallWallHeight },
+        { x: width / 2, y: -length / 2, z: shortWallHeight },
+        scale, centerX, centerY,
+        roofColor
+      );
+
+    } else {
+      // Ridge runs along width (X-axis)
+      // Left wall (X=-width/2) is short, right wall (X=width/2) is tall
+
+      // Shed roof plane: SW_low - NW_low - NE_high - SE_high
+      const roofEdge1 = createLine(
+        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        toIsometric(lowEave[3].x, lowEave[3].y, lowEave[3].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge2 = createLine(
+        toIsometric(lowEave[3].x, lowEave[3].y, lowEave[3].z, scale, centerX, centerY),
+        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge3 = createLine(
+        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      const roofEdge4 = createLine(
+        toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY),
+        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        roofColor, 2
+      );
+      svg.appendChild(roofEdge1);
+      svg.appendChild(roofEdge2);
+      svg.appendChild(roofEdge3);
+      svg.appendChild(roofEdge4);
+
+      // Triangular end walls (front and back)
+      // Front end (Y=-length/2): SW_ground - SE_high - SE_ground
+      drawTriangle(
+        svg,
+        { x: -width / 2, y: -length / 2, z: wallHeight },
+        { x: width / 2, y: -length / 2, z: tallWallHeight },
+        { x: width / 2, y: -length / 2, z: wallHeight },
+        scale, centerX, centerY,
+        roofColor
+      );
+      // Back end (Y=length/2): NW_ground - NW_low - NE_high
+      drawTriangle(
+        svg,
+        { x: -width / 2, y: length / 2, z: wallHeight },
+        { x: -width / 2, y: length / 2, z: shortWallHeight },
+        { x: width / 2, y: length / 2, z: tallWallHeight },
+        scale, centerX, centerY,
+        roofColor
+      );
+    }
+
+    // Add roof height label (showing the rise)
+    const roofLabelPos = toIsometric(
+      width / 2 + 8,
+      0,
+      shortWallHeight + roofHeight / 2,
+      scale,
+      centerX,
+      centerY
+    );
+    const roofLabel = createText(
+      roofLabelPos.x + 15,
+      roofLabelPos.y,
+      `Shed: ${roofHeight.toFixed(1)}m`,
+      roofColor,
+      10,
+      { style: "italic" }
+    );
+    svg.appendChild(roofLabel);
+  }
+
   //==========================================================================
   // RENDERING: DIMENSION ANNOTATIONS
   //==========================================================================
@@ -1860,6 +2057,9 @@ window.TEUI.WombatRender = (function () {
     if (geometry.roof && geometry.roof.type === "gable") {
       // Gable roof (biplanar)
       renderGableRoof(svgElement, geometry, mode, scale, centerX, centerY);
+    } else if (geometry.roof && geometry.roof.type === "shed") {
+      // Shed roof (monoplane)
+      renderShedRoof(svgElement, geometry, mode, scale, centerX, centerY);
     } else if (geometry.roof && geometry.roof.type === "hip") {
       // Hip roof (multiplanar - truncated gable)
       renderHipRoof(svgElement, geometry, mode, scale, centerX, centerY);

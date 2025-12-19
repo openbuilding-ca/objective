@@ -865,6 +865,70 @@ window.TEUI.SectionModules.sect19 = (function () {
   }
 
   /**
+   * Calculate shed roof height from roof area using rational trigonometry
+   * @param {number} width - Building width (m)
+   * @param {number} length - Building length (m)
+   * @param {number} roofArea - Total roof area from d_85 (m²)
+   * @param {number} shortWallHeight - Height of short wall from g_106 (m)
+   * @returns {Object} - Shed roof geometry
+   */
+  function calculateShedHeight(width, length, roofArea, shortWallHeight) {
+    // Shed runs along longer dimension (like gable ridge)
+    const ridgeLength = Math.max(width, length);
+    const span = Math.min(width, length);
+    const ridgeOrientation = length >= width ? "longitudinal" : "transverse";
+
+    // Roof area = ridge length × slope length
+    const slopeLength = roofArea / ridgeLength;
+
+    // Use Pythagorean theorem in squared form (rational trigonometry)
+    // slope² = span² + height²
+    // height² = slope² - span²
+    const h2 = slopeLength * slopeLength - span * span;
+
+    if (h2 <= 0) {
+      console.warn(
+        `[WOMBAT] Shed roof: Invalid geometry - slope length (${slopeLength.toFixed(2)}m) ` +
+        `must be greater than span (${span.toFixed(2)}m)`
+      );
+      return { height: 0, ridgeOrientation, ridgeLength, span, shedEndArea: 0, isValid: false };
+    }
+
+    const height = Math.sqrt(h2);
+
+    // Triangular end walls (two ends, like gable)
+    // Each end has area = (span × height) / 2
+    const shedEndArea = span * height; // Total for both ends
+
+    // Calculate tall wall height
+    const tallWallHeight = shortWallHeight + height;
+
+    console.log(
+      `[WOMBAT] Shed roof geometry:\n` +
+      `  Ridge: ${ridgeOrientation}, length: ${ridgeLength.toFixed(2)}m\n` +
+      `  Span: ${span.toFixed(2)}m\n` +
+      `  Slope length: ${slopeLength.toFixed(2)}m\n` +
+      `  Height rise: ${height.toFixed(2)}m\n` +
+      `  Short wall: ${shortWallHeight.toFixed(2)}m\n` +
+      `  Tall wall: ${tallWallHeight.toFixed(2)}m\n` +
+      `  End wall area (both): ${shedEndArea.toFixed(2)}m²`
+    );
+
+    return {
+      height,
+      ridgeOrientation,
+      ridgeLength,
+      span,
+      slopeLength,
+      shedEndArea,
+      shortWallHeight,
+      tallWallHeight,
+      avgWallHeight: (shortWallHeight + tallWallHeight) / 2,
+      isValid: true,
+    };
+  }
+
+  /**
    * Calculate hip roof geometry using two-phase planar-then-vertical approach
    * Phase 1: Ridge geometry determined by 45° hip rafters (planar, deterministic)
    * Phase 2: Height solved from area constraint (vertical, single-variable)
@@ -1192,6 +1256,10 @@ window.TEUI.SectionModules.sect19 = (function () {
     const roofTypeSelection = currentState.getValue("d_159") || "biplanar";
     const areaRatio = roofArea / footprintArea;
 
+    // Read g_106 early for shed roof calculations (short wall height)
+    const g_106_raw = getModeAwareValue("g_106", isReferenceCalculation);
+    const g_106 = parseFloat(g_106_raw) || 3.0; // Default to 3.0m if not set
+
     let roofType = "flat";
     let roofHeight = 0;
     let gableEndArea = 0; // Total area of both gable ends (for gable roofs)
@@ -1253,12 +1321,48 @@ window.TEUI.SectionModules.sect19 = (function () {
           roofHeight = 0;
         }
       } else {
-        // MONOPLANE (shed roof) - future implementation
-        console.warn(
-          "[WOMBAT] Monoplane roof type not yet implemented - using flat roof"
-        );
-        roofType = "flat";
-        roofHeight = 0;
+        // MONOPLANE (shed roof)
+        roofType = "monoplane";
+
+        const shedGeometry = calculateShedHeight(width, length, roofArea, g_106);
+
+        if (!shedGeometry.isValid) {
+          console.warn(
+            `[WOMBAT] Invalid shed roof geometry - roof area (${roofArea.toFixed(2)}m²) ` +
+            `too small for footprint (${width.toFixed(2)}m × ${length.toFixed(2)}m)`
+          );
+          roofType = "flat";
+          roofHeight = 0;
+          wallArea = opaqueWallArea; // No end wall extraction
+        } else {
+          roofHeight = shedGeometry.height;
+
+          // Extract triangular end walls from total wall area (like gable)
+          wallArea = Math.max(0, opaqueWallArea - shedGeometry.shedEndArea);
+
+          console.log(
+            `[WOMBAT] Shed roof applied:\n` +
+            `  d_86 (total wall): ${opaqueWallArea.toFixed(2)}m²\n` +
+            `  End walls: ${shedGeometry.shedEndArea.toFixed(2)}m²\n` +
+            `  Remaining wall: ${wallArea.toFixed(2)}m²\n` +
+            `  Short wall height: ${shedGeometry.shortWallHeight.toFixed(2)}m\n` +
+            `  Tall wall height: ${shedGeometry.tallWallHeight.toFixed(2)}m\n` +
+            `  Average wall height: ${shedGeometry.avgWallHeight.toFixed(2)}m`
+          );
+
+          // Store geometry for renderer
+          roofGeometryData = {
+            type: "shed",
+            height: shedGeometry.height,
+            ridgeOrientation: shedGeometry.ridgeOrientation,
+            ridgeLength: shedGeometry.ridgeLength,
+            span: shedGeometry.span,
+            slopeLength: shedGeometry.slopeLength,
+            shortWallHeight: shedGeometry.shortWallHeight,
+            tallWallHeight: shedGeometry.tallWallHeight,
+            avgWallHeight: shedGeometry.avgWallHeight,
+          };
+        }
       }
     } else if (areaRatio < 0.99) {
       // Inverted pyramid (roof smaller than floor - visual conflict indicator)
@@ -1422,6 +1526,10 @@ window.TEUI.SectionModules.sect19 = (function () {
       let roofVolume = 0;
       if (roofType === "gable" && roofHeight > 0) {
         roofVolume = (footprintArea * roofHeight) / 2;
+      } else if (roofType === "monoplane" && roofHeight > 0) {
+        // Shed roof volume = footprint × (height / 2)
+        // This is half of a gable roof volume (single slope instead of two)
+        roofVolume = (footprintArea * roofHeight) / 2;
       } else if (roofType === "hip" && roofHeight > 0 && roofGeometryData) {
         // Hip roof volume = gable section + 2 pyramidal end caps
         const ridgeLength = roofGeometryData.ridgeLength;
@@ -1518,9 +1626,29 @@ window.TEUI.SectionModules.sect19 = (function () {
       wallHeight = wallHeightFromArea;
     }
 
+    // SPECIAL CASE: Shed roof uses average wall height from geometry
+    // Because shed roofs have asymmetric walls (short vs tall), the wall height
+    // is determined by the roof geometry, not by dividing volume by footprint
+    if (roofType === "monoplane" && roofGeometryData?.avgWallHeight) {
+      const volumeDerivedHeight = wallHeight;
+      wallHeight = roofGeometryData.avgWallHeight;
+      console.log(
+        `[WOMBAT] Using shed roof average wall height: ${wallHeight.toFixed(2)}m ` +
+        `(short: ${roofGeometryData.shortWallHeight.toFixed(2)}m, ` +
+        `tall: ${roofGeometryData.tallWallHeight.toFixed(2)}m)`
+      );
+      console.log(
+        `[WOMBAT] Volume-derived height was: ${volumeDerivedHeight.toFixed(2)}m ` +
+        `(overridden for shed roof asymmetry)`
+      );
+    }
+
     // Verify wall height against wall area (consistency check)
     if (roofType === "gable" && gableEndArea > 0) {
       effectiveWallArea = totalWallAreaGross - gableEndArea;
+    } else if (roofType === "monoplane" && roofGeometryData?.shedEndArea) {
+      // Shed roof also has triangular end walls that need to be subtracted
+      effectiveWallArea = totalWallAreaGross - roofGeometryData.shedEndArea;
     }
     wallHeightFromArea = effectiveWallArea / perimeter;
 
@@ -1552,6 +1680,7 @@ window.TEUI.SectionModules.sect19 = (function () {
       gableEndArea: gableEndArea,
       gableData: roofType === "gable" ? roofGeometryData : null, // Full gable geometry data
       hipData: roofType === "hip" ? roofGeometryData : null, // Full hip geometry data
+      shedData: roofType === "monoplane" ? roofGeometryData : null, // Full shed geometry data
     };
 
     // Phase 4: Below-Grade Geometry (WOMBAT Phase 2)
