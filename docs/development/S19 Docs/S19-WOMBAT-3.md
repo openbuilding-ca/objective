@@ -582,6 +582,512 @@ const wallPlateHeight = (totalWallArea - 2 × gableEndArea) / perimeter;
 - Mathematical derivation: [S19-RT.md](S19-RT.md) (rational trigonometry approach)
 - Commit: TBD (2025-12-15)
 
+## Phase 3.5: Shed Roof (Monoplane) Implementation
+
+**Status**: 🎯 **READY TO IMPLEMENT** (2025-12-19)
+**Priority**: HIGH - Next logical roof type after gable completion
+**Branch**: Create `WOMBAT-SHED` from current main
+
+### Overview
+
+Implement monoplane (shed) roof geometry solver using rational trigonometry. Shed roofs are single-slope roofs running along the longer building dimension, creating asymmetric wall heights (tall wall at high eave, short wall at low eave).
+
+### User Constraints (Confirmed 2025-12-19)
+
+1. **g_106 correlation**: `g_106` represents the **short wall** height (lower eave)
+2. **Wall area subtraction**: Same pattern as gable - triangular end walls extract from `d_86`
+3. **Shed orientation**: Runs along **longer dimension** (like gable ridge orientation)
+4. **Volume constraint**: Same as gable - preserved exactly, dimensions solve from volume
+5. **Basement volume**: Already fixed (see lines 1037-1121 in Section19.js)
+
+### Mathematical Approach
+
+#### 1. Geometry Setup
+
+```
+Shed roof profile (side view):
+
+    Tall wall              Short wall
+    |                           |
+    |     /|                    |
+    |    / |                    |
+    |   /  | height (h)         |
+    |  /   |                    |
+    | /    |                    |
+    |/_____|____________________|
+         span (perpendicular to ridge)
+```
+
+**Givens**:
+- `d_85` = Roof area (m²) - user input from S11
+- `g_106` = Short wall height (m) - eave height at low side
+- `d_105` = Conditioned volume (m³) - sacred constraint
+- `width`, `length` = Footprint dimensions from volume solve
+- `stories` = Number of stories from `d_103`
+
+**Unknowns**:
+- Roof height (`h`) - vertical rise from low eave to high eave
+- Tall wall height - derived from `g_106 + h`
+- Slope length - hypotenuse of roof triangle
+- Triangular end wall area - to subtract from `d_86`
+
+#### 2. Rational Trigonometry Solution
+
+**Step 1: Determine ridge orientation and span**
+```javascript
+const ridgeLength = Math.max(width, length); // Shed runs along longer dimension
+const span = Math.min(width, length);         // Perpendicular to ridge
+const ridgeOrientation = length >= width ? "longitudinal" : "transverse";
+```
+
+**Step 2: Solve for slope length using roof area**
+```javascript
+// Roof area = ridge length × slope length
+const slopeLength = roofArea / ridgeLength;
+```
+
+**Step 3: Solve for roof height using Pythagorean theorem (squared form)**
+```javascript
+// slope² = span² + height²
+// Rearrange: height² = slope² - span²
+const h2 = slopeLength * slopeLength - span * span;
+const height = Math.sqrt(h2);
+```
+
+**Step 4: Calculate triangular end wall area**
+```javascript
+// Two triangular ends (like gable), each with area = (span × height) / 2
+const shedEndArea = span * height; // Total for both ends
+```
+
+**Step 5: Validate geometry**
+```javascript
+const isValid = h2 > 0 && height > 0 && slopeLength > span;
+```
+
+#### 3. Wall Height Calculation
+
+Unlike flat/gable roofs (symmetric walls), shed roofs have **asymmetric walls**:
+
+```javascript
+// Short wall height (at low eave)
+const shortWallHeight = g_106;
+
+// Tall wall height (at high eave)
+const tallWallHeight = g_106 + height;
+
+// Average wall height for volume calculation
+const avgWallHeight = (shortWallHeight + tallWallHeight) / 2;
+```
+
+#### 4. Volume Constraint Verification
+
+```javascript
+// For shed roof, volume = footprint × average wall height
+const calculatedVolume = (width * length) * avgWallHeight;
+
+// Should match d_105 (with basement volume already subtracted)
+const volumeError = Math.abs(calculatedVolume - targetVolume);
+```
+
+**Note**: Unlike gable roofs where volume = footprint × wallHeight (uniform), shed roofs use average wall height because of the slope.
+
+### Implementation Checklist
+
+#### File: `/src/sections/Section19.js`
+
+**Location**: Replace placeholder at lines 1256-1262
+
+##### Step 1: Add shed roof calculation function (after `calculateGableHeight`)
+
+```javascript
+/**
+ * Calculate shed roof height from roof area using rational trigonometry
+ * @param {number} width - Building width (m)
+ * @param {number} length - Building length (m)
+ * @param {number} roofArea - Total roof area from d_85 (m²)
+ * @param {number} shortWallHeight - Height of short wall from g_106 (m)
+ * @returns {Object} - Shed roof geometry
+ */
+function calculateShedHeight(width, length, roofArea, shortWallHeight) {
+  // Shed runs along longer dimension (like gable ridge)
+  const ridgeLength = Math.max(width, length);
+  const span = Math.min(width, length);
+  const ridgeOrientation = length >= width ? "longitudinal" : "transverse";
+
+  // Roof area = ridge length × slope length
+  const slopeLength = roofArea / ridgeLength;
+
+  // Use Pythagorean theorem in squared form (rational trigonometry)
+  // slope² = span² + height²
+  // height² = slope² - span²
+  const h2 = slopeLength * slopeLength - span * span;
+
+  if (h2 <= 0) {
+    console.warn(
+      `[WOMBAT] Shed roof: Invalid geometry - slope length (${slopeLength.toFixed(2)}m) ` +
+      `must be greater than span (${span.toFixed(2)}m)`
+    );
+    return { height: 0, ridgeOrientation, ridgeLength, span, shedEndArea: 0, isValid: false };
+  }
+
+  const height = Math.sqrt(h2);
+
+  // Triangular end walls (two ends, like gable)
+  // Each end has area = (span × height) / 2
+  const shedEndArea = span * height; // Total for both ends
+
+  // Calculate tall wall height
+  const tallWallHeight = shortWallHeight + height;
+
+  console.log(
+    `[WOMBAT] Shed roof geometry:\n` +
+    `  Ridge: ${ridgeOrientation}, length: ${ridgeLength.toFixed(2)}m\n` +
+    `  Span: ${span.toFixed(2)}m\n` +
+    `  Slope length: ${slopeLength.toFixed(2)}m\n` +
+    `  Height rise: ${height.toFixed(2)}m\n` +
+    `  Short wall: ${shortWallHeight.toFixed(2)}m\n` +
+    `  Tall wall: ${tallWallHeight.toFixed(2)}m\n` +
+    `  End wall area (both): ${shedEndArea.toFixed(2)}m²`
+  );
+
+  return {
+    height,
+    ridgeOrientation,
+    ridgeLength,
+    span,
+    slopeLength,
+    shedEndArea,
+    shortWallHeight,
+    tallWallHeight,
+    avgWallHeight: (shortWallHeight + tallWallHeight) / 2,
+    isValid: true,
+  };
+}
+```
+
+##### Step 2: Replace monoplane placeholder in WOMBAT solver
+
+**Find** (lines 1256-1262):
+```javascript
+} else {
+  // MONOPLANE (shed roof) - future implementation
+  console.warn(
+    "[WOMBAT] Monoplane roof type not yet implemented - using flat roof"
+  );
+  roofType = "flat";
+  roofHeight = 0;
+}
+```
+
+**Replace with**:
+```javascript
+} else {
+  // MONOPLANE (shed roof)
+  roofType = "monoplane";
+
+  const shedGeometry = calculateShedHeight(width, length, d_85, g_106);
+
+  if (!shedGeometry.isValid) {
+    console.warn(
+      `[WOMBAT] Invalid shed roof geometry - roof area (${d_85.toFixed(2)}m²) ` +
+      `too small for footprint (${width.toFixed(2)}m × ${length.toFixed(2)}m)`
+    );
+    roofType = "flat";
+    roofHeight = 0;
+    wallArea = d_86; // No end wall extraction
+  } else {
+    roofHeight = shedGeometry.height;
+
+    // Extract triangular end walls from total wall area (like gable)
+    wallArea = Math.max(0, d_86 - shedGeometry.shedEndArea);
+
+    console.log(
+      `[WOMBAT] Shed roof applied:\n` +
+      `  d_86 (total wall): ${d_86.toFixed(2)}m²\n` +
+      `  End walls: ${shedGeometry.shedEndArea.toFixed(2)}m²\n` +
+      `  Remaining wall: ${wallArea.toFixed(2)}m²\n` +
+      `  Short wall height: ${shedGeometry.shortWallHeight.toFixed(2)}m\n` +
+      `  Tall wall height: ${shedGeometry.tallWallHeight.toFixed(2)}m\n` +
+      `  Average wall height: ${shedGeometry.avgWallHeight.toFixed(2)}m`
+    );
+
+    // Store geometry for renderer
+    roofGeometry = {
+      type: "shed",
+      height: shedGeometry.height,
+      ridgeOrientation: shedGeometry.ridgeOrientation,
+      ridgeLength: shedGeometry.ridgeLength,
+      span: shedGeometry.span,
+      slopeLength: shedGeometry.slopeLength,
+      shortWallHeight: shedGeometry.shortWallHeight,
+      tallWallHeight: shedGeometry.tallWallHeight,
+      avgWallHeight: shedGeometry.avgWallHeight,
+    };
+  }
+}
+```
+
+##### Step 3: Update wall height calculation for shed roofs
+
+**Find** wall height calculation section (around line 1300):
+```javascript
+// Calculate wall height from remaining wall area
+const wallHeight = wallArea / wallPerimeter;
+```
+
+**Add shed roof special case BEFORE this**:
+```javascript
+// For shed roofs, use average wall height from geometry
+let wallHeight;
+if (roofType === "monoplane" && roofGeometry?.avgWallHeight) {
+  wallHeight = roofGeometry.avgWallHeight;
+  console.log(
+    `[WOMBAT] Using shed roof average wall height: ${wallHeight.toFixed(2)}m ` +
+    `(short: ${roofGeometry.shortWallHeight.toFixed(2)}m, ` +
+    `tall: ${roofGeometry.tallWallHeight.toFixed(2)}m)`
+  );
+} else {
+  // Calculate wall height from remaining wall area for flat/gable
+  wallHeight = wallArea / wallPerimeter;
+}
+```
+
+##### Step 4: Volume verification for shed roofs
+
+**Add after wall height calculation**:
+```javascript
+// Verify volume constraint
+const calculatedVolume = footprintArea * wallHeight;
+const volumeError = Math.abs(calculatedVolume - targetVolume);
+
+if (volumeError > 0.01) {
+  console.warn(
+    `[WOMBAT] Volume mismatch for ${roofType} roof:\n` +
+    `  Target: ${targetVolume.toFixed(2)}m³\n` +
+    `  Calculated: ${calculatedVolume.toFixed(2)}m³\n` +
+    `  Error: ${volumeError.toFixed(2)}m³`
+  );
+}
+```
+
+### Renderer Updates
+
+#### File: `/src/utils/wombatRender.js`
+
+##### Add shed roof geometry to renderer (after gable implementation)
+
+```javascript
+// Shed roof (monoplane)
+if (roofType === "monoplane" && geom.roofGeometry) {
+  const { ridgeOrientation, shortWallHeight, tallWallHeight, height } = geom.roofGeometry;
+
+  // Determine which walls are short vs tall based on orientation
+  if (ridgeOrientation === "longitudinal") {
+    // Ridge runs along length (X-axis)
+    // Front wall (Y=0) is short, back wall (Y=length) is tall
+    const frontZ = baseZ + shortWallHeight;
+    const backZ = baseZ + tallWallHeight;
+
+    // Shed roof plane (4 corners)
+    const roofPath = `
+      M ${-halfWidth},0,${frontZ}
+      L ${halfWidth},0,${frontZ}
+      L ${halfWidth},${length},${backZ}
+      L ${-halfWidth},${length},${backZ}
+      Z
+    `;
+
+    elements.push(
+      createSVGElement("path", {
+        d: roofPath,
+        fill: colors.roof,
+        stroke: colors.roofEdge,
+        "stroke-width": "0.5",
+      })
+    );
+
+    // Triangular end walls (left and right)
+    const leftEndPath = `
+      M ${-halfWidth},0,${baseZ}
+      L ${-halfWidth},0,${frontZ}
+      L ${-halfWidth},${length},${backZ}
+      L ${-halfWidth},${length},${baseZ}
+      Z
+    `;
+    const rightEndPath = `
+      M ${halfWidth},0,${baseZ}
+      L ${halfWidth},0,${frontZ}
+      L ${halfWidth},${length},${backZ}
+      L ${halfWidth},${length},${baseZ}
+      Z
+    `;
+
+    elements.push(
+      createSVGElement("path", {
+        d: leftEndPath,
+        fill: colors.wall,
+        stroke: colors.wallEdge,
+        "stroke-width": "0.5",
+      })
+    );
+    elements.push(
+      createSVGElement("path", {
+        d: rightEndPath,
+        fill: colors.wall,
+        stroke: colors.wallEdge,
+        "stroke-width": "0.5",
+      })
+    );
+
+  } else {
+    // Ridge runs along width (Y-axis)
+    // Left wall (X=-halfWidth) is short, right wall (X=halfWidth) is tall
+    const leftZ = baseZ + shortWallHeight;
+    const rightZ = baseZ + tallWallHeight;
+
+    // Shed roof plane
+    const roofPath = `
+      M ${-halfWidth},0,${leftZ}
+      L ${-halfWidth},${length},${leftZ}
+      L ${halfWidth},${length},${rightZ}
+      L ${halfWidth},0,${rightZ}
+      Z
+    `;
+
+    elements.push(
+      createSVGElement("path", {
+        d: roofPath,
+        fill: colors.roof,
+        stroke: colors.roofEdge,
+        "stroke-width": "0.5",
+      })
+    );
+
+    // Triangular end walls (front and back)
+    const frontEndPath = `
+      M ${-halfWidth},0,${baseZ}
+      L ${-halfWidth},0,${leftZ}
+      L ${halfWidth},0,${rightZ}
+      L ${halfWidth},0,${baseZ}
+      Z
+    `;
+    const backEndPath = `
+      M ${-halfWidth},${length},${baseZ}
+      L ${-halfWidth},${length},${leftZ}
+      L ${halfWidth},${length},${rightZ}
+      L ${halfWidth},${length},${baseZ}
+      Z
+    `;
+
+    elements.push(
+      createSVGElement("path", {
+        d: frontEndPath,
+        fill: colors.wall,
+        stroke: colors.wallEdge,
+        "stroke-width": "0.5",
+      })
+    );
+    elements.push(
+      createSVGElement("path", {
+        d: backEndPath,
+        fill: colors.wall,
+        stroke: colors.wallEdge,
+        "stroke-width": "0.5",
+      })
+    );
+  }
+}
+```
+
+### Testing Scenarios
+
+#### Test Case 1: Basic Shed Roof
+**Inputs**:
+- `d_85` = 200 m² (roof area)
+- `g_106` = 3.0 m (short wall height)
+- Footprint = 10m × 15m (ridge along 15m length)
+- `d_86` = 200 m² (wall area, includes triangular ends)
+
+**Expected Results**:
+- Ridge orientation: "longitudinal"
+- Slope length ≈ 13.33 m (200 / 15)
+- Height ≈ 13.14 m (from √(13.33² - 10²))
+- Tall wall ≈ 16.14 m (3.0 + 13.14)
+- End wall area ≈ 131.4 m² (10 × 13.14)
+- Remaining wall ≈ 68.6 m² (200 - 131.4)
+
+#### Test Case 2: Low-Slope Shed
+**Inputs**:
+- `d_85` = 160 m² (roof area)
+- `g_106` = 3.0 m (short wall height)
+- Footprint = 10m × 15m
+- `d_86` = 150 m²
+
+**Expected Results**:
+- Slope length ≈ 10.67 m (160 / 15)
+- Height ≈ 3.33 m (from √(10.67² - 10²))
+- Tall wall ≈ 6.33 m
+- End wall area ≈ 33.3 m²
+- Remaining wall ≈ 116.7 m²
+
+#### Test Case 3: Invalid Geometry (roof too small)
+**Inputs**:
+- `d_85` = 100 m² (roof area TOO SMALL)
+- `g_106` = 3.0 m
+- Footprint = 10m × 15m
+
+**Expected Results**:
+- Slope length ≈ 6.67 m (100 / 15)
+- h² < 0 (6.67² - 10² = negative)
+- Fallback to flat roof
+- Console warning about invalid geometry
+
+#### Test Case 4: Transverse Ridge Orientation
+**Inputs**:
+- `d_85` = 200 m²
+- `g_106` = 3.0 m
+- Footprint = 15m × 10m (width > length)
+
+**Expected Results**:
+- Ridge orientation: "transverse" (ridge along 15m width)
+- Same calculations as Test Case 1, but orientation flipped
+
+### Implementation Steps
+
+1. **Create branch**: `git checkout -b WOMBAT-SHED` from current main
+2. **Add `calculateShedHeight()` function** to Section19.js after `calculateGableHeight()`
+3. **Replace monoplane placeholder** with shed roof logic (lines 1256-1262)
+4. **Update wall height calculation** to handle shed roof asymmetry
+5. **Add volume verification** logging
+6. **Update wombatRender.js** with shed roof geometry
+7. **Test with all 4 test cases** above
+8. **Verify visual output** in WOMBAT renderer
+9. **Commit per `.clinerules`**: "Feat: Implement shed roof (monoplane) geometry solver"
+10. **Create PR** to main with test results
+
+### Success Criteria
+
+✅ Shed roof implementation complete when:
+1. `calculateShedHeight()` returns valid geometry for normal cases
+2. Invalid geometry (roof too small) falls back to flat roof gracefully
+3. Triangular end walls correctly subtracted from `d_86`
+4. Volume constraint preserved (calculated volume ≈ d_105)
+5. Renderer displays asymmetric walls (short vs tall) correctly
+6. Both longitudinal and transverse orientations render properly
+7. All 4 test cases pass with expected values
+8. Console logging provides clear geometry breakdown
+
+### Known Constraints
+
+- **g_106 usage**: Represents short wall height (low eave), NOT total building height
+- **Average wall height**: Used for volume calculation due to slope asymmetry
+- **End wall extraction**: Same pattern as gable (triangular ends from d_86)
+- **Ridge orientation**: Always along longer dimension (matches gable behavior)
+- **No trig functions**: Pure rational trigonometry (Pythagorean theorem only)
+
+---
+
 ## Future Enhancements
 
 ### Phase 4: Three.js Migration
