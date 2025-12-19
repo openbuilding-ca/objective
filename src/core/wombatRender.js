@@ -1350,6 +1350,12 @@ window.TEUI.WombatRender = (function () {
       svg.appendChild(roofEdge3);
       svg.appendChild(roofEdge4);
 
+      // Add nodes at high eave corners (tall wall edge)
+      const highEave2Pt = toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY);
+      const highEave3Pt = toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY);
+      svg.appendChild(createNode(highEave2Pt, roofColor, 5));
+      svg.appendChild(createNode(highEave3Pt, roofColor, 5));
+
       // Triangular end walls (left and right)
       // Left end (X=-width/2): SW_ground - SW_low - NW_high - NW_ground
       drawTriangle(
@@ -1400,25 +1406,21 @@ window.TEUI.WombatRender = (function () {
       svg.appendChild(roofEdge3);
       svg.appendChild(roofEdge4);
 
-      // Triangular end walls (front and back)
-      // Front end (Y=-length/2): SW_ground - SE_high - SE_ground
-      drawTriangle(
-        svg,
-        { x: -width / 2, y: -length / 2, z: wallHeight },
-        { x: width / 2, y: -length / 2, z: tallWallHeight },
-        { x: width / 2, y: -length / 2, z: wallHeight },
-        scale, centerX, centerY,
-        roofColor
-      );
-      // Back end (Y=length/2): NW_ground - NW_low - NE_high
-      drawTriangle(
-        svg,
-        { x: -width / 2, y: length / 2, z: wallHeight },
-        { x: -width / 2, y: length / 2, z: shortWallHeight },
-        { x: width / 2, y: length / 2, z: tallWallHeight },
-        scale, centerX, centerY,
-        roofColor
-      );
+      // Add nodes at high eave corners (tall wall edge)
+      const highEave1Pt = toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY);
+      const highEave2Pt = toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY);
+      svg.appendChild(createNode(highEave1Pt, roofColor, 5));
+      svg.appendChild(createNode(highEave2Pt, roofColor, 5));
+
+      // Triangular end walls (front and back) - these are the shed "gable" ends
+      // For transverse orientation: left wall (X=-width/2) is short, right wall (X=width/2) is tall
+      // Front end (Y=-length/2): Trapezoid from slab to eaves
+      // Actually these aren't triangles, they're trapezoids! But we need to draw the sloped portion
+      // Left triangle: SW_slab - SW_short - SE_tall - SE_slab forms a trapezoid
+      // We should not render these as they're actually rectangular walls, not triangular end walls
+      // The "triangular" portion is already part of the roof plane
+
+      // Skip rendering end walls for transverse shed - they're rectangular, handled by main wireframe
     }
 
     // Add roof height label (showing the rise)
@@ -1884,6 +1886,13 @@ window.TEUI.WombatRender = (function () {
       if (geometry.roof.type === "gable" && geometry.roof.gableEndArea > 0) {
         infoLines.push(
           `Gable Area: ${geometry.roof.gableEndArea.toFixed(2)} m²`
+        );
+      }
+
+      // Show shed end area if shed roof
+      if (geometry.roof.type === "monoplane" && geometry.roof.shedData?.shedEndArea > 0) {
+        infoLines.push(
+          `Shed End Area: ${geometry.roof.shedData.shedEndArea.toFixed(2)} m²`
         );
       }
     }
