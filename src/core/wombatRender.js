@@ -1304,45 +1304,52 @@ window.TEUI.WombatRender = (function () {
     const shortWallHeight = shedData.shortWallHeight;
     const tallWallHeight = shedData.tallWallHeight;
 
-    // Four corners of building at short wall height (low eave)
-    const lowEave = [
-      { x: -width / 2, y: -length / 2, z: shortWallHeight }, // SW
-      { x: width / 2, y: -length / 2, z: shortWallHeight },  // SE
-      { x: width / 2, y: length / 2, z: shortWallHeight },   // NE
-      { x: -width / 2, y: length / 2, z: shortWallHeight },  // NW
-    ];
+    // Eave corner heights depend on ridge orientation
+    let eaveCorners;
 
-    // Four corners of building at tall wall height (high eave)
-    const highEave = [
-      { x: -width / 2, y: -length / 2, z: tallWallHeight }, // SW
-      { x: width / 2, y: -length / 2, z: tallWallHeight },  // SE
-      { x: width / 2, y: length / 2, z: tallWallHeight },   // NE
-      { x: -width / 2, y: length / 2, z: tallWallHeight },  // NW
-    ];
+    if (ridgeOrientation === "longitudinal") {
+      // Ridge runs along length (Y-axis)
+      // Front wall (Y=-length/2) is short, back wall (Y=length/2) is tall
+      eaveCorners = [
+        { x: -width / 2, y: -length / 2, z: shortWallHeight }, // SW - short
+        { x: width / 2, y: -length / 2, z: shortWallHeight },  // SE - short
+        { x: width / 2, y: length / 2, z: tallWallHeight },    // NE - tall
+        { x: -width / 2, y: length / 2, z: tallWallHeight },   // NW - tall
+      ];
+    } else {
+      // Ridge runs along width (X-axis) - TRANSVERSE
+      // Left wall (X=-width/2) is short, right wall (X=width/2) is tall
+      eaveCorners = [
+        { x: -width / 2, y: -length / 2, z: shortWallHeight }, // SW - short
+        { x: width / 2, y: -length / 2, z: tallWallHeight },   // SE - tall
+        { x: width / 2, y: length / 2, z: tallWallHeight },    // NE - tall
+        { x: -width / 2, y: length / 2, z: shortWallHeight },  // NW - short
+      ];
+    }
 
     if (ridgeOrientation === "longitudinal") {
       // Ridge runs along length (Y-axis)
       // Front wall (Y=-length/2) is short, back wall (Y=length/2) is tall
 
-      // Shed roof plane (4 corners): SW_low - SE_low - NE_high - NW_high
+      // Shed roof plane (4 corners): SW - SE - NE - NW
       const roofEdge1 = createLine(
-        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
-        toIsometric(lowEave[1].x, lowEave[1].y, lowEave[1].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[0].x, eaveCorners[0].y, eaveCorners[0].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[1].x, eaveCorners[1].y, eaveCorners[1].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge2 = createLine(
-        toIsometric(lowEave[1].x, lowEave[1].y, lowEave[1].z, scale, centerX, centerY),
-        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[1].x, eaveCorners[1].y, eaveCorners[1].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge3 = createLine(
-        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
-        toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[3].x, eaveCorners[3].y, eaveCorners[3].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge4 = createLine(
-        toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY),
-        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[3].x, eaveCorners[3].y, eaveCorners[3].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[0].x, eaveCorners[0].y, eaveCorners[0].z, scale, centerX, centerY),
         roofColor, 2
       );
       svg.appendChild(roofEdge1);
@@ -1350,11 +1357,20 @@ window.TEUI.WombatRender = (function () {
       svg.appendChild(roofEdge3);
       svg.appendChild(roofEdge4);
 
-      // Add nodes at high eave corners (tall wall edge)
-      const highEave2Pt = toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY);
-      const highEave3Pt = toIsometric(highEave[3].x, highEave[3].y, highEave[3].z, scale, centerX, centerY);
-      svg.appendChild(createNode(highEave2Pt, roofColor, 5));
-      svg.appendChild(createNode(highEave3Pt, roofColor, 5));
+      // Add nodes at tall eave corners (NE, NW at tall height)
+      const tallEave2Pt = toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY);
+      const tallEave3Pt = toIsometric(eaveCorners[3].x, eaveCorners[3].y, eaveCorners[3].z, scale, centerX, centerY);
+      svg.appendChild(createNode(tallEave2Pt, roofColor, 5));
+      svg.appendChild(createNode(tallEave3Pt, roofColor, 5));
+
+      // Add vertical connecting edges from building box (wallHeight) to eave corners
+      // These "legs" connect the top of the rectangular building volume to the actual eave heights
+      for (let i = 0; i < 4; i++) {
+        const boxCorner = toIsometric(eaveCorners[i].x, eaveCorners[i].y, wallHeight, scale, centerX, centerY);
+        const eaveCorner = toIsometric(eaveCorners[i].x, eaveCorners[i].y, eaveCorners[i].z, scale, centerX, centerY);
+        const verticalEdge = createLine(boxCorner, eaveCorner, roofColor, 2);
+        svg.appendChild(verticalEdge);
+      }
 
       // Triangular end walls (left and right)
       // Left end (X=-width/2): SW_ground - SW_low - NW_high - NW_ground
@@ -1377,28 +1393,28 @@ window.TEUI.WombatRender = (function () {
       );
 
     } else {
-      // Ridge runs along width (X-axis)
+      // Ridge runs along width (X-axis) - TRANSVERSE
       // Left wall (X=-width/2) is short, right wall (X=width/2) is tall
 
-      // Shed roof plane: SW_low - NW_low - NE_high - SE_high
+      // Shed roof plane (4 corners): SW - NW - NE - SE
       const roofEdge1 = createLine(
-        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
-        toIsometric(lowEave[3].x, lowEave[3].y, lowEave[3].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[0].x, eaveCorners[0].y, eaveCorners[0].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[3].x, eaveCorners[3].y, eaveCorners[3].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge2 = createLine(
-        toIsometric(lowEave[3].x, lowEave[3].y, lowEave[3].z, scale, centerX, centerY),
-        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[3].x, eaveCorners[3].y, eaveCorners[3].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge3 = createLine(
-        toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY),
-        toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[1].x, eaveCorners[1].y, eaveCorners[1].z, scale, centerX, centerY),
         roofColor, 2
       );
       const roofEdge4 = createLine(
-        toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY),
-        toIsometric(lowEave[0].x, lowEave[0].y, lowEave[0].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[1].x, eaveCorners[1].y, eaveCorners[1].z, scale, centerX, centerY),
+        toIsometric(eaveCorners[0].x, eaveCorners[0].y, eaveCorners[0].z, scale, centerX, centerY),
         roofColor, 2
       );
       svg.appendChild(roofEdge1);
@@ -1406,11 +1422,20 @@ window.TEUI.WombatRender = (function () {
       svg.appendChild(roofEdge3);
       svg.appendChild(roofEdge4);
 
-      // Add nodes at high eave corners (tall wall edge)
-      const highEave1Pt = toIsometric(highEave[1].x, highEave[1].y, highEave[1].z, scale, centerX, centerY);
-      const highEave2Pt = toIsometric(highEave[2].x, highEave[2].y, highEave[2].z, scale, centerX, centerY);
-      svg.appendChild(createNode(highEave1Pt, roofColor, 5));
-      svg.appendChild(createNode(highEave2Pt, roofColor, 5));
+      // Add nodes at tall eave corners (SE, NE at tall height)
+      const tallEave1Pt = toIsometric(eaveCorners[1].x, eaveCorners[1].y, eaveCorners[1].z, scale, centerX, centerY);
+      const tallEave2Pt = toIsometric(eaveCorners[2].x, eaveCorners[2].y, eaveCorners[2].z, scale, centerX, centerY);
+      svg.appendChild(createNode(tallEave1Pt, roofColor, 5));
+      svg.appendChild(createNode(tallEave2Pt, roofColor, 5));
+
+      // Add vertical connecting edges from building box (wallHeight) to eave corners
+      // These "legs" connect the top of the rectangular building volume to the actual eave heights
+      for (let i = 0; i < 4; i++) {
+        const boxCorner = toIsometric(eaveCorners[i].x, eaveCorners[i].y, wallHeight, scale, centerX, centerY);
+        const eaveCorner = toIsometric(eaveCorners[i].x, eaveCorners[i].y, eaveCorners[i].z, scale, centerX, centerY);
+        const verticalEdge = createLine(boxCorner, eaveCorner, roofColor, 2);
+        svg.appendChild(verticalEdge);
+      }
 
       // Triangular end walls (front and back) - these are the shed "gable" ends
       // For transverse orientation: left wall (X=-width/2) is short, right wall (X=width/2) is tall

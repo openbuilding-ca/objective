@@ -596,9 +596,24 @@ Implement monoplane (shed) roof geometry solver using rational trigonometry. She
 
 1. **g_106 correlation**: `g_106` represents the **short wall** height (lower eave)
 2. **Wall area subtraction**: Same pattern as gable - triangular end walls extract from `d_86`
-3. **Shed orientation**: Runs along **longer dimension** (like gable ridge orientation)
+3. **Shed orientation**: ⚠️ **REVISED** - Ridge runs across **SHORT dimension** (structural logic)
 4. **Volume constraint**: Same as gable - preserved exactly, dimensions solve from volume
 5. **Basement volume**: Already fixed (see lines 1037-1121 in Section19.js)
+
+### Revised Approach: Prismatic Extrusion Method (2025-12-19)
+
+**Rationale**:
+- Structural efficiency dictates ridge spans SHORT dimension (minimize beam span)
+- 2D trapezoid profile → 3D extrusion is computationally cleaner
+- Solve order: Footprint → 2D elevation profile → Extrude for volume → Render
+
+**Order of Operations**:
+1. **Footprint from d_95** (floor area) - already solved by existing WOMBAT logic
+2. **2D Elevation Profile** - solve trapezoid cross-section using g_106, d_85, footprint
+3. **Extrude for d_105** (volume) - prismatic extrusion length from volume constraint
+4. **Render from 8 nodes** - 4 base corners + 4 eave corners (2 short, 2 tall)
+
+This eliminates iteration - direct geometric solve with clear dependency chain.
 
 ### Mathematical Approach
 
@@ -691,6 +706,158 @@ const volumeError = Math.abs(calculatedVolume - targetVolume);
 ```
 
 **Note**: Unlike gable roofs where volume = footprint × wallHeight (uniform), shed roofs use average wall height because of the slope.
+
+---
+
+## Alternative: Prismatic Extrusion Method (PROPOSED - 2025-12-19)
+
+### Conceptual Overview
+
+Rather than solving from roof area backwards, solve the 2D trapezoid elevation profile first, then extrude prismatically to satisfy volume.
+
+**Advantages**:
+1. **Non-iterative** - direct geometric solve
+2. **Clearer dependency chain** - d_95 → profile → d_105 → render
+3. **Simpler rendering** - 8 nodes (4 base + 4 eave), prismatic extrusion
+4. **Structural logic** - ridge spans SHORT dimension (beam efficiency)
+
+### Step-by-Step Solve Order
+
+#### Phase 1: Footprint (Already Solved)
+```javascript
+// Existing WOMBAT logic from d_95 (floor area)
+const footprint = Math.sqrt(d_95 / aspectRatio); // or mezzanine logic
+const width = footprint.width;   // SHORT dimension
+const length = footprint.length; // LONG dimension
+```
+
+#### Phase 2: 2D Elevation Profile (Trapezoid Cross-Section)
+
+**View**: Looking at building from END (perpendicular to ridge)
+
+```
+        Tall wall (g_106 + h)
+        |     /
+        |    /  <- Roof slope
+        |   /
+        |  /
+        | /
+        |/________
+        Short wall (g_106)
+        |<-width->|
+```
+
+**Solve for height rise (h)**:
+```javascript
+// Given:
+// - d_85 = roof area (m²)
+// - width = short footprint dimension (m)
+// - length = long footprint dimension (ridge length) (m)
+// - g_106 = short wall height (m)
+
+// Ridge runs across SHORT dimension (width)
+const ridgeLength = width;
+const span = length; // Distance from short wall to tall wall
+
+// Roof area = ridge length × slope length
+const slopeLength = d_85 / ridgeLength;
+
+// Pythagorean: slope² = span² + h²
+// Solve: h² = slope² - span²
+const h2 = slopeLength * slopeLength - span * span;
+const height = Math.sqrt(h2);
+
+const shortWallHeight = g_106;
+const tallWallHeight = g_106 + height;
+```
+
+**Trapezoid Profile Defined by 4 nodes (2D)**:
+```javascript
+const profile2D = [
+  { x: 0,    z: 0 },               // Ground, short wall base
+  { x: span, z: 0 },               // Ground, tall wall base
+  { x: span, z: tallWallHeight },  // Eave, tall wall top
+  { x: 0,    z: shortWallHeight }, // Eave, short wall top
+];
+```
+
+#### Phase 3: Extrude for Volume (d_105)
+
+**Solve extrusion depth to match volume**:
+```javascript
+// Trapezoid area (cross-section)
+const trapezoidArea = ((shortWallHeight + tallWallHeight) / 2) * span;
+
+// Extrusion depth = d_105 / trapezoid area
+const extrusionDepth = d_105 / trapezoidArea;
+
+// Verify: extrusionDepth should equal ridgeLength (width) if inputs consistent
+if (Math.abs(extrusionDepth - ridgeLength) > 0.01) {
+  console.warn(`[WOMBAT] Volume inconsistency:
+    Expected ridge: ${ridgeLength.toFixed(2)}m
+    From d_105: ${extrusionDepth.toFixed(2)}m`);
+}
+```
+
+#### Phase 4: Generate 8 Corner Nodes (3D)
+
+**Extrude 2D trapezoid along Y-axis (ridge direction)**:
+```javascript
+// 4 corners at Y = 0 (front)
+const frontCorners = [
+  { x: -width/2, y: 0, z: 0 },               // SW ground
+  { x:  width/2, y: 0, z: 0 },               // SE ground
+  { x:  width/2, y: 0, z: tallWallHeight },  // SE eave (tall)
+  { x: -width/2, y: 0, z: shortWallHeight }, // SW eave (short)
+];
+
+// 4 corners at Y = length (back)
+const backCorners = [
+  { x: -width/2, y: length, z: 0 },               // NW ground
+  { x:  width/2, y: length, z: 0 },               // NE ground
+  { x:  width/2, y: length, z: tallWallHeight },  // NE eave (tall)
+  { x: -width/2, y: length, z: shortWallHeight }, // NW eave (short)
+];
+
+const eaveCorners = [
+  frontCorners[3], // SW short eave
+  frontCorners[2], // SE tall eave
+  backCorners[2],  // NE tall eave
+  backCorners[3],  // NW short eave
+];
+```
+
+**Ridge orientation**: "transverse" (ridge runs along width/X-axis, across short dimension)
+
+#### Phase 5: Render
+
+Renderer receives 8 nodes and draws:
+- **Building box**: 8 ground corners → 8 eave corners (vertical edges)
+- **Roof plane**: 4 eave corners (sloped quadrilateral)
+- **End walls**: 2 trapezoids (front Y=0, back Y=length)
+
+### Comparison: Current vs Prismatic
+
+| Aspect | Current Method | Prismatic Method |
+|--------|---------------|------------------|
+| **Ridge orientation** | Long dimension | Short dimension (structural) |
+| **Solve order** | Roof area → span → height | Footprint → profile → volume |
+| **Iteration** | Possible convergence issues | Direct solve |
+| **Rendering complexity** | Asymmetric eave arrays | 8 nodes, prismatic |
+| **Volume verification** | Check after | Solve for |
+| **Code clarity** | Conditional logic | Sequential steps |
+
+### Recommendation
+
+**Adopt prismatic extrusion method**:
+1. Swap ridge orientation (across short dimension)
+2. Solve 2D trapezoid from d_85, g_106, footprint
+3. Extrude to satisfy d_105
+4. Render from 8 nodes
+
+This matches structural convention, eliminates iteration, and simplifies rendering.
+
+---
 
 ### Implementation Checklist
 
