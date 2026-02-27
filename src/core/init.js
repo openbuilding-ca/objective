@@ -948,71 +948,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (success) {
           console.log("[init.js] ComputationGraph initialized");
 
-          // Enable LegacyAdapter: intercepts SM.setValue() and dual-writes to graph state.
-          // Every SM write automatically flows to MultiModelState in real-time.
-          const CI = window.TEUI.ComputationIntegration;
-          CI.enableAdapter();
-
-          // One-way data flow: SM input change → partial graph recompute → stamp to DOM
-          // Registered here (after CI init) because the listener needs CI + graph to be ready.
-          const SM = window.TEUI.StateManager;
-          if (SM) {
-            let _recomputing = false;
-            let _legacyLookup = null;
-
-            function getLegacyLookup() {
-              if (_legacyLookup) return _legacyLookup;
-              const graph = window.TEUI.ComputationIntegration.getGraph();
-              if (!graph) return null;
-              _legacyLookup = new Map();
-              // ONLY inputs — computed node values synced back to SM must be ignored.
-              // This ensures the wildcard only reacts to user-changed inputs.
-              for (const id of (graph.getAllInputIds?.() || [])) {
-                const inp = graph.getInput(id);
-                if (inp?.legacyId) _legacyLookup.set(inp.legacyId, id);
-              }
-              return _legacyLookup;
+          // Enable DOMBridge for reactive UI updates
+          setTimeout(function() {
+            const bridgeEnabled = window.TEUI.ComputationIntegration.enableDOMBridge();
+            if (bridgeEnabled) {
+              console.log("[init.js] DOMBridge enabled");
             }
-
-            SM.addListener("*", function (newValue, oldValue, fieldId) {
-              if (_recomputing) return;
-
-              const CI = window.TEUI.ComputationIntegration;
-              if (!CI?.isInitialized?.()) return;
-
-              const lookup = getLegacyLookup();
-              const semanticPath = lookup?.get(fieldId);
-              if (!semanticPath) return;
-
-              _recomputing = true;
-              try {
-                // Full dual-model recalc: populates reference model, computes both
-                // models, syncs to SM, stamps DOM. This ensures shared inputs like
-                // conditioned area propagate to both models and compliance ratios
-                // stay correct. calculateAll() mutes SM listeners internally.
-                window.TEUI.Calculator.calculateAll();
-              } finally {
-                _recomputing = false;
-              }
-            });
-            console.log("[init.js] Wildcard SM listener registered for partial recompute");
-          }
+          }, 100);
         }
       }, 500);
-
-      // Auto-load sample project for testing (graph-parity branch only)
-      setTimeout(async function () {
-        try {
-          const resp = await fetch("src/template/case-studies/01-assembly-obc-sb10.csv");
-          if (resp.ok) {
-            const csvText = await resp.text();
-            window.TEUI.FileHandler.processImportedCSV(csvText);
-            console.log("[init.js] Auto-loaded 02-residence-sb12-net-zero.csv");
-          }
-        } catch (e) {
-          console.warn("[init.js] Auto-load failed:", e);
-        }
-      }, 1500);
     }
   } else {
     console.error("Core TEUI modules (StateManager, FieldManager) not found!");

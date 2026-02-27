@@ -18,16 +18,41 @@ Based on validation testing comparing new computation nodes to legacy StateManag
 3. **Ventilation Schedule Factor**
    - Added schedule factor `(occupiedHours / totalHours)` for "Volume by Schedule" and "Occupant by Schedule" methods
 
-### Remaining Mismatches - ALL RESOLVED ✅
+### Remaining Mismatches - TODO
 
-All mismatches were fixed during the graph parity work. 12/12 case studies now pass with 632-635 exact matches and 0 mismatches.
+1. **Air Leakage Heat Loss (i_103)** - 52% difference
+   - Legacy uses NRL50 (Normalized Leakage Rate): `(1.21 × NRL50 × area / N_factor × HDD × 24) / 1000`
+   - New uses ACH-based: `(ACH_natural × volume × 0.34 × HDD × 24) / 1000`
+   - Need to add NRL50 input (g_108) and use legacy formula
 
-1. ~~**Air Leakage Heat Loss (i_103)**~~ ✅ NRL50 formula implemented in VolumeMetricsNodes.js
-2. ~~**Ventilation Rate (d_120)**~~ ✅ Method detection fixed in VentilationNodes.js
-3. ~~**Radiant Gains Utilization Factor (g_80)**~~ ✅ Dynamic calculation implemented in RadiantGainsNodes.js
-4. ~~**Ground-Facing CDD (h_22)**~~ ✅ Handled (negative CDD clamped to 0)
-5. ~~**Mechanical COP Values (h_113, j_113)**~~ ✅ HSPF-to-COP conversion fixed in MechanicalNodes.js
-6. ~~**Various percentage fields**~~ ✅ Cascade resolved by upstream fixes
+2. **Ventilation Rate (d_120)** - 76% difference
+   - Method is synced as "Occupant Constant" but legacy calculates as "Volume by Schedule"
+   - May be a legacy bug where dropdown doesn't control calculation
+   - Need to investigate Section13.js ventilation calculation
+
+3. **Radiant Gains Utilization Factor (g_80)** - 75% difference
+   - Legacy: 0.228 (dynamic calculation)
+   - New: 0.4 (static "NRC 40%" default)
+   - Need to implement dynamic utilization factor calculation
+
+4. **Ground-Facing CDD (h_22)** - Intentional difference
+   - Legacy: -1680 (negative CDD)
+   - New: 0 (negative CDD clamped to 0)
+   - Physically, negative CDD doesn't make sense - new behavior is correct
+
+5. **Mechanical COP Values (h_113, j_113)** - ~26-36% difference
+   - Need to verify HSPF-to-COP conversion formula
+   - Check if heating system type detection is correct
+
+6. **Various percentage fields** - Cascade from above errors
+   - Heat loss percentages (j_85, j_86, etc.) differ by ~5%
+   - Heat gain percentages have larger errors due to ground-facing issues
+
+### Files to Update
+- `VolumeMetricsNodes.js` - Air leakage formula
+- `VentilationNodes.js` - Method detection / formula selection
+- `RadiantGainsNodes.js` - Dynamic utilization factor
+- `MechanicalNodes.js` - COP calculation verification
 
 ---
 

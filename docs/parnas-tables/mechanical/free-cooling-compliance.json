@@ -1,5 +1,5 @@
 {
-  "id": "compliance.freeCooling.status",
+  "id": "mechanical.freeCoolingCompliance",
   "legacyId": "n_124",
   "label": "Free Cooling Compliance Status",
   "section": "S13",

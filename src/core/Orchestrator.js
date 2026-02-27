@@ -268,10 +268,8 @@ TEUI.Orchestrator = (function () {
         id: "sect01",
         dependsOn: ["sect15", "sect05"],
         outputs: ["dashboard_values"],
-        calculate: () => {
-          if (window.TEUI.DOMBridge?.stampAll) window.TEUI.DOMBridge.stampAll();
-          window.TEUI.SectionModules?.sect01?.postStamp?.();
-        },
+        calculate: () =>
+          window.TEUI.SectionModules?.sect01?.runAllCalculations?.(),
       },
     ];
 

@@ -211,6 +211,19 @@ TEUI.FieldManager = (function () {
         console.log(
           `[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`
         );
+
+        // ✅ FIX: Call section's calculateAll() after slider changes
+        // This matches the pattern used for editable fields (handleFieldBlur)
+        // and eliminates the need for sections to have self-listeners (Anti-Pattern 7)
+        if (
+          sectionModule.calculateAll &&
+          typeof sectionModule.calculateAll === "function"
+        ) {
+          sectionModule.calculateAll();
+          console.log(
+            `[FieldManager] Called ${sectionId}.calculateAll() after ${fieldId} change`
+          );
+        }
       } else {
         // Fallback: section exists but no ModeManager - direct StateManager write
         // This is normal for display-only sections like sect01 that don't have calculations
@@ -1417,20 +1430,18 @@ TEUI.FieldManager = (function () {
           let formattedSliderValue = displayValue;
           if (window.TEUI && window.TEUI.formatNumber) {
             if (fieldDef.type === "percentage") {
+              // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
+              // This part might need adjustment based on how slider values are stored/passed.
+              // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue) / 100,
                 "percent-0dp"
-              );
-            } else if (fieldDef.type === "year_slider") {
-              formattedSliderValue = window.TEUI.formatNumber(
-                parseFloat(displayValue),
-                "integer-nocomma"
-              );
+              ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue),
                 "number-2dp"
-              );
+              ); // Default for others
             }
           }
           if (displaySpan.textContent !== formattedSliderValue) {
@@ -1462,20 +1473,18 @@ TEUI.FieldManager = (function () {
           let formattedSliderValue = displayValue;
           if (window.TEUI && window.TEUI.formatNumber) {
             if (fieldDef.type === "percentage") {
+              // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
+              // This part might need adjustment based on how slider values are stored/passed.
+              // For now, let's assume displayValue is ready for direct display or needs simple formatting.
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue) / 100,
                 "percent-0dp"
-              );
-            } else if (fieldDef.type === "year_slider") {
-              formattedSliderValue = window.TEUI.formatNumber(
-                parseFloat(displayValue),
-                "integer-nocomma"
-              );
+              ); // Example: 20 -> 20%
             } else {
               formattedSliderValue = window.TEUI.formatNumber(
                 parseFloat(displayValue),
                 "number-2dp"
-              );
+              ); // Default for others
             }
           }
           if (displaySpan.textContent !== formattedSliderValue) {

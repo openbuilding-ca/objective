@@ -1,6 +1,6 @@
 {
-  "id": "f280.certificationValid",
-  "legacyId": "f280_cert_valid",
+  "id": "f280.designerCertification",
+  "legacyId": "f280_cert",
   "label": "F280 Designer Certification Validation",
   "section": "SF280",
   "classification": "A",
@@ -8,8 +8,7 @@
     "description": "Validates designer certification and licensing requirements for F280 compliance submissions per CSA F280-12 Section 7.1. All F280 calculations must be performed by a 'competent person' with appropriate professional credentials. This specification defines the required certification fields and validation rules for F280 form Page 1 designer information.",
     "standard": "CSA F280-12 Section 7.1",
     "codeReference": "NBC 9.33.5.1",
-    "formPage": "F280 Form Page 1 - Designer Information & Certification",
-    "implementationNote": "The implementation uses only 5 of the 12 documented inputs (name, certType, certNumber, serviceOrg, attestation) and returns a simple checkmark/X boolean rather than the rich {valid, missingFields, warnings} object described in the Parnas table. The remaining 7 inputs (company, address, city, province, postalCode, phone, email) are display-only fields on the form and not consumed by the validation node."
+    "formPage": "F280 Form Page 1 - Designer Information & Certification"
   },
   "signature": {
     "inputs": [
@@ -26,14 +25,7 @@
       {
         "name": "f280.designer.certType",
         "type": "string",
-        "enum": [
-          "NRCan EA",
-          "TECA",
-          "P.Eng",
-          "OAA",
-          "BCIN",
-          "Other"
-        ],
+        "enum": ["NRCan EA", "TECA", "P.Eng", "OAA", "BCIN", "Other"],
         "description": "Type of professional certification held"
       },
       {
@@ -143,12 +135,7 @@
         "Active Service Organization affiliation",
         "Requalification current (every 3 years)"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "serviceOrg",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "serviceOrg", "attestation"],
       "description": "Natural Resources Canada registered Energy Advisor, qualified to perform EnerGuide evaluations and F280 calculations for residential buildings."
     },
     "TECA": {
@@ -157,11 +144,7 @@
         "TECA certification exam passed",
         "Active TECA membership"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "attestation"],
       "description": "TECA-certified professional, particularly recognized in British Columbia for F280 calculations."
     },
     "P.Eng": {
@@ -170,12 +153,7 @@
         "Licensed P.Eng in applicable province",
         "Competence in building science / HVAC design"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "province",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "province", "attestation"],
       "description": "Licensed Professional Engineer with demonstrated competence in F280 methodology. Must be licensed in the province where the building is located."
     },
     "OAA": {
@@ -184,11 +162,7 @@
         "OAA membership current",
         "Competence in building science"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "attestation"],
       "description": "Registered architect who may perform F280 calculations as part of building design services in Ontario."
     },
     "BCIN": {
@@ -197,11 +171,7 @@
         "Valid BCIN registration",
         "Building science qualification category"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "attestation"],
       "description": "Ontario Building Code Identification Number holder with appropriate qualification category for HVAC design."
     },
     "Other": {
@@ -210,11 +180,7 @@
         "Demonstrable competence in CSA F280-12 methodology",
         "Accepted by local Authority Having Jurisdiction (AHJ)"
       ],
-      "requiredFields": [
-        "name",
-        "certNumber",
-        "attestation"
-      ],
+      "requiredFields": ["name", "certNumber", "attestation"],
       "description": "Other qualified professional accepted by the local Authority Having Jurisdiction. Must demonstrate competence in F280 methodology per NBC definition of 'competent person'."
     }
   },
@@ -247,10 +213,7 @@
         "fieldId": "f280_compliance_type",
         "label": "Compliance Type",
         "type": "dropdown",
-        "options": [
-          "Whole House",
-          "Room-by-Room"
-        ],
+        "options": ["Whole House", "Room-by-Room"],
         "required": true,
         "default": "Whole House"
       },
@@ -258,10 +221,7 @@
         "fieldId": "f280_units",
         "label": "Units",
         "type": "dropdown",
-        "options": [
-          "Metric",
-          "Imperial"
-        ],
+        "options": ["Metric", "Imperial"],
         "required": true,
         "default": "Metric"
       },
@@ -293,14 +253,7 @@
         "fieldId": "f280_cert_type",
         "label": "Certification Type",
         "type": "dropdown",
-        "options": [
-          "NRCan EA",
-          "TECA",
-          "P.Eng",
-          "OAA",
-          "BCIN",
-          "Other"
-        ],
+        "options": ["NRCan EA", "TECA", "P.Eng", "OAA", "BCIN", "Other"],
         "required": true
       },
       {
@@ -332,21 +285,7 @@
         "fieldId": "f280_province",
         "label": "Province",
         "type": "dropdown",
-        "options": [
-          "ON",
-          "BC",
-          "AB",
-          "SK",
-          "MB",
-          "QC",
-          "NB",
-          "NS",
-          "PE",
-          "NL",
-          "NT",
-          "YT",
-          "NU"
-        ],
+        "options": ["ON", "BC", "AB", "SK", "MB", "QC", "NB", "NS", "PE", "NL", "NT", "YT", "NU"],
         "required": true
       },
       {
@@ -411,12 +350,8 @@
       },
       "expected": {
         "valid": false,
-        "missingFields": [
-          "serviceOrg"
-        ],
-        "warnings": [
-          "NRCan Energy Advisors must be affiliated with a Service Organization"
-        ]
+        "missingFields": ["serviceOrg"],
+        "warnings": ["NRCan Energy Advisors must be affiliated with a Service Organization"]
       }
     },
     {
@@ -430,12 +365,8 @@
       },
       "expected": {
         "valid": false,
-        "missingFields": [
-          "attestation"
-        ],
-        "warnings": [
-          "Designer must attest to calculation accuracy per CSA F280-12 Section 7.1"
-        ]
+        "missingFields": ["attestation"],
+        "warnings": ["Designer must attest to calculation accuracy per CSA F280-12 Section 7.1"]
       }
     },
     {

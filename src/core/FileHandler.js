@@ -236,7 +236,14 @@
           "[FileHandler DEBUG] Returned from processImportedExcelReference"
         );
 
-        this.syncPostImportUI();
+        // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
+        console.log(
+          "[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete..."
+        );
+        this.syncPatternASections();
+        console.log(
+          "[FileHandler] ✅ Pattern A sections synced with imported values"
+        );
       } finally {
         // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
         window.TEUI.StateManager.unmuteListeners();
@@ -254,9 +261,40 @@
         typeof this.calculator.calculateAll === "function"
       ) {
         this.calculator.calculateAll();
-        // calculateAll() handles the complete pipeline:
-        // graph compute → syncToSM → DOMBridge.stampAll → postStamp
-        // No legacy section refreshUI/updateCalculatedDisplayValues needed.
+
+        // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
+        // Pattern A sections use isolated state - DOM must be refreshed to show updated values
+        console.log(
+          "[FileHandler] 🔄 Refreshing Pattern A section UIs after import..."
+        );
+        const patternASections = [
+          "sect02",
+          "sect03",
+          "sect04",
+          "sect05",
+          "sect06",
+          "sect07",
+          "sect08",
+          "sect09",
+          "sect10",
+          "sect11",
+          "sect12",
+          "sect13",
+          "sect14",
+          "sect15",
+        ];
+
+        patternASections.forEach(sectionId => {
+          const section = window.TEUI?.SectionModules?.[sectionId];
+          if (section?.ModeManager?.refreshUI) {
+            section.ModeManager.refreshUI();
+            // ✅ Also update calculated display values (some sections need both calls)
+            if (section.ModeManager.updateCalculatedDisplayValues) {
+              section.ModeManager.updateCalculatedDisplayValues();
+            }
+            console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
+          }
+        });
       }
     }
 
@@ -485,21 +523,20 @@
         );
 
         try {
-          // Reset graph state so stale inputs don't survive the import.
-          // CSV only overwrites fields it contains; without this, graph
-          // inputs from a previous load or initialization persist.
-          const CI = window.TEUI.ComputationIntegration;
-          if (CI?.resetGraphState) {
-            CI.resetGraphState();
-          }
-
           // Import all data (target + reference)
           this.updateStateFromImportData(importedData, 0, false);
           console.log(
             `[FileHandler] Imported ${targetCount} target + ${refCount} reference values`
           );
 
-          this.syncPostImportUI();
+          // ✅ CRITICAL: Sync Pattern A sections AFTER import
+          console.log(
+            "[FileHandler] 🔧 Syncing all Pattern A sections after CSV import..."
+          );
+          this.syncPatternASections();
+          console.log(
+            "[FileHandler] ✅ Pattern A sections synced with imported values"
+          );
         } finally {
           // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
           window.TEUI.StateManager.unmuteListeners();
@@ -517,17 +554,22 @@
           typeof this.calculator.calculateAll === "function"
         ) {
           this.calculator.calculateAll();
-          // calculateAll() handles the complete pipeline:
-          // graph compute → syncToSM → DOMBridge.stampAll → postStamp
-          // No legacy section refreshUI/updateCalculatedDisplayValues needed.
 
-          // Validate SM→graph alignment AFTER calculateAll (which runs
-          // populateReferenceModel) so the reference model is fully populated
-          const CI = window.TEUI.ComputationIntegration;
-          if (CI?.validateGraphInputs) {
-            console.log("[FileHandler] Validating SM→Graph input alignment after calculation...");
-            CI.validateGraphInputs();
-          }
+          // Refresh all section UIs after graph compute
+          const sectionIds = [
+            "sect01", "sect02", "sect03", "sect04", "sect05", "sect06",
+            "sect07", "sect08", "sect09", "sect10", "sect11", "sect12",
+            "sect13", "sect14", "sect15", "sect16", "sect17", "sect18"
+          ];
+          sectionIds.forEach(sectionId => {
+            const section = window.TEUI?.SectionModules?.[sectionId];
+            if (section?.ModeManager?.refreshUI) {
+              section.ModeManager.refreshUI();
+              if (section.ModeManager.updateCalculatedDisplayValues) {
+                section.ModeManager.updateCalculatedDisplayValues();
+              }
+            }
+          });
         }
 
         this.showStatus(
@@ -626,7 +668,7 @@
 
             // Target fields: Validate and update DOM
             // ✅ CRITICAL: Skip validation for S03 location fields (d_19, h_19)
-            // These are S03 dropdown fields, not FieldManager-rendered fields
+            // These are Pattern A fields managed by S03's isolated state, not FieldManager
             const isS03LocationField = ["d_19", "h_19"].includes(fieldId);
 
             if (
@@ -755,7 +797,7 @@
 
             // Target fields: Validate and update DOM
             // ✅ CRITICAL: Skip validation for S03 location fields (d_19, h_19)
-            // These are S03 dropdown fields, not FieldManager-rendered fields
+            // These are Pattern A fields managed by S03's isolated state, not FieldManager
             const isS03LocationField = ["d_19", "h_19"].includes(fieldId);
 
             if (
@@ -857,6 +899,8 @@
         }
       }
 
+      // ✅ REMOVED: syncPatternASections() now called AFTER both Target and Reference imports
+      // See processImportedExcel() for the new location
 
       console.log(
         `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`
@@ -864,20 +908,80 @@
     }
 
     /**
-     * Post-import UI fixups: repopulate dropdowns and update field lock states.
-     * Calculator.calculateAll() after import handles: graph compute → syncToSM → stampAll.
+     * ✅ PHASE 2: Sync Pattern A sections from global StateManager after import
+     * Pattern A sections (S02, S03, S04, S05, S06, S08, S15) use isolated DualState
+     * for state sovereignty per CHEATSHEET.md. Import populates global StateManager,
+     * but isolated states need explicit sync to use imported values in calculations.
      */
-    syncPostImportUI() {
-      // Sync S03 province/city dropdowns after import
-      // Import sets d_19/h_19 in StateManager but doesn't repopulate city dropdown options
-      const sect03 = window.TEUI?.SectionModules?.sect03;
-      if (sect03?.syncLocationDropdowns) {
-        sect03.syncLocationDropdowns();
+    /**
+     * Sync Pattern A sections from global StateManager
+     * @param {boolean} skipAreaSync - If true, skip S11 area sync to prevent contamination during overlays
+     * @param {boolean} skipTargetSync - If true, skip TargetState sync (Reference mode Set Values)
+     * @param {boolean} skipReferenceSync - If true, skip ReferenceState sync (Target mode Set Values)
+     */
+    syncPatternASections(
+      skipAreaSync = false,
+      skipTargetSync = false,
+      skipReferenceSync = false
+    ) {
+      // Pattern A sections per CHEATSHEET.md (lines 225-227)
+      const patternASections = [
+        { id: "sect02", name: "S02" },
+        { id: "sect03", name: "S03" }, // Already synced above, but safe to call again
+        { id: "sect04", name: "S04" },
+        { id: "sect05", name: "S05" },
+        { id: "sect06", name: "S06" },
+        { id: "sect07", name: "S07" },
+        { id: "sect08", name: "S08" },
+        { id: "sect09", name: "S09" },
+        { id: "sect10", name: "S10" },
+        { id: "sect11", name: "S11" },
+        { id: "sect12", name: "S12" },
+        { id: "sect13", name: "S13" },
+        { id: "sect14", name: "S14" },
+        { id: "sect15", name: "S15" },
+        { id: "sect19", name: "S19" },
+      ];
+
+      console.log(
+        "[FileHandler] 🔧 PHASE 2: Syncing Pattern A sections from global StateManager..."
+      );
+      if (skipAreaSync) {
+        console.log(
+          "[FileHandler] ⚠️ Skipping S11 area sync to prevent Target/Reference contamination during overlay"
+        );
       }
 
-      // Update field lock states after import — import sets d_113/d_51 via
-      // StateManager.setValue() which bypasses UI event handlers, so we must
-      // explicitly call ghosting/visibility functions.
+      patternASections.forEach(({ id, name }) => {
+        const section = window.TEUI?.SectionModules?.[id];
+
+        if (!skipTargetSync && section?.TargetState?.syncFromGlobalState) {
+          section.TargetState.syncFromGlobalState();
+        }
+
+        if (
+          !skipReferenceSync &&
+          section?.ReferenceState?.syncFromGlobalState
+        ) {
+          section.ReferenceState.syncFromGlobalState();
+        }
+
+        // ✅ CRITICAL: Refresh DOM after syncing state from imported values
+        // This updates editable fields (j_115, j_116, etc.) to show imported values
+        if (section?.ModeManager?.refreshUI) {
+          section.ModeManager.refreshUI();
+          console.log(`[FileHandler] ${name} DOM refreshed after sync`);
+        }
+      });
+
+      console.log("[FileHandler] ✅ PHASE 2: Pattern A section sync complete");
+
+      // ✅ FIX (Nov 29): Update field lock states after import (same as S18 Decarbonize fix)
+      // Import sets d_113/d_51 via StateManager.setValue() which bypasses UI event handlers
+      // Must explicitly call ghosting/visibility functions to enable/disable conditional fields
+      console.log(
+        "[FileHandler] 🔧 PHASE 2.5: Updating field lock states for imported system types..."
+      );
 
       // Update S07 field locks based on imported d_51 (SHW system)
       const sect07 = window.TEUI?.SectionModules?.sect07;
@@ -906,8 +1010,40 @@
         }
       }
 
-      console.log("[FileHandler] Field lock states updated for imported system types");
-      // S10→S11 area bridging now handled by ComputationGraph (TransmissionLossNodes bridge nodes)
+      console.log("[FileHandler] ✅ PHASE 2.5: Field lock states updated");
+
+      // ✅ FIX (Oct 10): Manually sync S11 window areas from S10 AFTER all imports complete
+      // ✅ FIX (Nov 2): Enable dual-state sync during import to populate Reference areas
+      // ✅ FIX (Dec 10): Skip area sync if skipAreaSync flag set (overlay operations don't change areas)
+      // S11's syncFromGlobalState() no longer calls this to prevent premature sync
+      if (
+        !skipAreaSync &&
+        window.TEUI?.SectionModules?.sect11?.syncAreasFromS10
+      ) {
+        console.log(
+          "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10..."
+        );
+
+        // Enable dual-state sync for import
+        if (window.TEUI?.SectionModules?.sect11?.setImportActive) {
+          window.TEUI.SectionModules.sect11.setImportActive(true);
+        }
+
+        window.TEUI.SectionModules.sect11.syncAreasFromS10();
+
+        // Disable dual-state sync after import
+        if (window.TEUI?.SectionModules?.sect11?.setImportActive) {
+          window.TEUI.SectionModules.sect11.setImportActive(false);
+        }
+
+        console.log(
+          "[FileHandler] ✅ PHASE 2.5: S11 window area sync complete"
+        );
+      } else if (skipAreaSync) {
+        console.log(
+          "[FileHandler] ⏭️ PHASE 2.5: Skipping S11 area sync (not needed for overlay)"
+        );
+      }
     }
 
     /**
@@ -945,26 +1081,60 @@
       window.TEUI.StateManager.muteListeners();
 
       try {
-        // Write reference values to StateManager (skipRecalculation=true)
+        // ✅ PHASE 2: Use the PROVEN import method (writes directly to StateManager)
+        // ⚠️ CRITICAL: Pass skipRecalculation=true to prevent loadReferenceData() contamination
+        // We've already written the values with correct prefixes - no need for additional reference loading
         this.updateStateFromImportData(importedData, 0, true);
         console.log(
           `[FileHandler] Applied ${Object.keys(importedData).length} values via updateStateFromImportData`
         );
 
-        this.syncPostImportUI();
+        // ✅ PHASE 3: Sync Pattern A sections FROM StateManager
+        // ✅ FIX #6 (Dec 11): Mode-aware sync - only sync the state being written to
+        // Reference mode: Skip TargetState (preserve imported values), sync ReferenceState only
+        // Target mode: Skip ReferenceState (preserve reference values), sync TargetState only
+        const skipTargetSync = targetMode === "reference";
+        const skipReferenceSync = targetMode === "target";
+        this.syncPatternASections(true, skipTargetSync, skipReferenceSync);
       } finally {
+        // 🔓 PHASE 4: IMPORT QUARANTINE END - Always unmute
         window.TEUI.StateManager.unmuteListeners();
       }
 
-      // Trigger complete calculation cascade
+      // ✅ PHASE 5: Trigger complete calculation cascade
       if (
         this.calculator &&
         typeof this.calculator.calculateAll === "function"
       ) {
         this.calculator.calculateAll();
-        // calculateAll() handles the complete pipeline:
-        // graph compute → syncToSM → DOMBridge.stampAll → postStamp
-        // No legacy section refreshUI/updateCalculatedDisplayValues needed.
+
+        // ✅ PHASE 6: Final DOM refresh (show calculated results)
+        const allSections = [
+          "sect02",
+          "sect03",
+          "sect04",
+          "sect05",
+          "sect06",
+          "sect07",
+          "sect08",
+          "sect09",
+          "sect10",
+          "sect11",
+          "sect12",
+          "sect13",
+          "sect14",
+          "sect15",
+        ];
+
+        allSections.forEach(sectionId => {
+          const section = window.TEUI?.SectionModules?.[sectionId];
+          if (section?.ModeManager?.refreshUI) {
+            section.ModeManager.refreshUI();
+          }
+          if (section?.ModeManager?.updateCalculatedDisplayValues) {
+            section.ModeManager.updateCalculatedDisplayValues();
+          }
+        });
       } else {
         console.error(
           "[FileHandler] Calculator.calculateAll() not available - calculations not triggered"

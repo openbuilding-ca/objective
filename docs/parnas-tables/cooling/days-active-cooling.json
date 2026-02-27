@@ -52,10 +52,6 @@
       {
         "condition": "climate.coolingDays > 0",
         "description": "Must have cooling season"
-      },
-      {
-        "condition": "climate.cooling.degreedays > 0",
-        "description": "Must have cooling degree days"
       }
     ]
   },

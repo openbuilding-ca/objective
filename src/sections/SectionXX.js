@@ -245,7 +245,17 @@ window.TEUI.SectionModules.sectXX = (function () {
       }
     },
 
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    syncFromGlobalState: function (fieldIds = ["d_xx", "e_xx", "i_xx"]) {
+      fieldIds.forEach(fieldId => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `[SXX] TargetState: Synced ${fieldId} = ${globalValue} from StateManager`
+          );
+        }
+      });
+    },
   };
 
   const ReferenceState = {
@@ -305,7 +315,18 @@ window.TEUI.SectionModules.sectXX = (function () {
       }
     },
 
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    syncFromGlobalState: function (fieldIds = ["d_xx", "e_xx", "i_xx"]) {
+      fieldIds.forEach(fieldId => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `[SXX] ReferenceState: Synced ${fieldId} = ${globalValue} from ${refFieldId}`
+          );
+        }
+      });
+    },
   };
 
   //==========================================================================
@@ -318,6 +339,8 @@ window.TEUI.SectionModules.sectXX = (function () {
     switchMode: function (mode) {
       console.log(`[SXX] switchMode: ${this.currentMode} → ${mode}`);
       this.currentMode = mode;
+      this.refreshUI();
+      this.updateCalculatedDisplayValues();
       this.syncToggleUI(mode);
     },
 
@@ -325,9 +348,80 @@ window.TEUI.SectionModules.sectXX = (function () {
       window.TEUI.ToggleUISync?.syncToggleUI(this._toggleElements, mode, "SXX");
     },
 
-    refreshUI: function () { /* DOMBridge.stampAll() handles display */ },
+    refreshUI: function () {
+      console.log(`[SXX] refreshUI: mode=${this.currentMode}`);
+      const fields = getFields();
+      const currentState =
+        this.currentMode === "target" ? TargetState : ReferenceState;
 
-    updateCalculatedDisplayValues: function () { /* DOMBridge.stampAll() handles display */ },
+      Object.keys(fields).forEach(fieldId => {
+        const storedValue = currentState.getValue(fieldId);
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (!element) return;
+
+        const fieldDefault = this.getFieldDefault(fieldId);
+        const valueToShow = storedValue !== null ? storedValue : fieldDefault;
+
+        // Handle different input types
+        let targetElement = element;
+        if (element.tagName === "TD") {
+          targetElement =
+            element.querySelector("select") ||
+            element.querySelector('input[type="range"]') ||
+            element.querySelector('[contenteditable="true"]') ||
+            element;
+        }
+
+        if (targetElement.hasAttribute("contenteditable")) {
+          targetElement.textContent = valueToShow || "";
+        } else if (targetElement.matches("select")) {
+          targetElement.value = valueToShow || "";
+          if (storedValue === null && fieldDefault) {
+            currentState.setValue(fieldId, fieldDefault);
+          }
+        } else if (targetElement.matches('input[type="range"]')) {
+          const numericValue = window.TEUI?.parseNumeric?.(valueToShow, 0) ?? 0;
+          targetElement.value = numericValue;
+          const display = targetElement.nextElementSibling;
+          if (display) display.textContent = `${numericValue}%`;
+          if (storedValue === null && fieldDefault) {
+            currentState.setValue(fieldId, fieldDefault);
+          }
+        }
+      });
+    },
+
+    updateCalculatedDisplayValues: function () {
+      const mode = this.currentMode;
+      const calculatedFields = ["h_xx", "m_xx", "n_xx"]; // Add your calculated fields
+
+      calculatedFields.forEach(fieldId => {
+        const targetValue = TargetState.getValue(fieldId);
+        const referenceValue = ReferenceState.getValue(fieldId);
+
+        let displayValue;
+        if (mode === "reference") {
+          displayValue = referenceValue !== null ? referenceValue : "0";
+        } else {
+          displayValue = targetValue !== null ? targetValue : "0";
+        }
+
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          let formattedValue;
+          if (fieldId.startsWith("m_") || fieldId.startsWith("n_")) {
+            formattedValue = displayValue; // Already formatted
+          } else {
+            const formatType = getFieldFormat(fieldId);
+            formattedValue =
+              window.TEUI?.formatNumber?.(displayValue, formatType) ??
+              displayValue;
+          }
+          element.textContent = formattedValue;
+          element.classList.toggle("negative-value", Number(displayValue) < 0);
+        }
+      });
+    },
 
     getValue: function (fieldId) {
       const currentState =
@@ -374,7 +468,55 @@ window.TEUI.SectionModules.sectXX = (function () {
   // 5. HELPER FUNCTIONS
   //==========================================================================
 
-  // Helper functions stripped — graph computes all values
+  // Get section-internal value (explicit state access)
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    return isReferenceCalculation
+      ? ReferenceState.getValue(fieldId)
+      : TargetState.getValue(fieldId);
+  }
+
+  function getSectionNumericValue(
+    fieldId,
+    defaultValue = 0,
+    isReferenceCalculation = false
+  ) {
+    return isReferenceCalculation
+      ? ReferenceState.getNumericValue(fieldId, defaultValue)
+      : TargetState.getNumericValue(fieldId, defaultValue);
+  }
+
+  function setSectionValue(fieldId, value, isReferenceCalculation = false) {
+    if (isReferenceCalculation) {
+      ReferenceState.setValue(fieldId, value);
+      window.TEUI?.StateManager?.setValue(
+        `ref_${fieldId}`,
+        value.toString(),
+        "calculated"
+      );
+    } else {
+      TargetState.setValue(fieldId, value);
+      window.TEUI?.StateManager?.setValue(
+        fieldId,
+        value.toString(),
+        "calculated"
+      );
+    }
+  }
+
+  // Get external dependency (mode-aware)
+  function getGlobalValue(fieldId, isReferenceCalculation = false) {
+    const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+    return window.TEUI?.StateManager?.getValue(key);
+  }
+
+  function getGlobalNumericValue(
+    fieldId,
+    defaultValue = 0,
+    isReferenceCalculation = false
+  ) {
+    const value = getGlobalValue(fieldId, isReferenceCalculation);
+    return window.TEUI?.parseNumeric?.(value, defaultValue) ?? defaultValue;
+  }
 
   function getFieldFormat(fieldId) {
     const formatMap = {
@@ -385,19 +527,100 @@ window.TEUI.SectionModules.sectXX = (function () {
     return formatMap[fieldId] || "number-2dp-comma";
   }
 
-  // M-N Compliance helper stripped — graph computes
+  // M-N Compliance helper (Section07 pattern)
+  function calculateComplianceRatio(
+    targetField,
+    refField,
+    isReferenceCalculation
+  ) {
+    if (isReferenceCalculation) {
+      return 1.0; // Reference always 100% (self-comparison)
+    } else {
+      const targetValue =
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue(targetField)
+        ) || 0;
+      const refValue =
+        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue(refField)) ||
+        0;
+      return refValue > 0 ? targetValue / refValue : 0;
+    }
+  }
 
   //==========================================================================
   // 6. CALCULATION ENGINES (Dual-Engine Pattern)
   //==========================================================================
 
-  function calculateTargetModel() { /* graph computes */ }
+  function calculateTargetModel() {
+    console.log("[SXX] Calculating Target model");
 
-  function calculateReferenceModel() { /* graph computes */ }
+    // Example calculation pattern
+    const userInput = getSectionNumericValue("e_xx", 0, false);
+    const externalValue = getGlobalNumericValue("d_20", 0, false); // HDD
+    const result = userInput * externalValue;
 
-  function calculateCompliance(isReferenceCalculation = false) { /* graph computes */ }
+    setSectionValue("h_xx", result, false);
 
-  function calculateAll() { /* graph computes */ }
+    // Calculate compliance
+    calculateCompliance(false);
+  }
+
+  function calculateReferenceModel() {
+    console.log("[SXX] Calculating Reference model");
+
+    // Example calculation pattern
+    const userInput = getSectionNumericValue("e_xx", 0, true);
+    const externalValue = getGlobalNumericValue("d_20", 0, true); // ref_d_20
+    const result = userInput * externalValue;
+
+    setSectionValue("h_xx", result, true);
+
+    // Calculate compliance
+    calculateCompliance(true);
+  }
+
+  function calculateCompliance(isReferenceCalculation = false) {
+    // M-N compliance pattern (Section07)
+    const m_xx_percent = calculateComplianceRatio(
+      "h_xx",
+      "ref_h_xx",
+      isReferenceCalculation
+    );
+    const m_xx_formatted =
+      window.TEUI?.formatNumber?.(m_xx_percent, "percent-0dp") ?? "100%";
+
+    // Store M column
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue(
+        "ref_m_xx",
+        m_xx_formatted,
+        "calculated"
+      );
+    } else {
+      window.TEUI.StateManager.setValue("m_xx", m_xx_formatted, "calculated");
+    }
+    setSectionValue("m_xx", m_xx_formatted, isReferenceCalculation);
+
+    // N column checkmark
+    const numericPercent = parseFloat(
+      String(m_xx_formatted).replace("%", "").replace(/,/g, "")
+    );
+    const isCompliant = numericPercent >= 100;
+    const status = isCompliant ? "✓" : "✗";
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_n_xx", status, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("n_xx", status, "calculated");
+    }
+    setSectionValue("n_xx", status, isReferenceCalculation);
+  }
+
+  function calculateAll() {
+    // CRITICAL: Reference first so ref_* values exist before Target compliance runs
+    calculateReferenceModel();
+    calculateTargetModel();
+  }
 
   //==========================================================================
   // 7. UI MANAGEMENT
@@ -454,6 +677,8 @@ window.TEUI.SectionModules.sectXX = (function () {
     const currentValue = ModeManager.getValue(fieldId);
     if (currentValue !== valueToStore) {
       ModeManager.setValue(fieldId, valueToStore, "user-modified");
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     }
   }
 
@@ -468,6 +693,8 @@ window.TEUI.SectionModules.sectXX = (function () {
     if (fieldId) {
       ModeManager.setValue(fieldId, value, "user-modified");
       updateVisibility(value);
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     }
   }
 
@@ -482,6 +709,10 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     if (fieldId && (e.type === "change" || e.type === "input")) {
       ModeManager.setValue(fieldId, value, "user-modified");
+      if (e.type === "change") {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }
     }
   }
 
@@ -534,7 +765,12 @@ window.TEUI.SectionModules.sectXX = (function () {
       }
     });
 
-    // All computational SM listeners removed — graph handles dependency tracking
+    // External dependencies (dual-mode listeners)
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.addListener("d_20", calculateAll); // HDD (Target)
+      window.TEUI.StateManager.addListener("ref_d_20", calculateAll); // HDD (Reference)
+      // Add more external dependencies as needed
+    }
   }
 
   //==========================================================================
@@ -550,6 +786,12 @@ window.TEUI.SectionModules.sectXX = (function () {
 
     // Initialize event handlers
     initializeEventHandlers();
+
+    // Initial calculations
+    calculateAll();
+
+    // Update display
+    ModeManager.updateCalculatedDisplayValues();
 
     // Apply tooltips
     if (window.TEUI.TooltipManager?.initialized) {

@@ -4,19 +4,17 @@
 
 The ComputationGraph system is now the **single source of truth** for all calculations. Legacy Section*.js calculateAll() functions are no longer used.
 
-## Current Status (February 16, 2026)
+## Current Status (February 6, 2026)
 
 | Metric | Status |
 |--------|--------|
 | **Case Study Validation** | 12/12 passing (100%) |
-| **Field Matches** | 632–635 exact matches per case study |
-| **Close Matches** | 0 |
+| **Field Matches** | 329–368 exact matches per case study |
+| **Close Matches** | 0–9 within 0.02% (floating point precision) |
 | **Mismatches** | 0 |
 | **Computed Nodes** | ~158 nodes in dependency graph |
 | **Reference Model** | ✅ Correctly computes with wood offset = 0 |
 | **Cutover Status** | ✅ COMPLETE — ComputationGraph is authoritative |
-| **Legacy Code Strip** | ✅ ~15k lines of Pattern A computation removed |
-| **Undo/Revert** | ✅ Graph-aware (routes through LegacyAdapter) |
 
 ### Performance Benchmarks
 
@@ -92,19 +90,20 @@ File Load / CSV Import
 ┌──────────────────────────────────────────────────┐
 │ Calculator.calculateAll()                        │
 │                                                  │
-│ 1. populateReferenceModel() - load ref values    │
-│ 2. computeAllWithReference() - compute both      │
+│ 1. syncFromStateManager() - inputs to graph      │
+│ 2. populateReferenceModel() - load ref values    │
+│ 3. computeAllWithReference() - compute both      │
 │    ├─ Compute Target model (~158 nodes)          │
 │    ├─ Compute Reference model (~158 nodes)       │
 │    ├─ Force forestry.annualOffset = 0 for Ref    │
-│    └─ syncCrossModelValues() → Target ref_*      │
-│ 3. syncToStateManager() - outputs to SM          │
-│ 4. syncReferenceToStateManager() - ref outputs   │
-│ 5. DOMBridge.stampAll() - graph values to DOM    │
-│ 6. Section01.postStamp() - gauges, indicators    │
+│    └─ Sync Reference outputs → Target ref_*      │
+│ 4. syncToStateManager() - outputs back (muted)   │
+│ 5. syncReferenceToStateManager() - ref outputs   │
+│ 6. unmuteListeners()                             │
+│ 7. updateCalculatedDisplayValues() - DOM refresh │
 └──────────────────────────────────────────────────┘
        │
-       │ ~0.68ms full recalc / ~20-30ms with DOM stamp
+       │ ~0.68ms full recalc / ~20-30ms with DOM refresh
        ▼
 UI displays all updated values
 ```
@@ -130,11 +129,11 @@ UI displays all updated values
                 │ sync to StateManager (listeners muted)
                 ▼
 ┌─────────────────────┐          ┌────────────────────────────────┐
-│ StateManager        │          │ DOMBridge                      │
-│ - Legacy state      │          │ - stampAll() writes to DOM     │
-│ - LegacyAdapter     │          │ - Input capture → engine       │
-│   routes to graph   │          │ - NO calculations              │
-└─────────────────────┘          └────────────────────────────────┘
+│ StateManager        │ ────────►│ Section*.js                    │
+│ - Legacy state      │          │ - updateCalculatedDisplayValues│
+│ - listeners (muted) │          │ - UI rendering only            │
+└─────────────────────┘          │ - NO calculations              │
+                                 └────────────────────────────────┘
 ```
 
 ## Key Files
@@ -290,10 +289,10 @@ npx playwright test test/caseStudyValidation.spec.cjs --reporter=list
 
 # Expected output:
 # Testing: 01-ThreeFeathersTerrace.csv
-#   ✅ PASS (634 matches, 0 close)
+#   ✅ PASS (340 matches, 9 close)
 # ...
 # Testing: 12-AberdeenHouse.csv
-#   ✅ PASS (633 matches, 0 close)
+#   ✅ PASS (338 matches, 11 close)
 ```
 
 ---
@@ -349,22 +348,34 @@ The following fields are validated across all 12 case studies:
 | `e_6` | Target Lifetime Carbon (T.1) | ✅ 12/12 pass |
 | `e_8` | Target Annual Carbon (T.2) | ✅ 12/12 pass |
 
-- **Secondary field mismatches** resolved — cross-model ref mapping fix eliminated all carry-over
+- **Secondary field mismatches** are test isolation issues, not missing calculations
+- Fields like k_27, f_32, g_32 exist in EmissionsNodes.js
 
 ## Remaining Cleanup (Optional)
 
-| Item | Description | Status |
-|------|-------------|--------|
-| ~~Dead code in Section*.js~~ | ~~20 sections have unused calculateAll() functions~~ | ✅ Done — ~15k lines stripped |
-| ~~Test isolation~~ | ~~Secondary field carry-over between case studies~~ | ✅ Done — cross-model mapping fixed |
-| ~~Undo bug~~ | ~~Revert bypassed computation graph~~ | ✅ Done — routes through LegacyAdapter |
-| DOMBridge reactive | Still using DOMBridge.stampAll() for DOM refresh | Future |
-| Computation caching | Cache node results for unchanged inputs | Future |
-| Semantic ID migration | Replace legacy d_XX IDs with semantic paths | Future |
+These are polish items, not functional blockers:
+
+| Item | Description | Priority |
+|------|-------------|----------|
+| Dead code in Section*.js | 20 sections have unused calculateAll() functions | Low |
+| DOMBridge not reactive | Still using updateCalculatedDisplayValues() for DOM refresh | Low |
+| Test isolation | Secondary field carry-over between case studies | Low |
+
+### Dead Code Details
+
+Section*.js files still contain:
+- `calculateAll()` functions (never called)
+- `calculateTargetModel()` / `calculateReferenceModel()` (never called)
+- Various `calculate*()` helper functions (never called)
+
+These could be removed in a future cleanup pass. The files now serve as:
+- UI rendering (`updateCalculatedDisplayValues()`)
+- DOM structure/layout
+- User input handling
 
 ### True "Model Drives UI" (Future)
 
-Current state: After graph computation, `DOMBridge.stampAll()` writes all values to DOM.
+Current state: After graph computation, we explicitly call `updateCalculatedDisplayValues()` on all sections.
 
 Ideal state: DOMBridge would reactively update DOM when MultiModelState fires events.
 

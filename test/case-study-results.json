@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-02-18T18:57:43.327Z",
+  "timestamp": "2026-02-09T16:33:42.888Z",
   "summary": {
     "total": 12,
-    "passed": 12,
-    "failed": 0,
+    "passed": 1,
+    "failed": 11,
     "refJ32": {
       "total": 12,
       "matched": 12,
@@ -11,11 +11,1308 @@
       "errors": 0
     }
   },
-  "uniqueMismatches": [],
+  "uniqueMismatches": [
+    {
+      "legacyId": "k_27",
+      "path": "emissions.target.electricity",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 868.7622312021996,
+          "new": 1527.8232332999999,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8.033953132352478,
+          "new": 232.9846399,
+          "pctDiff": "2800.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 10320.465868000001,
+          "new": 154.03680400000002,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 17524.7817669,
+          "new": 23022.752517300003,
+          "pctDiff": "31.37%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 862.1562282027324,
+          "new": 656.2681734000001,
+          "pctDiff": "23.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 381.71945928,
+          "new": 501.47458509999996,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "f_32",
+      "path": "energy.actual.total",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 30422,
+          "new": 132938,
+          "pctDiff": "336.98%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8529.5,
+          "new": 30422,
+          "pctDiff": "256.67%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 156514.92,
+          "new": 8529.5,
+          "pctDiff": "94.55%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 471066.63000000006,
+          "new": 156514.92,
+          "pctDiff": "66.77%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 246142.87282494002,
+          "new": 471066.63000000006,
+          "pctDiff": "91.38%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 341734.09905804,
+          "new": 246142.87282494002,
+          "pctDiff": "27.97%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 582538.62880666,
+          "new": 341734.09905804,
+          "pctDiff": "41.34%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 582538.62880666,
+          "pctDiff": "58253862.88%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 7000,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 5678628.43315522,
+          "new": 7000,
+          "pctDiff": "99.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 7804,
+          "new": 5678628.43315522,
+          "pctDiff": "72665.61%"
+        }
+      ]
+    },
+    {
+      "legacyId": "g_32",
+      "path": "emissions.actual.subtotal",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 882.238,
+          "new": 6779.838,
+          "pctDiff": "668.48%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8.029499999999999,
+          "new": 807.238,
+          "pctDiff": "9953.40%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 10486.49964,
+          "new": 83.0295,
+          "pctDiff": "99.21%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 31561.464210000006,
+          "new": 10486.49964,
+          "pctDiff": "66.77%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 30539.72226,
+          "new": 31561.464210000006,
+          "pctDiff": "3.35%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 29724.58405,
+          "new": 30539.72226,
+          "pctDiff": "2.74%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 61305.79236000001,
+          "new": 29724.58405,
+          "pctDiff": "51.51%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 61305.79236000001,
+          "pctDiff": "6130579.24%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 469,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 816000.006,
+          "new": 469,
+          "pctDiff": "99.94%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 398.004,
+          "new": 816000.006,
+          "pctDiff": "204923.07%"
+        }
+      ]
+    },
+    {
+      "legacyId": "k_32",
+      "path": "emissions.target.subtotal",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 868.7622312021996,
+          "new": 1527.8232332999999,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8.03395313235248,
+          "new": 232.9846399,
+          "pctDiff": "2800.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 10320.465868000001,
+          "new": 154.03680400000002,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 61277.691840162566,
+          "new": 66775.66259056257,
+          "pctDiff": "8.97%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 862.1562282027324,
+          "new": 656.2681734000001,
+          "pctDiff": "23.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 381.71945928,
+          "new": 501.47458509999996,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "g_38",
+      "path": "emissions.ghgi.annual",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 2.9564819846935495,
+          "new": 5.19933038386932,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 0.05302939361288765,
+          "new": 1.537852408580858,
+          "pctDiff": "2800.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 12.170360693396228,
+          "new": 0.1816471745283019,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 12.697408172433189,
+          "new": 13.836647863771772,
+          "pctDiff": "8.97%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 1.6328716443233569,
+          "new": 1.2429321465909093,
+          "pctDiff": "23.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 2.8254586179126577,
+          "new": 3.7118770177646185,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "i_38",
+      "path": "emissions.ghgi.lifetime",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 147.82409923467748,
+          "new": 259.966519193466,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 2.6514696806443827,
+          "new": 76.8926204290429,
+          "pctDiff": "2800.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 608.5180346698114,
+          "new": 9.082358726415094,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 634.8704086216594,
+          "new": 691.8323931885885,
+          "pctDiff": "8.97%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 81.64358221616784,
+          "new": 62.14660732954547,
+          "pctDiff": "23.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 141.2729308956329,
+          "new": 185.59385088823092,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "e_8",
+      "path": "keyValues.reference.annualCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 5.4,
+          "new": 9.5,
+          "pctDiff": "75.93%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 0.8,
+          "new": 8.8,
+          "pctDiff": "1000.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 20.2,
+          "new": 0.3,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 31.1,
+          "new": 40.9,
+          "pctDiff": "31.51%"
+        }
+      ]
+    },
+    {
+      "legacyId": "e_6",
+      "path": "keyValues.reference.lifetimeCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 12.4,
+          "new": 16.5,
+          "pctDiff": "33.06%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 3.3,
+          "new": 11.3,
+          "pctDiff": "242.42%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 31.2,
+          "new": 11.3,
+          "pctDiff": "63.78%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 33.6,
+          "new": 43.4,
+          "pctDiff": "29.17%"
+        }
+      ]
+    },
+    {
+      "legacyId": "h_8",
+      "path": "keyValues.target.annualCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 3,
+          "new": 5.2,
+          "pctDiff": "73.33%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 0.1,
+          "new": 1.5,
+          "pctDiff": "1400.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 12.2,
+          "new": 0.2,
+          "pctDiff": "98.36%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 12.7,
+          "new": 13.8,
+          "pctDiff": "8.66%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 1.6,
+          "new": 1.2,
+          "pctDiff": "25.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 2.8,
+          "new": 3.7,
+          "pctDiff": "32.14%"
+        }
+      ]
+    },
+    {
+      "legacyId": "h_6",
+      "path": "keyValues.target.lifetimeCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 10.6,
+          "new": 12.8,
+          "pctDiff": "20.75%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 2.5,
+          "new": 3.9,
+          "pctDiff": "56.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 19.1,
+          "new": 7.1,
+          "pctDiff": "62.83%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 20.7,
+          "new": 21.8,
+          "pctDiff": "5.31%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 8.4,
+          "new": 8,
+          "pctDiff": "4.76%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 5.8,
+          "new": 6.7,
+          "pctDiff": "15.52%"
+        }
+      ]
+    },
+    {
+      "legacyId": "k_10",
+      "path": "keyValues.actual.teui",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 103.5,
+          "new": 452.4,
+          "pctDiff": "337.10%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 56.3,
+          "new": 200.8,
+          "pctDiff": "256.66%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 184.6,
+          "new": 10.1,
+          "pctDiff": "94.53%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 79.6,
+          "new": 26.5,
+          "pctDiff": "66.71%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 103.2,
+          "new": 197.4,
+          "pctDiff": "91.28%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 104.6,
+          "new": 75.3,
+          "pctDiff": "28.01%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 120.7,
+          "new": 70.8,
+          "pctDiff": "41.34%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 1103.3,
+          "pctDiff": "110330.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 14.8,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 508.5,
+          "new": 0.6,
+          "pctDiff": "99.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 57.8,
+          "new": 42032.8,
+          "pctDiff": "72621.11%"
+        }
+      ]
+    },
+    {
+      "legacyId": "k_8",
+      "path": "keyValues.actual.annualCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 3,
+          "new": 23.1,
+          "pctDiff": "670.00%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 0.1,
+          "new": 5.3,
+          "pctDiff": "5200.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 12.4,
+          "new": 0.1,
+          "pctDiff": "99.19%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 5.3,
+          "new": 1.8,
+          "pctDiff": "66.04%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 12.8,
+          "new": 13.2,
+          "pctDiff": "3.12%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 9.1,
+          "new": 9.3,
+          "pctDiff": "2.20%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 12.7,
+          "new": 6.2,
+          "pctDiff": "51.18%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 116.1,
+          "pctDiff": "11610.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 1,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 73.1,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 2.9,
+          "new": 6040,
+          "pctDiff": "208175.86%"
+        }
+      ]
+    },
+    {
+      "legacyId": "k_6",
+      "path": "keyValues.actual.lifetimeCarbon",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 10.6,
+          "new": 30.7,
+          "pctDiff": "189.62%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 2.5,
+          "new": 7.7,
+          "pctDiff": "208.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 19.3,
+          "new": 7,
+          "pctDiff": "63.73%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 13.3,
+          "new": 9.8,
+          "pctDiff": "26.32%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 20.8,
+          "new": 21.2,
+          "pctDiff": "1.92%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 16.1,
+          "new": 16.3,
+          "pctDiff": "1.24%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 20.7,
+          "new": 14.2,
+          "pctDiff": "31.40%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 6.8,
+          "new": 122.9,
+          "pctDiff": "1707.35%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 6,
+          "new": 5,
+          "pctDiff": "16.67%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 86.1,
+          "new": 13,
+          "pctDiff": "84.90%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 5.9,
+          "new": 6043,
+          "pctDiff": "102323.73%"
+        }
+      ]
+    },
+    {
+      "legacyId": "j_8",
+      "path": "keyValues.annualCarbon.reductionPercent",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 44,
+          "new": -143,
+          "pctDiff": "425.00%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 88,
+          "new": 40,
+          "pctDiff": "54.55%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 39,
+          "new": 67,
+          "pctDiff": "71.79%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 63,
+          "new": 88,
+          "pctDiff": "39.68%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 61,
+          "new": 60,
+          "pctDiff": "1.64%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 63,
+          "new": 62,
+          "pctDiff": "1.59%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 57,
+          "new": 79,
+          "pctDiff": "38.60%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 100,
+          "new": -414,
+          "pctDiff": "514.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 94,
+          "new": 100,
+          "pctDiff": "6.38%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 46,
+          "new": 100,
+          "pctDiff": "117.39%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 91,
+          "new": -14668,
+          "pctDiff": "16218.68%"
+        }
+      ]
+    },
+    {
+      "legacyId": "j_10",
+      "path": "keyValues.teui.reductionPercent",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 45,
+          "new": -142,
+          "pctDiff": "415.56%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 81,
+          "new": 31,
+          "pctDiff": "61.73%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 39,
+          "new": 97,
+          "pctDiff": "148.72%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 63,
+          "new": 88,
+          "pctDiff": "39.68%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 61,
+          "new": 25,
+          "pctDiff": "59.02%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 54,
+          "new": 67,
+          "pctDiff": "24.07%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 51,
+          "new": 71,
+          "pctDiff": "39.22%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 100,
+          "new": -227,
+          "pctDiff": "327.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 94,
+          "new": 100,
+          "pctDiff": "6.38%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 40,
+          "new": 100,
+          "pctDiff": "150.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 91,
+          "new": -6791,
+          "pctDiff": "7562.64%"
+        }
+      ]
+    },
+    {
+      "legacyId": "m_8",
+      "path": "keyValues.annualCarbon.remainingPercent",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 56,
+          "new": 243,
+          "pctDiff": "333.93%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 12,
+          "new": 60,
+          "pctDiff": "400.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 61,
+          "new": 33,
+          "pctDiff": "45.90%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 37,
+          "new": 12,
+          "pctDiff": "67.57%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 39,
+          "new": 40,
+          "pctDiff": "2.56%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 37,
+          "new": 38,
+          "pctDiff": "2.70%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 43,
+          "new": 21,
+          "pctDiff": "51.16%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 514,
+          "pctDiff": "51400.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 6,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 54,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 9,
+          "new": 14768,
+          "pctDiff": "163988.89%"
+        }
+      ]
+    },
+    {
+      "legacyId": "m_10",
+      "path": "keyValues.teui.remainingPercent",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 55,
+          "new": 242,
+          "pctDiff": "340.00%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 19,
+          "new": 69,
+          "pctDiff": "263.16%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 61,
+          "new": 3,
+          "pctDiff": "95.08%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 37,
+          "new": 12,
+          "pctDiff": "67.57%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 39,
+          "new": 75,
+          "pctDiff": "92.31%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 46,
+          "new": 33,
+          "pctDiff": "28.26%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 49,
+          "new": 29,
+          "pctDiff": "40.82%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 327,
+          "pctDiff": "32700.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 6,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 60,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 9,
+          "new": 6891,
+          "pctDiff": "76466.67%"
+        }
+      ]
+    },
+    {
+      "legacyId": "f_27",
+      "path": "energy.actual.electricity",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 30422,
+          "new": 132938,
+          "pctDiff": "336.98%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8029.5,
+          "new": 30422,
+          "pctDiff": "278.88%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 156514.92,
+          "new": 8029.5,
+          "pctDiff": "94.87%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 471066.63000000006,
+          "new": 156514.92,
+          "pctDiff": "66.77%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 127497.78,
+          "new": 471066.63000000006,
+          "pctDiff": "269.47%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 284064.15,
+          "new": 127497.78,
+          "pctDiff": "55.12%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 347455.36,
+          "new": 284064.15,
+          "pctDiff": "18.24%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 347455.36,
+          "pctDiff": "34745536.00%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 7000,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 2000299,
+          "new": 7000,
+          "pctDiff": "99.65%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 7804,
+          "new": 2000299,
+          "pctDiff": "25531.71%"
+        }
+      ]
+    },
+    {
+      "legacyId": "g_27",
+      "path": "emissions.actual.electricity",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 882.238,
+          "new": 6779.838,
+          "pctDiff": "668.48%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 8.0295,
+          "new": 882.238,
+          "pctDiff": "10887.46%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 10486.49964,
+          "new": 8.0295,
+          "pctDiff": "99.92%"
+        },
+        {
+          "file": "05-TheOaksPhase01Apartments.csv",
+          "old": 31561.464210000006,
+          "new": 10486.49964,
+          "pctDiff": "66.77%"
+        },
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 8542.35126,
+          "new": 31561.464210000006,
+          "pctDiff": "269.47%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 19032.29805,
+          "new": 8542.35126,
+          "pctDiff": "55.12%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 17720.22336,
+          "new": 19032.29805,
+          "pctDiff": "7.40%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 17720.22336,
+          "pctDiff": "1772022.34%"
+        },
+        {
+          "file": "10-TheGreenwayResidence.csv",
+          "old": 469,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 134020.033,
+          "new": 469,
+          "pctDiff": "99.65%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 398.004,
+          "new": 134020.033,
+          "pctDiff": "33573.04%"
+        }
+      ]
+    },
+    {
+      "legacyId": "l_27",
+      "path": "emissions.factor.electricity",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 29,
+          "new": 51,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 1,
+          "new": 29,
+          "pctDiff": "2800.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 67,
+          "new": 1,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 51,
+          "new": 67,
+          "pctDiff": "31.37%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 67,
+          "new": 51,
+          "pctDiff": "23.88%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 51,
+          "new": 67,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "ref_k_32",
+      "path": "reference.emissions.subtotal",
+      "occurrences": [
+        {
+          "file": "02-SolarQ.csv",
+          "old": 1594.9883736613367,
+          "new": 2804.9795541,
+          "pctDiff": "75.86%"
+        },
+        {
+          "file": "03-Meadow.csv",
+          "old": 118.38519278698783,
+          "new": 1333.1705912,
+          "pctDiff": "1026.13%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 17107.390935466665,
+          "new": 255.3341931,
+          "pctDiff": "98.51%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 4203.144868033332,
+          "new": 5521.7785551,
+          "pctDiff": "31.37%"
+        }
+      ]
+    },
+    {
+      "legacyId": "f_31",
+      "path": "energy.actual.wood",
+      "occurrences": [
+        {
+          "file": "03-Meadow.csv",
+          "old": 500,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 0,
+          "new": 500,
+          "pctDiff": "50000.00%"
+        }
+      ]
+    },
+    {
+      "legacyId": "g_31",
+      "path": "emissions.actual.wood",
+      "occurrences": [
+        {
+          "file": "03-Meadow.csv",
+          "old": 75,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "04-OttawaApartments.csv",
+          "old": 0,
+          "new": 75,
+          "pctDiff": "7500.00%"
+        }
+      ]
+    },
+    {
+      "legacyId": "f_28",
+      "path": "energy.actual.gas",
+      "occurrences": [
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 118645.09282494,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 57669.94905804,
+          "new": 118645.09282494,
+          "pctDiff": "105.73%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 235083.26880666002,
+          "new": 57669.94905804,
+          "pctDiff": "75.47%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 235083.26880666002,
+          "pctDiff": "23508326.88%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 3678329.43315522,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 0,
+          "new": 3678329.43315522,
+          "pctDiff": "367832943.32%"
+        }
+      ]
+    },
+    {
+      "legacyId": "g_28",
+      "path": "emissions.actual.gas",
+      "occurrences": [
+        {
+          "file": "06-BlossomParkApartments.csv",
+          "old": 21997.371,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "07-DogwoodMURB.csv",
+          "old": 10692.286,
+          "new": 21997.371,
+          "pctDiff": "105.73%"
+        },
+        {
+          "file": "08-EmbassyCommonsMURB.csv",
+          "old": 43585.569,
+          "new": 10692.286,
+          "pctDiff": "75.47%"
+        },
+        {
+          "file": "09-RowingCentre.csv",
+          "old": 0,
+          "new": 43585.569,
+          "pctDiff": "4358556.90%"
+        },
+        {
+          "file": "11-CommunityCentre.csv",
+          "old": 681979.973,
+          "new": 0,
+          "pctDiff": "100.00%"
+        },
+        {
+          "file": "12-AberdeenHouse.csv",
+          "old": 0,
+          "new": 681979.973,
+          "pctDiff": "68197997.30%"
+        }
+      ]
+    }
+  ],
   "byFile": [
     {
       "file": "01-ThreeFeathersTerrace.csv",
-      "matches": 632,
+      "matches": 368,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -73,7 +1370,7 @@
         "populateDebug": {
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -81,13 +1378,13 @@
     },
     {
       "file": "02-SolarQ.csv",
-      "matches": 630,
+      "matches": 347,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 21,
       "refJ32": {
-        "legacy": 54999.5991,
+        "legacy": 54999.59909177023,
         "computed": 54999.5991,
-        "diff": 0,
+        "diff": 0.000008229770173784345,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Electricity",
@@ -128,7 +1425,7 @@
           "ref_d_117": 959.4455,
           "ref_k_51": 2706.466888888889,
           "ref_h_70": 15444.755999999998,
-          "ref_d_136": 54999.5991,
+          "ref_d_136": 54999.59909177023,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -139,7 +1436,7 @@
         "populateDebug": {
           "standardName": "OBC SB12 3.1.1.2.C1",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -147,13 +1444,13 @@
     },
     {
       "file": "03-Meadow.csv",
-      "matches": 632,
+      "matches": 345,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 23,
       "refJ32": {
-        "legacy": 43885.1928,
+        "legacy": 43885.192786987835,
         "computed": 43885.1928,
-        "diff": 0,
+        "diff": 0.000013012162526138127,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Electricity",
@@ -194,7 +1491,7 @@
           "ref_d_117": 0,
           "ref_k_51": 5599.586666666666,
           "ref_h_70": 5441.274,
-          "ref_d_136": 43385.1928,
+          "ref_d_136": 43385.192786987835,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -205,7 +1502,7 @@
         "populateDebug": {
           "standardName": "PH Classic",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -213,13 +1510,13 @@
     },
     {
       "file": "04-OttawaApartments.csv",
-      "matches": 630,
+      "matches": 345,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 23,
       "refJ32": {
-        "legacy": 255334.1931,
+        "legacy": 255334.19306666666,
         "computed": 255334.1931,
-        "diff": 0,
+        "diff": 0.00003333334461785853,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Heatpump",
@@ -260,7 +1557,7 @@
           "ref_d_117": 29343.0026,
           "ref_k_51": 160988.11666666667,
           "ref_h_70": 48285.119999999995,
-          "ref_d_136": 255334.1931,
+          "ref_d_136": 255334.19306666666,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -271,7 +1568,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -279,13 +1576,13 @@
     },
     {
       "file": "05-TheOaksPhase01Apartments.csv",
-      "matches": 631,
+      "matches": 357,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 11,
       "refJ32": {
-        "legacy": 1277071.2668,
+        "legacy": 1277071.2667777778,
         "computed": 1277071.2668,
-        "diff": 0,
+        "diff": 0.000022222287952899933,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Heatpump",
@@ -326,7 +1623,7 @@
           "ref_d_117": 153679.4501,
           "ref_k_51": 524494.6177777778,
           "ref_h_70": 336913.98,
-          "ref_d_136": 1277071.2668,
+          "ref_d_136": 1277071.2667777778,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -337,7 +1634,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -345,9 +1642,9 @@
     },
     {
       "file": "06-BlossomParkApartments.csv",
-      "matches": 630,
+      "matches": 355,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 13,
       "refJ32": {
         "legacy": 627065.3922790124,
         "computed": 627065.3922790124,
@@ -403,7 +1700,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -411,12 +1708,12 @@
     },
     {
       "file": "07-DogwoodMURB.csv",
-      "matches": 630,
+      "matches": 355,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 13,
       "refJ32": {
-        "legacy": 819113.818725926,
-        "computed": 819113.818725926,
+        "legacy": 735736.5566259259,
+        "computed": 735736.5566259259,
         "diff": 0,
         "match": true,
         "refIntermediates": {
@@ -430,13 +1727,13 @@
           "d_120_ventVolumetric": 1205.3999999999999,
           "d_121_ventGross": 129517.81919999998,
           "d_118_hrvEff": "65.00",
-          "d_127_ted": 295354.5831,
-          "d_114_heatDemand": 157463.6579,
-          "d_117_coolDemand": 130115.3149,
+          "d_127_ted": 317971.2034,
+          "d_114_heatDemand": 169521.3538,
+          "d_117_coolDemand": 101457.8369,
           "k_51_dhwElec": 0,
-          "h_70_plugLoads": 267109.92,
-          "d_136_totalEnergy": 554688.8928,
-          "j_32_targetTotal": 819113.818725926,
+          "h_70_plugLoads": 200332.44,
+          "d_136_totalEnergy": 471311.6307,
+          "j_32_targetTotal": 735736.5566259259,
           "i_98_transLoss": 177066.30674143697,
           "i_103_airLeak": 80999.26153846153,
           "m_121_ventLoss": 45331.236719999986,
@@ -453,12 +1750,12 @@
           "ref_d_120": 1205.3999999999999,
           "ref_d_121": 129517.81919999998,
           "ref_d_118": "65.00",
-          "ref_d_127": 295354.5831,
-          "ref_d_114": 157463.6579,
-          "ref_d_117": 130115.3149,
+          "ref_d_127": 317971.2034,
+          "ref_d_114": 169521.3538,
+          "ref_d_117": 101457.8369,
           "ref_k_51": 0,
-          "ref_h_70": 267109.92,
-          "ref_d_136": 554688.8928,
+          "ref_h_70": 200332.44,
+          "ref_d_136": 471311.63070000004,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -469,7 +1766,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -477,9 +1774,9 @@
     },
     {
       "file": "08-EmbassyCommonsMURB.csv",
-      "matches": 630,
+      "matches": 348,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 20,
       "refJ32": {
         "legacy": 1196545.045251852,
         "computed": 1196545.045251852,
@@ -535,7 +1832,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -543,13 +1840,13 @@
     },
     {
       "file": "09-RowingCentre.csv",
-      "matches": 631,
+      "matches": 348,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 20,
       "refJ32": {
-        "legacy": 158035.5861,
-        "computed": 158035.5861,
-        "diff": 0,
+        "legacy": 178231.2193888889,
+        "computed": 178231.2194,
+        "diff": 0.00001111111487261951,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Heatpump",
@@ -562,13 +1859,13 @@
           "d_120_ventVolumetric": 2111.111111111111,
           "d_121_ventGross": 186372.26666666663,
           "d_118_hrvEff": "65.00",
-          "d_127_ted": 161977.2924,
-          "d_114_heatDemand": 86355.6498,
-          "d_117_coolDemand": 13074.8874,
+          "d_127_ted": 152093.5024,
+          "d_114_heatDemand": 81086.2624,
+          "d_117_coolDemand": 26205.8281,
           "k_51_dhwElec": 33936.88888888888,
-          "h_70_plugLoads": 24668.16,
-          "d_136_totalEnergy": 158035.5861,
-          "j_32_targetTotal": 158035.5861,
+          "h_70_plugLoads": 37002.24,
+          "d_136_totalEnergy": 178231.2194,
+          "j_32_targetTotal": 178231.2194,
           "i_98_transLoss": 76478.95675797106,
           "i_103_airLeak": 8370.011976047905,
           "m_121_ventLoss": 65230.29333333332,
@@ -585,12 +1882,12 @@
           "ref_d_120": 2111.111111111111,
           "ref_d_121": 186372.26666666663,
           "ref_d_118": "65.00",
-          "ref_d_127": 161977.2924,
-          "ref_d_114": 86355.6498,
-          "ref_d_117": 13074.8874,
+          "ref_d_127": 152093.5024,
+          "ref_d_114": 81086.2624,
+          "ref_d_117": 26205.8281,
           "ref_k_51": 33936.88888888888,
-          "ref_h_70": 24668.16,
-          "ref_d_136": 158035.5861,
+          "ref_h_70": 37002.24,
+          "ref_d_136": 178231.2193888889,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
@@ -601,7 +1898,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -609,13 +1906,13 @@
     },
     {
       "file": "10-TheGreenwayResidence.csv",
-      "matches": 633,
+      "matches": 357,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 11,
       "refJ32": {
-        "legacy": 85225.384,
-        "computed": 85225.384,
-        "diff": 0,
+        "legacy": 126480.7021777778,
+        "computed": 126480.7022,
+        "diff": 0.000022222200641408563,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Heatpump",
@@ -628,14 +1925,14 @@
           "d_120_ventVolumetric": 1434.7763888888887,
           "d_121_ventGross": 157497.12593999997,
           "d_118_hrvEff": "55.00",
-          "d_127_ted": 113818.7553,
-          "d_114_heatDemand": 54696.8885,
-          "d_117_coolDemand": 301.4601,
+          "d_127_ted": 184323.4363,
+          "d_114_heatDemand": 88578.7094,
+          "d_117_coolDemand": 7674.9574,
           "k_51_dhwElec": 5412.933777777778,
           "h_70_plugLoads": 24814.1016,
-          "d_136_totalEnergy": 85225.384,
-          "j_32_targetTotal": 85225.384,
-          "i_98_transLoss": 32892.082620177505,
+          "d_136_totalEnergy": 126480.7022,
+          "j_32_targetTotal": 126480.7022,
+          "i_98_transLoss": 79895.20326017751,
           "i_103_airLeak": 4560.727585135134,
           "m_121_ventLoss": 70873.70667299998,
           "d_43_onsiteRenew": 0,
@@ -651,23 +1948,23 @@
           "ref_d_120": 1434.7763888888887,
           "ref_d_121": 157497.12593999997,
           "ref_d_118": "55.00",
-          "ref_d_127": 113818.7553,
-          "ref_d_114": 54696.8885,
-          "ref_d_117": 301.4601,
+          "ref_d_127": 184323.4363,
+          "ref_d_114": 88578.7094,
+          "ref_d_117": 7674.9574,
           "ref_k_51": 5412.933777777778,
           "ref_h_70": 24814.1016,
-          "ref_d_136": 85225.384,
+          "ref_d_136": 126480.7021777778,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
-          "ref_i_98": 32892.082620177505,
+          "ref_i_98": 79895.20326017751,
           "ref_i_103": 4560.727585135134,
           "ref_m_121": 70873.70667299998
         },
         "populateDebug": {
           "standardName": "OBC SB12 3.1.1.2.C4",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -675,12 +1972,12 @@
     },
     {
       "file": "11-CommunityCentre.csv",
-      "matches": 631,
+      "matches": 355,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 13,
       "refJ32": {
-        "legacy": 9359603.7986712,
-        "computed": 9359603.7986712,
+        "legacy": 9467511.308413917,
+        "computed": 9467511.308413917,
         "diff": 0,
         "match": true,
         "refIntermediates": {
@@ -691,19 +1988,19 @@
           "g_118_ventMethod": "Volume by Schedule",
           "l_118_ventAch": "4.00",
           "d_119_ventRate": "12.50",
-          "d_120_ventVolumetric": 39500.51388888889,
-          "d_121_ventGross": 4496612.0994666675,
+          "d_120_ventVolumetric": 47400.61666666667,
+          "d_121_ventGross": 5395934.519359999,
           "d_118_hrvEff": "0.00",
-          "d_127_ted": 5942996.9953,
-          "d_114_heatDemand": 5942996.9953,
-          "d_117_coolDemand": 398428.6172,
+          "d_127_ted": 5865110.8942,
+          "d_114_heatDemand": 5865110.8942,
+          "d_117_coolDemand": 462454.9397,
           "k_51_dhwElec": 0,
-          "h_70_plugLoads": 652152.7999999999,
-          "d_136_totalEnergy": 1850581.4172,
-          "j_32_targetTotal": 9359603.7986712,
-          "i_98_transLoss": 1067507.2668568802,
+          "h_70_plugLoads": 782583.3599999999,
+          "d_136_totalEnergy": 2045038.2997,
+          "j_32_targetTotal": 9467511.308413917,
+          "i_98_transLoss": 508313.81021687994,
           "i_103_airLeak": 608564.0435368421,
-          "m_121_ventLoss": 4496612.0994666675,
+          "m_121_ventLoss": 5395934.519359999,
           "d_43_onsiteRenew": 0,
           "i_43_offsiteRenew": 0,
           "m_43_extLoads": 800000
@@ -714,26 +2011,26 @@
           "ref_g_118": "Volume by Schedule",
           "ref_l_118": "4.00",
           "ref_d_119": "12.50",
-          "ref_d_120": 39500.51388888889,
-          "ref_d_121": 4496612.0994666675,
+          "ref_d_120": 47400.61666666667,
+          "ref_d_121": 5395934.519359999,
           "ref_d_118": "0.00",
-          "ref_d_127": 5942996.9953,
-          "ref_d_114": 5942996.9953,
-          "ref_d_117": 398428.6172,
+          "ref_d_127": 5865110.8942,
+          "ref_d_114": 5865110.8942,
+          "ref_d_117": 462454.9397,
           "ref_k_51": 0,
-          "ref_h_70": 652152.7999999999,
-          "ref_d_136": 1850581.4172,
+          "ref_h_70": 782583.3599999999,
+          "ref_d_136": 2045038.2996999999,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 800000,
-          "ref_i_98": 1067507.2668568802,
+          "ref_i_98": 508313.81021687994,
           "ref_i_103": 608564.0435368421,
-          "ref_m_121": 4496612.0994666675
+          "ref_m_121": 5395934.519359999
         },
         "populateDebug": {
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }
@@ -741,13 +2038,13 @@
     },
     {
       "file": "12-AberdeenHouse.csv",
-      "matches": 631,
+      "matches": 345,
       "close": 0,
-      "mismatches": 0,
+      "mismatches": 23,
       "refJ32": {
-        "legacy": 27416.7247,
-        "computed": 27416.7247,
-        "diff": 0,
+        "legacy": 82414.60525555555,
+        "computed": 82414.6053,
+        "diff": 0.00004444444493856281,
         "match": true,
         "refIntermediates": {
           "d_113_heatingType": "Heatpump",
@@ -760,14 +2057,14 @@
           "d_120_ventVolumetric": 43.733333333333334,
           "d_121_ventGross": 5854.77376,
           "d_118_hrvEff": "75.00",
-          "d_127_ted": 27599.1529,
-          "d_114_heatDemand": 13263.0847,
-          "d_117_coolDemand": 5561.6514,
+          "d_127_ted": 123813.4672,
+          "d_114_heatDemand": 59499.9602,
+          "d_117_coolDemand": 14322.6565,
           "k_51_dhwElec": 3686.394555555556,
           "h_70_plugLoads": 7692.593999999999,
-          "d_136_totalEnergy": 30203.7247,
-          "j_32_targetTotal": 27416.7247,
-          "i_98_transLoss": 18142.882024793224,
+          "d_136_totalEnergy": 85201.6053,
+          "j_32_targetTotal": 82414.6053,
+          "i_98_transLoss": 82285.75818479322,
           "i_103_airLeak": 2894.581621621621,
           "m_121_ventLoss": 1463.69344,
           "d_43_onsiteRenew": 2787,
@@ -783,23 +2080,23 @@
           "ref_d_120": 43.733333333333334,
           "ref_d_121": 5854.77376,
           "ref_d_118": "75.00",
-          "ref_d_127": 27599.1529,
-          "ref_d_114": 13263.0847,
-          "ref_d_117": 5561.6514,
+          "ref_d_127": 123813.4672,
+          "ref_d_114": 59499.9602,
+          "ref_d_117": 14322.6565,
           "ref_k_51": 3686.394555555556,
           "ref_h_70": 7692.593999999999,
-          "ref_d_136": 30203.7247,
+          "ref_d_136": 85201.60525555555,
           "ref_d_43": 2787,
           "ref_i_43": 0,
           "ref_m_43": 0,
-          "ref_i_98": 18142.882024793224,
+          "ref_i_98": 82285.75818479322,
           "ref_i_103": 2894.581621621621,
           "ref_m_121": 1463.69344
         },
         "populateDebug": {
           "standardName": "PH Low Energy",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 173,
+          "cFieldsFromStateManager": 145,
           "cFieldsCopiedFromTarget": 0,
           "cFieldsCopiedFromTargetList": []
         }

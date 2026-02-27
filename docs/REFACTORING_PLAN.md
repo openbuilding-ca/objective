@@ -27,7 +27,7 @@ StateManager.js already provides foundational dependency tracking that this plan
 | Phase 2: Section Migration to Nodes | ✅ Complete | All 6 tasks done (Dec 2025) |
 | Phase 3: Multi-Model State | ✅ Complete | All 5 tasks done (Dec 2025) |
 | Phase 4: UI Integration | ✅ Complete | All 5 tasks done (Dec 2025) |
-| Phase 5: Cleanup & Optimization | ✅ Mostly Complete | Legacy code removed, docs done; caching/optimization future |
+| Phase 5: Cleanup & Optimization | ⏳ Not Started | Ready to begin |
 
 ### Phase 1 Deliverables
 
@@ -696,10 +696,10 @@ const recomputeWithConvergence = (
 
 ### Phase 5: Cleanup & Optimization
 
-19. ~~Remove legacy calculation code~~ ✅ ~15k lines stripped (Pattern A)
-20. Add computation caching (future)
-21. Profile and optimize hot paths (future)
-22. ~~Final documentation~~ ✅ 127 Parnas table JSON files
+19. Remove legacy calculation code
+20. Add computation caching
+21. Profile and optimize hot paths
+22. Final documentation
 
 ---
 

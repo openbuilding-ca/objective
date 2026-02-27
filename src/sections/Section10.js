@@ -48,7 +48,48 @@ window.TEUI.SectionModules.sect10 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated TargetState for imported values
      */
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_73",
+        "d_74",
+        "d_75",
+        "d_76",
+        "d_77",
+        "d_78", // Area fields
+        "e_73",
+        "e_74",
+        "e_75",
+        "e_76",
+        "e_77",
+        "e_78", // Orientation dropdowns
+        "f_73",
+        "f_74",
+        "f_75",
+        "f_76",
+        "f_77",
+        "f_78", // SHGC values
+        "g_73",
+        "g_74",
+        "g_75",
+        "g_76",
+        "g_77",
+        "g_78", // Winter shading %
+        "h_73",
+        "h_74",
+        "h_75",
+        "h_76",
+        "h_77",
+        "h_78", // Summer shading %
+        "d_80", // Gains utilization dropdown
+      ]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
     },
@@ -189,7 +230,53 @@ window.TEUI.SectionModules.sect10 = (function () {
         });
       }
     },
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_73",
+        "d_74",
+        "d_75",
+        "d_76",
+        "d_77",
+        "d_78", // Area fields
+        "e_73",
+        "e_74",
+        "e_75",
+        "e_76",
+        "e_77",
+        "e_78", // Orientation dropdowns
+        "f_73",
+        "f_74",
+        "f_75",
+        "f_76",
+        "f_77",
+        "f_78", // SHGC values
+        "g_73",
+        "g_74",
+        "g_75",
+        "g_76",
+        "g_77",
+        "g_78", // Winter shading %
+        "h_73",
+        "h_74",
+        "h_75",
+        "h_76",
+        "h_77",
+        "h_78", // Summer shading %
+        "d_80", // Gains utilization dropdown
+      ]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
     },
@@ -235,8 +322,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       ReferenceState.saveState();
       console.log("S10: States have been reset to defaults.");
 
-      // After resetting, refresh the UI
+      // After resetting, refresh the UI and recalculate.
       this.refreshUI();
+      calculateAll();
+      this.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -245,18 +334,233 @@ window.TEUI.SectionModules.sect10 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
+      // 🔍 ENHANCED DEBUG: Track ModeManager.setValue calls
+      if (
+        ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(
+          fieldId
+        )
+      ) {
+        console.log(
+          `[S10 MODEMANAGER DEBUG] setValue: ${fieldId}=${value} in ${this.currentMode} mode, source=${source}`
+        );
+      }
+
       this.getCurrentState().setValue(fieldId, value, source);
 
       // BRIDGE: Sync changes to global StateManager for downstream sections
       if (this.currentMode === "target") {
         window.TEUI.StateManager.setValue(fieldId, value, source);
+
+        // 🔍 ENHANCED DEBUG: Track Target StateManager writes
+        if (
+          ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(
+            fieldId
+          )
+        ) {
+          console.log(
+            `[S10 MODEMANAGER DEBUG] Target StateManager write: ${fieldId}=${value}`
+          );
+        }
       } else if (this.currentMode === "reference") {
+        // 🔧 FIX: Bridge Reference values with ref_ prefix for downstream consumption
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+
+        // 🔍 ENHANCED DEBUG: Track Reference StateManager writes
+        if (
+          ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(
+            fieldId
+          )
+        ) {
+          console.log(
+            `[S10 MODEMANAGER DEBUG] Reference StateManager write: ref_${fieldId}=${value}`
+          );
+        }
       }
     },
-    refreshUI: function () { /* DOMBridge.stampAll() handles display */ },
+    refreshUI: function () {
+      const sectionElement = document.getElementById("envelopeRadiantGains");
+      if (!sectionElement) return;
 
-    updateCalculatedDisplayValues: function () { /* DOMBridge.stampAll() handles display */ },
+      const currentState = this.getCurrentState();
+
+      const fieldsToSync = [
+        "d_73",
+        "e_73",
+        "f_73",
+        "g_73",
+        "h_73",
+        "d_74",
+        "e_74",
+        "f_74",
+        "g_74",
+        "h_74",
+        "d_75",
+        "e_75",
+        "f_75",
+        "g_75",
+        "h_75",
+        "d_76",
+        "e_76",
+        "f_76",
+        "g_76",
+        "h_76",
+        "d_77",
+        "e_77",
+        "f_77",
+        "g_77",
+        "h_77",
+        "d_78",
+        "e_78",
+        "f_78",
+        "g_78",
+        "h_78",
+        "d_80",
+      ];
+
+      fieldsToSync.forEach(fieldId => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
+
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`
+        );
+        if (!element) return;
+
+        const slider = element.matches('input[type="range"]')
+          ? element
+          : element.querySelector('input[type="range"]');
+        const dropdown = element.matches("select")
+          ? element
+          : element.querySelector("select");
+
+        if (slider) {
+          const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+          slider.value = numericValue;
+
+          // CORRECTED PATTERN: Use the direct nextElementSibling property, which is the proven pattern from Section 08.
+          const display = slider.nextElementSibling;
+
+          if (display) {
+            const displayValue = window.TEUI.parseNumeric(stateValue, 0);
+            let textContent;
+            if (fieldId.startsWith("g_") || fieldId.startsWith("h_")) {
+              textContent = `${displayValue}%`;
+            } else {
+              textContent = parseFloat(displayValue).toFixed(2);
+            }
+            display.textContent = textContent;
+          }
+        } else if (dropdown) {
+          dropdown.value = stateValue;
+        } else if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
+      });
+    },
+
+    // Update displayed calculated values based on current mode (Target vs Reference)
+    updateCalculatedDisplayValues: function () {
+      if (!window.TEUI?.StateManager) return;
+
+      // All calculated fields that need mode-aware display updates
+      const calculatedFields = [
+        // Gain factors (rows 73-78)
+        "m_73",
+        "m_74",
+        "m_75",
+        "m_76",
+        "m_77",
+        "m_78",
+        // Heating gains (rows 73-78, subtotal 79)
+        "i_73",
+        "i_74",
+        "i_75",
+        "i_76",
+        "i_77",
+        "i_78",
+        "i_79",
+        // Cooling gains (rows 73-78, subtotal 79)
+        "k_73",
+        "k_74",
+        "k_75",
+        "k_76",
+        "k_77",
+        "k_78",
+        "k_79",
+        // Percentages (rows 73-78, subtotal 79)
+        "j_73",
+        "j_74",
+        "j_75",
+        "j_76",
+        "j_77",
+        "j_78",
+        "j_79",
+        "l_73",
+        "l_74",
+        "l_75",
+        "l_76",
+        "l_77",
+        "l_78",
+        "l_79",
+        // Costs (rows 73-78)
+        "p_73",
+        "p_74",
+        "p_75",
+        "p_76",
+        "p_77",
+        "p_78",
+        // Utilization factors (rows 80-82)
+        "e_80",
+        "e_81",
+        "e_82",
+        "g_80",
+        "g_81",
+        "i_80",
+        "i_81",
+        "i_82",
+      ];
+
+      calculatedFields.forEach(fieldId => {
+        let valueToDisplay;
+        // ✅ STRICT MODE ISOLATION: Read from local state objects, not global StateManager
+        if (this.currentMode === "reference") {
+          valueToDisplay = ReferenceState.getValue(fieldId);
+        } else {
+          valueToDisplay = TargetState.getValue(fieldId);
+        }
+
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`
+          );
+          if (element) {
+            const num = window.TEUI.parseNumeric(valueToDisplay, 0);
+
+            // Format based on field type
+            let formattedValue;
+            if (fieldId.startsWith("m_")) {
+              formattedValue = window.TEUI.formatNumber(num, "number-2dp"); // Gain factors
+            } else if (
+              fieldId.startsWith("j_") ||
+              fieldId.startsWith("l_") ||
+              fieldId === "g_80" ||
+              fieldId === "g_81"
+            ) {
+              formattedValue = window.TEUI.formatNumber(num, "percent-2dp"); // Percentages (2dp for g_80, g_81)
+            } else if (fieldId.startsWith("p_")) {
+              formattedValue = window.TEUI.formatNumber(num, "currency"); // Costs
+            } else {
+              formattedValue = window.TEUI.formatNumber(
+                num,
+                "number-2dp-comma"
+              ); // Default
+            }
+
+            element.textContent = formattedValue;
+          }
+        }
+      });
+    },
 
     // ✅ NEW: Sync visual toggle switch and indicator to match current mode
     // Called both when user clicks local toggle AND when global toggle switches mode
@@ -274,6 +578,18 @@ window.TEUI.SectionModules.sect10 = (function () {
   // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
   //==========================================================================
 
+  function getNumericValue(fieldId) {
+    // For values INTERNAL to this section
+    const rawValue = ModeManager.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getGlobalNumericValue(fieldId) {
+    // For values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
   /**
    * Get field default value from field definitions (single source of truth)
    * Prevents hardcoded defaults anti-pattern
@@ -281,6 +597,80 @@ window.TEUI.SectionModules.sect10 = (function () {
   function getFieldDefault(fieldId) {
     const fields = getFields();
     return fields[fieldId]?.defaultValue || fields[fieldId]?.value || "";
+  }
+
+  function getFieldValue(fieldId) {
+    const stateValue = ModeManager.getValue(fieldId);
+    if (stateValue != null) return stateValue;
+
+    // Fallback for non-state values (e.g., legacy DOM elements)
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    return element ? (element.value ?? element.textContent?.trim()) : null;
+  }
+
+  /**
+   * Sets calculated value using S02's proven mode-aware pattern.
+   * ✅ ELIMINATES STATE MIXING: Uses current UI mode to determine storage destination.
+   */
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    const valueToStore =
+      value !== null && value !== undefined ? String(value) : "0";
+
+    // 🔍 ENHANCED DEBUG: Track which input types cause contamination
+    if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(fieldId)) {
+      console.log(
+        `[S10 AREA DEBUG] setFieldValue: ${fieldId}=${valueToStore} in ${ModeManager.currentMode} mode`
+      );
+    }
+    if (fieldId === "d_80") {
+      console.log(
+        `[S10 DROPDOWN DEBUG] setFieldValue: ${fieldId}=${valueToStore} in ${ModeManager.currentMode} mode`
+      );
+    }
+
+    // ✅ S02 PATTERN: Use current UI mode to determine which state to update
+    const currentState =
+      ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+    currentState.setValue(fieldId, valueToStore, fieldType);
+
+    // ✅ S02 PATTERN: Mode-aware StateManager publication
+    if (ModeManager.currentMode === "target") {
+      // Target mode: Store unprefixed for downstream consumption
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
+
+        // 🔍 ENHANCED DEBUG: Track StateManager publications
+        if (
+          ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(
+            fieldId
+          )
+        ) {
+          console.log(
+            `[S10 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`
+          );
+        }
+      }
+    } else {
+      // Reference mode: Store with ref_ prefix for downstream consumption
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          valueToStore,
+          fieldType
+        );
+
+        // 🔍 ENHANCED DEBUG: Track StateManager publications
+        if (
+          ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(
+            fieldId
+          )
+        ) {
+          console.log(
+            `[S10 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`
+          );
+        }
+      }
+    }
   }
 
   /**
@@ -379,8 +769,53 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
     fieldElement.textContent = displayValue; // Update DOM display
 
-    // Store value using the ModeManager facade
+    // 🔍 ENHANCED DEBUG: Track area input event path
+    if (
+      ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(currentFieldId)
+    ) {
+      console.log(
+        `[S10 AREA EVENT] handleFieldBlur: ${currentFieldId}=${rawValueToStore} in ${ModeManager.currentMode} mode`
+      );
+    }
+
+    // ✅ DUAL-STATE: Store value using the ModeManager facade.
     ModeManager.setValue(currentFieldId, rawValueToStore, "user-modified");
+
+    // Trigger recalculation using the standardized calculateAll function
+    if (typeof calculateAll === "function") {
+      console.log(
+        `[S10 CALC TRIGGER] calculateAll() triggered by ${currentFieldId} in ${ModeManager.currentMode} mode`
+      );
+      calculateAll();
+      // ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)
+      ModeManager.updateCalculatedDisplayValues();
+    }
+  }
+
+  function setElementClass(fieldId, className) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      // Remove existing status classes
+      element.classList.remove("checkmark", "warning");
+      // Add the new class
+      element.classList.add(className);
+    }
+  }
+
+  function setIndicatorClass(fieldId, newClass, potentialClasses) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      const baseClass = "gain-indicator"; // Always gain for this section
+      element.classList.remove(...potentialClasses);
+      if (newClass) {
+        element.classList.add(newClass);
+        if (!element.classList.contains(baseClass)) {
+          element.classList.add(baseClass);
+        }
+      } else {
+        element.classList.remove(baseClass);
+      }
+    }
   }
 
   //==========================================================================
@@ -1440,6 +1875,14 @@ window.TEUI.SectionModules.sect10 = (function () {
     },
   };
 
+  // Define configuration for orientation rows (similar to Section 11)
+  const orientationConfig = [73, 74, 75, 76, 77, 78];
+
+  // T-cell comparison configuration for Section 10
+  const baselineValues = {
+    80: { type: "method", value: "NRC 40%" }, // Net Useable Gains Method - only this needs reference comparison
+  };
+
   //==========================================================================
   // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
   //==========================================================================
@@ -1622,10 +2065,820 @@ window.TEUI.SectionModules.sect10 = (function () {
   // EVENT HANDLING AND CALCULATIONS
   //==========================================================================
 
+  /**
+   * Update reference indicators for all rows
+   */
+  function updateAllReferenceIndicators() {
+    try {
+      // Only update reference indicator for method row (80)
+      // Rows 73-78 don't need reference comparison - they show gain factors in Column M
+      updateReferenceIndicators(80);
+    } catch (_error) {
+      /* No operation needed, was empty catch */
+    }
+  }
 
-  function calculateAll() { /* graph computes */ }
-  function calculateUtilizationFactors() { /* graph computes */ }
-  function calculateGainFactor(orientation, climateZone = 6) { /* graph computes */ }
+  /**
+   * Update reference indicators (M and N columns) for a specific row
+   * @param {number} rowId - The row number to update
+   */
+  function updateReferenceIndicators(rowId) {
+    const baseline = baselineValues[rowId];
+    if (!baseline) return;
+
+    const mFieldId = `m_${rowId}`;
+    const nFieldId = `n_${rowId}`;
+    let isGood = true;
+
+    try {
+      if (baseline.type === "method") {
+        // For method comparison (exact match)
+        const currentMethod = getFieldValue(`d_${rowId}`);
+        isGood = currentMethod === baseline.value;
+
+        // For method, show the reference method in Column M
+        const mElement = document.querySelector(
+          `[data-field-id="${mFieldId}"]`
+        );
+        if (mElement) mElement.textContent = baseline.value;
+      }
+
+      // Update Column N (Pass/Fail)
+      const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+      if (nElement) {
+        nElement.textContent = isGood ? "✓" : "✗";
+        setElementClass(nFieldId, isGood ? "checkmark" : "warning");
+      }
+    } catch (_error) {
+      /* No operation needed, was empty catch */
+    }
+  }
+
+  /**
+   * Calculate all values for this section
+   * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
+   */
+  function calculateAll() {
+    // ✅ DUAL-ENGINE PATTERN: Always run BOTH Target and Reference calculations
+    calculateTargetModel(); // Calculate Target model values
+    calculateReferenceModel(); // Calculate Reference model values
+  }
+
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Application state
+   * ✅ S02 PATTERN: Temporarily switch mode for consistent storage routing
+   */
+  function calculateTargetModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target"; // ✅ Temporarily set mode
+
+    try {
+      // Calculate individual orientation rows
+      orientationConfig.forEach(rowId => {
+        calculateOrientationGains(rowId.toString());
+      });
+
+      // Calculate subtotals
+      calculateSubtotals();
+
+      // Calculate utilization factors
+      calculateUtilizationFactors();
+
+      // ✅ FIX: Store Target results for downstream sections (S11, S12)
+      storeTargetResults();
+
+      // Update reference indicators for all rows
+      updateAllReferenceIndicators();
+    } catch (_error) {
+      console.error("S10: Error in Target Model calculations:", _error);
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Restore original mode
+    }
+
+    // Target Model calculations completed
+  }
+
+  /**
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * ✅ S02 PATTERN: Temporarily switch mode for consistent storage routing
+   */
+  function calculateReferenceModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference"; // ✅ Temporarily set mode
+
+    try {
+      // Calculate individual orientation rows with Reference inputs
+      orientationConfig.forEach(rowId => {
+        calculateOrientationGainsReference(rowId.toString());
+      });
+
+      // Calculate subtotals for Reference model
+      calculateSubtotalsReference();
+
+      // Calculate utilization factors for Reference model
+      calculateUtilizationFactorsReference();
+
+      // Store Reference results for other sections
+      storeReferenceResults();
+
+      // Update reference indicators for all rows
+      updateAllReferenceIndicators();
+    } catch (_error) {
+      console.error("S10: Error in Reference Model calculations:", _error);
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Restore original mode
+    }
+
+    // Reference Model calculations completed
+  }
+
+  /**
+   * Calculate solar gains for a specific orientation (Reference model)
+   * @param {string} rowId - Row ID for the element (e.g., "73" for doors)
+   */
+  function calculateOrientationGainsReference(rowId) {
+    try {
+      // Get relevant values using Reference state
+      const area =
+        window.TEUI.parseNumeric(ReferenceState.getValue(`d_${rowId}`)) || 0;
+      const orientation = ReferenceState.getValue(`e_${rowId}`) || "Average";
+      const shgc =
+        window.TEUI.parseNumeric(ReferenceState.getValue(`f_${rowId}`)) || 0.5;
+
+      // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
+      const winterShadingDecimal =
+        (window.TEUI.parseNumeric(ReferenceState.getValue(`g_${rowId}`)) || 0) /
+        100;
+      const summerShadingDecimal =
+        (window.TEUI.parseNumeric(ReferenceState.getValue(`h_${rowId}`)) || 0) /
+        100;
+
+      // EXTERNAL DEPENDENCY: Get Reference Climate Zone from S03 via global state
+      const climateZone = getGlobalNumericValue("ref_j_19") || 6.0; // Default to zone 6 if not available
+
+      const gainFactor = calculateGainFactor(orientation, climateZone);
+
+      // SHGC Normalization Factor
+      const shgcNormalizationFactor = shgc / 0.5;
+
+      // Calculate heating season solar gains
+      const heatingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - winterShadingDecimal);
+
+      // Calculate cooling season solar gains
+      const coolingModifierFactor = orientation === "Skylight" ? 1.25 : 0.5;
+      const coolingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - summerShadingDecimal) *
+        coolingModifierFactor;
+
+      // EXTERNAL DEPENDENCY: Get cost from S01 via global state
+      const cost =
+        getGlobalNumericValue("ref_l_12") * (coolingGains - heatingGains);
+
+      // Store Reference results in StateManager with ref_ prefix
+      setFieldValue(`m_${rowId}`, gainFactor);
+      setFieldValue(`i_${rowId}`, heatingGains);
+      setFieldValue(`k_${rowId}`, coolingGains);
+      setFieldValue(`p_${rowId}`, cost);
+
+      // console.log(`[S10REF] Row${rowId}: Area=${area}, Climate=${climateZone}, GainFactor=${gainFactor}, Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
+    } catch (_error) {
+      console.error(
+        `S10: Error calculating Reference orientation gains for row ${rowId}:`,
+        _error
+      );
+      // Set error values
+      setFieldValue(`m_${rowId}`, 0);
+      setFieldValue(`i_${rowId}`, 0);
+      setFieldValue(`k_${rowId}`, 0);
+      setFieldValue(`p_${rowId}`, 0);
+    }
+  }
+
+  /**
+   * Calculate subtotals for solar gains (Reference model)
+   */
+  function calculateSubtotalsReference() {
+    try {
+      const heatingGains = [
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_73")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_74")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_75")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_76")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_77")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_78")
+        ) || 0,
+      ].reduce((sum, val) => sum + val, 0);
+
+      const coolingGains = [
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_73")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_74")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_75")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_76")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_77")
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_78")
+        ) || 0,
+      ].reduce((sum, val) => sum + val, 0);
+
+      // Store Reference subtotals in StateManager
+      setFieldValue("i_79", heatingGains);
+      setFieldValue("k_79", coolingGains);
+      setFieldValue("j_79", heatingGains > 0 ? "1" : "0");
+      setFieldValue("l_79", coolingGains > 0 ? "1" : "0");
+
+      // ✅ FIX: Calculate percentages for rows 73-78 (match Target mode logic)
+      for (let i = 73; i <= 78; i++) {
+        const rowStr = i.toString();
+        const heatingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_i_${rowStr}`)
+          ) || 0;
+        const coolingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_k_${rowStr}`)
+          ) || 0;
+
+        // Calculate percentages (as decimals: 0.25 = 25%)
+        const heatingPercentDecimal =
+          heatingGains !== 0 ? heatingGain / heatingGains : 0;
+        const coolingPercentDecimal =
+          coolingGains !== 0 ? coolingGain / coolingGains : 0;
+
+        const jFieldId = `j_${rowStr}`;
+        const lFieldId = `l_${rowStr}`;
+
+        // Store percentage values with ref_ prefix
+        setFieldValue(jFieldId, heatingPercentDecimal);
+        setFieldValue(lFieldId, coolingPercentDecimal);
+      }
+
+      // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
+    } catch (_error) {
+      console.error("S10: Error calculating Reference subtotals:", _error);
+    }
+  }
+
+  /**
+   * Calculate utilization factors for Reference model
+   */
+  function calculateUtilizationFactorsReference() {
+    try {
+      // Get total solar gains (internal to S10 Reference model)
+      const solarGains =
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_79")
+        ) || 0;
+
+      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state (Reference mode)
+      const internalGains = getGlobalNumericValue("ref_i_71") || 0;
+
+      const totalGains = solarGains + internalGains;
+
+      // Store total gains in e_80, e_81 (same as Target logic)
+      setFieldValue("e_80", totalGains);
+      setFieldValue("e_81", totalGains);
+
+      //=====================================================================
+      // PART 1: Calculate utilization factor based on selected method in row 80 (Reference dropdown)
+      //=====================================================================
+      const utilizationMethod =
+        ModeManager.getCurrentState().getValue("d_80") || "NRC 40%";
+      let utilizationFactor = 0.4; // Default to 40%
+
+      if (utilizationMethod === "NRC 0%") {
+        utilizationFactor = 0;
+      } else if (utilizationMethod === "NRC 40%") {
+        utilizationFactor = 0.4;
+      } else if (utilizationMethod === "NRC 50%") {
+        utilizationFactor = 0.5;
+      } else if (utilizationMethod === "NRC 60%") {
+        utilizationFactor = 0.6;
+      } else if (utilizationMethod === "PH Method") {
+        // EXTERNAL DEPENDENCIES: Get loss values from other sections via global state (Reference values)
+        const i97 = getGlobalNumericValue("ref_i_97") || 0;
+        const i103 = getGlobalNumericValue("ref_i_103") || 0;
+        const m121 = getGlobalNumericValue("ref_m_121") || 0;
+        const i98 = getGlobalNumericValue("ref_i_98") || 0;
+
+        const numerator = totalGains;
+        const denominator = i97 + i103 + m121 + i98;
+
+        if (denominator > 0) {
+          const gamma = numerator / denominator;
+          if (Math.abs(gamma - 1) < 1e-9) {
+            utilizationFactor = 5 / 6;
+          } else {
+            const a = 5;
+            const gamma_a = Math.pow(gamma, a);
+            const gamma_a_plus_1 = Math.pow(gamma, a + 1);
+            utilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+            utilizationFactor = Math.max(0, Math.min(1, utilizationFactor));
+          }
+        } else {
+          utilizationFactor = numerator > 0 ? 1 : 0;
+        }
+      }
+
+      const usableGains = totalGains * utilizationFactor;
+
+      // ✅ CRITICAL: Store g_80 (utilization factor percentage) and i_80 (usable gains)
+      setFieldValue("g_80", utilizationFactor);
+      setFieldValue("i_80", usableGains);
+
+      //=====================================================================
+      // PART 2: Calculate PHPP method as reference in row 81 (always)
+      //=====================================================================
+      const i97Reference = getGlobalNumericValue("ref_i_97") || 0;
+      const i103Reference = getGlobalNumericValue("ref_i_103") || 0;
+      const m121Reference = getGlobalNumericValue("ref_m_121") || 0;
+      const i98Reference = getGlobalNumericValue("ref_i_98") || 0;
+
+      const numeratorReference = totalGains;
+      const denominatorReference =
+        i97Reference + i103Reference + m121Reference + i98Reference;
+
+      let phUtilizationFactor = 0.9;
+
+      if (denominatorReference > 0) {
+        const gammaReference = numeratorReference / denominatorReference;
+        if (Math.abs(gammaReference - 1) < 1e-9) {
+          phUtilizationFactor = 5 / 6;
+        } else {
+          const a = 5;
+          const gamma_a = Math.pow(gammaReference, a);
+          const gamma_a_plus_1 = Math.pow(gammaReference, a + 1);
+          phUtilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+          phUtilizationFactor = Math.max(0, Math.min(1, phUtilizationFactor));
+        }
+      } else {
+        phUtilizationFactor = numeratorReference > 0 ? 1 : 0;
+      }
+
+      const phReferenceGains = totalGains * phUtilizationFactor;
+
+      // ✅ Store g_81 (PHPP utilization factor) and i_81 (PHPP usable gains)
+      setFieldValue("g_81", phUtilizationFactor);
+      setFieldValue("i_81", phReferenceGains);
+
+      //=====================================================================
+      // PART 3: Calculate unusable gains based on selected method (row 80)
+      //=====================================================================
+      const unusedGains = totalGains - usableGains;
+      // ✅ FIX: Calculate i_82 (Net UN-usable Htg. Gains) for Reference mode
+      setFieldValue("i_82", unusedGains);
+    } catch (_error) {
+      console.error(
+        "S10: Error calculating Reference utilization factors:",
+        _error
+      );
+      // Set error values or defaults
+      setFieldValue("e_80", 0);
+      setFieldValue("g_80", 0);
+      setFieldValue("i_80", 0);
+      setFieldValue("e_81", 0);
+      setFieldValue("g_81", 0);
+      setFieldValue("i_81", 0);
+      setFieldValue("i_82", 0);
+    }
+  }
+
+  /**
+   * Store Target results for downstream sections
+   * ✅ FIX: Publish Target area values for S11 and S12 consumption
+   */
+  function storeTargetResults() {
+    if (!window.TEUI?.StateManager) return;
+
+    // Mapping of S10 areas to S11 equivalents (window/door areas)
+    // S10: d_73-d_78 → S11: d_88-d_93
+    const s10ToS11Map = {
+      d_73: "d_88", // Doors
+      d_74: "d_89", // Window North
+      d_75: "d_90", // Window East
+      d_76: "d_91", // Window South
+      d_77: "d_92", // Window West
+      d_78: "d_93", // Skylights
+    };
+
+    // Publish Target area values with S11 field IDs for S12 consumption
+    // S10 field IDs (d_73-d_78) are already published via ModeManager.setValue()
+    Object.entries(s10ToS11Map).forEach(([s10Field, s11Field]) => {
+      const value = TargetState.getValue(s10Field);
+      if (value !== null && value !== undefined) {
+        // ✅ FIX: Publish with S11 field ID (d_88-d_93) for S12 direct reads
+        window.TEUI.StateManager.setValue(s11Field, value, "calculated");
+      }
+    });
+  }
+
+  /**
+   * Store Reference results for downstream sections
+   * ✅ FIX: Publish Reference area values for S11 and S12 consumption
+   */
+  function storeReferenceResults() {
+    if (!window.TEUI?.StateManager) return;
+
+    // Mapping of S10 areas to S11 equivalents (window/door areas)
+    // S10: d_73-d_78 → S11: d_88-d_93
+    const s10ToS11Map = {
+      d_73: "d_88", // Doors
+      d_74: "d_89", // Window North
+      d_75: "d_90", // Window East
+      d_76: "d_91", // Window South
+      d_77: "d_92", // Window West
+      d_78: "d_93", // Skylights
+    };
+
+    // Publish Reference area values with BOTH S10 and S11 field IDs
+    // This allows S11 to sync (ref_d_73-ref_d_78) and S12 to read directly (ref_d_88-ref_d_93)
+    Object.entries(s10ToS11Map).forEach(([s10Field, s11Field]) => {
+      const value = ReferenceState.getValue(s10Field);
+      if (value !== null && value !== undefined) {
+        // Publish with S10 field ID (for S11 sync compatibility)
+        window.TEUI.StateManager.setValue(
+          `ref_${s10Field}`,
+          value,
+          "calculated"
+        );
+        // ✅ FIX: Also publish with S11 field ID (for S12 direct reads)
+        window.TEUI.StateManager.setValue(
+          `ref_${s11Field}`,
+          value,
+          "calculated"
+        );
+      }
+    });
+  }
+
+  /**
+   * Calculate solar gains for a specific orientation
+   * @param {string} rowId - Row ID for the element (e.g., "73" for doors)
+   */
+  function calculateOrientationGains(rowId) {
+    try {
+      // Get relevant values using the new ModeManager-aware helpers
+      const area = getNumericValue(`d_${rowId}`);
+      const orientation = getFieldValue(`e_${rowId}`);
+      const shgc = getNumericValue(`f_${rowId}`);
+
+      // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
+      const winterShadingDecimal = getNumericValue(`g_${rowId}`) / 100;
+      const summerShadingDecimal = getNumericValue(`h_${rowId}`) / 100;
+
+      // ✅ FIXED: Mode-aware climate zone reading for proper state isolation
+      const climateZone =
+        ModeManager.currentMode === "reference"
+          ? getGlobalNumericValue("ref_j_19") || 6.0 // Reference climate zone
+          : getGlobalNumericValue("j_19") || 6.0; // Target climate zone
+
+      const gainFactor = calculateGainFactor(orientation, climateZone);
+
+      // Always update the gain factor in the DOM (mode-aware via setCalculatedValue)
+      setFieldValue(`m_${rowId}`, gainFactor);
+
+      // SHGC Normalization Factor
+      const shgcNormalizationFactor = shgc / 0.5;
+
+      // Calculate heating season solar gains
+      const heatingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - winterShadingDecimal);
+
+      // Calculate cooling season solar gains
+      const coolingModifierFactor = orientation === "Skylight" ? 1.25 : 0.5;
+      const coolingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - summerShadingDecimal) *
+        coolingModifierFactor;
+
+      // ✅ FIXED: Mode-aware cost calculation for proper state isolation
+      const costPerUnit =
+        ModeManager.currentMode === "reference"
+          ? getGlobalNumericValue("ref_l_12") || 0 // Reference cost from S01
+          : getGlobalNumericValue("l_12") || 0; // Target cost from S01
+      const cost = costPerUnit * (coolingGains - heatingGains);
+
+      // Set state using ModeManager before updating DOM via setCalculatedValue
+      setFieldValue(`i_${rowId}`, heatingGains);
+      setFieldValue(`k_${rowId}`, coolingGains);
+      setFieldValue(`p_${rowId}`, cost);
+
+      // ✅ FIX: Remove duplicate DOM calls - state already set via ModeManager above
+    } catch (_error) {
+      // Set error values
+      setFieldValue(`i_${rowId}`, 0);
+      setFieldValue(`k_${rowId}`, 0);
+      setFieldValue(`p_${rowId}`, 0);
+    }
+  }
+
+  /**
+   * Calculate subtotals for solar gains
+   */
+  function calculateSubtotals() {
+    try {
+      const heatingGains = [
+        getNumericValue("i_73"),
+        getNumericValue("i_74"),
+        getNumericValue("i_75"),
+        getNumericValue("i_76"),
+        getNumericValue("i_77"),
+        getNumericValue("i_78"),
+      ].reduce((sum, val) => sum + val, 0);
+
+      const coolingGains = [
+        getNumericValue("k_73"),
+        getNumericValue("k_74"),
+        getNumericValue("k_75"),
+        getNumericValue("k_76"),
+        getNumericValue("k_77"),
+        getNumericValue("k_78"),
+      ].reduce((sum, val) => sum + val, 0);
+
+      // Set state via ModeManager
+      ModeManager.setValue("i_79", heatingGains.toString(), "calculated");
+      ModeManager.setValue("k_79", coolingGains.toString(), "calculated");
+      ModeManager.setValue("j_79", heatingGains > 0 ? "1" : "0", "calculated");
+      ModeManager.setValue("l_79", coolingGains > 0 ? "1" : "0", "calculated");
+
+      // ✅ FIX: setCalculatedValue only handles state, not formatting
+      // These are duplicate calls - state is already set via ModeManager above
+
+      // Update percentages (Columns J and L) for rows 73-78
+      for (let i = 73; i <= 78; i++) {
+        const rowStr = i.toString(); // Added for clarity
+        const heatingGain = getNumericValue(`i_${rowStr}`);
+        const coolingGain = getNumericValue(`k_${rowStr}`);
+        // Handle division by zero explicitly
+        const heatingPercentDecimal =
+          heatingGains !== 0 ? heatingGain / heatingGains : 0;
+        const coolingPercentDecimal =
+          coolingGains !== 0 ? coolingGain / coolingGains : 0;
+
+        const jFieldId = `j_${rowStr}`;
+        const lFieldId = `l_${rowStr}`;
+
+        // Set state via ModeManager for percentage values
+        ModeManager.setValue(
+          jFieldId,
+          heatingPercentDecimal.toString(),
+          "calculated"
+        );
+        ModeManager.setValue(
+          lFieldId,
+          coolingPercentDecimal.toString(),
+          "calculated"
+        );
+
+        // ✅ FIX: Remove format parameters - setCalculatedValue only handles state
+        // State is already set via ModeManager above
+
+        // Apply Indicator Class & Left Alignment (similar to Section 11)
+        const gainIndicatorClasses = ["gain-high", "gain-medium", "gain-low"];
+        let htgGainClass = "";
+        const htgPercent = heatingPercentDecimal * 100; // Use actual value for thresholds
+        // Heating Gain: Higher is better. Thresholds: Green >= 33, Yellow >= 10, Red < 10
+        if (htgPercent >= 33) {
+          htgGainClass = "gain-high";
+        } // Green
+        else if (htgPercent >= 10) {
+          htgGainClass = "gain-medium";
+        } // Yellow
+        else if (htgPercent >= 0) {
+          htgGainClass = "gain-low";
+        } // Red
+        setIndicatorClass(jFieldId, htgGainClass, gainIndicatorClasses);
+
+        let coolGainClass = "";
+        const coolPercentValue = coolingPercentDecimal * 100; // Use actual value
+        // Cooling Gain: Higher is worse. Thresholds: Red >= 15, Yellow >= 5, Green < 5
+        if (coolPercentValue >= 15) {
+          coolGainClass = "gain-low";
+        } // Red (High contribution = Bad)
+        else if (coolPercentValue >= 5) {
+          coolGainClass = "gain-medium";
+        } // Yellow
+        else if (coolPercentValue >= 0) {
+          coolGainClass = "gain-high";
+        } // Green (Low contribution = Good)
+        setIndicatorClass(lFieldId, coolGainClass, gainIndicatorClasses);
+
+        const jElement = document.querySelector(
+          `[data-field-id="${jFieldId}"]`
+        );
+        if (jElement) jElement.classList.add("text-left-indicator");
+        const lElement = document.querySelector(
+          `[data-field-id="${lFieldId}"]`
+        );
+        if (lElement) lElement.classList.add("text-left-indicator");
+      }
+    } catch (_error) {
+      setFieldValue("i_79", 0);
+      setFieldValue("k_79", 0);
+    }
+  }
+
+  /**
+   * Calculate utilization factors
+   */
+  function calculateUtilizationFactors() {
+    try {
+      // Get total solar gains (internal to S10)
+      const solarGains = getNumericValue("i_79");
+      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state (MODE-AWARE)
+      // ✅ EXPLICIT MODE ISOLATION: No cross-mode fallbacks (prevents silent failures)
+      const internalGains =
+        ModeManager.currentMode === "reference"
+          ? getGlobalNumericValue("ref_i_71") || 0 // ✅ Reference only - no Target fallback
+          : getGlobalNumericValue("i_71") || 0; // ✅ Target only
+
+      // console.log(`[S10] 🔗 Utilization calc: i_71=${internalGains} [mode=${ModeManager.currentMode}]`);
+      const totalGains = solarGains + internalGains;
+
+      // ✅ FIX: setCalculatedValue only for state, not formatting
+      setFieldValue("e_80", totalGains);
+      setFieldValue("e_81", totalGains);
+
+      //=====================================================================
+      // PART 1: Calculate utilization factor based on selected method in row 80
+      //=====================================================================
+      const utilizationMethod = getFieldValue("d_80") || "NRC 40%";
+      let utilizationFactor = 0.4; // Default to 40%
+
+      if (utilizationMethod === "NRC 0%") {
+        utilizationFactor = 0;
+      } else if (utilizationMethod === "NRC 40%") {
+        utilizationFactor = 0.4;
+      } else if (utilizationMethod === "NRC 50%") {
+        utilizationFactor = 0.5;
+      } else if (utilizationMethod === "NRC 60%") {
+        utilizationFactor = 0.6;
+      } else if (utilizationMethod === "PH Method") {
+        // EXTERNAL DEPENDENCIES: Get loss values from other sections via global state
+        const i97 = getGlobalNumericValue("i_97") || 0;
+        const i103 = getGlobalNumericValue("i_103") || 0;
+        const m121 = getGlobalNumericValue("m_121") || 0;
+        const i98 = getGlobalNumericValue("i_98") || 0;
+
+        const numerator = totalGains;
+        const denominator = i97 + i103 + m121 + i98;
+
+        if (denominator > 0) {
+          const gamma = numerator / denominator;
+          if (Math.abs(gamma - 1) < 1e-9) {
+            utilizationFactor = 5 / 6;
+          } else {
+            const a = 5;
+            const gamma_a = Math.pow(gamma, a);
+            const gamma_a_plus_1 = Math.pow(gamma, a + 1);
+            utilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+            utilizationFactor = Math.max(0, Math.min(1, utilizationFactor));
+          }
+        } else {
+          utilizationFactor = numerator > 0 ? 1 : 0;
+        }
+      }
+
+      const usableGains = totalGains * utilizationFactor;
+
+      // console.log(`[S10] 🔗 Final i_80 calc: ${usableGains} = totalGains(${totalGains}) × utilizationFactor(${utilizationFactor}) [mode=${ModeManager.currentMode}]`);
+
+      // Set state via ModeManager
+      setFieldValue("g_80", utilizationFactor);
+      setFieldValue("i_80", usableGains);
+
+      //=====================================================================
+      // PART 2: Calculate PHPP method as reference in row 81 (always)
+      //=====================================================================
+      const i97Reference = getGlobalNumericValue("i_97") || 0;
+      const i103Reference = getGlobalNumericValue("i_103") || 0;
+      const m121Reference = getGlobalNumericValue("m_121") || 0;
+      const i98Reference = getGlobalNumericValue("i_98") || 0;
+
+      const numeratorReference = totalGains;
+      const denominatorReference =
+        i97Reference + i103Reference + m121Reference + i98Reference;
+
+      let phUtilizationFactor = 0.9;
+
+      if (denominatorReference > 0) {
+        const gammaReference = numeratorReference / denominatorReference;
+        if (Math.abs(gammaReference - 1) < 1e-9) {
+          phUtilizationFactor = 5 / 6;
+        } else {
+          const a = 5;
+          const gamma_a = Math.pow(gammaReference, a);
+          const gamma_a_plus_1 = Math.pow(gammaReference, a + 1);
+          phUtilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+          phUtilizationFactor = Math.max(0, Math.min(1, phUtilizationFactor));
+        }
+      } else {
+        phUtilizationFactor = numeratorReference > 0 ? 1 : 0;
+      }
+
+      const phReferenceGains = totalGains * phUtilizationFactor;
+
+      // ✅ FIX: setCalculatedValue only for state, not formatting
+      setFieldValue("g_81", phUtilizationFactor);
+      setFieldValue("i_81", phReferenceGains);
+
+      //=====================================================================
+      // PART 3: Calculate unusable gains based on selected method (row 80)
+      //=====================================================================
+      const unusedGains = totalGains - usableGains;
+      // ✅ FIX: setCalculatedValue only for state, not formatting
+      setFieldValue("i_82", unusedGains);
+    } catch (_error) {
+      // Set error values or defaults
+      setFieldValue("e_80", 0);
+      setFieldValue("g_80", 0);
+      setFieldValue("i_80", 0);
+      setFieldValue("e_81", 0);
+      setFieldValue("g_81", 0);
+      setFieldValue("i_81", 0);
+      setFieldValue("i_82", 0);
+    }
+  }
+
+  /**
+   * Calculate gain factor based on orientation and climate zone
+   * @param {string} orientation - Window orientation (North, South, etc.)
+   * @param {number} climateZone - Climate zone number (default 6)
+   * @returns {number} Gain factor in kWh/m²/yr
+   */
+  function calculateGainFactor(orientation, climateZone = 6) {
+    try {
+      // Handle Skylight explicitly first
+      if (orientation === "Skylight") {
+        return climateZone > 6 ? 25.0 : 75.0;
+      }
+
+      // Define orientations for MATCH and values for CHOOSE
+      const orientations = [
+        "North",
+        "NorthEast",
+        "East",
+        "SouthEast",
+        "South",
+        "SouthWest",
+        "West",
+        "NorthWest",
+      ];
+      // CHOOSE values including the default (9th value for IFERROR)
+      const northernValues = [
+        0.19, 0.89, 2.09, 6.01, 24.76, 82.25, 64.37, 18.14, 24.84,
+      ];
+      const southernValues = [
+        1.31, 34.69, 76.94, 86.59, 70.74, 60.4, 25.86, 2.88, 50.0,
+      ];
+
+      // Find index corresponding to MATCH
+      let orientationIndex = orientations.indexOf(orientation);
+
+      // Select the correct value array based on climate zone
+      const values = climateZone > 6 ? northernValues : southernValues;
+
+      // If index is -1 (MATCH failed -> IFERROR), use the default index (8 for 9th value)
+      // Otherwise, use the found index (0-7)
+      const valueIndex = orientationIndex === -1 ? 8 : orientationIndex;
+
+      return values[valueIndex];
+    } catch (_error) {
+      return 50.0; // Fallback default value in case of unexpected error
+    }
+  }
 
   /**
    * Initialize event handlers for this section
@@ -1663,7 +2916,23 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
+        // 🔍 ENHANCED DEBUG: Track dropdown event path
+        if (fieldId === "d_80") {
+          console.log(
+            `[S10 DROPDOWN EVENT] dropdown change: ${fieldId}=${this.value} in ${ModeManager.currentMode} mode`
+          );
+        }
+
         ModeManager.setValue(fieldId, this.value, "user-modified");
+
+        if (fieldId === "d_80") {
+          console.log(
+            `[S10 DROPDOWN CALC] calculateAll() triggered by ${fieldId} in ${ModeManager.currentMode} mode`
+          );
+        }
+
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
       });
     });
 
@@ -1687,8 +2956,11 @@ window.TEUI.SectionModules.sect10 = (function () {
           }
         }
       });
+      // Let's also add a 'change' listener to trigger recalculation when the user releases the slider
       slider.addEventListener("change", function () {
-        // Graph handles recalculation via StateManager listener
+        // We only need to trigger the recalculation
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
       });
     });
   }
@@ -1754,7 +3026,50 @@ window.TEUI.SectionModules.sect10 = (function () {
    * Add listeners for StateManager changes (dual-state aware)
    */
   function addStateManagerListeners() {
-    // Graph handles cross-section computation via wildcard listener.
+    try {
+      if (!window.TEUI?.StateManager) {
+        return;
+      }
+
+      // ✅ DUAL-STATE: Listen for both target_ and ref_ prefixed dependencies
+      const dependencies = [
+        "j_19", // Climate zone from S03 (CRITICAL for window gains calculation)
+        "i_71", // Internal gains from S09
+        "i_97", // Loss factors from S11 for PH Method
+        "i_103",
+        "m_121",
+        "i_98",
+      ];
+
+      dependencies.forEach(fieldId => {
+        // Listen for Target external dependencies
+        window.TEUI.StateManager.addListener(fieldId, function () {
+          console.log(
+            `S10: Target listener triggered by ${fieldId}, recalculating all.`
+          );
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
+        });
+
+        // ✅ ADD: Listen for Reference external dependencies
+        window.TEUI.StateManager.addListener(`ref_${fieldId}`, function () {
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
+        });
+      });
+
+      // ✅ FIX: REMOVED duplicate listeners for utilization factor dependencies
+      // These fields (i_97, i_103, m_121, i_98) are already in the main dependencies array above,
+      // which calls calculateAll() - the correct dual-engine function.
+      //
+      // The old code here called calculateUtilizationFactors() which is TARGET-ONLY,
+      // causing it to overwrite ReferenceState with Target-calculated values when in Reference mode.
+      // This created the "stuck g_81" bug where the second listener would contaminate the first's result.
+
+      console.log("S10: Simplified global StateManager listeners added");
+    } catch (_error) {
+      console.error("S10: Error in addStateManagerListeners:", _error);
+    }
   }
 
   /**
@@ -1804,7 +3119,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       );
     }
 
-    // 5. Apply validation tooltips to fields
+    // 5. Perform initial calculations for this section
+    calculateAll();
+
+    // 6. Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
       setTimeout(() => {
         window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);

@@ -69,7 +69,7 @@
   //   - ventilation.volumeRate (h_120) in VentilationNodes
   //   - ventilation.volumetricRate (d_120) in VentilationNodes
   const CoolingInputs = [
-    // Climate inputs (from S03) - canonical registration for l_20/l_21
+    // Climate inputs (from S03) - NOT registered elsewhere
     {
       id: "climate.cooling.nightTemp",
       legacyId: "l_20",

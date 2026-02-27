@@ -2357,7 +2357,282 @@ window.TEUI.SectionModules.sect19 = (function () {
       aspectSlider.hasSliderListener = true;
     }
 
-    // Legacy SM listeners removed — graph handles all computation
+    // Listen to geometry changes from other sections (external dependencies)
+    // Per 4012-CHEATSHEET Anti-Pattern 7: Only listen to EXTERNAL dependencies
+    if (window.TEUI?.StateManager) {
+      const geometryFields = ["d_85", "d_86", "d_106"];
+      geometryFields.forEach(fieldId => {
+        window.TEUI.StateManager.addListener(fieldId, () => {
+          if (isActivated) {
+            console.log(
+              `[WOMBAT] Geometry field ${fieldId} changed, recalculating`
+            );
+            calculateAll(); // Will update visualization with correct mode
+          }
+        });
+
+        // Also listen to Reference versions for mode-aware visualization
+        const refFieldId = `ref_${fieldId}`;
+        window.TEUI.StateManager.addListener(refFieldId, () => {
+          if (isActivated) {
+            console.log(
+              `[WOMBAT] Reference field ${refFieldId} changed, recalculating`
+            );
+            calculateAll(); // Will update visualization with correct mode
+          }
+        });
+      });
+
+      // ⚠️ MIRROR FIELD SYNC: Section 12 → WOMBAT (d_105→d_151, d_103→d_150)
+      // When S12 volume/stories change, sync to WOMBAT mirror fields AND recalculate
+      // NOTE: NO DOM updates here - FieldManager handles routing to correct state
+      window.TEUI.StateManager.addListener("d_105", newValue => {
+        const currentValue = TargetState.getValue("d_151");
+        console.log(
+          `[WOMBAT SYNC] d_105 changed: ${currentValue} → ${newValue}`
+        );
+        if (currentValue !== newValue) {
+          // Update TargetState only - NO re-publication to break circular loop
+          TargetState.setValue("d_151", newValue);
+          console.log(
+            `[WOMBAT] ✅ Synced d_151 = ${newValue} from S12 (d_105)`
+          );
+          // Recalculate (will run both engines and update visualization)
+          calculateAll();
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_d_105", newValue => {
+        const currentValue = ReferenceState.getValue("d_151");
+        console.log(
+          `[WOMBAT SYNC] ref_d_105 changed: ${currentValue} → ${newValue}`
+        );
+        if (currentValue !== newValue) {
+          // Update ReferenceState
+          ReferenceState.setValue("d_151", newValue);
+          console.log(
+            `[WOMBAT] ✅ Synced ref_d_151 = ${newValue} from S12 (ref_d_105)`
+          );
+          // Recalculate (will run both engines and update visualization)
+          calculateAll();
+        }
+      });
+
+      window.TEUI.StateManager.addListener("d_103", newValue => {
+        const currentValue = TargetState.getValue("d_150");
+        console.log(
+          `[WOMBAT SYNC] d_103 changed: ${currentValue} → ${newValue}`
+        );
+        if (currentValue !== newValue) {
+          // Update TargetState only - NO re-publication to break circular loop
+          TargetState.setValue("d_150", newValue);
+          console.log(
+            `[WOMBAT] ✅ Synced d_150 = ${newValue} from S12 (d_103)`
+          );
+          // Recalculate (will run both engines and update visualization)
+          calculateAll();
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_d_103", newValue => {
+        const currentValue = ReferenceState.getValue("d_150");
+        console.log(
+          `[WOMBAT SYNC] ref_d_103 changed: ${currentValue} → ${newValue}`
+        );
+        if (currentValue !== newValue) {
+          // Update ReferenceState
+          ReferenceState.setValue("d_150", newValue);
+          console.log(
+            `[WOMBAT] ✅ Synced ref_d_150 = ${newValue} from S12 (ref_d_103)`
+          );
+          // Recalculate (will run both engines and update visualization)
+          calculateAll();
+        }
+      });
+
+      // ✅ NEW (2025-12-18): Listen for g_106 (Typical F2F Height) from S12 - TARGET mode
+      // Ensures both engines recalculate when Target value changes (dual-engine architecture)
+      window.TEUI.StateManager.addListener("g_106", newValue => {
+        console.log(`[WOMBAT SYNC] g_106 changed to: ${newValue}`);
+        console.log(
+          `[WOMBAT SYNC] Triggering calculateAll() for Target geometry recalculation...`
+        );
+        // No state to sync (g_106 is read directly via getModeAwareValue in solveGeometry)
+        // But we need to recalculate both engines when this value changes
+        calculateAll();
+      });
+
+      // ✅ NEW (2025-12-18): Listen for ref_g_106 (Typical F2F Height) from S12 - REFERENCE mode
+      // Ensures both engines recalculate when Reference value changes (dual-engine architecture)
+      window.TEUI.StateManager.addListener("ref_g_106", newValue => {
+        console.log(`[WOMBAT SYNC] ref_g_106 changed to: ${newValue}`);
+        console.log(
+          `[WOMBAT SYNC] Triggering calculateAll() for Reference geometry recalculation...`
+        );
+        // No state to sync (g_106 is read directly via getModeAwareValue in solveGeometry)
+        // But we need to recalculate both engines when this value changes
+        calculateAll();
+      });
+
+      // ✅ CRITICAL: Check if ref_g_106 was already published before listener was added
+      // Section12 publishes during initialization, but Section19 listeners are added later
+      // This ensures we don't miss the initial value (same pattern as d_105/d_103)
+      const existingRefG106 = window.TEUI.StateManager.getValue("ref_g_106");
+      if (existingRefG106 !== null && existingRefG106 !== undefined) {
+        console.log(
+          `[WOMBAT SYNC] Found existing ref_g_106 = ${existingRefG106} in StateManager`
+        );
+        console.log(
+          `[WOMBAT SYNC] Triggering initial calculateAll() for Reference pre-calculation`
+        );
+        calculateAll();
+      }
+
+      // ✅ ROBOT FINGERS 🤖👆: Ae and Ag display fields from S12
+      // S12 publishes d_101/g_101/d_102/g_102 to StateManager
+      // S19 listens and updates its own DOM elements (scoped to #wombat container)
+
+      const wombatContainer = document.getElementById("wombat");
+
+      // Area Exposed to Air (Ae) - Target mode
+      window.TEUI.StateManager.addListener("d_101", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="d_152"]'
+        );
+        if (element && newValue !== null && newValue !== undefined) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-2dp-comma"
+          );
+        }
+      });
+
+      window.TEUI.StateManager.addListener("g_101", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="g_152"]'
+        );
+        if (element && newValue !== null && newValue !== undefined) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-3dp"
+          );
+        }
+      });
+
+      // Area Exposed to Air (Ae) - Reference mode
+      window.TEUI.StateManager.addListener("ref_d_101", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="d_152"]'
+        );
+        if (
+          element &&
+          newValue !== null &&
+          newValue !== undefined &&
+          window.TEUI.ReferenceToggle?.isReferenceMode()
+        ) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-2dp-comma"
+          );
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_g_101", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="g_152"]'
+        );
+        if (
+          element &&
+          newValue !== null &&
+          newValue !== undefined &&
+          window.TEUI.ReferenceToggle?.isReferenceMode()
+        ) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-3dp"
+          );
+        }
+      });
+
+      // Area Exposed to Ground (Ag) - Target mode
+      window.TEUI.StateManager.addListener("d_102", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="d_153"]'
+        );
+        if (element && newValue !== null && newValue !== undefined) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-2dp-comma"
+          );
+        }
+      });
+
+      window.TEUI.StateManager.addListener("g_102", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="g_153"]'
+        );
+        if (element && newValue !== null && newValue !== undefined) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-3dp"
+          );
+        }
+      });
+
+      // Area Exposed to Ground (Ag) - Reference mode
+      window.TEUI.StateManager.addListener("ref_d_102", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="d_153"]'
+        );
+        if (
+          element &&
+          newValue !== null &&
+          newValue !== undefined &&
+          window.TEUI.ReferenceToggle?.isReferenceMode()
+        ) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-2dp-comma"
+          );
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_g_102", newValue => {
+        if (!wombatContainer) return;
+        const element = wombatContainer.querySelector(
+          '[data-field-id="g_153"]'
+        );
+        if (
+          element &&
+          newValue !== null &&
+          newValue !== undefined &&
+          window.TEUI.ReferenceToggle?.isReferenceMode()
+        ) {
+          element.textContent = window.TEUI.formatNumber(
+            window.TEUI.parseNumeric(newValue),
+            "number-3dp"
+          );
+        }
+      });
+
+      // ✅ Window show/hide dropdown (d_160)
+      // Listen for changes to window visibility dropdown
+      window.TEUI.StateManager.addListener("d_160", newValue => {
+        console.log(`[WOMBAT] Window visibility changed: d_160 = ${newValue}`);
+        if (isActivated) {
+          // Re-render visualization to show/hide windows
+          const mode = ModeManager?.currentMode || "target";
+          updateVisualization(mode);
+        }
+      });
+    }
   }
 
   //==========================================================================

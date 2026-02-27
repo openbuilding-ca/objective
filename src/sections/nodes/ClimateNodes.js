@@ -137,10 +137,23 @@
       label: "Cooling Setpoint Override",
       unit: "°C"
     },
-    // d_12, d_13: canonical inputs live in BuildingInfoNodes
-    // (building.majorOccupancy, building.referenceStandard)
-    // l_20, l_21: canonical inputs live in CoolingNodes
-    // (climate.cooling.nightTemp, climate.cooling.seasonMeanRH)
+    // External dependencies from S02
+    {
+      id: "metadata.occupancyType",
+      legacyId: "d_12",
+      defaultValue: "Other",
+      classification: "A",
+      section: "S02",
+      label: "Occupancy Type"
+    },
+    {
+      id: "metadata.referenceStandard",
+      legacyId: "d_13",
+      defaultValue: "OBC SB-10",
+      classification: "C",
+      section: "S02",
+      label: "Reference Standard"
+    }
   ];
 
   // ============================================================================
@@ -217,7 +230,7 @@
       dependencies: [
         "climate.location.province",
         "climate.location.city",
-        "building.majorOccupancy"
+        "metadata.occupancyType"
       ],
       classification: "G",
       section: "S03",
@@ -226,7 +239,7 @@
       compute: (inputs) => {
         const province = inputs["climate.location.province"];
         const city = inputs["climate.location.city"];
-        const occupancy = inputs["building.majorOccupancy"];
+        const occupancy = inputs["metadata.occupancyType"];
         const data = getClimateData(province, city);
 
         if (!data) return -24;
@@ -318,14 +331,14 @@
     {
       id: "climate.heating.setpoint",
       legacyId: "h_23",
-      dependencies: ["building.majorOccupancy", "building.referenceStandard"],
+      dependencies: ["metadata.occupancyType", "metadata.referenceStandard"],
       classification: "C",
       section: "S03",
       label: "Heating Setpoint",
       unit: "°C",
       compute: (inputs) => {
-        const occupancy = inputs["building.majorOccupancy"] || "Other";
-        const standard = inputs["building.referenceStandard"] || "OBC SB-10";
+        const occupancy = inputs["metadata.occupancyType"] || "Other";
+        const standard = inputs["metadata.referenceStandard"] || "OBC SB-10";
 
         // Check if Passive House standard (case-insensitive)
         const isPH = standard && standard.toUpperCase().includes("PH");
@@ -350,13 +363,13 @@
     {
       id: "climate.heating.obcSetpoint",
       legacyId: "m_23",
-      dependencies: ["building.majorOccupancy"],
+      dependencies: ["metadata.occupancyType"],
       classification: "C",
       section: "S03",
       label: "OBC Heating Setpoint (Building Code Baseline)",
       unit: "°C",
       compute: (inputs) => {
-        const occupancy = inputs["building.majorOccupancy"] || "Other";
+        const occupancy = inputs["metadata.occupancyType"] || "Other";
 
         // Building code baseline - no PH override
         // Use includes() to match values like "C-Residential", "D-Residential MURB", etc.
@@ -372,7 +385,7 @@
     {
       id: "climate.cooling.setpoint",
       legacyId: "h_24",
-      dependencies: ["building.majorOccupancy", "climate.cooling.override"],
+      dependencies: ["metadata.occupancyType", "climate.cooling.override"],
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint",
@@ -526,36 +539,6 @@
         const celsius = parseNum(inputs["climate.temperature.winterAverage"], -7);
         // Note: e_25 is NOT rounded in legacy (unlike e_23/e_24)
         return (celsius * 9) / 5 + 32;
-      }
-    },
-
-    // ========================================================================
-    // SETPOINT FAHRENHEIT CONVERSIONS
-    // ========================================================================
-    {
-      id: "climate.heating.setpointF",
-      legacyId: "i_23",
-      dependencies: ["climate.heating.setpoint"],
-      classification: "C",
-      section: "S03",
-      label: "Heating Setpoint (Fahrenheit)",
-      unit: "°F",
-      compute: (inputs) => {
-        const celsius = parseNum(inputs["climate.heating.setpoint"], 21);
-        return Math.round((celsius * 9) / 5 + 32);
-      }
-    },
-    {
-      id: "climate.cooling.setpointF",
-      legacyId: "i_24",
-      dependencies: ["climate.cooling.setpoint"],
-      classification: "C",
-      section: "S03",
-      label: "Cooling Setpoint (Fahrenheit)",
-      unit: "°F",
-      compute: (inputs) => {
-        const celsius = parseNum(inputs["climate.cooling.setpoint"], 24);
-        return Math.round((celsius * 9) / 5 + 32);
       }
     }
   ];

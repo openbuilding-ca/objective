@@ -5,10 +5,9 @@
   "section": "SF280",
   "classification": "C",
   "_meta": {
-    "description": "Total peak heat loss through building envelope at design conditions per CSA F280-12 Section 5.2. Converts annual degree-day-based U\u00d7A products to instantaneous peak loads using heating design temperature difference. Each component's contribution: Q_component = Area \u00d7 U-value \u00d7 deltaT (Watts). Includes air-facing components (roof, walls, windows, doors, skylights, exposed floor) and ground-facing components (below-grade walls, slab-on-grade) with ground temperature adjustment.",
+    "description": "Total peak heat loss through building envelope at design conditions per CSA F280-12 Section 5.2. Converts annual degree-day-based U×A products to instantaneous peak loads using heating design temperature difference. Each component's contribution: Q_component = Area × U-value × deltaT (Watts). Includes air-facing components (roof, walls, windows, doors, skylights, exposed floor) and ground-facing components (below-grade walls, slab-on-grade) with ground temperature adjustment.",
     "standard": "CSA F280-12 Section 5.2",
-    "codeReference": "NBC 9.33.5.1",
-    "implementationNote": "The node's PRIMARY path reads d_137 from Section15 (already computed in kW, converted to W). The granular formula in this Parnas table documents the full decomposition but the node delegates to Section15 for the primary calculation, with a simplified fallback using 4 aggregated inputs (envelope.airFacing.uValue, envelope.airFacing.area, envelope.groundFacing.uValue, envelope.groundFacing.area)."
+    "codeReference": "NBC 9.33.5.1"
   },
   "signature": {
     "inputs": [
@@ -187,7 +186,7 @@
   "behavior": [
     {
       "condition": "All component areas and U-values available",
-      "output": "SUM(component_area \u00d7 component_U \u00d7 deltaT_heating) \u00d7 (1 + thermalBridgePenalty/100)",
+      "output": "SUM(component_area × component_U × deltaT_heating) × (1 + thermalBridgePenalty/100)",
       "note": "Air-facing components use deltaT = setpoint - designTemp. Ground-facing components use deltaT = setpoint - groundTemp (10 degC). Total includes thermal bridge penalty factor."
     },
     {
@@ -197,7 +196,7 @@
     }
   ],
   "formula": {
-    "symbolic": "Q_env = (SUM_airFacing(A_i \u00d7 U_i) + SUM_groundFacing(A_j \u00d7 U_j \u00d7 deltaT_ground/deltaT_air)) \u00d7 deltaT_air \u00d7 (1 + TB/100)",
+    "symbolic": "Q_env = (SUM_airFacing(A_i × U_i) + SUM_groundFacing(A_j × U_j × deltaT_ground/deltaT_air)) × deltaT_air × (1 + TB/100)",
     "where": {
       "deltaT_air": "h_23 - d_23 (heating setpoint minus outdoor design temperature)",
       "deltaT_ground": "h_23 - 10 (heating setpoint minus ground temperature 10 degC)",
@@ -205,7 +204,7 @@
       "U_i": "Component U-value (W/m2K)",
       "TB": "Thermal bridge penalty percentage (d_97)"
     },
-    "legacy": "New calculation - derives peak loads from existing TransmissionLossNodes U\u00d7A values"
+    "legacy": "New calculation - derives peak loads from existing TransmissionLossNodes U×A values"
   },
   "tests": [
     {

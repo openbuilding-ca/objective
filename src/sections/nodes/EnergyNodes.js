@@ -52,34 +52,42 @@
     // - d_113, d_114, d_116, d_117 are in MechanicalNodes
     // - m_43 is in RenewableNodes
 
-    // ==== Section 04: Raw Energy Use from Utility Bills (d_27, d_28, d_30) ====
-    // These are raw user inputs. The "actual" values (f_27..f_31) are computed
-    // in EmissionsNodes from these raw inputs + unit conversions + renewables.
+    // ==== Section 04: Actual Energy Use (User Inputs from Utility Bills) ====
+    // Note: h_27, h_28, h_30, h_33 are COMPUTED by legacy Section04.js, not registered here
     {
-      id: "energy.raw.electricity",
+      id: "energy.actual.electricity",
       legacyId: "d_27",
       defaultValue: 0,
       classification: "C",
       section: "S04",
-      label: "Raw Electricity from Bills",
+      label: "Actual Total Electricity Use",
       unit: "kWh/yr"
     },
     {
-      id: "energy.raw.gas",
+      id: "energy.actual.gas",
       legacyId: "d_28",
       defaultValue: 0,
       classification: "C",
       section: "S04",
-      label: "Raw Gas from Bills",
+      label: "Actual Total Gas Use",
       unit: "m³/yr"
     },
     {
-      id: "energy.raw.oil",
+      id: "energy.actual.oil",
       legacyId: "d_30",
       defaultValue: 0,
       classification: "C",
       section: "S04",
-      label: "Raw Oil from Bills",
+      label: "Actual Total Oil Use",
+      unit: "L/yr"
+    },
+    {
+      id: "energy.actual.propane",
+      legacyId: "d_33",
+      defaultValue: 0,
+      classification: "C",
+      section: "S04",
+      label: "Actual Total Propane Use",
       unit: "L/yr"
     },
 
@@ -351,422 +359,6 @@
         const area = parseNum(inputs["building.conditionedFloorArea"], 1);
 
         return area > 0 ? +(total / area).toFixed(2) : 0;
-      }
-    },
-
-    // ========================================================================
-    // S14: ADDITIONAL DISPLAY FIELDS
-    // ========================================================================
-
-    // d_130: CEDI Cooling Load (W/m²) = (d_129 / 8760 × 1000) / h_15
-    {
-      id: "energy.cedi.loadWm2",
-      legacyId: "d_130",
-      dependencies: ["energy.ced.unmitigated", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S14",
-      label: "CEDI Load (W/m²)",
-      compute: (inputs) => {
-        const d129 = parseNum(inputs["energy.ced.unmitigated"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? (d129 / 8760 * 1000) / area : 0;
-      }
-    },
-
-    // d_131: TEL (Total Envelope Heat Loss) = i_97 + i_98 + i_103
-    {
-      id: "energy.tel.heatloss",
-      legacyId: "d_131",
-      dependencies: [
-        "transmissionLoss.thermalBridgePenalty.heatLoss",
-        "transmissionLoss.components.subtotalHeatLoss",
-        "airTightness.heatLoss"
-      ],
-      classification: "C",
-      section: "S14",
-      label: "Total Envelope Heat Loss (TEL)",
-      unit: "kWh/yr",
-      compute: (inputs) => {
-        const i97 = parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatLoss"], 0);
-        const i98 = parseNum(inputs["transmissionLoss.components.subtotalHeatLoss"], 0);
-        const i103 = parseNum(inputs["airTightness.heatLoss"], 0);
-        return i97 + i98 + i103;
-      }
-    },
-
-    // d_132: CEG (Total Envelope Heat Gain) = k_97 + k_98 + k_103
-    {
-      id: "energy.ceg.heatgain",
-      legacyId: "d_132",
-      dependencies: [
-        "transmissionLoss.thermalBridgePenalty.heatGain",
-        "transmissionLoss.components.subtotalHeatGain",
-        "airTightness.heatGain"
-      ],
-      classification: "C",
-      section: "S14",
-      label: "Total Envelope Heat Gain (CEG)",
-      unit: "kWh/yr",
-      compute: (inputs) => {
-        const k97 = parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatGain"], 0);
-        const k98 = parseNum(inputs["transmissionLoss.components.subtotalHeatGain"], 0);
-        const k103 = parseNum(inputs["airTightness.heatGain"], 0);
-        return k97 + k98 + k103;
-      }
-    },
-
-    // h_130: CEDI Mitigated (W/m²) = (m_129 / 8760 × 1000) / h_15
-    {
-      id: "energy.cedi.mitigatedWm2",
-      legacyId: "h_130",
-      dependencies: ["energy.ced.mitigated", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S14",
-      label: "CEDI Mitigated (W/m²)",
-      compute: (inputs) => {
-        const m129 = parseNum(inputs["energy.ced.mitigated"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? (m129 / 8760 * 1000) / area : 0;
-      }
-    },
-
-    // h_131: TELI (Heatloss Intensity) = d_131 / h_15
-    {
-      id: "energy.teli.intensity",
-      legacyId: "h_131",
-      dependencies: ["energy.tel.heatloss", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S14",
-      label: "TELI (kWh/m²/yr)",
-      compute: (inputs) => {
-        const tel = parseNum(inputs["energy.tel.heatloss"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? tel / area : 0;
-      }
-    },
-
-    // h_132: CEGI (Heat Gain Intensity) = d_132 / h_15
-    {
-      id: "energy.cegi.intensity",
-      legacyId: "h_132",
-      dependencies: ["energy.ceg.heatgain", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S14",
-      label: "CEGI (kWh/m²/yr)",
-      compute: (inputs) => {
-        const ceg = parseNum(inputs["energy.ceg.heatgain"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? ceg / area : 0;
-      }
-    },
-
-    // m_131: TELI/TEDI Ratio (cost pro-rating)
-    {
-      id: "energy.teli.tediRatio",
-      legacyId: "m_131",
-      dependencies: ["energy.teli.intensity", "energy.tedi"],
-      classification: "C",
-      section: "S14",
-      label: "TELI/TEDI Ratio",
-      compute: (inputs) => {
-        const teli = parseNum(inputs["energy.teli.intensity"], 0);
-        const tedi = parseNum(inputs["energy.tedi"], 0);
-        return tedi > 0 ? teli / tedi : 0;
-      }
-    },
-
-    // ========================================================================
-    // S15: PEAK LOADS + COSTS + TEUI COMPARISON
-    // ========================================================================
-
-    // d_140: Maximum Heating Load Intensity = (d_137 × 1000) / h_15
-    {
-      id: "energy.peakHeating.intensity",
-      legacyId: "d_140",
-      dependencies: ["f280.legacy.peakHeatingKw", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Heating Load Intensity (W/m²)",
-      compute: (inputs) => {
-        const d137 = parseNum(inputs["f280.legacy.peakHeatingKw"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? (d137 * 1000) / area : 0;
-      }
-    },
-
-    // d_141: Annual Electricity Cost (Pre-HP) = d_135 × l_12
-    {
-      id: "energy.cost.preHP",
-      legacyId: "d_141",
-      dependencies: ["energy.total.targeted", "energy.price.electricity"],
-      classification: "C",
-      section: "S15",
-      label: "Annual Electricity Cost (Pre-HP)",
-      unit: "$/yr",
-      compute: (inputs) => {
-        const d135 = parseNum(inputs["energy.total.targeted"], 0);
-        const price = parseNum(inputs["energy.price.electricity"], 0);
-        return d135 * price;
-      }
-    },
-
-    // d_142: Heatpump Cost Premium (user input)
-    {
-      id: "energy.cost.heatpumpPremium",
-      legacyId: "d_142",
-      dependencies: [],
-      classification: "C",
-      section: "S15",
-      label: "Heatpump Cost Premium ($)",
-      compute: () => 30000,
-    },
-
-    // d_143: Reference TEUI = e_10
-    {
-      id: "energy.reference.teui",
-      legacyId: "d_143",
-      dependencies: ["keyValues.reference.teui"],
-      classification: "C",
-      section: "S15",
-      label: "Reference TEUI",
-      compute: (inputs) => parseNum(inputs["keyValues.reference.teui"], 0),
-    },
-
-    // d_144: TEUI Reduction % = 1 - (h_143 / d_143)
-    {
-      id: "energy.teui.reductionPercent",
-      legacyId: "d_144",
-      dependencies: ["teuiSummary.target.teui", "energy.reference.teui"],
-      classification: "C",
-      section: "S15",
-      label: "TEUI Reduction (%)",
-      compute: (inputs) => {
-        const target = parseNum(inputs["teuiSummary.target.teui"], 0);
-        const ref = parseNum(inputs["energy.reference.teui"], 0);
-        return ref > 0 ? 1 - (target / ref) : 0;
-      }
-    },
-
-    // h_138: Peak Cooling Load (Tons) = d_138 × 0.2843451361
-    {
-      id: "energy.peakCooling.tons",
-      legacyId: "h_138",
-      dependencies: ["f280.legacy.peakCoolingEnclosureKw"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Cooling Load (Tons)",
-      compute: (inputs) => {
-        const d138 = parseNum(inputs["f280.legacy.peakCoolingEnclosureKw"], 0);
-        return d138 * 0.2843451361;
-      }
-    },
-
-    // h_139: Peak Cooling Load with Gains (Tons)
-    {
-      id: "energy.peakCoolingGains.tons",
-      legacyId: "h_139",
-      dependencies: ["f280.legacy.peakCoolingWithGainsKw"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Cooling with Gains (Tons)",
-      compute: (inputs) => {
-        const d139 = parseNum(inputs["f280.legacy.peakCoolingWithGainsKw"], 0);
-        return d139 * 0.2843451361;
-      }
-    },
-
-    // h_140: Maximum Cooling Load Intensity = (d_138 × 1000) / h_15
-    {
-      id: "energy.peakCooling.intensity",
-      legacyId: "h_140",
-      dependencies: ["f280.legacy.peakCoolingEnclosureKw", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Cooling Load Intensity (W/m²)",
-      compute: (inputs) => {
-        const d138 = parseNum(inputs["f280.legacy.peakCoolingEnclosureKw"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 1);
-        return area > 0 ? (d138 * 1000) / area : 0;
-      }
-    },
-
-    // h_141: Annual Electricity Cost (Post-HP) = d_136 × l_12
-    {
-      id: "energy.cost.postHP",
-      legacyId: "h_141",
-      dependencies: ["energy.total.all", "energy.price.electricity"],
-      classification: "C",
-      section: "S15",
-      label: "Annual Electricity Cost (Post-HP)",
-      unit: "$/yr",
-      compute: (inputs) => {
-        const d136 = parseNum(inputs["energy.total.all"], 0);
-        const price = parseNum(inputs["energy.price.electricity"], 0);
-        return d136 * price;
-      }
-    },
-
-    // h_142: ROI (Heatpump payback) = d_142 / (d_141 - h_141)
-    {
-      id: "energy.roi.heatpump",
-      legacyId: "h_142",
-      dependencies: ["energy.cost.heatpumpPremium", "energy.cost.preHP", "energy.cost.postHP", "mechanical.heating.systemType"],
-      classification: "C",
-      section: "S15",
-      label: "Heatpump ROI (years)",
-      compute: (inputs) => {
-        const system = inputs["mechanical.heating.systemType"] || "Electricity";
-        if (system !== "Heatpump") return 0;
-        const premium = parseNum(inputs["energy.cost.heatpumpPremium"], 30000);
-        const preHP = parseNum(inputs["energy.cost.preHP"], 0);
-        const postHP = parseNum(inputs["energy.cost.postHP"], 0);
-        const savings = preHP - postHP;
-        return savings > 0 ? premium / savings : 0;
-      }
-    },
-
-    // h_143: Target TEUI = h_10
-    {
-      id: "teuiSummary.target.teui",
-      legacyId: "h_143",
-      dependencies: ["keyValues.target.teui"],
-      classification: "C",
-      section: "S15",
-      label: "Target TEUI",
-      compute: (inputs) => parseNum(inputs["keyValues.target.teui"], 0),
-    },
-
-    // h_144: Target vs Actual TEUI Ratio = h_143 / l_143
-    {
-      id: "energy.targetActual.ratio",
-      legacyId: "h_144",
-      dependencies: ["teuiSummary.target.teui", "teuiSummary.actual.teui"],
-      classification: "C",
-      section: "S15",
-      label: "Target/Actual TEUI Ratio",
-      compute: (inputs) => {
-        const target = parseNum(inputs["teuiSummary.target.teui"], 0);
-        const actual = inputs["teuiSummary.actual.teui"];
-        if (actual === "N/A" || actual === null || actual === undefined) return "N/A";
-        const actualNum = parseNum(actual, 0);
-        return actualNum > 0 ? target / actualNum : "N/A";
-      }
-    },
-
-    // l_137: Peak Heating Load (BTU) = d_137 × 3412.14245
-    {
-      id: "energy.peakHeating.btu",
-      legacyId: "l_137",
-      dependencies: ["f280.legacy.peakHeatingKw"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Heating Load (BTU)",
-      compute: (inputs) => {
-        const d137 = parseNum(inputs["f280.legacy.peakHeatingKw"], 0);
-        return d137 * 3412.14245;
-      }
-    },
-
-    // l_138: Peak Cooling Load (BTU) = d_138 × 3412.14245
-    {
-      id: "energy.peakCooling.btu",
-      legacyId: "l_138",
-      dependencies: ["f280.legacy.peakCoolingEnclosureKw"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Cooling Load (BTU)",
-      compute: (inputs) => {
-        const d138 = parseNum(inputs["f280.legacy.peakCoolingEnclosureKw"], 0);
-        return d138 * 3412.14245;
-      }
-    },
-
-    // l_139: Peak Cooling Load with Gains (BTU)
-    {
-      id: "energy.peakCoolingGains.btu",
-      legacyId: "l_139",
-      dependencies: ["f280.legacy.peakCoolingWithGainsKw"],
-      classification: "C",
-      section: "S15",
-      label: "Peak Cooling with Gains (BTU)",
-      compute: (inputs) => {
-        const d139 = parseNum(inputs["f280.legacy.peakCoolingWithGainsKw"], 0);
-        return d139 * 3412.14245;
-      }
-    },
-
-    // l_143: Actual TEUI (from Utility Bills) = k_10 if reporting mode = "Utility Bills"
-    {
-      id: "teuiSummary.actual.teui",
-      legacyId: "l_143",
-      dependencies: ["keyValues.actual.teui", "building.analysisMode"],
-      classification: "C",
-      section: "S15",
-      label: "Actual TEUI",
-      compute: (inputs) => {
-        const mode = inputs["building.analysisMode"] || "";
-        if (mode === "Utility Bills") {
-          return parseNum(inputs["keyValues.actual.teui"], 0);
-        }
-        return "N/A";
-      }
-    },
-
-    // l_144: Actual vs Target TEUI Ratio = l_143 / h_143
-    {
-      id: "energy.actualTarget.ratio",
-      legacyId: "l_144",
-      dependencies: ["teuiSummary.actual.teui", "teuiSummary.target.teui"],
-      classification: "C",
-      section: "S15",
-      label: "Actual/Target TEUI Ratio",
-      compute: (inputs) => {
-        const actual = inputs["teuiSummary.actual.teui"];
-        if (actual === "N/A") return "N/A";
-        const actualNum = parseNum(actual, 0);
-        const target = parseNum(inputs["teuiSummary.target.teui"], 0);
-        return target > 0 ? actualNum / target : "N/A";
-      }
-    },
-
-    // h_135: TEUI = d_135 / h_15 (total targeted energy / conditioned floor area)
-    {
-      id: "energy.teui.targeted",
-      legacyId: "h_135",
-      dependencies: ["energy.total.targeted", "building.conditionedFloorArea"],
-      classification: "C",
-      section: "S15",
-      label: "TEUI (kWh/m²/yr)",
-      compute: (inputs) => {
-        const total = parseNum(inputs["energy.total.targeted"], 0);
-        const area = parseNum(inputs["building.conditionedFloorArea"], 0);
-        return area > 0 ? total / area : 0;
-      }
-    },
-
-    // l_141: Other Energy Cost = (L13*D28) + (D29*L14) + (L15*D31) + (L16*D30)
-    {
-      id: "energy.cost.otherFuel",
-      legacyId: "l_141",
-      dependencies: [
-        "energy.price.gas", "energy.raw.gas",
-        "energy.actual.propane.kg", "energy.price.propane",
-        "energy.price.wood", "forestry.woodVolume",
-        "energy.price.oil", "energy.raw.oil"
-      ],
-      classification: "C",
-      section: "S15",
-      label: "Other Energy Cost ($)",
-      compute: (inputs) => {
-        const l13 = parseNum(inputs["energy.price.gas"]);
-        const d28 = parseNum(inputs["energy.raw.gas"]);
-        const d29 = parseNum(inputs["energy.actual.propane.kg"]);
-        const l14 = parseNum(inputs["energy.price.propane"]);
-        const l15 = parseNum(inputs["energy.price.wood"]);
-        const d31 = parseNum(inputs["forestry.woodVolume"]);
-        const l16 = parseNum(inputs["energy.price.oil"]);
-        const d30 = parseNum(inputs["energy.raw.oil"]);
-        return (l13 * d28) + (d29 * l14) + (l15 * d31) + (l16 * d30);
       }
     }
   ];

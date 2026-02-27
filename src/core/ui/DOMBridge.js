@@ -1,282 +1,647 @@
 /**
- * DOMBridge.js - Stamps graph-computed values to DOM
+ * DOMBridge.js - Connects DOM Elements to Multi-Model Computation Engine
  *
- * The computation graph is the single source of truth.
- * After graph computation, DOMBridge reads all computed values
- * and stamps them to DOM elements via [data-field-id] selectors
- * with proper formatting per field.
+ * Part of the Multi-Model Architecture refactoring (Phase 4, Task 4.4)
+ * See: docs/REFACTORING_PLAN.md
  *
- * This replaces per-section updateCalculatedDisplayValues() methods.
+ * Key architecture change:
+ * - DOM is INPUT SOURCE (captures user edits) and OUTPUT SINK (displays values)
+ * - Computation is driven by DEPENDENCY GRAPH, not DOM events
+ * - DOM changes trigger engine.onValueChange() → graph computes → DOM updates
+ * - No more cascading DOM events for calculation propagation
+ *
+ * Flow:
+ * 1. User edits input → DOMBridge captures change
+ * 2. DOMBridge calls engine.onValueChange(path, value)
+ * 3. Engine updates state and computes affected nodes
+ * 4. Engine notifies DOMBridge of computed values
+ * 5. DOMBridge updates DOM elements with new values
  */
 (function () {
   "use strict";
 
   window.TEUI = window.TEUI || {};
 
-  // ==========================================================================
-  // FORMAT MAP: legacyId -> formatType
-  // Default is "number-2dp-comma". Only exceptions listed here.
-  // ==========================================================================
-
-  const FORMAT = {
-    // S01 Key Values - 1 decimal place
-    e_6: "number-1dp", e_8: "number-1dp", e_10: "number-1dp",
-    h_6: "number-1dp", h_8: "number-1dp", h_10: "number-1dp",
-    k_6: "number-1dp", k_8: "number-1dp", k_10: "number-1dp",
-    // S01 - raw strings (percentages like "48%", tiers like "tier3")
-    m_6: "raw", m_8: "raw", m_10: "raw",
-    j_8: "raw", j_10: "raw",
-    i_10: "raw", f_10: "raw",
-
-    // S02 metadata/text fields
-    h_14: "raw", i_16: "raw", i_17: "raw",
-    l_12: "raw", l_13: "raw", l_14: "raw", l_15: "raw", l_16: "raw",
-
-    // S03 Climate
-    j_19: "number-1dp",
-    d_20: "integer", d_21: "integer",
-    d_22: "integer", h_22: "integer",
-    d_25: "integer", l_22: "integer", l_24: "integer",
-    e_23: "integer-nocomma", i_23: "integer-nocomma",
-    e_24: "integer-nocomma", i_24: "integer-nocomma",
-    e_25: "integer-nocomma",
-    m_23: "raw", m_24: "raw",
-    n_23: "raw", n_24: "raw",
-
-    // S04 Energy: emission factor integers, nuclear waste 4dp
-    l_27: "integer",
-    l_28: "integer", l_29: "integer", l_30: "integer", l_31: "integer",
-    l_33: "number-4dp",
-
-    // S05 Embodied Carbon - raw strings
-    m_38: "raw", m_39: "raw", m_40: "raw", m_41: "raw",
-    n_38: "raw", n_39: "raw", n_40: "raw", n_41: "raw",
-
-    // S06 Renewable Energy: integer kWh/yr and m³/yr
-    d_43: "integer", i_43: "integer", i_45: "integer",
-    d_44: "integer", d_45: "integer", d_46: "integer",
-    i_44: "integer", i_46: "integer", k_45: "integer",
-
-    // S07 Water Heating: integer occupancy, compliance ratios
-    h_49: "integer", i_49: "integer", k_49: "integer",
-    m_49: "raw", m_50: "raw", m_52: "raw", m_53: "raw",
-    n_49: "raw", n_50: "raw", n_52: "raw", n_53: "raw",
-    h_50: "number-1dp",
-
-    // S08 Air Quality: integer targets and compliance
-    d_56: "integer", d_57: "integer", d_58: "integer", d_59: "integer",
-    k_56: "integer", k_57: "integer", k_58: "integer",
-    m_56: "integer-percent", m_57: "integer-percent", m_58: "integer-percent",
-    m_59: "raw",
-    n_56: "raw", n_57: "raw", n_58: "raw", n_59: "raw",
-
-    // S09 Occupancy: integer counts and hours
-    d_63: "integer", h_63: "integer",
-    g_63: "integer-nocomma", j_63: "integer-nocomma", i_63: "integer-nocomma",
-
-    // S09 Internal Gains: densities as 1dp, seasonal split percentages
-    d_65: "number-1dp", d_66: "number-1dp", d_67: "number-1dp",
-    g_64: "number-2dp",
-    j_64: "percent-0dp", j_65: "percent-0dp", j_66: "percent-0dp", j_67: "percent-0dp",
-    j_69: "percent-0dp", j_71: "percent-0dp",
-    l_64: "percent-0dp", l_65: "percent-0dp", l_66: "percent-0dp", l_67: "percent-0dp",
-    l_69: "percent-0dp", l_71: "percent-0dp",
-    // S09 Internal Gains: compliance ratios and checkmarks
-    m_65: "raw", m_66: "raw", m_67: "raw",
-    n_65: "raw", n_66: "raw", n_67: "raw",
-
-    // S10 Radiant Gains: subtotal indicators and utilization factor
-    j_79: "integer", l_79: "integer",
-    g_81: "percent-2dp",
-
-    // S11 Envelope: area percentages, thermal bridge decimal, heat loss/gain %
-    h_85: "percent-0dp", h_86: "percent-0dp", h_87: "percent-0dp",
-    h_88: "percent-0dp", h_89: "percent-0dp", h_90: "percent-0dp",
-    h_91: "percent-0dp", h_92: "percent-0dp", h_93: "percent-0dp",
-    h_94: "percent-0dp", h_95: "percent-0dp", h_98: "raw",
-    e_97: "number-3dp",
-    j_97: "percent-0dp", j_98: "percent-0dp",
-    l_97: "percent-0dp", l_98: "percent-0dp",
-    // S11 Envelope: compliance ratios and checkmarks
-    m_85: "raw", m_86: "raw", m_87: "raw", m_88: "raw",
-    m_89: "raw", m_90: "raw", m_91: "raw", m_92: "raw",
-    m_93: "raw", m_94: "raw", m_95: "raw", m_97: "raw",
-    n_85: "raw", n_86: "raw", n_87: "raw", n_88: "raw",
-    n_89: "raw", n_90: "raw", n_91: "raw", n_92: "raw",
-    n_93: "raw", n_94: "raw", n_95: "raw", n_97: "raw",
-
-    // S08 Humidity guidance
-    k_59: "raw",
-
-    // S12 Volume Metrics: WWR as percent, ELA10 as 3dp, compliance text and checkmarks
-    d_107: "percent-2dp", d_110: "number-3dp",
-    i_110: "integer",
-    l_101: "percent-2dp", l_102: "percent-2dp", l_103: "percent-2dp", l_104: "percent-0dp",
-    m_104: "raw", n_104: "raw",
-    m_107: "raw", n_107: "raw",
-    m_109: "raw", n_109: "raw",
-    m_110: "raw", n_110: "raw",
-
-    // S13 Cooling: latent load factor display
-    h_122: "percent-0dp",
-    // S13 Cooling: compliance ratios and pass/fail checkmarks
-    m_113: "integer-percent", m_115: "integer-percent", m_116: "integer-percent",
-    m_117: "integer-percent", m_118: "integer-percent", m_119: "integer-percent",
-    n_113: "raw", n_115: "raw", n_116: "raw",
-    n_117: "raw", n_118: "raw", n_119: "raw",
-    n_124: "raw",
-    m_124: "integer",
-
-    // S14 Energy breakdown
-    m_131: "number-2dp-comma",
-
-    // S15 TEUI Summary: costs, loads, ratios
-    h_135: "number-2dp-comma", l_141: "number-2dp-comma",
-    d_141: "number-2dp-comma", h_141: "number-2dp-comma",
-    d_142: "number-2dp-comma", h_142: "number-2dp-comma",
-    d_143: "number-1dp", h_143: "number-1dp", l_143: "number-1dp",
-    d_144: "percent-0dp", h_144: "percent-0dp", l_144: "percent-0dp",
-    d_145: "number-2dp-comma",
-  };
-
-  // S01 fields always read from Target model (S01 renders all 3 columns itself)
-  const S01_FIELDS = new Set([
-    "e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10",
-    "f_10", "i_10", "j_8", "j_10", "m_6", "m_8", "m_10",
-  ]);
-
-  // S01 animated fields — skipped by stampAll, handled by postStamp with animation
-  const S01_ANIMATED = new Set([
-    "e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10",
-  ]);
-
-  // Tier field → value field mapping (set data-tier attribute)
-  const TIER_MAP = { e_10: "f_10", h_10: "i_10" };
-
-  // ==========================================================================
-  // STAMP ALL
-  // ==========================================================================
+  // ============================================================================
+  // DOM BRIDGE FACTORY
+  // ============================================================================
 
   /**
-   * Read computed values from MultiModelState and write to DOM.
-   * Runs as final step in the calculation pipeline.
+   * Create a DOM bridge connecting UI elements to computation engine
+   * @param {Object} options
+   * @param {Object} options.state - MultiModelState instance
+   * @param {Object} options.engine - MultiModelEngine instance
+   * @param {Object} [options.registry] - FieldRegistry for ID translation
+   * @param {HTMLElement} [options.root] - Root element to scan (default: document)
+   * @returns {DOMBridge}
    */
-  function stampAll() {
-    const CI = window.TEUI.ComputationIntegration;
-    if (!CI?.isInitialized?.()) return;
+  function createDOMBridge(options = {}) {
+    const state = options.state;
+    const engine = options.engine;
+    const registry = options.registry || window.TEUI.FieldRegistry;
+    const root = options.root || document;
 
-    const graph = CI.getGraph();
-    const state = CI.getState();
-    if (!graph || !state) return;
-
-    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.() || false;
-    const targetModelId = state.getActiveModelId();
-    const refModelId = isRef ? CI.getRefModelId() : null;
-    if (!targetModelId) return;
-
-    const fmt = window.TEUI.formatNumber;
-    const parse = window.TEUI.parseNumeric;
-    if (!fmt || !parse) return;
-
-    // Build legacyId → semanticPath lookup from graph nodes
-    const legacyToSemantic = new Map();
-    const nodeIds = graph.getAllNodeIds ? graph.getAllNodeIds() : [];
-    for (const nodeId of nodeIds) {
-      const node = graph.getNode(nodeId);
-      if (node?.legacyId) legacyToSemantic.set(node.legacyId, nodeId);
-    }
-    const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
-    for (const inputId of inputIds) {
-      const input = graph.getInput(inputId);
-      if (input?.legacyId) legacyToSemantic.set(input.legacyId, inputId);
+    if (!state) {
+      throw new Error("MultiModelState required");
     }
 
-    let stamped = 0;
+    if (!engine) {
+      throw new Error("MultiModelEngine required");
+    }
 
-    for (const [legacyId, semanticPath] of legacyToSemantic) {
-      // Skip animated S01 fields — postStamp handles them with animation
-      if (S01_ANIMATED.has(legacyId)) continue;
+    // Track bound elements
+    const boundElements = new Map(); // fieldPath -> Set<Element>
+    const elementToPath = new WeakMap(); // Element -> fieldPath
 
-      // Choose model: S01 always Target, others depend on reference mode
-      const modelId = S01_FIELDS.has(legacyId) ? targetModelId
-        : (refModelId || targetModelId);
+    // Track event listeners for cleanup
+    const eventListeners = new WeakMap(); // Element -> {event, handler}[]
 
-      const value = state.getValueForModel(modelId, semanticPath);
-      if (value === undefined || value === null) continue;
+    // State subscription
+    let unsubscribeState = null;
 
-      const el = document.querySelector(`[data-field-id="${legacyId}"]`);
-      if (!el) continue;
+    // Debounce timers for input events
+    const debounceTimers = new Map();
+    const DEBOUNCE_MS = 150;
 
-      // Skip user-input elements only if actively being edited
-      if (el.hasAttribute("contenteditable") && document.activeElement === el) continue;
-      const tag = el.tagName;
-      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") continue;
-      if (el.querySelector("input, select, textarea")) continue;
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
 
-      const formatType = FORMAT[legacyId] || "number-2dp-comma";
+    /**
+     * Convert legacy ID to semantic path
+     * @param {string} id - Legacy ID (d_85) or semantic path
+     * @returns {string|null}
+     */
+    function toSemanticPath(id) {
+      if (!id) return null;
 
-      if (formatType === "raw") {
-        el.textContent = String(value);
-        stamped++;
-        continue;
+      // Already a semantic path?
+      if (id.includes(".")) {
+        return id;
       }
 
-      if (formatType === "integer-percent") {
-        const n = parse(value, NaN);
-        if (!isNaN(n)) {
-          el.textContent = Math.round(n) + "%";
-          stamped++;
+      // Try registry translation
+      if (registry?.toSemantic) {
+        return registry.toSemantic(id) || id;
+      }
+
+      return id;
+    }
+
+    /**
+     * Get field path from element
+     * Supports multiple attribute patterns for semantic path migration:
+     *   - data-semantic="envelope.roof.rsiValue" (preferred, explicit semantic)
+     *   - data-field-id="envelope.roof.rsiValue" (semantic path in field-id)
+     *   - data-field-id="d_85" (legacy ID, translated via FieldRegistry)
+     *
+     * @param {HTMLElement} element
+     * @returns {string|null}
+     */
+    function getFieldPath(element) {
+      // Check cache first
+      if (elementToPath.has(element)) {
+        return elementToPath.get(element);
+      }
+
+      // PHASE 4: Prefer data-semantic for explicit semantic paths
+      // This allows gradual migration: <input data-field-id="d_85" data-semantic="envelope.roof.rsiValue">
+      if (element.dataset.semantic) {
+        const path = element.dataset.semantic;
+        elementToPath.set(element, path);
+        return path;
+      }
+
+      // Look for data attributes (legacy or semantic in field-id)
+      const fieldId =
+        element.dataset.fieldId ||
+        element.dataset.field ||
+        element.id ||
+        element.name;
+
+      if (!fieldId) return null;
+
+      const path = toSemanticPath(fieldId);
+      if (path) {
+        elementToPath.set(element, path);
+      }
+      return path;
+    }
+
+    /**
+     * Get element value based on type
+     * @param {HTMLElement} element
+     * @returns {*}
+     */
+    function getElementValue(element) {
+      const tagName = element.tagName.toLowerCase();
+
+      if (tagName === "select") {
+        return element.value;
+      }
+
+      if (tagName === "input") {
+        const type = element.type.toLowerCase();
+
+        if (type === "checkbox") {
+          return element.checked;
         }
-        continue;
+
+        if (type === "radio") {
+          // Find checked radio in group
+          const name = element.name;
+          if (name) {
+            const checked = root.querySelector(
+              `input[name="${name}"]:checked`
+            );
+            return checked ? checked.value : null;
+          }
+          return element.checked ? element.value : null;
+        }
+
+        if (type === "number" || type === "range") {
+          const val = parseFloat(element.value);
+          return isNaN(val) ? null : val;
+        }
+
+        return element.value;
       }
 
-      const n = parse(value, NaN);
-      if (!isNaN(n)) {
-        el.textContent = fmt(n, formatType);
-        stamped++;
+      if (tagName === "textarea") {
+        return element.value;
       }
+
+      // For display elements, get text content
+      return element.textContent;
     }
 
-    // Stamp Section01 data attributes (tier badges, status indicators)
-    stampSection01Attributes(state, targetModelId, legacyToSemantic, parse);
+    /**
+     * Set element value based on type
+     * @param {HTMLElement} element
+     * @param {*} value
+     */
+    function setElementValue(element, value) {
+      const tagName = element.tagName.toLowerCase();
 
-    console.log(`[DOMBridge] Stamped ${stamped} values`);
-  }
-
-  /**
-   * Set data-tier and data-status attributes on Section01 elements.
-   * CSS ::before pseudo-elements render tier badges and checkmarks.
-   */
-  function stampSection01Attributes(state, modelId, lookup, parse) {
-    // Tier attributes
-    for (const [valueField, tierField] of Object.entries(TIER_MAP)) {
-      const el = document.querySelector(`[data-field-id="${valueField}"]`);
-      const tierPath = lookup.get(tierField);
-      if (el && tierPath) {
-        const tier = state.getValueForModel(modelId, tierPath);
-        if (tier) el.dataset.tier = String(tier);
+      if (tagName === "select") {
+        element.value = value ?? "";
+        return;
       }
-    }
 
-    // Status attributes for percentage fields
-    for (const pctField of ["m_6", "m_8", "m_10"]) {
-      const el = document.querySelector(`[data-field-id="${pctField}"]`);
-      if (!el) continue;
-      const text = el.textContent;
-      if (text === "N/A") {
-        el.dataset.status = "na";
+      if (tagName === "input") {
+        const type = element.type.toLowerCase();
+
+        if (type === "checkbox") {
+          element.checked = Boolean(value);
+          return;
+        }
+
+        if (type === "radio") {
+          element.checked = element.value === String(value);
+          return;
+        }
+
+        element.value = value ?? "";
+        return;
+      }
+
+      if (tagName === "textarea") {
+        element.value = value ?? "";
+        return;
+      }
+
+      // For display elements, set text content
+      // BUT first check if element contains inputs - don't destroy them!
+      const containedInput = element.querySelector("input, select, textarea");
+      if (containedInput) {
+        // Element contains an input - update the input instead of destroying it
+        setElementValue(containedInput, value);
+        return;
+      }
+
+      if (value === undefined || value === null) {
+        element.textContent = "";
+      } else if (typeof value === "number") {
+        // Format numbers nicely
+        element.textContent = formatNumber(value);
       } else {
-        const n = parse(text, 0);
-        el.dataset.status = n <= 100 ? "pass" : "fail";
+        element.textContent = String(value);
       }
     }
+
+    /**
+     * Format number for display
+     * @param {number} value
+     * @returns {string}
+     */
+    function formatNumber(value) {
+      if (isNaN(value)) return "";
+      if (!isFinite(value)) return value > 0 ? "∞" : "-∞";
+
+      // Use locale formatting with reasonable precision
+      if (Math.abs(value) >= 1000) {
+        return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      }
+      if (Math.abs(value) < 0.01 && value !== 0) {
+        return value.toExponential(2);
+      }
+      return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    /**
+     * Check if element is an input element
+     * @param {HTMLElement} element
+     * @returns {boolean}
+     */
+    function isInputElement(element) {
+      const tagName = element.tagName.toLowerCase();
+      return (
+        tagName === "input" ||
+        tagName === "select" ||
+        tagName === "textarea"
+      );
+    }
+
+    /**
+     * Create debounced handler for input events
+     * @param {string} fieldPath
+     * @param {Function} handler
+     * @returns {Function}
+     */
+    function createDebouncedHandler(fieldPath, handler) {
+      return function (event) {
+        // Clear existing timer
+        if (debounceTimers.has(fieldPath)) {
+          clearTimeout(debounceTimers.get(fieldPath));
+        }
+
+        // Set new timer
+        debounceTimers.set(
+          fieldPath,
+          setTimeout(() => {
+            debounceTimers.delete(fieldPath);
+            handler(event);
+          }, DEBOUNCE_MS)
+        );
+      };
+    }
+
+    /**
+     * Handle input value change
+     * @param {HTMLElement} element
+     * @param {string} fieldPath
+     */
+    function handleValueChange(element, fieldPath) {
+      const value = getElementValue(element);
+      const modelId = state.getActiveModelId();
+
+      if (!modelId) {
+        console.warn("[DOMBridge] No active model");
+        return;
+      }
+
+      // Send to engine - this triggers computation
+      engine.onValueChange(fieldPath, value, modelId);
+    }
+
+    /**
+     * Add event listeners to an input element
+     * @param {HTMLElement} element
+     * @param {string} fieldPath
+     */
+    function bindInputElement(element, fieldPath) {
+      const listeners = [];
+
+      const changeHandler = () => handleValueChange(element, fieldPath);
+
+      // Determine event types based on element
+      const tagName = element.tagName.toLowerCase();
+      const inputType = element.type?.toLowerCase();
+
+      if (tagName === "select") {
+        element.addEventListener("change", changeHandler);
+        listeners.push({ event: "change", handler: changeHandler });
+      } else if (tagName === "input") {
+        if (inputType === "checkbox" || inputType === "radio") {
+          element.addEventListener("change", changeHandler);
+          listeners.push({ event: "change", handler: changeHandler });
+        } else if (inputType === "number" || inputType === "range") {
+          // Debounce number inputs
+          const debouncedHandler = createDebouncedHandler(
+            fieldPath,
+            changeHandler
+          );
+          element.addEventListener("input", debouncedHandler);
+          element.addEventListener("change", changeHandler);
+          listeners.push({ event: "input", handler: debouncedHandler });
+          listeners.push({ event: "change", handler: changeHandler });
+        } else {
+          // Text inputs - debounce
+          const debouncedHandler = createDebouncedHandler(
+            fieldPath,
+            changeHandler
+          );
+          element.addEventListener("input", debouncedHandler);
+          element.addEventListener("change", changeHandler);
+          listeners.push({ event: "input", handler: debouncedHandler });
+          listeners.push({ event: "change", handler: changeHandler });
+        }
+      } else if (tagName === "textarea") {
+        const debouncedHandler = createDebouncedHandler(
+          fieldPath,
+          changeHandler
+        );
+        element.addEventListener("input", debouncedHandler);
+        element.addEventListener("change", changeHandler);
+        listeners.push({ event: "input", handler: debouncedHandler });
+        listeners.push({ event: "change", handler: changeHandler });
+      }
+
+      eventListeners.set(element, listeners);
+    }
+
+    /**
+     * Remove event listeners from an element
+     * @param {HTMLElement} element
+     */
+    function unbindElement(element) {
+      const listeners = eventListeners.get(element);
+      if (listeners) {
+        for (const { event, handler } of listeners) {
+          element.removeEventListener(event, handler);
+        }
+        eventListeners.delete(element);
+      }
+    }
+
+    /**
+     * Handle state change from engine
+     * @param {Object} event
+     */
+    function handleStateChange(event) {
+      if (event.type !== "valueChanged") return;
+
+      const { fieldPath, value } = event;
+
+      // Update all bound elements for this field
+      const elements = boundElements.get(fieldPath);
+      if (elements) {
+        for (const element of elements) {
+          // Skip if this element triggered the change (avoid feedback loop)
+          if (document.activeElement === element) {
+            continue;
+          }
+          setElementValue(element, value);
+        }
+      }
+    }
+
+    // ========================================================================
+    // PUBLIC API
+    // ========================================================================
+
+    const bridge = {
+      /**
+       * Bind a single element to a field
+       * @param {HTMLElement|string} element - Element or selector
+       * @param {string} [fieldPath] - Optional explicit field path
+       */
+      bind(element, fieldPath) {
+        if (typeof element === "string") {
+          element = root.querySelector(element);
+        }
+
+        if (!element) {
+          console.warn("[DOMBridge] Element not found");
+          return;
+        }
+
+        const path = fieldPath || getFieldPath(element);
+        if (!path) {
+          console.warn(
+            "[DOMBridge] No field path for element:",
+            element
+          );
+          return;
+        }
+
+        // Track binding
+        if (!boundElements.has(path)) {
+          boundElements.set(path, new Set());
+        }
+        boundElements.get(path).add(element);
+        elementToPath.set(element, path);
+
+        // Add event listeners for input elements
+        if (isInputElement(element)) {
+          bindInputElement(element, path);
+        }
+
+        // Initialize with current value
+        const value = state.getValue(path);
+        if (value !== undefined) {
+          setElementValue(element, value);
+        }
+      },
+
+      /**
+       * Unbind a single element
+       * @param {HTMLElement|string} element
+       */
+      unbind(element) {
+        if (typeof element === "string") {
+          element = root.querySelector(element);
+        }
+
+        if (!element) return;
+
+        const path = elementToPath.get(element);
+        if (path) {
+          const elements = boundElements.get(path);
+          if (elements) {
+            elements.delete(element);
+            if (elements.size === 0) {
+              boundElements.delete(path);
+            }
+          }
+        }
+
+        unbindElement(element);
+        elementToPath.delete(element);
+      },
+
+      /**
+       * Bind all elements within a container
+       * @param {HTMLElement|string} [container] - Container element (default: root)
+       * @param {string} [selector] - CSS selector for elements to bind
+       */
+      bindAll(container, selector = "[data-field-id], [data-field], [data-semantic]") {
+        if (typeof container === "string") {
+          container = root.querySelector(container);
+        }
+        container = container || root;
+
+        const elements = container.querySelectorAll(selector);
+        for (const element of elements) {
+          this.bind(element);
+        }
+
+        console.log(`[DOMBridge] Bound ${elements.length} elements`);
+      },
+
+      /**
+       * Unbind all elements
+       */
+      unbindAll() {
+        for (const [path, elements] of boundElements) {
+          for (const element of elements) {
+            unbindElement(element);
+          }
+        }
+        boundElements.clear();
+        debounceTimers.clear();
+      },
+
+      /**
+       * Start listening for state changes
+       */
+      connect() {
+        if (unsubscribeState) {
+          console.warn("[DOMBridge] Already connected");
+          return;
+        }
+
+        unsubscribeState = state.addListener(handleStateChange);
+        console.log("[DOMBridge] Connected to state");
+      },
+
+      /**
+       * Stop listening for state changes
+       */
+      disconnect() {
+        if (unsubscribeState) {
+          unsubscribeState();
+          unsubscribeState = null;
+          console.log("[DOMBridge] Disconnected from state");
+        }
+      },
+
+      /**
+       * Full initialization - bind elements and connect
+       * @param {HTMLElement|string} [container]
+       * @param {string} [selector]
+       */
+      initialize(container, selector) {
+        this.bindAll(container, selector);
+        this.connect();
+        console.log("[DOMBridge] Initialized");
+      },
+
+      /**
+       * Full cleanup - unbind and disconnect
+       */
+      destroy() {
+        this.unbindAll();
+        this.disconnect();
+        console.log("[DOMBridge] Destroyed");
+      },
+
+      /**
+       * Sync all bound elements with current state
+       */
+      syncFromState() {
+        for (const [path, elements] of boundElements) {
+          const value = state.getValue(path);
+          for (const element of elements) {
+            setElementValue(element, value);
+          }
+        }
+      },
+
+      /**
+       * Sync all input elements to state (useful for initial load)
+       */
+      syncToState() {
+        const changes = {};
+
+        for (const [path, elements] of boundElements) {
+          for (const element of elements) {
+            if (isInputElement(element)) {
+              changes[path] = getElementValue(element);
+              break; // Only need one value per path
+            }
+          }
+        }
+
+        if (Object.keys(changes).length > 0) {
+          engine.onBatchChange(changes, state.getActiveModelId());
+        }
+      },
+
+      /**
+       * Get bound element count
+       * @returns {number}
+       */
+      getBoundCount() {
+        let count = 0;
+        for (const elements of boundElements.values()) {
+          count += elements.size;
+        }
+        return count;
+      },
+
+      /**
+       * Get bound field paths
+       * @returns {string[]}
+       */
+      getBoundPaths() {
+        return Array.from(boundElements.keys());
+      },
+
+      /**
+       * Check if a path has bound elements
+       * @param {string} fieldPath
+       * @returns {boolean}
+       */
+      isBound(fieldPath) {
+        return boundElements.has(fieldPath);
+      },
+
+      /**
+       * Get elements bound to a path
+       * @param {string} fieldPath
+       * @returns {HTMLElement[]}
+       */
+      getElements(fieldPath) {
+        const elements = boundElements.get(fieldPath);
+        return elements ? Array.from(elements) : [];
+      },
+
+      /**
+       * Debug output
+       */
+      debug() {
+        console.group("[DOMBridge] Debug");
+        console.log("Bound paths:", boundElements.size);
+        console.log("Total elements:", this.getBoundCount());
+        console.log("Connected:", !!unsubscribeState);
+        for (const [path, elements] of boundElements) {
+          console.log(`  ${path}:`, elements.size, "elements");
+        }
+        console.groupEnd();
+      }
+    };
+
+    return bridge;
   }
 
-  // ==========================================================================
+  // ============================================================================
   // EXPORT
-  // ==========================================================================
+  // ============================================================================
 
-  window.TEUI.DOMBridge = { stampAll };
+  window.TEUI.DOMBridge = {
+    create: createDOMBridge
+  };
 
   console.log("[DOMBridge] Module loaded");
 })();

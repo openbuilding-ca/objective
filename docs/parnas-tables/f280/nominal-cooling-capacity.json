@@ -8,8 +8,7 @@
     "description": "Nominal cooling capacity at design conditions per CSA F280-12 Section 6.3.1. Calculates total sensible and latent cooling loads at summer design temperature. Components: envelope heat gain, solar heat gain, internal gains, ventilation heat gain (including latent), and infiltration heat gain. The installed cooling capacity must be between 80% and 125% of this value.",
     "standard": "CSA F280-12 Section 6.3.1",
     "codeReference": "NBC 9.33.5.1",
-    "formPage": "F280 Form Page 3 - Nominal Cooling Capacity",
-    "implementationNote": "The node reuses d_139 from Section15 (which already bundles envelope + solar + internal + ventilation + occupant gains) and only adds infiltration and latent factor. The Parnas table documents the 'from scratch' formula for full traceability."
+    "formPage": "F280 Form Page 3 - Nominal Cooling Capacity"
   },
   "signature": {
     "inputs": [
@@ -104,7 +103,7 @@
   "behavior": [
     {
       "condition": "hottest > setpoint (cooling required)",
-      "output": "(Q_envelope + Q_solar + Q_internal + Q_ventilation + Q_infiltration) \u00d7 latentFactor",
+      "output": "(Q_envelope + Q_solar + Q_internal + Q_ventilation + Q_infiltration) × latentFactor",
       "note": "Sum of all sensible gains multiplied by latent load factor for total cooling load"
     },
     {
@@ -114,13 +113,13 @@
     }
   ],
   "formula": {
-    "symbolic": "Q_cool = (Q_env + Q_solar + Q_int + Q_vent + Q_inf) \u00d7 LLF",
+    "symbolic": "Q_cool = (Q_env + Q_solar + Q_int + Q_vent + Q_inf) × LLF",
     "where": {
-      "Q_env": "Ae \u00d7 Uw \u00d7 (T_hot - T_setpoint)",
+      "Q_env": "Ae × Uw × (T_hot - T_setpoint)",
       "Q_solar": "Peak solar heat gain (W) from f280.peakSolarGain",
       "Q_int": "Peak internal gains (W) from internal.peakCoolingGain",
-      "Q_vent": "1.21 \u00d7 V_dot \u00d7 (1 - ATRE/100) \u00d7 (T_hot - T_setpoint)",
-      "Q_inf": "1.21 \u00d7 NRL50 \u00d7 Ae / N \u00d7 (T_hot - T_setpoint)",
+      "Q_vent": "1.21 × V_dot × (1 - ATRE/100) × (T_hot - T_setpoint)",
+      "Q_inf": "1.21 × NRL50 × Ae / N × (T_hot - T_setpoint)",
       "LLF": "Latent load factor from psychrometric calculations"
     }
   },
@@ -140,7 +139,7 @@
         "f280.peakSolarGain": 3000,
         "cooling.latentLoadFactor": 1.15
       },
-      "expected": 7921,
+      "expected": 7935,
       "note": "Env: 0.35*400*10=1400, Vent: 1.21*50*1.0*10=605, Inf: 1.21*1.17*400/14.8*10=383, Sensible=1400+3000+1500+605+383=6888, Total=6888*1.15=7921W"
     }
   ],

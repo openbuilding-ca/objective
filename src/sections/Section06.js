@@ -52,7 +52,19 @@ window.TEUI.SectionModules.sect06 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated TargetState for imported values
      */
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    syncFromGlobalState: function (
+      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S06 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
+          );
+        }
+      });
+    },
 
     /**
      * ✅ PHASE 6: Apply code-minimum baseline values from ReferenceValues
@@ -122,6 +134,13 @@ window.TEUI.SectionModules.sect06 = (function () {
       console.log("S06: Reference standard changed, reloading defaults");
       this.setDefaults();
       this.saveState();
+      // Only refresh UI if currently in reference mode
+      if (ModeManager.currentMode === "reference") {
+        ModeManager.refreshUI();
+        calculateAll();
+        // ✅ PHASE 3 FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET requirement)
+        ModeManager.updateCalculatedDisplayValues();
+      }
     },
     saveState: function () {
       localStorage.setItem("S06_REFERENCE_STATE", JSON.stringify(this.state));
@@ -138,7 +157,20 @@ window.TEUI.SectionModules.sect06 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
-    syncFromGlobalState: function () { /* graph is source of truth */ },
+    syncFromGlobalState: function (
+      fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S06 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
+          );
+        }
+      });
+    },
   };
 
   // PATTERN 2: ModeManager Facade (Unified Interface)
@@ -200,6 +232,11 @@ window.TEUI.SectionModules.sect06 = (function () {
       this.currentMode = mode;
       console.log(`S06: Switched to ${mode.toUpperCase()} mode`);
 
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations
+      // Both engines should already have calculated values stored in StateManager
+      this.refreshUI();
+      this.updateCalculatedDisplayValues(); // Update calculated field displays only
+
       // ✅ NEW: Sync visual toggle UI when mode changes (from global or local toggle)
       this.syncToggleUI(mode);
     },
@@ -211,11 +248,83 @@ window.TEUI.SectionModules.sect06 = (function () {
       window.TEUI.ToggleUISync.syncToggleUI(this._toggleElements, mode, "S06");
     },
 
-    refreshUI: function () { /* DOMBridge.stampAll() handles display */ },
+    refreshUI: function () {
+      const sectionElement = document.getElementById("onSiteEnergy");
+      if (!sectionElement) return;
 
-    updateCalculatedDisplayValues: function () { /* DOMBridge.stampAll() handles display */ },
+      const currentState = this.getCurrentState();
+      const fieldsToSync = [
+        "d_44",
+        "d_45",
+        "d_46",
+        "i_44",
+        "i_46",
+        "k_45",
+        "m_43",
+      ]; // All editable fields
 
-    resetState: function () { /* graph handles state */ },
+      fieldsToSync.forEach(fieldId => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
+
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`
+        );
+        if (!element) return;
+
+        // ✅ PATTERN A: Simple contenteditable pattern (like S05)
+        if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
+      });
+    },
+
+    updateCalculatedDisplayValues: function () {
+      // Update all calculated fields to show values for current mode
+      const calculatedFields = ["d_43", "i_43", "i_45"];
+      console.log(
+        `🔄 [S06] updateCalculatedDisplayValues: mode=${this.currentMode}`
+      );
+
+      calculatedFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          // ✅ FIXED: No fallback to Target values - Reference should show Reference values only
+          let value;
+          if (this.currentMode === "reference") {
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+            // If Reference value doesn't exist, default to 0 (not Target value)
+            if (value === null || value === undefined) {
+              value = 0;
+            }
+          } else {
+            value = window.TEUI.StateManager.getValue(fieldId) || 0;
+          }
+
+          const formattedValue = window.TEUI.formatNumber
+            ? window.TEUI.formatNumber(value, "number-2dp-comma")
+            : value;
+          element.textContent = formattedValue;
+        }
+      });
+    },
+
+    resetState: function () {
+      console.log("S06: Resetting state and clearing localStorage.");
+
+      // Reset both states to their current dynamic defaults
+      TargetState.setDefaults();
+      TargetState.saveState();
+      ReferenceState.setDefaults();
+      ReferenceState.saveState();
+
+      console.log("S06: States have been reset to defaults.");
+
+      // After resetting, refresh the UI and recalculate
+      this.refreshUI();
+      calculateAll();
+      this.updateCalculatedDisplayValues(); // Update DOM with calculated values
+    },
   };
 
   // Expose ModeManager for debugging and cross-section communication
@@ -455,17 +564,101 @@ window.TEUI.SectionModules.sect06 = (function () {
   // EXTERNAL DEPENDENCIES (Clean Interface - Pattern A)
   //==========================================================================
 
-  function getSectionValue(fieldId, isReferenceCalculation = false) { return null; /* graph computes */ }
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    // ✅ DUAL-ENGINE PATTERN: Get section-local values based on calculation context
+    if (isReferenceCalculation) {
+      return ReferenceState.getValue(fieldId);
+    } else {
+      return TargetState.getValue(fieldId);
+    }
+  }
 
   //==========================================================================
   // DUAL-ENGINE CALCULATIONS (Clean Pattern A - Preserve Excel Formulas)
   //==========================================================================
 
-  function calculateOnSiteSubtotal(isReferenceCalculation = false) { /* graph computes */ }
+  /**
+   * ✅ EXCEL FORMULA PRESERVED: d_43 = SUM(D44:D46) + I46
+   */
+  function calculateOnSiteSubtotal(isReferenceCalculation = false) {
+    const d_44_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_44", isReferenceCalculation)
+      ) || 0;
+    const d_45_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_45", isReferenceCalculation)
+      ) || 0;
+    const d_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_46", isReferenceCalculation)
+      ) || 0;
+    const i_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_46", isReferenceCalculation)
+      ) || 0;
 
-  function calculateOffsiteRenewable(isReferenceCalculation = false) { /* graph computes */ }
+    // ✅ EXACT EXCEL FORMULA: Sum of all onsite renewable inputs plus reserved removals
+    const d_43_result = d_44_value + d_45_value + d_46_value + i_46_value;
 
-  function calculateGreenNaturalGasEnergy(isReferenceCalculation = false) { /* graph computes */ }
+    if (isReferenceCalculation) {
+      console.log(
+        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`
+      );
+      window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
+    } else {
+      console.log(
+        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}, i_46=${i_46_value})`
+      );
+      window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
+    }
+
+    // 🚨 TODO: Ensure S06 publishes m_43 (exterior/site loads) to StateManager for downstream sections
+    // Currently m_43 is only stored in local state, but S15 needs both m_43 and ref_m_43 for calculations
+  }
+
+  /**
+   * ✅ EXCEL FORMULA PRESERVED: i_43 = i_44 + i_46 (Offsite Renewable subtotal)
+   */
+  function calculateOffsiteRenewable(isReferenceCalculation = false) {
+    const i_44_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_44", isReferenceCalculation)
+      ) || 0;
+    const i_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_46", isReferenceCalculation)
+      ) || 0;
+
+    // ✅ EXACT EXCEL FORMULA: Sum of offsite renewable inputs
+    const i_43_result = i_44_value + i_46_value;
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_43", i_43_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_43", i_43_result, "calculated");
+    }
+  }
+
+  /**
+   * ✅ EXCEL FORMULA PRESERVED: i_45 = k_45 * 10.3321 (Green Natural Gas energy conversion)
+   * 10.3321 is the regulatory-approved conversion factor from m³ to kWh
+   */
+  function calculateGreenNaturalGasEnergy(isReferenceCalculation = false) {
+    const k_45_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("k_45", isReferenceCalculation)
+      ) || 0;
+
+    // ✅ EXACT EXCEL FORMULA: Gas volume * conversion factor
+    const i_45_result = k_45_value * 10.3321;
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_45", i_45_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_45", i_45_result, "calculated");
+    }
+  }
 
   //==========================================================================
   // DUAL-ENGINE ARCHITECTURE (Clean Pattern A)
@@ -474,11 +667,44 @@ window.TEUI.SectionModules.sect06 = (function () {
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
    */
-  function calculateReferenceModel() { /* graph computes */ }
+  function calculateReferenceModel() {
+    try {
+      // Run all calculations in Reference context
+      calculateOnSiteSubtotal(true);
+      calculateGreenNaturalGasEnergy(true);
+      calculateOffsiteRenewable(true);
 
-  function calculateTargetModel() { /* graph computes */ }
+      // console.log("[S06] Reference model calculations complete");
+    } catch (error) {
+      console.error("[S06] Error in Reference Model calculations:", error);
+    }
+  }
 
-  function calculateAll() { /* graph computes */ }
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Target state
+   */
+  function calculateTargetModel() {
+    try {
+      // Run all calculations in Target context
+      calculateOnSiteSubtotal(false);
+      calculateGreenNaturalGasEnergy(false);
+      calculateOffsiteRenewable(false);
+
+      // console.log("[S06] Target model calculations complete");
+    } catch (error) {
+      console.error("[S06] Error in Target Model calculations:", error);
+    }
+  }
+
+  /**
+   * ✅ DUAL-ENGINE: Always run both engines in parallel
+   */
+  function calculateAll() {
+    // console.log("[S06] Running dual-engine calculations...");
+    calculateTargetModel(); // Stores unprefixed values in StateManager
+    calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
+    // console.log("[S06] Dual-engine calculations complete");
+  }
 
   //==========================================================================
   // EVENT HANDLERS (Clean Pattern A)
@@ -515,6 +741,8 @@ window.TEUI.SectionModules.sect06 = (function () {
 
           // ✅ CLEAN: Update via ModeManager
           ModeManager.setValue(fieldId, newValue, "user-modified");
+          calculateAll(); // Trigger both engines
+          ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
         });
         field.hasEditableListeners = true;
       }
@@ -533,6 +761,15 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // 2. Initialize event handlers
     initializeEventHandlers();
+
+    // 3. Sync initial UI state
+    ModeManager.refreshUI();
+
+    // 5. Perform initial calculations for this section
+    calculateAll();
+
+    // 6. Update DOM with calculated values
+    ModeManager.updateCalculatedDisplayValues();
 
     // 7. Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {

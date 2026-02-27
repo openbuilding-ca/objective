@@ -223,34 +223,6 @@
       });
     });
 
-    // j_79: Heating gains indicator (1 if total > 0, else 0)
-    graph.registerNode({
-      id: "radiantGains.subtotal.heatingIndicator",
-      legacyId: "j_79",
-      section: "S10",
-      classification: "C",
-      dependencies: ["radiantGains.subtotal.heatingGain"],
-      label: "Heating Gains Indicator",
-      compute: (inputs) => {
-        const total = parseNum(inputs["radiantGains.subtotal.heatingGain"]);
-        return total > 0 ? 1 : 0;
-      }
-    });
-
-    // l_79: Cooling gains indicator (1 if total > 0, else 0)
-    graph.registerNode({
-      id: "radiantGains.subtotal.coolingIndicator",
-      legacyId: "l_79",
-      section: "S10",
-      classification: "C",
-      dependencies: ["radiantGains.subtotal.coolingGain"],
-      label: "Cooling Gains Indicator",
-      compute: (inputs) => {
-        const total = parseNum(inputs["radiantGains.subtotal.coolingGain"]);
-        return total > 0 ? 1 : 0;
-      }
-    });
-
     // ========================================================================
     // UTILIZATION FACTORS (rows 80-82)
     // ========================================================================
@@ -401,70 +373,6 @@
         const area = parseNum(inputs["building.conditionedFloorArea"], 1);
         return area > 0 ? usableGains / area : 0;
       }
-    });
-
-    // ========================================================================
-    // PHPP REFERENCE ROW (row 81) + UNUSABLE GAINS (row 82)
-    // ========================================================================
-
-    // e_81: PHPP reference total gains (echo of e_80)
-    graph.registerNode({
-      id: "radiantGains.phppTotalGains",
-      legacyId: "e_81",
-      section: "S10",
-      classification: "C",
-      dependencies: ["radiantGains.totalGains"],
-      label: "PHPP Total Gains (kWh/yr)",
-      compute: (inputs) => parseNum(inputs["radiantGains.totalGains"]),
-    });
-
-    // g_81: PHPP utilization factor (always PH Method gamma formula)
-    graph.registerNode({
-      id: "radiantGains.phppUtilizationFactor",
-      legacyId: "g_81",
-      section: "S10",
-      classification: "C",
-      dependencies: [
-        "radiantGains.totalGains",
-        "transmissionLoss.thermalBridgePenalty.heatLoss",
-        "airTightness.heatLoss",
-        "ventilation.netHeatLoss",
-        "transmissionLoss.components.subtotalHeatLoss"
-      ],
-      label: "PHPP Utilization Factor",
-      compute: (inputs) => {
-        const totalGains = parseNum(inputs["radiantGains.totalGains"]);
-        const i97 = parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatLoss"]);
-        const i103 = parseNum(inputs["airTightness.heatLoss"]);
-        const m121 = parseNum(inputs["ventilation.netHeatLoss"]);
-        const i98 = parseNum(inputs["transmissionLoss.components.subtotalHeatLoss"]);
-
-        const denominator = i97 + i103 + m121 + i98;
-        if (denominator > 0) {
-          const gamma = totalGains / denominator;
-          if (Math.abs(gamma - 1) < 1e-9) return 5 / 6;
-          const a = 5;
-          const gamma_a = Math.pow(gamma, a);
-          const gamma_a_plus_1 = Math.pow(gamma, a + 1);
-          return Math.max(0, Math.min(1, (1 - gamma_a) / (1 - gamma_a_plus_1)));
-        }
-        return totalGains > 0 ? 1 : 0;
-      },
-    });
-
-    // i_82: Unusable gains = total - usable
-    graph.registerNode({
-      id: "radiantGains.unusableGains",
-      legacyId: "i_82",
-      section: "S10",
-      classification: "C",
-      dependencies: ["radiantGains.totalGains", "radiantGains.usableGains"],
-      label: "Unusable Gains (kWh/yr)",
-      compute: (inputs) => {
-        const total = parseNum(inputs["radiantGains.totalGains"]);
-        const usable = parseNum(inputs["radiantGains.usableGains"]);
-        return total - usable;
-      },
     });
 
     console.log("[RadiantGainsNodes] Registered", inputs.length, "inputs");

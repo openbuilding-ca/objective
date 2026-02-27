@@ -1067,9 +1067,20 @@ window.TEUI.PCRendering = (function () {
         );
       }
 
-      // Graph handles recalculation via Calculator.calculateAll()
-      if (window.TEUI?.Calculator?.calculateAll) {
-        window.TEUI.Calculator.calculateAll();
+      // Recalculate
+      if (owningSection.calculateAll) {
+        owningSection.calculateAll();
+        console.log(
+          `[pcRendering] Called ${axisConfig.owningSection}.calculateAll()`
+        );
+      }
+
+      // Refresh UI
+      if (owningSection.ModeManager) {
+        owningSection.ModeManager.refreshUI();
+        console.log(
+          `[pcRendering] Called ${axisConfig.owningSection}.ModeManager.refreshUI()`
+        );
       }
     }
 

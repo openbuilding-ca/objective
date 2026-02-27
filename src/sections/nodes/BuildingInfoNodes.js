@@ -58,12 +58,6 @@
     return "Part 3 Other";
   }
 
-  function parseNum(value, defaultVal = 0) {
-    if (value === null || value === undefined || value === "N/A") return defaultVal;
-    const num = parseFloat(String(value).replace(/,/g, ""));
-    return isNaN(num) ? defaultVal : num;
-  }
-
   /**
    * Register all Building Info nodes with the computation graph
    * @param {ComputationGraph} graph
@@ -157,72 +151,6 @@
         classification: "A",
         label: "User Modelled Embodied Carbon (kgCO2e/m²)",
         defaultValue: 345.82,
-      },
-      // S02 metadata/text inputs
-      {
-        id: "building.projectName",
-        legacyId: "h_14",
-        section: "S02",
-        classification: "G",
-        label: "Project Name",
-        defaultValue: "Three Feathers Terrace",
-      },
-      {
-        id: "building.certifier",
-        legacyId: "i_16",
-        section: "S02",
-        classification: "G",
-        label: "Certifier Name",
-        defaultValue: "Thomson Architecture, Inc.",
-      },
-      {
-        id: "building.licenseNumber",
-        legacyId: "i_17",
-        section: "S02",
-        classification: "G",
-        label: "License Number",
-        defaultValue: "8154",
-      },
-      // S02 energy price inputs
-      {
-        id: "energy.price.electricity",
-        legacyId: "l_12",
-        section: "S02",
-        classification: "A",
-        label: "Electricity Price ($/kWh)",
-        defaultValue: "$0.1300",
-      },
-      {
-        id: "energy.price.gas",
-        legacyId: "l_13",
-        section: "S02",
-        classification: "A",
-        label: "Gas Price ($/m³)",
-        defaultValue: "$0.5070",
-      },
-      {
-        id: "energy.price.propane",
-        legacyId: "l_14",
-        section: "S02",
-        classification: "A",
-        label: "Propane Price ($/kg)",
-        defaultValue: "$1.6200",
-      },
-      {
-        id: "energy.price.wood",
-        legacyId: "l_15",
-        section: "S02",
-        classification: "A",
-        label: "Wood Price ($/m³)",
-        defaultValue: "$180.00",
-      },
-      {
-        id: "energy.price.oil",
-        legacyId: "l_16",
-        section: "S02",
-        classification: "A",
-        label: "Oil Price ($/litre)",
-        defaultValue: "$1.5000",
       },
     ];
 
@@ -323,7 +251,7 @@
       ],
       label: "Building Volume (m³)",
       compute: (inputs) => {
-        const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
+        const area = parseFloat(inputs["building.conditionedFloorArea"]) || 0;
         const height = parseFloat(inputs["building.ceilingHeight"]) || 2.7;
         return area * height;
       },
@@ -340,7 +268,7 @@
       ],
       label: "Floor Area per Storey (m²)",
       compute: (inputs) => {
-        const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
+        const area = parseFloat(inputs["building.conditionedFloorArea"]) || 0;
         const storeys = parseFloat(inputs["building.numStoreys"]) || 1;
         return storeys > 0 ? area / storeys : area;
       },

@@ -64,7 +64,15 @@ window.TEUI.SectionModules.sect05 = (function () {
      * Bridges global StateManager → isolated TargetState for imported values
      */
     syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
-      /* graph is source of truth */
+      fieldIds.forEach(fieldId => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S05 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
+          );
+        }
+      });
     },
 
     /**
@@ -148,6 +156,9 @@ window.TEUI.SectionModules.sect05 = (function () {
       // Only refresh UI if currently in reference mode
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
+        calculateAll();
+        // ✅ PHASE 3 FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET requirement)
+        ModeManager.updateCalculatedDisplayValues();
       }
     },
     saveState: function () {
@@ -168,7 +179,16 @@ window.TEUI.SectionModules.sect05 = (function () {
      * i_41 is user-editable in Target mode only
      */
     syncFromGlobalState: function (fieldIds = ["d_39"]) {
-      /* graph is source of truth */
+      fieldIds.forEach(fieldId => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S05 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
+          );
+        }
+      });
     },
   };
 
@@ -249,11 +269,96 @@ window.TEUI.SectionModules.sect05 = (function () {
     },
 
     refreshUI: function () {
-      /* DOMBridge.stampAll() handles display */
+      const sectionElement = document.getElementById("emissions");
+      if (!sectionElement) return;
+
+      const currentState = this.getCurrentState();
+      const fieldsToSync = ["d_39", "i_41"]; // Input fields only
+
+      fieldsToSync.forEach(fieldId => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
+
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`
+        );
+        if (!element) return;
+
+        // ✅ PATTERN A: Simple dropdown pattern (like S10/S12) - NO SAFETY CHECKS
+        const dropdown =
+          element.tagName === "SELECT"
+            ? element
+            : element.querySelector("select");
+
+        if (dropdown) {
+          dropdown.value = stateValue; // Simple and direct - like working sections
+        } else if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
+      });
     },
 
     updateCalculatedDisplayValues: function () {
-      /* DOMBridge.stampAll() handles display */
+      // Update all calculated fields to show values for current mode
+      const calculatedFields = [
+        "d_38",
+        "g_38",
+        "i_38",
+        "i_39",
+        "i_40",
+        "i_41", // Target: user-editable | Reference: calculated (i_41 = i_39)
+        "d_40",
+        "d_41",
+        "m_38",
+        "m_39",
+        "m_40",
+        "m_41", // M column: compliance percentages
+        "n_38",
+        "n_39",
+        "n_40",
+        "n_41", // N column: status checkmarks
+      ];
+      // console.log(
+      //   `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`
+      // );
+
+      calculatedFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          // Read the correct value from StateManager based on mode
+          let value;
+          if (this.currentMode === "reference") {
+            // Reference mode: Read ONLY ref_ prefixed values.
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          } else {
+            // Target mode: Read unprefixed values.
+            value = window.TEUI.StateManager.getValue(fieldId);
+          }
+
+          // If a value isn't found in the correct state, use a safe default. NEVER fall back.
+          if (value === null || value === undefined) {
+            value = "0"; // Use a neutral default
+          }
+
+          if (value !== null && value !== undefined) {
+            // Use appropriate formatting - percentages and checkmarks don't need number formatting
+            let formattedValue;
+            if (fieldId.startsWith("m_")) {
+              // Percentage fields in column M - value should already be formatted
+              formattedValue = value;
+            } else if (fieldId.startsWith("n_")) {
+              // Status checkmark fields
+              formattedValue = value;
+            } else {
+              // Numeric fields
+              formattedValue = window.TEUI.formatNumber
+                ? window.TEUI.formatNumber(value, "number-2dp-comma")
+                : value;
+            }
+            element.textContent = formattedValue;
+          }
+        }
+      });
     },
 
     resetState: function () {
@@ -267,8 +372,10 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       console.log("S05: States have been reset to defaults.");
 
-      // After resetting, refresh the UI
+      // After resetting, refresh the UI and recalculate
       this.refreshUI();
+      calculateAll();
+      this.updateCalculatedDisplayValues(); // Update DOM with calculated values
     },
   };
 
@@ -700,51 +807,495 @@ window.TEUI.SectionModules.sect05 = (function () {
   }
 
   //==========================================================================
+  // EXTERNAL DEPENDENCIES (Clean Interface - Pattern A)
+  //==========================================================================
+
+  function getGlobalNumericValue(fieldId) {
+    // ✅ CLEAN: Read external dependencies without prefixes
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    // ✅ DUAL-ENGINE PATTERN: Get section-local values based on calculation context
+    if (isReferenceCalculation) {
+      return ReferenceState.getValue(fieldId);
+    } else {
+      return TargetState.getValue(fieldId);
+    }
+  }
+
+  //==========================================================================
   // DUAL-ENGINE CALCULATIONS (Clean Pattern A)
   //==========================================================================
 
+  /**
+   * Calculate GHGI Operational Emissions
+   * Excel Target D38 = IF(D14="Utility Bills", G32/1000, K32/1000)
+   * Excel Reference D38 = K32/1000 (always uses Reference target emissions)
+   */
   function calculateGHGI(isReferenceCalculation = false) {
-    /* graph computes */
+    const h_15_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_15") // Reference reads Reference upstream
+      : getGlobalNumericValue("h_15"); // Target reads Target upstream
+
+    let emissionsValue, d_38_result;
+
+    if (isReferenceCalculation) {
+      // Reference mode: D38 = ref_k_32 / 1000 (always Reference target emissions)
+      const ref_k_32 = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
+      emissionsValue = ref_k_32;
+      d_38_result = ref_k_32 / 1000; // MT CO2e/yr
+    } else {
+      // Target mode: D38 = IF(D14="Utility Bills", G32/1000, K32/1000)
+      const d_14 = getGlobalNumericValue("d_14") || "Targeted Use"; // Reporting mode from S02
+      const g_32 = getGlobalNumericValue("g_32") || 0; // Actual emissions from S04
+      const k_32 = getGlobalNumericValue("k_32") || 0; // Target emissions from S04
+
+      if (d_14 === "Utility Bills") {
+        emissionsValue = g_32; // Use actual (utility bills)
+      } else {
+        emissionsValue = k_32; // Use target (design/modelled)
+      }
+      d_38_result = emissionsValue / 1000; // MT CO2e/yr
+    }
+
+    // g_38 = emissions / h_15 (annual kgCO2e/m²)
+    const g_38_result = h_15_value > 0 ? emissionsValue / h_15_value : 0;
+
+    // Store results in appropriate state
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_38", d_38_result, "calculated");
+      window.TEUI.StateManager.setValue("ref_g_38", g_38_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_38", d_38_result, "calculated");
+      window.TEUI.StateManager.setValue("g_38", g_38_result, "calculated");
+    }
   }
 
+  /**
+   * Calculate Typology-Based Carbon Intensity (i_39)
+   */
   function calculateTypologyBasedCap(typology, isReferenceCalculation = false) {
-    /* graph computes */
+    // ✅ EXCEL FORMULA IMPLEMENTATION: =IF(D39="Pt.9 Res. Stick Frame",125,IF(D39="Pt.9 Small Mass Timber",250,...
+    if (typology === "Modelled Value") {
+      // When "Modelled Value" is selected, use I41 (i_41) value
+      const i_41_value = isReferenceCalculation
+        ? ReferenceState.getValue("i_41")
+        : TargetState.getValue("i_41");
+      return window.TEUI.parseNumeric(i_41_value) || 0;
+    }
+
+    // Direct typology mapping from Excel formula
+    const caps = {
+      "Pt.9 Res. Stick Frame": 125,
+      "Pt.9 Small Mass Timber": 250,
+      "Pt.3 Mass Timber": 350,
+      "Pt.3 Concrete": 550,
+      "Pt.3 Steel": 650,
+      "Pt.3 Office": 600,
+    };
+    return caps[typology] || 0; // Return 0 if typology not found (equivalent to "Pls. Select a Value")
   }
 
+  /**
+   * Calculate Lifetime Operational kgCO2e/m2 (i_38 = g_38 * h_13)
+   */
   function calculate_i_38(isReferenceCalculation = false) {
-    /* graph computes */
+    const g_38_field = isReferenceCalculation ? "ref_g_38" : "g_38";
+    const g_38_value = window.TEUI.StateManager.getValue(g_38_field) || 0;
+    const h_13_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_13") // Reference reads Reference upstream
+      : getGlobalNumericValue("h_13"); // Target reads Target upstream
+
+    const i_38_result = g_38_value * h_13_value;
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_38", i_38_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_38", i_38_result, "calculated");
+    }
   }
 
+  /**
+   * Calculate Target kgCO2e/m2 (i_40 = d_16)
+   */
   function calculate_i_40(isReferenceCalculation = false) {
-    /* graph computes */
+    const d_16_value_raw = isReferenceCalculation
+      ? getGlobalNumericValue("ref_d_16") // Reference reads Reference upstream
+      : getGlobalNumericValue("d_16"); // Target reads Target upstream
+
+    let result;
+    if (d_16_value_raw === "N/A" || isNaN(d_16_value_raw)) {
+      result = "N/A";
+    } else {
+      result = d_16_value_raw;
+    }
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_40", result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_40", result, "calculated");
+    }
   }
 
+  /**
+   * Calculate Total Embedded MT CO2e
+   * Excel: Target D40 = I41 × D106 / 1000 (user modelled value)
+   * Excel: Reference D40 = I39 × D106 / 1000 (typology-based cap)
+   */
   function calculate_d_40(isReferenceCalculation = false) {
-    /* graph computes */
+    const d_106_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_d_106") // Reference reads Reference upstream
+      : getGlobalNumericValue("d_106"); // Target reads Target upstream
+
+    let carbonValue;
+    if (isReferenceCalculation) {
+      // Reference mode: Check if user selected "Modelled Value" exception
+      const d_39_typology = ReferenceState.getValue("d_39") || "";
+
+      if (d_39_typology === "Modelled Value") {
+        // Exception: User can define i_41 in Reference mode
+        // D40 = I41 × D106 / 1000
+        const i_41_value = getSectionValue("i_41", true);
+        carbonValue = window.TEUI.parseNumeric(i_41_value) || 0;
+      } else {
+        // Standard: D40 = I39 × D106 / 1000 (typology-based cap)
+        const i_39_value = window.TEUI.StateManager.getValue("ref_i_39");
+        carbonValue = window.TEUI.parseNumeric(i_39_value) || 0;
+      }
+    } else {
+      // Target mode: Always D40 = I41 × D106 / 1000 (user modelled value)
+      const i_41_value = getSectionValue("i_41", false);
+      carbonValue = window.TEUI.parseNumeric(i_41_value) || 0;
+    }
+
+    const d_40_result = (carbonValue * d_106_value) / 1000; // Result in MT CO2e
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_40", d_40_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_40", d_40_result, "calculated");
+    }
   }
 
+  /**
+   * Calculate Lifetime Avoided MT CO2e (d_41)
+   * Excel D41 = (REFERENCE!D38 - REPORT!D38) × H13
+   *
+   * NOTE: This is a COMPARISON value (Reference vs Target) - intentionally state-agnostic
+   * Both Target and Reference modes show the same value (avoided emissions from Target design)
+   */
   function calculate_d_41(isReferenceCalculation = false) {
-    /* graph computes */
+    // Read from BOTH states for comparison
+    const d_38 = window.TEUI.StateManager.getValue("d_38") || 0; // Target operational emissions
+    const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0; // Reference operational emissions
+    const h_13 = getGlobalNumericValue("h_13") || 50; // Service life (same for both modes)
+
+    // Avoided emissions: Reference baseline minus Target performance
+    const d_41_result = (ref_d_38 - d_38) * h_13;
+
+    // Store in appropriate state (same value, different key)
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_41", d_41_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_41", d_41_result, "calculated");
+    }
   }
 
+  /**
+   * Helper function to calculate compliance ratio for M-N columns
+   * Reference mode: Always 100% (comparing to itself)
+   * Target mode: Compare Target value vs Reference value
+   *
+   * @param {string} targetField - Field ID for Target value (e.g., "i_39")
+   * @param {string} refField - Field ID for Reference value (e.g., "ref_i_39")
+   * @param {boolean} isReferenceCalculation - True if calculating for Reference mode
+   * @returns {number} Ratio value (0.0 to 1.0+)
+   */
+  function calculateComplianceRatio(
+    targetField,
+    refField,
+    isReferenceCalculation
+  ) {
+    if (isReferenceCalculation) {
+      // Reference mode: Always 100% (self-comparison)
+      return 1.0;
+    } else {
+      // Target mode: Compare Target vs Reference
+      const targetValue =
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue(targetField)
+        ) || 0;
+      const refValue =
+        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue(refField)) ||
+        0;
+      return refValue > 0 ? targetValue / refValue : 0;
+    }
+  }
+
+  /**
+   * Calculate percentage compliance (M columns) comparing Target vs Reference
+   * M columns show:
+   *   - Reference mode: 100% (baseline is always compliant with itself)
+   *   - Target mode: Target value / Reference value (as percentage)
+   */
   function calculatePercentages(isReferenceCalculation = false) {
-    /* graph computes */
+    // Get target value for i_40 to check N/A case
+    const target_i_40 = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue("i_40")
+    );
+
+    // Handle N/A case for i_40 (carbonTarget) - when no carbon standard is selected
+    if (target_i_40 === "N/A" || isNaN(target_i_40)) {
+      const naFields = ["m_39", "m_40", "m_41"];
+      const okFields = ["n_38", "n_39", "n_40", "n_41"];
+
+      naFields.forEach(fieldId => {
+        if (isReferenceCalculation) {
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            "N/A",
+            "calculated"
+          );
+        } else {
+          window.TEUI.StateManager.setValue(fieldId, "N/A", "calculated");
+        }
+      });
+
+      okFields.forEach(fieldId => {
+        if (isReferenceCalculation) {
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            "✓",
+            "calculated"
+          );
+        } else {
+          window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
+        }
+      });
+
+      // m_38: Still calculate ratio even when carbon target is N/A (operational emissions always exist)
+      const m_38_percent = calculateComplianceRatio(
+        "g_38",
+        "ref_g_38",
+        isReferenceCalculation
+      );
+      const m_38_formatted = window.TEUI.formatNumber
+        ? window.TEUI.formatNumber(m_38_percent, "percent-0dp")
+        : Math.round(m_38_percent * 100) + "%";
+
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(
+          "ref_m_38",
+          m_38_formatted,
+          "calculated"
+        );
+      } else {
+        window.TEUI.StateManager.setValue("m_38", m_38_formatted, "calculated");
+      }
+      return;
+    }
+
+    // Calculate percentages using helper (lower is better for carbon)
+    // m_39: Typology Cap compliance (i_39 vs ref_i_39)
+    const m_39_percent = calculateComplianceRatio(
+      "i_39",
+      "ref_i_39",
+      isReferenceCalculation
+    );
+
+    // m_40: Total Emitted compliance (d_40 vs ref_d_40)
+    const m_40_percent = calculateComplianceRatio(
+      "d_40",
+      "ref_d_40",
+      isReferenceCalculation
+    );
+
+    // m_41: Modelled Value compliance (i_41 vs ref_i_41)
+    // Note: i_41 uses getSectionValue for proper state isolation
+    const m_41_percent = isReferenceCalculation
+      ? 1.0 // Reference mode: Always 100%
+      : (() => {
+          const target_i_41 =
+            window.TEUI.parseNumeric(getSectionValue("i_41", false)) || 0;
+          const ref_i_41 =
+            window.TEUI.parseNumeric(getSectionValue("i_41", true)) || 0;
+          return ref_i_41 > 0 ? target_i_41 / ref_i_41 : 0;
+        })();
+
+    // Store percentage results in M column
+    const percentFields = [
+      { field: "m_39", value: m_39_percent },
+      { field: "m_40", value: m_40_percent },
+      { field: "m_41", value: m_41_percent },
+    ];
+
+    percentFields.forEach(({ field, value }) => {
+      const formattedValue = window.TEUI.formatNumber
+        ? window.TEUI.formatNumber(value, "percent-0dp")
+        : Math.round(value * 100) + "%";
+
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(
+          `ref_${field}`,
+          formattedValue,
+          "calculated"
+        );
+      } else {
+        window.TEUI.StateManager.setValue(field, formattedValue, "calculated");
+      }
+    });
+
+    // m_38: Operational Emissions compliance (g_38 vs ref_g_38)
+    const m_38_percent = calculateComplianceRatio(
+      "g_38",
+      "ref_g_38",
+      isReferenceCalculation
+    );
+    const m_38_formatted = window.TEUI.formatNumber
+      ? window.TEUI.formatNumber(m_38_percent, "percent-0dp")
+      : Math.round(m_38_percent * 100) + "%";
+
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue(
+        "ref_m_38",
+        m_38_formatted,
+        "calculated"
+      );
+    } else {
+      window.TEUI.StateManager.setValue("m_38", m_38_formatted, "calculated");
+    }
+
+    // Set checkmarks/X for status columns (N column) with CSS styling
+    // ✓ (pass) if ≤100%, ✗ (fail) if >100%
+    const statusChecks = [
+      { field: "n_38", percentField: "m_38" },
+      { field: "n_39", percentField: "m_39" },
+      { field: "n_40", percentField: "m_40" },
+      { field: "n_41", percentField: "m_41" },
+    ];
+
+    statusChecks.forEach(({ field, percentField }) => {
+      // Get the percentage field value to check pass/fail
+      const percentValue = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue(`ref_${percentField}`)
+        : window.TEUI.StateManager.getValue(percentField);
+
+      // Determine pass/fail based on percentage
+      let status, isCompliant;
+      if (
+        percentValue === "N/A" ||
+        percentValue === null ||
+        percentValue === undefined
+      ) {
+        status = "✓"; // Pass by default if N/A
+        isCompliant = true;
+      } else {
+        // Parse percentage (remove % sign and convert to number)
+        const numericPercent = parseFloat(
+          String(percentValue).replace("%", "")
+        );
+        isCompliant = numericPercent <= 100;
+        status = isCompliant ? "✓" : "✗";
+      }
+
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(`ref_${field}`, status, "calculated");
+      } else {
+        window.TEUI.StateManager.setValue(field, status, "calculated");
+        // Apply CSS class for visual styling (only in Target mode per M-N-COMPLIANCE.md)
+        setElementClass(field, isCompliant);
+      }
+    });
+  }
+
+  /**
+   * Apply CSS class to DOM element for compliance indicators (M-N-COMPLIANCE.md pattern)
+   * Only applies in Target mode - Reference mode should not override Target's visual indicators
+   * @param {string} fieldId - The field ID to target
+   * @param {boolean} isCompliant - True for checkmark (green), false for warning (red)
+   */
+  function setElementClass(fieldId, isCompliant) {
+    // ⚠️ CRITICAL: Only apply styling in Target mode
+    // Without this check, Reference calculations will overwrite Target's compliance styling
+    if (ModeManager.currentMode !== "target") return;
+
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      const className = isCompliant ? "checkmark" : "warning";
+      element.classList.add(className);
+      // console.log(`[S05] ${fieldId}: isCompliant=${isCompliant}, class=${className}, classList=${element.classList.toString()}`);
+    }
   }
 
   //==========================================================================
   // DUAL-ENGINE ARCHITECTURE (Clean Pattern A)
   //==========================================================================
 
+  /**
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   */
   function calculateReferenceModel() {
-    /* graph computes */
+    try {
+      // Read typology from Reference state
+      const typology = ReferenceState.getValue("d_39");
+      const cap = calculateTypologyBasedCap(typology, true);
+      window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
+
+      // ✅ FIX (Oct 5, 2025): In Reference mode, i_41 = i_39 (Excel formula)
+      // Target mode: i_41 is user input (pure input field)
+      // Reference mode: i_41 = i_39 (calculated from typology)
+      window.TEUI.StateManager.setValue("ref_i_41", cap, "calculated");
+      ReferenceState.setValue("i_41", cap, "calculated");
+
+      // Run all calculations in Reference context
+      calculateGHGI(true);
+      calculate_i_38(true);
+      calculate_i_40(true);
+      calculate_d_40(true); // Uses i_39 in Reference mode (different formula than Target)
+      calculate_d_41(true); // Uses ref_k_32/1000 in Reference mode
+      calculatePercentages(true);
+
+      // console.log("[S05] Reference model calculations complete");
+    } catch (error) {
+      console.error("[S05] Error in Reference Model calculations:", error);
+    }
   }
 
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Target state
+   */
   function calculateTargetModel() {
-    /* graph computes */
+    try {
+      // Read typology from Target state
+      const typology = TargetState.getValue("d_39");
+      const cap = calculateTypologyBasedCap(typology, false);
+      window.TEUI.StateManager.setValue("i_39", cap, "calculated");
+
+      // Run all calculations in Target context
+      calculateGHGI(false);
+      calculate_i_38(false);
+      calculate_i_40(false);
+      calculate_d_40(false);
+      calculate_d_41(false);
+      calculatePercentages(false);
+
+      // console.log("[S05] Target model calculations complete");
+    } catch (error) {
+      console.error("[S05] Error in Target Model calculations:", error);
+    }
   }
 
+  /**
+   * ✅ DUAL-ENGINE: Always run both engines in parallel
+   */
   function calculateAll() {
-    /* graph computes */
+    // console.log("[S05] Running dual-engine calculations...");
+    calculateTargetModel(); // Stores unprefixed values in StateManager
+    calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
+    // console.log("[S05] Dual-engine calculations complete");
   }
 
   //==========================================================================
@@ -763,6 +1314,8 @@ window.TEUI.SectionModules.sect05 = (function () {
       typologyDropdown.addEventListener("change", e => {
         const typology = e.target.value;
         ModeManager.setValue("d_39", typology, "user-modified");
+        calculateAll(); // Trigger both engines
+        ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
       });
     } else {
       console.warn(
@@ -787,17 +1340,42 @@ window.TEUI.SectionModules.sect05 = (function () {
           const newValue = field.textContent.trim();
           // ✅ CLEAN: Update via ModeManager
           ModeManager.setValue(fieldId, newValue, "user-modified");
+          calculateAll(); // Trigger both engines
+          ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
         });
         field.hasEditableListeners = true;
       }
     });
 
-    // 3. Domain-logic StateManager listeners
+    // 3. ✅ PATTERN 2: Listen for BOTH Target and Reference dependencies
     if (window.TEUI.StateManager) {
-      // Graph handles cross-section computation via wildcard listener.
-      // Only keep domain-logic side effects (carbon target auto-set).
+      const dependencies = [
+        "h_13",
+        "ref_h_13", // Service life (both modes)
+        "g_32",
+        "ref_g_32", // from S04 (both modes)
+        "k_32",
+        "ref_k_32", // from S04 (both modes)
+        "h_15",
+        "ref_h_15", // Conditioned Area (both modes)
+        "d_16",
+        "ref_d_16", // Embodied Carbon Target (both modes)
+        "d_106",
+        "ref_d_106", // Total Floor Area (both modes)
+      ];
 
-      // S05→S02 RELATIONSHIP: Listen for Carbon Standard changes and update d_16
+      // Create a wrapper function that calculates AND updates DOM
+      const calculateAndRefresh = () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      };
+
+      dependencies.forEach(depId => {
+        window.TEUI.StateManager.removeListener(depId, calculateAndRefresh);
+        window.TEUI.StateManager.addListener(depId, calculateAndRefresh);
+      });
+
+      // 4. ✅ S05→S02 RELATIONSHIP: Listen for Carbon Standard changes and update d_16
       const updateCarbonTarget = fieldId => {
         const isReference = fieldId === "ref_d_15";
         const d_15_value = window.TEUI.StateManager.getValue(fieldId);
@@ -821,7 +1399,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           if (fixedTarget !== null && fixedTarget !== undefined) {
             d_16_value = fixedTarget;
           } else if (d_15_value === "Self Reported") {
-            d_16_value = isReference ? ReferenceState.getValue("i_41") : TargetState.getValue("i_41");
+            d_16_value = getSectionValue("i_41", isReference);
           } else {
             d_16_value = "N/A";
           }
@@ -839,8 +1417,19 @@ window.TEUI.SectionModules.sect05 = (function () {
         );
       };
 
-      // d_15/ref_d_15 listeners removed — the graph's EmissionsNodes
-      // handles embodied carbon target (d_16/ref_d_16) computation.
+      // Listen for both Target and Reference Carbon Standard changes
+      window.TEUI.StateManager.removeListener("d_15", () =>
+        updateCarbonTarget("d_15")
+      );
+      window.TEUI.StateManager.addListener("d_15", () =>
+        updateCarbonTarget("d_15")
+      );
+      window.TEUI.StateManager.removeListener("ref_d_15", () =>
+        updateCarbonTarget("ref_d_15")
+      );
+      window.TEUI.StateManager.addListener("ref_d_15", () =>
+        updateCarbonTarget("ref_d_15")
+      );
     }
   }
 
@@ -859,6 +1448,12 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // 3. Sync initial UI state
     ModeManager.refreshUI();
+
+    // 5. Perform initial calculations for this section
+    calculateAll();
+
+    // 6. Update DOM with calculated values
+    ModeManager.updateCalculatedDisplayValues();
 
     // 7. Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {

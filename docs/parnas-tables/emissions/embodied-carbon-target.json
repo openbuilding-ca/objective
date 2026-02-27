@@ -109,13 +109,13 @@
     },
     {
       "condition": "standard == 'IPCC AR6 EPC'",
-      "output": "169.49",
-      "note": "IPCC AR6 Equal Per Capita pathway (kgCO2e/m²)"
+      "output": "3.39",
+      "note": "IPCC AR6 Equal Per Capita pathway"
     },
     {
       "condition": "standard == 'IPCC AR6 EA'",
-      "output": "8.69",
-      "note": "IPCC AR6 Equal Allocation pathway (kgCO2e/m²)"
+      "output": "0.17",
+      "note": "IPCC AR6 Equal Allocation pathway"
     },
     {
       "condition": "standard == 'CaGBC ZCB D'",
@@ -194,8 +194,8 @@
       },
       "CARBON_TARGETS": {
         "BR18 (Denmark)": 500,
-        "IPCC AR6 EPC": 169.49,
-        "IPCC AR6 EA": 8.69,
+        "IPCC AR6 EPC": 3.39,
+        "IPCC AR6 EA": 0.17,
         "CaGBC ZCB D": 425,
         "CaGBC ZCB P": 425,
         "LEED BD+C v4.1": 500,
@@ -315,14 +315,14 @@
       "inputs": {
         "building.carbonStandard": "IPCC AR6 EPC"
       },
-      "expected": 169.49
+      "expected": 3.39
     },
     {
       "name": "IPCC AR6 EA",
       "inputs": {
         "building.carbonStandard": "IPCC AR6 EA"
       },
-      "expected": 8.69
+      "expected": 0.17
     },
     {
       "name": "CaGBC ZCB D",

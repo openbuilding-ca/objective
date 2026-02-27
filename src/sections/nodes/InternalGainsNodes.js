@@ -22,12 +22,6 @@
   window.TEUI = window.TEUI || {};
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
 
-  function parseNum(value, defaultVal = 0) {
-    if (value === null || value === undefined || value === "N/A") return defaultVal;
-    const num = parseFloat(String(value).replace(/,/g, ""));
-    return isNaN(num) ? defaultVal : num;
-  }
-
   // Activity level to watts/person mapping (from SCHEDULES-3037.csv G32:G43)
   const ACTIVITY_WATTS = {
     Relaxed: 96.71,
@@ -276,7 +270,7 @@
       label: "Plug Load Internal Gains (kWh/yr)",
       compute: (inputs) => {
         const watts = parseFloat(inputs["internal.plugLoadDensity"]) || 7;
-        const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
+        const area = parseFloat(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
       },
@@ -292,7 +286,7 @@
       label: "Lighting Internal Gains (kWh/yr)",
       compute: (inputs) => {
         const watts = parseFloat(inputs["internal.lightingDensity"]) || 1.5;
-        const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
+        const area = parseFloat(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
       },
@@ -308,7 +302,7 @@
       label: "Equipment Internal Gains (kWh/yr)",
       compute: (inputs) => {
         const watts = parseFloat(inputs["internal.equipmentDensity"]) || 3;
-        const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
+        const area = parseFloat(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
       },
@@ -382,182 +376,7 @@
       },
     });
 
-    // ========================================================================
-    // DHW LOSSES + TOTAL ANNUAL
-    // ========================================================================
-
-    // h_69: DHW system losses (passthrough from d_54)
-    graph.registerNode({
-      id: "internal.dhwLosses.annual",
-      legacyId: "h_69",
-      section: "S09",
-      classification: "C",
-      dependencies: ["waterHeating.systemLosses"],
-      label: "DHW System Losses (kWh/yr)",
-      compute: (inputs) => parseFloat(inputs["waterHeating.systemLosses"]) || 0,
-    });
-
-    // h_71: Total annual internal gains (occupants + PLE subtotal + DHW losses)
-    graph.registerNode({
-      id: "internal.total.annual",
-      legacyId: "h_71",
-      section: "S09",
-      classification: "C",
-      dependencies: ["internal.occupants.annual", "energy.plugLoads.subtotal", "internal.dhwLosses.annual"],
-      label: "Total Internal Gains (kWh/yr)",
-      compute: (inputs) => {
-        const h64 = parseFloat(inputs["internal.occupants.annual"]) || 0;
-        const h70 = parseFloat(inputs["energy.plugLoads.subtotal"]) || 0;
-        const h69 = parseFloat(inputs["internal.dhwLosses.annual"]) || 0;
-        return h64 + h70 + h69;
-      },
-    });
-
-    // ========================================================================
-    // INDIVIDUAL SEASONAL SPLITS (heating = i_, cooling = k_)
-    // heatingRatio = (365 - coolingDays) / 365
-    // coolingRatio = coolingDays / 365
-    // ========================================================================
-
-    const gainRows = [
-      { id: "occupants", legacySuffix: "64", annual: "internal.occupants.annual" },
-      { id: "plugLoads", legacySuffix: "65", annual: "internal.plugLoads.annual" },
-      { id: "lighting", legacySuffix: "66", annual: "internal.lighting.annual" },
-      { id: "equipment", legacySuffix: "67", annual: "internal.equipment.annual" },
-      { id: "dhwLosses", legacySuffix: "69", annual: "internal.dhwLosses.annual" },
-    ];
-
-    gainRows.forEach(({ id, legacySuffix, annual }) => {
-      // Heating season split
-      graph.registerNode({
-        id: `internal.${id}.heatingGain`,
-        legacyId: `i_${legacySuffix}`,
-        section: "S09",
-        classification: "C",
-        dependencies: [annual, "climate.coolingDays"],
-        label: `${id} Heating Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const annualVal = parseFloat(inputs[annual]) || 0;
-          const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-          return annualVal * (365 - coolingDays) / 365;
-        },
-      });
-
-      // Cooling season split
-      graph.registerNode({
-        id: `internal.${id}.coolingGain`,
-        legacyId: `k_${legacySuffix}`,
-        section: "S09",
-        classification: "C",
-        dependencies: [annual, "climate.coolingDays"],
-        label: `${id} Cooling Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const annualVal = parseFloat(inputs[annual]) || 0;
-          const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-          return annualVal * coolingDays / 365;
-        },
-      });
-    });
-
-    // ========================================================================
-    // PLE SUBTOTALS (i_70, k_70) - Plug/Light/Equipment only
-    // ========================================================================
-
-    graph.registerNode({
-      id: "internal.pleSubtotal.heatingGain",
-      legacyId: "i_70",
-      section: "S09",
-      classification: "C",
-      dependencies: [
-        "internal.plugLoads.heatingGain",
-        "internal.lighting.heatingGain",
-        "internal.equipment.heatingGain"
-      ],
-      label: "PLE Heating Subtotal (kWh/yr)",
-      compute: (inputs) => {
-        return (parseFloat(inputs["internal.plugLoads.heatingGain"]) || 0)
-          + (parseFloat(inputs["internal.lighting.heatingGain"]) || 0)
-          + (parseFloat(inputs["internal.equipment.heatingGain"]) || 0);
-      },
-    });
-
-    graph.registerNode({
-      id: "internal.pleSubtotal.coolingGain",
-      legacyId: "k_70",
-      section: "S09",
-      classification: "C",
-      dependencies: [
-        "internal.plugLoads.coolingGain",
-        "internal.lighting.coolingGain",
-        "internal.equipment.coolingGain"
-      ],
-      label: "PLE Cooling Subtotal (kWh/yr)",
-      compute: (inputs) => {
-        return (parseFloat(inputs["internal.plugLoads.coolingGain"]) || 0)
-          + (parseFloat(inputs["internal.lighting.coolingGain"]) || 0)
-          + (parseFloat(inputs["internal.equipment.coolingGain"]) || 0);
-      },
-    });
-
-    // ========================================================================
-    // PERCENTAGES (j_ = heating%, l_ = cooling%)
-    // ========================================================================
-
-    gainRows.forEach(({ id, legacySuffix }) => {
-      // Heating percentage
-      graph.registerNode({
-        id: `internal.${id}.heatingPercent`,
-        legacyId: `j_${legacySuffix}`,
-        section: "S09",
-        classification: "C",
-        dependencies: [`internal.${id}.heatingGain`, "internal.heatingGains"],
-        label: `${id} Heating Gain %`,
-        compute: (inputs) => {
-          const gain = parseFloat(inputs[`internal.${id}.heatingGain`]) || 0;
-          const total = parseFloat(inputs["internal.heatingGains"]) || 0;
-          return total > 0 ? gain / total : 0;
-        },
-      });
-
-      // Cooling percentage
-      graph.registerNode({
-        id: `internal.${id}.coolingPercent`,
-        legacyId: `l_${legacySuffix}`,
-        section: "S09",
-        classification: "C",
-        dependencies: [`internal.${id}.coolingGain`, "internal.coolingLoad.occupants"],
-        label: `${id} Cooling Gain %`,
-        compute: (inputs) => {
-          const gain = parseFloat(inputs[`internal.${id}.coolingGain`]) || 0;
-          const total = parseFloat(inputs["internal.coolingLoad.occupants"]) || 0;
-          return total > 0 ? gain / total : 0;
-        },
-      });
-    });
-
-    // j_71: Total heating gains percentage (always 100%)
-    graph.registerNode({
-      id: "internal.total.heatingPercent",
-      legacyId: "j_71",
-      section: "S09",
-      classification: "C",
-      dependencies: [],
-      label: "Total Heating Gain %",
-      compute: () => 1.0,
-    });
-
-    // l_71: Total cooling gains percentage (always 100%)
-    graph.registerNode({
-      id: "internal.total.coolingPercent",
-      legacyId: "l_71",
-      section: "S09",
-      classification: "C",
-      dependencies: [],
-      label: "Total Cooling Gain %",
-      compute: () => 1.0,
-    });
-
-    console.log("[InternalGainsNodes] Registered", inputs.length, "inputs and 36 computed nodes");
+    console.log("[InternalGainsNodes] Registered", inputs.length, "inputs and 10 computed nodes (including d_65/d_67 lookups)");
   }
 
   window.TEUI.ComputationNodes.InternalGains = { register };

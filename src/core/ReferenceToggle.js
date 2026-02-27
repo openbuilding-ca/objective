@@ -242,6 +242,21 @@ TEUI.ReferenceToggle = (function () {
           typeof section.modeManager.switchMode === "function"
         ) {
           section.modeManager.switchMode(mode);
+
+          // Call updateCalculatedDisplayValues if it exists
+          if (
+            typeof section.modeManager.updateCalculatedDisplayValues ===
+            "function"
+          ) {
+            section.modeManager.updateCalculatedDisplayValues();
+          } else if (!warnedSections.has(section.id)) {
+            // Only warn once per section to avoid console spam
+            console.warn(
+              `[ReferenceToggle] ${section.id} has no updateCalculatedDisplayValues method`
+            );
+            warnedSections.add(section.id);
+          }
+
           switchedCount++;
         }
       } catch (error) {
@@ -315,11 +330,7 @@ TEUI.ReferenceToggle = (function () {
   function switchMode(mode) {
     isShowingReference = mode === "reference";
     switchAllSectionsMode(mode);
-
-    // Graph stamps values for the correct model
-    if (window.TEUI?.Calculator?.calculateAll) {
-      window.TEUI.Calculator.calculateAll();
-    }
+    updateAllCalculatedDisplays();
 
     // Update main toggle button text if it exists
     const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
@@ -334,10 +345,29 @@ TEUI.ReferenceToggle = (function () {
    * Pattern A Compatible: Update all calculated display values based on current mode
    */
   function updateAllCalculatedDisplays() {
-    // Graph handles all display updates via Calculator.calculateAll()
-    if (window.TEUI?.Calculator?.calculateAll) {
-      window.TEUI.Calculator.calculateAll();
-    }
+    const dualStateSections = getAllDualStateSections();
+
+    dualStateSections.forEach(section => {
+      try {
+        if (
+          section.modeManager &&
+          typeof section.modeManager.updateCalculatedDisplayValues ===
+            "function"
+        ) {
+          section.modeManager.updateCalculatedDisplayValues();
+        } else if (
+          section.modeManager &&
+          typeof section.modeManager.refreshUI === "function"
+        ) {
+          section.modeManager.refreshUI();
+        }
+      } catch (error) {
+        console.error(
+          `[ReferenceToggle] Error updating display for ${section.id}:`,
+          error
+        );
+      }
+    });
   }
 
   function initialize() {
@@ -381,7 +411,6 @@ TEUI.ReferenceToggle = (function () {
       showReferenceBtn.addEventListener("click", e => {
         e.preventDefault();
         switchAllSectionsMode("reference");
-        if (window.TEUI?.Calculator?.calculateAll) window.TEUI.Calculator.calculateAll();
       });
     }
 
@@ -390,7 +419,6 @@ TEUI.ReferenceToggle = (function () {
       showTargetBtn.addEventListener("click", e => {
         e.preventDefault();
         switchAllSectionsMode("target");
-        if (window.TEUI?.Calculator?.calculateAll) window.TEUI.Calculator.calculateAll();
       });
     }
 
@@ -880,10 +908,17 @@ TEUI.ReferenceToggle = (function () {
       "sect15",
     ];
 
-    // Graph handles all display updates via Calculator.calculateAll()
-    if (window.TEUI?.Calculator?.calculateAll) {
-      window.TEUI.Calculator.calculateAll();
-    }
+    patternASections.forEach(sectionId => {
+      const section = window.TEUI?.SectionModules?.[sectionId];
+      if (section?.ModeManager?.refreshUI) {
+        section.ModeManager.refreshUI();
+        // Also update calculated display values (some sections need both calls)
+        if (section.ModeManager.updateCalculatedDisplayValues) {
+          section.ModeManager.updateCalculatedDisplayValues();
+        }
+      }
+    });
+
     console.log("[ReferenceToggle] ✅ Pattern A section UIs refreshed");
   }
 
@@ -952,11 +987,11 @@ TEUI.ReferenceToggle = (function () {
         // ⚠️ CRITICAL: Copy operations must sync BOTH states (skipTargetSync=false, skipReferenceSync=false)
         // This is different from Set Values which is mode-aware. Copy explicitly writes ref_* fields
         // and needs both TargetState (unchanged) and ReferenceState (updated) to sync properly.
-        if (window.TEUI?.FileHandler?.syncPostImportUI) {
-          window.TEUI.FileHandler.syncPostImportUI(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
+        if (window.TEUI?.FileHandler?.syncPatternASections) {
+          window.TEUI.FileHandler.syncPatternASections(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
         } else {
           console.warn(
-            "[ReferenceToggle] FileHandler.syncPostImportUI not available - UI may not update"
+            "[ReferenceToggle] FileHandler.syncPatternASections not available - UI may not update"
           );
         }
       } finally {
@@ -1079,8 +1114,8 @@ TEUI.ReferenceToggle = (function () {
         // ⚠️ CRITICAL: Copy operations must sync BOTH states (skipTargetSync=false, skipReferenceSync=false)
         // This is different from Set Values which is mode-aware. Copy explicitly writes ref_* fields
         // and needs both TargetState (unchanged) and ReferenceState (updated) to sync properly.
-        if (window.TEUI?.FileHandler?.syncPostImportUI) {
-          window.TEUI.FileHandler.syncPostImportUI(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
+        if (window.TEUI?.FileHandler?.syncPatternASections) {
+          window.TEUI.FileHandler.syncPatternASections(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
         }
       } finally {
         // QUARANTINE END - Always unmute
@@ -1170,11 +1205,11 @@ TEUI.ReferenceToggle = (function () {
         // ⚠️ CRITICAL: Copy operations must sync BOTH states (skipTargetSync=false, skipReferenceSync=false)
         // This is different from Set Values which is mode-aware. Copy explicitly writes ref_* fields
         // and needs both TargetState (unchanged) and ReferenceState (updated) to sync properly.
-        if (window.TEUI?.FileHandler?.syncPostImportUI) {
-          window.TEUI.FileHandler.syncPostImportUI(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
+        if (window.TEUI?.FileHandler?.syncPatternASections) {
+          window.TEUI.FileHandler.syncPatternASections(false, false, false); // skipAreaSync, skipTargetSync, skipReferenceSync
         } else {
           console.warn(
-            "[ReferenceToggle] FileHandler.syncPostImportUI not available - UI may not update"
+            "[ReferenceToggle] FileHandler.syncPatternASections not available - UI may not update"
           );
         }
       } finally {
@@ -1267,8 +1302,9 @@ TEUI.ReferenceToggle = (function () {
           totalFieldsCopied++;
         });
 
-        // Restore original mode
+        // Restore original mode and refresh UI
         section.modeManager.switchMode(originalMode);
+        section.modeManager.refreshUI();
 
         console.log(
           `[ReferenceToggle] Copied ${Object.keys(targetValues).length} values to Reference state for ${section.id}`
@@ -1333,8 +1369,9 @@ TEUI.ReferenceToggle = (function () {
           }
         });
 
-        // Restore original mode
+        // Restore original mode and refresh UI
         section.modeManager.switchMode(originalMode);
+        section.modeManager.refreshUI();
 
         if (appliedFields.length > 0) {
           console.log(

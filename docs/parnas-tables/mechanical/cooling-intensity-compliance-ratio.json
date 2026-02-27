@@ -1,5 +1,5 @@
 {
-  "id": "compliance.coolingIntensity.ratio",
+  "id": "mechanical.coolingIntensityComplianceRatio",
   "legacyId": "m_117",
   "label": "Cooling Intensity Compliance Ratio",
   "section": "S13",

@@ -65,7 +65,10 @@
     let originalStateManager = null;
     let isInstalled = false;
 
-    // Write tracking (no batching — synchronous writes to graph)
+    // Track value changes for batching
+    let pendingChanges = new Map();
+    let batchTimeout = null;
+    const BATCH_DELAY = 10; // ms to wait for batching
 
     // ========================================================================
     // HELPER FUNCTIONS
@@ -144,16 +147,55 @@
     }
 
     /**
-     * Write a value directly to MultiModelState (synchronous, no batching).
+     * Flush pending changes through the engine
+     */
+    function flushPendingChanges() {
+      if (pendingChanges.size === 0) return;
+
+      const changes = pendingChanges;
+      pendingChanges = new Map();
+      batchTimeout = null;
+
+      // Group by model
+      const targetChanges = {};
+      const refChanges = {};
+
+      for (const [key, value] of changes) {
+        const { isRef, semanticPath } = key;
+        if (isRef) {
+          refChanges[semanticPath] = value;
+        } else {
+          targetChanges[semanticPath] = value;
+        }
+      }
+
+      // Apply target changes
+      if (Object.keys(targetChanges).length > 0) {
+        engine.onBatchChange(targetChanges, getTargetModelId());
+      }
+
+      // Apply reference changes
+      const refModelId = getReferenceModelId();
+      if (refModelId && Object.keys(refChanges).length > 0) {
+        engine.onBatchChange(refChanges, refModelId);
+      }
+    }
+
+    /**
+     * Schedule a change for batching
      * @param {boolean} isRef
      * @param {string} semanticPath
      * @param {*} value
      */
-    function writeToGraph(isRef, semanticPath, value) {
-      const modelId = isRef ? getReferenceModelId() : getTargetModelId();
-      if (modelId) {
-        state.setValueForModel(modelId, semanticPath, value);
+    function scheduleChange(isRef, semanticPath, value) {
+      const key = { isRef, semanticPath };
+      pendingChanges.set(JSON.stringify(key), { isRef, semanticPath, value });
+
+      // Reset batch timer
+      if (batchTimeout) {
+        clearTimeout(batchTimeout);
       }
+      batchTimeout = setTimeout(flushPendingChanges, BATCH_DELAY);
     }
 
     // ========================================================================
@@ -173,22 +215,17 @@
        */
       getValue(fieldId) {
         const { isRef, baseId } = parseFieldId(fieldId);
+        const semanticPath = toSemanticPath(baseId);
 
-        // For ref_* fields, always read from reference model under the BASE path.
-        // The reference.* prefixed path is a target-model concept for compliance inputs.
-        // For non-ref fields, read from target model under the direct semantic path.
+        // Try new system first for known semantic paths
         let value;
-        if (isRef) {
-          const basePath = toSemanticPath(baseId);
-          if (basePath && basePath.includes(".")) {
+        if (semanticPath && semanticPath.includes(".")) {
+          if (isRef) {
             const refModelId = getReferenceModelId();
             if (refModelId) {
-              value = state.getValueForModel(refModelId, basePath);
+              value = state.getValueForModel(refModelId, semanticPath);
             }
-          }
-        } else {
-          const semanticPath = toSemanticPath(fieldId);
-          if (semanticPath && semanticPath.includes(".")) {
+          } else {
             value = state.getValue(semanticPath);
           }
         }
@@ -229,14 +266,10 @@
        */
       setValue(fieldId, value, valueState) {
         const { isRef, baseId } = parseFieldId(fieldId);
+        const semanticPath = toSemanticPath(baseId);
 
-        // Look up semantic paths:
-        // - refPrefixedPath: ref_f_85 → reference.transmissionLoss.roof.rsi (compliance input path)
-        // - basePath: f_85 → transmissionLoss.roof.rsi (base computation path)
-        const refPrefixedPath = isRef ? toSemanticPath(fieldId) : null;
-        const basePath = toSemanticPath(isRef ? baseId : fieldId);
-
-        if (!refPrefixedPath && !basePath) {
+        if (!semanticPath) {
+          // Fall back to original StateManager if available
           if (originalStateManager?._original_setValue) {
             return originalStateManager._original_setValue.call(originalStateManager, fieldId, value, valueState);
           }
@@ -244,30 +277,43 @@
           return;
         }
 
-        // DUAL-WRITE: Write to MultiModelState (synchronous)
-        if (isRef) {
-          // ref_* fields need writes to BOTH models:
-          // 1. Target model under reference.* path (compliance comparison input)
-          if (refPrefixedPath) {
-            const targetModelId = getTargetModelId();
-            if (targetModelId) {
-              state.setValueForModel(targetModelId, refPrefixedPath, value);
-            }
+        // DUAL-WRITE: Write to MultiModelState (primary) via batching
+        scheduleChange(isRef, semanticPath, value);
+
+        // DUAL-WRITE: Also write to original StateManager (for backward compatibility)
+        // This ensures code reading from StateManager gets updated values during transition
+        if (originalStateManager?._original_setValue) {
+          originalStateManager._original_setValue.call(originalStateManager, fieldId, value, valueState);
+        }
+      },
+
+      /**
+       * Set value immediately without batching
+       * @param {string} fieldId
+       * @param {*} value
+       */
+      setValueImmediate(fieldId, value) {
+        const { isRef, baseId } = parseFieldId(fieldId);
+        const semanticPath = toSemanticPath(baseId);
+
+        if (!semanticPath) {
+          // Fall back to original StateManager if available
+          if (originalStateManager?._original_setValue) {
+            return originalStateManager._original_setValue.call(originalStateManager, fieldId, value);
           }
-          // 2. Reference model under base path (reference-side computation)
-          if (basePath) {
-            const refModelId = getReferenceModelId();
-            if (refModelId) {
-              state.setValueForModel(refModelId, basePath, value);
-            }
-          }
-        } else {
-          writeToGraph(false, basePath, value);
+          console.warn(`[LegacyAdapter] Unknown field: ${fieldId}`);
+          return;
+        }
+
+        // DUAL-WRITE: Write to MultiModelState (primary)
+        const modelId = isRef ? getReferenceModelId() : getTargetModelId();
+        if (modelId) {
+          engine.onValueChange(semanticPath, value, modelId);
         }
 
         // DUAL-WRITE: Also write to original StateManager (for backward compatibility)
         if (originalStateManager?._original_setValue) {
-          originalStateManager._original_setValue.call(originalStateManager, fieldId, value, valueState);
+          originalStateManager._original_setValue.call(originalStateManager, fieldId, value);
         }
       },
 
@@ -279,6 +325,8 @@
         for (const [fieldId, value] of Object.entries(values)) {
           this.setValue(fieldId, value);
         }
+        // Flush immediately for batch operations
+        flushPendingChanges();
       },
 
       // ======================================================================
@@ -408,7 +456,7 @@
       debug() {
         console.group("[LegacyAdapter] Debug");
         console.log("Installed:", isInstalled);
-        console.log("Writes: synchronous (no batching)");
+        console.log("Pending changes:", pendingChanges.size);
         console.log("Target model:", getTargetModelId());
         console.log("Reference model:", getReferenceModelId());
         console.log("State stats:", state.getStats());
@@ -441,8 +489,7 @@
        */
       getRegistry() {
         return registry;
-      },
-
+      }
     };
 
     return adapter;

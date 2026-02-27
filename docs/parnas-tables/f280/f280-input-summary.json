@@ -351,6 +351,18 @@
         "description": "Slab fluid temperature in degC (F280 row 3)",
         "priority": "low",
         "note": "Used for radiant floor slab calculations"
+      },
+      {
+        "field": "f280.installedHeatingCapacity",
+        "description": "Rated output of installed heating equipment in W or BTU/h",
+        "priority": "high",
+        "note": "Required for F280 heating sizing compliance check"
+      },
+      {
+        "field": "f280.installedCoolingCapacity",
+        "description": "Rated output of installed cooling equipment in W or BTU/h",
+        "priority": "high",
+        "note": "Required for F280 cooling sizing compliance check"
       }
     ]
   },

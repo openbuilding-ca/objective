@@ -199,6 +199,14 @@ TEUI.StateManager = (function () {
     registerTEUIFields();
     registerTEDITELIFields();
     registerVolumeMetricsFields();
+
+    // Add listeners for TEUI source fields
+    addListener("f_32", () => updateTEUICalculations("f_32"));
+    addListener("j_32", () => updateTEUICalculations("j_32"));
+    addListener("h_15", () => updateTEUICalculations("h_15"));
+
+    // Initial calculation
+    updateTEUICalculations("init");
   }
 
   /**
@@ -585,30 +593,23 @@ TEUI.StateManager = (function () {
   function notifyListeners(fieldId, newValue, oldValue, state) {
     // Check if listeners are muted (import quarantine)
     if (!listenersActive) {
+      console.log(
+        `[StateManager] Skipped listener for ${fieldId} (quarantine active)`
+      );
       return;
     }
 
-    // Fire field-specific listeners
-    if (listeners.has(fieldId)) {
-      listeners.get(fieldId).forEach(callback => {
-        try {
-          callback(newValue, oldValue, fieldId, state);
-        } catch (error) {
-          console.error(`Error in listener for ${fieldId}:`, error);
-        }
-      });
+    // Original loop for other fieldIds
+    if (!listeners.has(fieldId)) {
+      return;
     }
-
-    // Fire wildcard listeners
-    if (listeners.has("*")) {
-      listeners.get("*").forEach(callback => {
-        try {
-          callback(newValue, oldValue, fieldId, state);
-        } catch (error) {
-          console.error(`Error in wildcard listener for ${fieldId}:`, error);
-        }
-      });
-    }
+    listeners.get(fieldId).forEach(callback => {
+      try {
+        callback(newValue, oldValue, fieldId, state);
+      } catch (error) {
+        console.error(`Error in listener for ${fieldId}:`, error);
+      }
+    });
   }
 
   /**
@@ -1909,7 +1910,26 @@ TEUI.StateManager = (function () {
         );
       }
 
-      // Calculator.calculateAll() already handles both Target and Reference models
+      // Also trigger reference model recalculation if in reference mode
+      if (
+        window.TEUI &&
+        window.TEUI.ReferenceToggle &&
+        window.TEUI.ReferenceToggle.isReferenceMode()
+      ) {
+        // Reload reference data to ensure consistency
+        const currentStandard = getValue("d_13") || "OBC SB10 5.5-6 Z6";
+        loadReferenceData(currentStandard);
+
+        // Trigger another calculation pass for reference values
+        setTimeout(() => {
+          if (
+            window.TEUI.Calculator &&
+            typeof window.TEUI.Calculator.calculateAll === "function"
+          ) {
+            window.TEUI.Calculator.calculateAll();
+          }
+        }, 100);
+      }
 
       if (
         window.TEUI &&
@@ -1934,15 +1954,9 @@ TEUI.StateManager = (function () {
     console.log("[StateManager] 🔒 Muting listeners during restore...");
     muteListeners();
 
-    // Use the public API (window.TEUI.StateManager.setValue) so the LegacyAdapter
-    // routes values to both the computation graph AND the internal fields map.
-    // The closure-scoped setValue() only writes to the internal fields map,
-    // leaving the graph with stale values from the user's pre-undo changes.
-    const publicSetValue = window.TEUI?.StateManager?.setValue || setValue;
-
     Object.entries(lastImportedState).forEach(([fieldId, importedValue]) => {
-      // Set the value in the main application state (via LegacyAdapter → graph + SM)
-      const valueChanged = publicSetValue(
+      // Set the value in the main application state
+      const valueChanged = setValue(
         fieldId,
         importedValue,
         "system_reverted_to_import"
@@ -1977,20 +1991,52 @@ TEUI.StateManager = (function () {
       }
     });
 
-    // Sync Pattern A sections (cascading dropdowns, field locks) before unmuting.
-    // Same as CSV import path: province/city dropdown repopulation, S07/S13 field locks.
-    // Without this, changing province then undoing leaves the city dropdown empty.
-    if (window.TEUI?.FileHandler?.syncPostImportUI) {
-      window.TEUI.FileHandler.syncPostImportUI();
-    }
-
     // ✅ FIX (Nov 5, 2025): Unmute listeners after all values restored but BEFORE calculations
     console.log("[StateManager] 🔓 Unmuting listeners after restore complete");
     unmuteListeners();
 
-    // syncFromGlobalState is now a stub — graph is source of truth.
-    // Calculator.calculateAll() below handles: graph compute → syncToSM → stampAll.
-    // Trigger calculations with restored values
+    // ✅ CRITICAL FIX (Nov 6, 2025): Sync Pattern A isolated states BEFORE calculateAll
+    // Pattern A sections must have their isolated TargetState/ReferenceState synced from
+    // global StateManager BEFORE calculations run, otherwise calculations use stale isolated state
+    console.log(
+      "[StateManager] 🔄 Syncing Pattern A isolated states from restored StateManager..."
+    );
+    const patternASections = [
+      "sect02",
+      "sect03",
+      "sect04",
+      "sect05",
+      "sect06",
+      "sect07",
+      "sect08",
+      "sect09",
+      "sect10",
+      "sect11",
+      "sect12",
+      "sect13",
+      "sect14",
+      "sect15",
+    ];
+
+    patternASections.forEach(sectionId => {
+      const section = window.TEUI?.SectionModules?.[sectionId];
+
+      // Sync isolated state FROM restored StateManager values
+      if (section?.TargetState?.syncFromGlobalState) {
+        section.TargetState.syncFromGlobalState();
+        console.log(
+          `[StateManager] 🔄 ${sectionId} TargetState synced from restored values`
+        );
+      }
+      if (section?.ReferenceState?.syncFromGlobalState) {
+        section.ReferenceState.syncFromGlobalState();
+        console.log(
+          `[StateManager] 🔄 ${sectionId} ReferenceState synced from restored values`
+        );
+      }
+    });
+
+    // NOW trigger calculations with correct synced isolated states
     if (
       window.TEUI &&
       window.TEUI.Calculator &&
@@ -2000,8 +2046,26 @@ TEUI.StateManager = (function () {
         "[StateManager] 🧮 Running calculateAll with synced states..."
       );
       window.TEUI.Calculator.calculateAll();
-      // Calculator.calculateAll() handles: graph compute → syncToSM → stampAll → postStamp
-      // No additional refreshUI/updateCalculatedDisplayValues needed
+
+      // Finally, refresh Pattern A section UIs to display calculated results
+      console.log(
+        "[StateManager] 🔄 Refreshing Pattern A section UIs after calculations..."
+      );
+      patternASections.forEach(sectionId => {
+        const section = window.TEUI?.SectionModules?.[sectionId];
+
+        // Refresh UI with calculated values
+        if (section?.ModeManager?.refreshUI) {
+          section.ModeManager.refreshUI();
+          // ✅ Also update calculated display values (some sections need both calls)
+          if (section.ModeManager.updateCalculatedDisplayValues) {
+            section.ModeManager.updateCalculatedDisplayValues();
+          }
+          console.log(
+            `[StateManager] ✅ ${sectionId} UI refreshed after calculations`
+          );
+        }
+      });
     } else {
       console.warn(
         "[StateManager] Calculator.calculateAll not available to trigger after reverting state."
@@ -2099,7 +2163,14 @@ TEUI.StateManager = (function () {
     console.log("[Reset Tier 3] Factory reset - all data cleared");
 
     setTimeout(() => {
-      window.location.reload();
+      // Safari fix: Force hard reload to bypass cache and rebuild stacking contexts
+      // This prevents z-index bugs where controls become unclickable after reset
+      // Use cache-busting URL redirect (preserves hash, cleans query params)
+      const cleanUrl =
+        window.location.origin +
+        window.location.pathname +
+        window.location.hash;
+      window.location.replace(cleanUrl + "?_=" + Date.now());
     }, 100);
   }
 
@@ -2291,13 +2362,6 @@ TEUI.StateManager = (function () {
     getCurrentDisplayValue: getCurrentDisplayValue,
     getCorrespondingTCell: getCorrespondingTCell,
     getTCellValue: getTCellValue,
-
-    // Debug: expose listener counts
-    _getListenerCounts: function() {
-      const counts = {};
-      listeners.forEach((set, key) => { counts[key] = set.size; });
-      return counts;
-    },
   };
 })();
 

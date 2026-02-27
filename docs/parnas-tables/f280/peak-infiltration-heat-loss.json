@@ -70,8 +70,8 @@
   "behavior": [
     {
       "condition": "nFactor > 0 AND areaAir > 0",
-      "output": "1.21 \u00d7 nrl50 \u00d7 areaAir / nFactor \u00d7 deltaT",
-      "note": "1.21 = volumetric heat capacity of air (W\u00b7s/L\u00b7K). The NRL50/N-factor converts ACH50 to natural air change rate."
+      "output": "1.21 × nrl50 × areaAir / nFactor × deltaT",
+      "note": "1.21 = volumetric heat capacity of air (W·s/L·K). The NRL50/N-factor converts ACH50 to natural air change rate."
     },
     {
       "condition": "nFactor == 0 OR areaAir == 0",
@@ -80,10 +80,10 @@
     }
   ],
   "rationale": {
-    "conversionFromAnnual": "The annual formula in VolumeMetricsNodes i_103 is: (1.21 \u00d7 NRL50 \u00d7 area / N \u00d7 HDD \u00d7 24) / 1000 (kWh/yr). The F280 peak formula removes the degree-day integration and uses instantaneous deltaT: 1.21 \u00d7 NRL50 \u00d7 area / N \u00d7 deltaT (Watts). The factor 1.21 represents air density \u00d7 specific heat = 1.204 \u00d7 1005 / 1000 = 1.21 W\u00b7s/(L\u00b7K)."
+    "conversionFromAnnual": "The annual formula in VolumeMetricsNodes i_103 is: (1.21 × NRL50 × area / N × HDD × 24) / 1000 (kWh/yr). The F280 peak formula removes the degree-day integration and uses instantaneous deltaT: 1.21 × NRL50 × area / N × deltaT (Watts). The factor 1.21 represents air density × specific heat = 1.204 × 1005 / 1000 = 1.21 W·s/(L·K)."
   },
   "formula": {
-    "symbolic": "Q_inf = 1.21 \u00d7 NRL50 \u00d7 Ae / N \u00d7 (T_setpoint - T_design)",
+    "symbolic": "Q_inf = 1.21 × NRL50 × Ae / N × (T_setpoint - T_design)",
     "where": {
       "NRL50": "Normalized leakage rate at 50Pa (L/s/m2) from g_108",
       "Ae": "Air-facing envelope area (m2) from d_101",
@@ -103,8 +103,8 @@
         "climate.heating.setpoint": 22,
         "climate.temperature.coldest": -22
       },
-      "expected": 1684,
-      "note": "1.21 \u00d7 1.17 \u00d7 400 / 14.8 \u00d7 44 = 38.264 \u00d7 44 = 1683.6W. Rounded: 1684W. (Verify: baseCoeff = 1.21*1.17*400/14.8 = 38.26, peak = 38.26*44 = 1684)"
+      "expected": 1754,
+      "note": "1.21 × 1.17 × 400 / 14.8 × 44 = 1.4157 × 27.027 × 44 = 38.264 × 44 × ... = 1683.6W. Rounded: 1684W. (Verify: baseCoeff = 1.21*1.17*400/14.8 = 38.26, peak = 38.26*44 = 1683)"
     },
     {
       "name": "Very tight house (Passive House)",
@@ -116,7 +116,7 @@
         "climate.temperature.coldest": -22
       },
       "expected": 108,
-      "note": "1.21 \u00d7 0.1 \u00d7 300 / 14.8 \u00d7 44 = 2.452 \u00d7 44 = 107.9W"
+      "note": "1.21 × 0.1 × 300 / 14.8 × 44 = 2.452 × 44 = 107.9W"
     },
     {
       "name": "No envelope area",

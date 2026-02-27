@@ -46,47 +46,22 @@
     return value === "Unavailable" || value === "N/A";
   }
 
-  // S10→S11 area bridge: rows 88-93 in S11 mirror rows 73-78 from S10
-  const AREA_BRIDGE = {
-    88: 73,  // doors
-    89: 74,  // window north
-    90: 75,  // window east
-    91: 76,  // window south
-    92: 77,  // window west
-    93: 78   // skylights
-  };
-
   function register(graph) {
     const inputs = [];
-    const bridgeNodes = [];
 
     // ========================================================================
     // INPUTS - Component areas and thermal properties
     // ========================================================================
     ALL_COMPONENTS.forEach(({ row, id, label, input }) => {
-      // Area: for rows with S10 bridge, register as computed node (not input)
-      if (AREA_BRIDGE[row]) {
-        const s10Row = AREA_BRIDGE[row];
-        bridgeNodes.push({
-          id: `transmissionLoss.${id}.area`,
-          legacyId: `d_${row}`,
-          section: "S11",
-          classification: "C",
-          label: `${label} Area (m²) [bridged from S10]`,
-          dependencies: [`radiantGains.row${s10Row}.area`],
-          compute: (deps) => parseNum(deps[`radiantGains.row${s10Row}.area`])
-        });
-      } else {
-        // Non-bridged areas remain as inputs
-        inputs.push({
-          id: `transmissionLoss.${id}.area`,
-          legacyId: `d_${row}`,
-          section: "S11",
-          classification: "C",
-          label: `${label} Area (m²)`,
-          defaultValue: 0
-        });
-      }
+      // Area input
+      inputs.push({
+        id: `transmissionLoss.${id}.area`,
+        legacyId: `d_${row}`,
+        section: "S11",
+        classification: "C",
+        label: `${label} Area (m²)`,
+        defaultValue: 0
+      });
 
       // RSI input (for components that use RSI as primary input)
       if (input === "rsi") {
@@ -144,9 +119,6 @@
     });
 
     graph.registerInputs(inputs);
-
-    // Register S10→S11 area bridge nodes (d_73→d_88, d_74→d_89, etc.)
-    bridgeNodes.forEach(node => graph.registerNode(node));
 
     // ========================================================================
     // U-VALUE / RSI CONVERSIONS
@@ -561,225 +533,6 @@
         return parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatGain"]) +
                parseNum(inputs["transmissionLoss.components.subtotalHeatGain"]);
       }
-    });
-
-    // ========================================================================
-    // AREA PERCENTAGES (h_85-h_95)
-    // Air-facing (85-93): d_row / totalAreaAe
-    // Ground-facing (94-95): d_row / totalAreaAg
-    // ========================================================================
-    AIR_FACING_COMPONENTS.forEach(({ row, id, label }) => {
-      graph.registerNode({
-        id: `transmissionLoss.${id}.areaPercent`,
-        legacyId: `h_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [`transmissionLoss.${id}.area`, "transmissionLoss.airFacing.totalArea"],
-        label: `${label} Area %`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const total = parseNum(inputs["transmissionLoss.airFacing.totalArea"], 1);
-          return total > 0 ? area / total : 0;
-        }
-      });
-    });
-
-    GROUND_FACING_COMPONENTS.forEach(({ row, id, label }) => {
-      graph.registerNode({
-        id: `transmissionLoss.${id}.areaPercent`,
-        legacyId: `h_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [`transmissionLoss.${id}.area`, "transmissionLoss.groundFacing.totalArea"],
-        label: `${label} Area %`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const total = parseNum(inputs["transmissionLoss.groundFacing.totalArea"], 1);
-          return total > 0 ? area / total : 0;
-        }
-      });
-    });
-
-    // ========================================================================
-    // TOTAL ENVELOPE AREA (d_98) = SUM(d_85:d_95) - excludes d_96 interior floor
-    // ========================================================================
-    graph.registerNode({
-      id: "transmissionLoss.total.envelopeArea",
-      legacyId: "d_98",
-      section: "S11",
-      classification: "C",
-      dependencies: ALL_COMPONENTS.map(c => `transmissionLoss.${c.id}.area`),
-      label: "Total Envelope Area (m²)",
-      compute: (inputs) => {
-        return ALL_COMPONENTS.reduce((sum, c) => {
-          return sum + parseNum(inputs[`transmissionLoss.${c.id}.area`]);
-        }, 0);
-      }
-    });
-
-    // h_98: Area percentage total (always 1.0 / 100%)
-    graph.registerNode({
-      id: "transmissionLoss.total.areaPercent",
-      legacyId: "h_98",
-      section: "S11",
-      classification: "C",
-      dependencies: [],
-      label: "Total Area Percentage",
-      compute: () => "100%"
-    });
-
-    // e_97: Thermal bridge penalty as decimal = d_97 / 100, clamped 0-1
-    graph.registerNode({
-      id: "transmissionLoss.thermalBridgePenalty.decimal",
-      legacyId: "e_97",
-      section: "S11",
-      classification: "C",
-      dependencies: ["transmissionLoss.thermalBridgePenalty"],
-      label: "Thermal Bridge Penalty (decimal)",
-      compute: (inputs) => {
-        const pct = parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5);
-        return Math.max(0, Math.min(1, pct / 100));
-      }
-    });
-
-    // e_98: R-improvement total — not calculated in legacy code
-    graph.registerNode({
-      id: "transmissionLoss.total.rImprovement",
-      legacyId: "e_98",
-      section: "S11",
-      classification: "C",
-      dependencies: [],
-      label: "Total R-Improvement",
-      compute: () => 0
-    });
-
-    // ========================================================================
-    // THERMAL BRIDGE & TOTAL PERCENTAGES (j_97, j_98, l_97, l_98)
-    // ========================================================================
-    graph.registerNode({
-      id: "transmissionLoss.thermalBridgePenalty.heatLossPercent",
-      legacyId: "j_97",
-      section: "S11",
-      classification: "C",
-      dependencies: [
-        "transmissionLoss.thermalBridgePenalty.heatLoss",
-        "transmissionLoss.components.subtotalHeatLoss"
-      ],
-      label: "Thermal Bridge Heat Loss %",
-      compute: (inputs) => {
-        const penalty = parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatLoss"]);
-        const subtotal = parseNum(inputs["transmissionLoss.components.subtotalHeatLoss"]);
-        return subtotal > 0 ? penalty / subtotal : 0;
-      }
-    });
-
-    graph.registerNode({
-      id: "transmissionLoss.total.heatLossPercent",
-      legacyId: "j_98",
-      section: "S11",
-      classification: "C",
-      dependencies: [],
-      label: "Total Heat Loss % (100%)",
-      compute: () => 1.0
-    });
-
-    graph.registerNode({
-      id: "transmissionLoss.thermalBridgePenalty.heatGainPercent",
-      legacyId: "l_97",
-      section: "S11",
-      classification: "C",
-      dependencies: [
-        "transmissionLoss.thermalBridgePenalty.heatGain",
-        "transmissionLoss.components.subtotalHeatGain"
-      ],
-      label: "Thermal Bridge Heat Gain %",
-      compute: (inputs) => {
-        const penalty = parseNum(inputs["transmissionLoss.thermalBridgePenalty.heatGain"]);
-        const subtotal = parseNum(inputs["transmissionLoss.components.subtotalHeatGain"]);
-        return Math.abs(subtotal) > 0.001 ? -penalty / subtotal : 0;
-      }
-    });
-
-    graph.registerNode({
-      id: "transmissionLoss.total.heatGainPercent",
-      legacyId: "l_98",
-      section: "S11",
-      classification: "C",
-      dependencies: [],
-      label: "Total Heat Gain % (-100%)",
-      compute: () => -1.0
-    });
-
-    // ========================================================================
-    // SURFACE TEMPERATURES (o_85-o_95)
-    // T_si = T_interior - (U × ΔT × R_si)
-    // R_si varies by component type; exterior temp varies air vs ground
-    // ========================================================================
-    const R_SI_MAP = {
-      roof: 0.10,           // upward heat flow
-      walls: 0.13,          // horizontal
-      exposedFloor: 0.17,   // downward
-      doors: 0.13,          // horizontal
-      windowNorth: 0.13,    // horizontal
-      windowEast: 0.13,     // horizontal
-      windowSouth: 0.13,    // horizontal
-      windowWest: 0.13,     // horizontal
-      skylights: 0.10,      // upward
-      wallsBelowGrade: 0.13, // horizontal
-      slabOnGrade: 0.17     // downward
-    };
-
-    AIR_FACING_COMPONENTS.forEach(({ row, id, label }) => {
-      graph.registerNode({
-        id: `transmissionLoss.${id}.surfaceTemp`,
-        legacyId: `o_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.heating.setpoint",
-          "climate.temperature.winterAverage"
-        ],
-        label: `${label} Surface Temperature (°C)`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          if (area === 0) return "";
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          const tInterior = parseNum(inputs["climate.heating.setpoint"], 21);
-          const tExterior = parseNum(inputs["climate.temperature.winterAverage"], -5);
-          const deltaT = tInterior - tExterior;
-          const rSi = R_SI_MAP[id] || 0.13;
-          const tSi = tInterior - (uValue * deltaT * rSi);
-          return Math.round(tSi * 100) / 100;
-        }
-      });
-    });
-
-    GROUND_FACING_COMPONENTS.forEach(({ row, id, label }) => {
-      graph.registerNode({
-        id: `transmissionLoss.${id}.surfaceTemp`,
-        legacyId: `o_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.heating.setpoint"
-        ],
-        label: `${label} Surface Temperature (°C)`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          if (area === 0) return "";
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          const tInterior = parseNum(inputs["climate.heating.setpoint"], 21);
-          const groundTemp = 10; // constant
-          const deltaT = tInterior - groundTemp;
-          const rSi = R_SI_MAP[id] || 0.17;
-          const tSi = tInterior - (uValue * deltaT * rSi);
-          return Math.round(tSi * 100) / 100;
-        }
-      });
     });
 
     console.log("[TransmissionLossNodes] Registered", inputs.length, "inputs");

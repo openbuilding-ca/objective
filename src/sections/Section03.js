@@ -86,8 +86,28 @@ window.TEUI.SectionModules.sect03 = (function () {
         this.listeners[fieldId].forEach(callback => callback(value));
       }
     },
-    syncFromGlobalState: function () {
-      /* graph is source of truth */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_19",
+        "h_19",
+        "h_20",
+        "h_21",
+        "i_21",
+        "m_19",
+        "l_20",
+        "l_21",
+        "l_24",
+      ]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`
+          );
+        }
+      });
     },
   };
 
@@ -161,8 +181,29 @@ window.TEUI.SectionModules.sect03 = (function () {
         this.listeners[fieldId].forEach(callback => callback(value));
       }
     },
-    syncFromGlobalState: function () {
-      /* graph is source of truth */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_19",
+        "h_19",
+        "h_20",
+        "h_21",
+        "i_21",
+        "m_19",
+        "l_20",
+        "l_21",
+        "l_24",
+      ]
+    ) {
+      fieldIds.forEach(fieldId => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S03 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`
+          );
+        }
+      });
     },
   };
 
@@ -181,12 +222,16 @@ window.TEUI.SectionModules.sect03 = (function () {
       )
         return;
       this.currentMode = mode;
+      // console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
       this.updateCalculatedDisplayValues();
 
-      // Sync visual toggle UI when mode changes (from global or local toggle)
+      // ✅ NEW: Sync visual toggle UI when mode changes (from global or local toggle)
       this.syncToggleUI(mode);
+
+      // ✅ CRITICAL FIX: Update critical occupancy flag when mode changes
+      updateCriticalOccupancyFlag();
     },
 
     // ✅ NEW: Sync visual toggle switch and indicator to match current mode
@@ -201,9 +246,13 @@ window.TEUI.SectionModules.sect03 = (function () {
       );
       TargetState.setDefaults();
       TargetState.saveState();
-      ReferenceState.setDefaults();
+      ReferenceState.setDefaults(); // This will reload from current d_13 selection
       ReferenceState.saveState();
       console.log("S03: States have been reset to defaults.");
+
+      // After resetting, refresh the UI and recalculate.
+      this.refreshUI();
+      calculateAll();
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -226,11 +275,169 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     refreshUI: function () {
-      /* DOMBridge.stampAll() handles display */
+      const sectionElement = document.getElementById("climateCalculations");
+      if (!sectionElement) return;
+
+      const currentState = this.getCurrentState();
+
+      // Update province dropdown
+      const provinceSelect = sectionElement.querySelector(
+        '[data-dropdown-id="dd_d_19"]'
+      );
+      if (provinceSelect && currentState.getValue("d_19")) {
+        provinceSelect.value = currentState.getValue("d_19");
+        // Trigger city dropdown update
+        handleProvinceChange({ target: provinceSelect });
+      }
+
+      // Update city dropdown
+      const citySelect = sectionElement.querySelector(
+        '[data-dropdown-id="dd_h_19"]'
+      );
+      if (citySelect && currentState.getValue("h_19")) {
+        citySelect.value = currentState.getValue("h_19");
+      }
+
+      // Update timeframe dropdown
+      const timeframeSelect = sectionElement.querySelector(
+        '[data-dropdown-id="dd_h_20"]'
+      );
+      if (timeframeSelect && currentState.getValue("h_20")) {
+        timeframeSelect.value = currentState.getValue("h_20");
+      }
+
+      // Update capacitance dropdown - CRITICAL for GFCDD calculation
+      const capacitanceSelect = sectionElement.querySelector(
+        '[data-dropdown-id="dd_h_21"]'
+      );
+      const capacitanceValue = currentState.getValue("h_21") || "Capacitance";
+      if (capacitanceSelect) {
+        capacitanceSelect.value = capacitanceValue;
+        // console.log(`S03: Updated capacitance dropdown to "${capacitanceValue}" in ${this.currentMode} mode`);
+      }
+
+      // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
+      const percentageSlider = sectionElement.querySelector(
+        'input.form-range[data-field-id="i_21"]'
+      );
+      const percentageValue = currentState.getValue("i_21");
+      if (
+        percentageSlider &&
+        percentageValue !== undefined &&
+        percentageValue !== null
+      ) {
+        percentageSlider.value = percentageValue;
+        // Update percentage display - FieldManager creates .slider-value as sibling
+        const sliderContainer = percentageSlider.parentElement;
+        const display = sliderContainer?.querySelector(".slider-value");
+        if (display) {
+          display.textContent = percentageValue + "%";
+        }
+        // console.log(`S03: Updated slider to ${percentageValue}% in ${this.currentMode} mode`);
+      }
+
+      // Update all other editable fields from current state
+      const editableFields = sectionElement.querySelectorAll("[data-field-id]");
+      editableFields.forEach(field => {
+        const fieldId = field.getAttribute("data-field-id");
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue !== undefined && stateValue !== null) {
+          if (field.isContentEditable) {
+            field.textContent = stateValue;
+          } else if (field.tagName === "SELECT") {
+            field.value = stateValue;
+          } else if (field.tagName === "SPAN") {
+            field.textContent = stateValue;
+          }
+        }
+      });
+
+      // ✅ PHASE 3: Climate data now handled by calculation engines
+      // No need to call updateWeatherData() - calculateAll() handles it
+
+      // console.log(`S03: UI refreshed for ${this.currentMode} mode`);
     },
 
+    /**
+     * ✅ NEW: Update calculated fields display based on current mode
+     * This updates DOM elements to show calculated values from StateManager
+     */
     updateCalculatedDisplayValues: function () {
-      /* DOMBridge.stampAll() handles display */
+      const calculatedFields = [
+        "j_19",
+        "d_20",
+        "d_21",
+        "d_22",
+        "h_22",
+        "d_23",
+        "e_23",
+        "h_23",
+        "i_23",
+        "m_23",
+        "n_23",
+        "d_24",
+        "e_24",
+        "h_24",
+        "i_24",
+        "m_24",
+        "n_24",
+        "d_25",
+        "e_25",
+      ];
+
+      calculatedFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          let valueToDisplay;
+          if (this.currentMode === "reference") {
+            // Reference mode: Read ONLY ref_ prefixed values.
+            valueToDisplay = window.TEUI.StateManager.getValue(
+              `ref_${fieldId}`
+            );
+          } else {
+            valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+          }
+
+          // If a value isn't found in the correct state, use a safe default. NEVER fall back.
+          if (valueToDisplay === null || valueToDisplay === undefined) {
+            valueToDisplay = "0.00";
+          }
+
+          if (valueToDisplay !== null && valueToDisplay !== undefined) {
+            const numericValue = window.TEUI.parseNumeric(valueToDisplay, NaN);
+            let formattedValue = valueToDisplay;
+            if (!isNaN(numericValue)) {
+              let formatType = "number-2dp";
+              if (
+                [
+                  "d_20",
+                  "d_21",
+                  "d_22",
+                  "h_22",
+                  "d_23",
+                  "h_23",
+                  "d_24",
+                  "h_24",
+                  "l_24",
+                ].includes(fieldId)
+              ) {
+                formatType = "integer";
+              } else if (
+                ["e_23", "i_23", "e_24", "i_24", "e_25"].includes(fieldId)
+              ) {
+                formatType = "integer-nocomma";
+              } else if (fieldId === "j_19") {
+                formatType = "number-1dp";
+              }
+              formattedValue = window.TEUI.formatNumber(
+                numericValue,
+                formatType
+              );
+            }
+            element.textContent = formattedValue;
+          }
+        }
+      });
     },
   };
 
@@ -241,7 +448,90 @@ window.TEUI.SectionModules.sect03 = (function () {
   // Compatibility alias for existing code
   const DualState = ModeManager;
 
-  // Legacy helper functions removed — graph handles all computation
+  //==========================================================================
+  // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
+  //==========================================================================
+
+  function getNumericValue(fieldId) {
+    // For values INTERNAL to this section
+    const rawValue = ModeManager.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getGlobalNumericValue(fieldId) {
+    // For values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getGlobalStringValue(fieldId) {
+    // For string values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return rawValue ? rawValue.toString() : "";
+  }
+
+  /**
+   * ✅ PHASE 2: Mode-aware external dependency reader for Target/Reference pairs
+   * Reads the correct state value based on current calculation mode
+   */
+  function getModeAwareGlobalValue(fieldId) {
+    if (!window.TEUI?.StateManager) return "";
+
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Read ONLY ref_ prefixed values for perfect state isolation.
+      const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+      // If ref_ value doesn't exist, return empty or a safe default. NEVER fall back to the Target value.
+      return refValue ? refValue.toString() : "";
+    } else {
+      // Target mode: Read unprefixed values directly
+      const targetValue = window.TEUI.StateManager.getValue(fieldId);
+      return targetValue ? targetValue.toString() : "";
+    }
+  }
+
+  function getFieldValue(fieldId) {
+    const stateValue = ModeManager.getValue(fieldId);
+    if (stateValue != null) return stateValue;
+
+    // Fallback for non-state values (e.g., legacy DOM elements)
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    return element ? (element.value ?? element.textContent?.trim()) : null;
+  }
+
+  /**
+   * Sets field value using simplified dual-state (ModeManager handles internal state)
+   * @param {string} fieldId
+   * @param {*} value
+   * @param {string} [source='calculated']
+   */
+  function setFieldValue(fieldId, value, source = "calculated") {
+    const rawValue =
+      value !== null && value !== undefined ? value.toString() : null;
+
+    // Set raw value in ModeManager (automatically handles current mode)
+    ModeManager.setValue(fieldId, rawValue, source);
+
+    // ❌ ANTI-PATTERN REMOVED: Direct DOM write from a calculation helper has been eliminated.
+    // The `ModeManager.updateCalculatedDisplayValues()` function is now solely responsible
+    // for reading from StateManager and updating the UI, ensuring a single source of truth.
+  }
+
+  /**
+   * Apply CSS class to DOM element for compliance indicators (S08 pattern)
+   * Only applies in Target mode - Reference mode should not override Target's visual indicators
+   * @param {string} fieldId - The field ID to target
+   * @param {string} className - The class name to add ("checkmark" or "warning")
+   */
+  function setElementClass(fieldId, className) {
+    // Only apply styling in Target mode (S08 pattern)
+    if (ModeManager.currentMode !== "target") return;
+
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      if (className) element.classList.add(className);
+    }
+  }
 
   //==========================================================================
   // CLIMATE DATA SERVICE - Direct ClimateValues.js Access
@@ -334,8 +624,90 @@ window.TEUI.SectionModules.sect03 = (function () {
   // CLIMATE DATA PROCESSING - Pure Functions for Dual-State Architecture
   //==========================================================================
 
-  function getClimateDataForState() {
-    /* graph computes */
+  /**
+   * ✅ PHASE 1: Mode-aware climate data function for dual-state architecture
+   * Fetches and calculates climate data based on the provided state object and calculation mode.
+   * Now includes critical occupancy logic for proper 1% vs 2.5% temperature selection.
+   * @param {object} stateObject - Either TargetState or ReferenceState
+   * @param {string} calculationMode - "target" or "reference" to determine occupancy source
+   * @returns {object} An object containing all calculated climate values
+   */
+  function getClimateDataForState(stateObject, calculationMode = "target") {
+    const province = stateObject.getValue("d_19") || "ON";
+    const city = stateObject.getValue("h_19") || "Alexandria";
+    const timeframe = stateObject.getValue("h_20") || "Present";
+
+    // ✅ CRITICAL FIX: Get occupancy type based on calculation mode for proper temperature selection
+    let occupancyType = "";
+    if (window.TEUI?.StateManager) {
+      if (calculationMode === "reference") {
+        // Reference calculations: Read ref_d_12 for Reference occupancy
+        occupancyType = window.TEUI.StateManager.getValue("ref_d_12") || "";
+        // console.log(`[S03] 🔵 REF MODE: Using occupancy "${occupancyType}" from ref_d_12`);
+      } else {
+        // Target calculations: Read d_12 for Target occupancy
+        occupancyType = window.TEUI.StateManager.getValue("d_12") || "";
+        // console.log(`[S03] 🎯 TGT MODE: Using occupancy "${occupancyType}" from d_12`);
+      }
+    }
+
+    const isCritical = occupancyType.includes("Care");
+    // console.log(`[S03] Getting climate data for: ${city}, ${province} (${timeframe}) - Critical: ${isCritical} (${calculationMode} mode)`);
+
+    const cityData = ClimateDataService.getCityData(province, city);
+
+    if (!cityData) {
+      console.warn(`S03: No climate data for ${city}, ${province}`);
+      return {
+        d_20: "N/A",
+        d_21: "N/A",
+        j_19: "6.0",
+        d_23: isCritical ? "-26" : "-24", // Use fallback appropriate for occupancy
+        d_24: "34",
+        l_22: "80",
+      };
+    }
+
+    // Choose values based on timeframe
+    const hdd =
+      timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    const cdd =
+      timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+
+    // ✅ CRITICAL FIX: Select January temperature based on critical occupancy
+    // Use January_1 (1%) for critical occupancies (Care), January_2_5 (2.5%) for others
+    const janTempKey = isCritical ? "January_1" : "January_2_5";
+    const selectedJanTemp =
+      cityData[janTempKey] ||
+      cityData["January_2_5"] ||
+      (isCritical ? "-26" : "-24");
+
+    // console.log(`[S03] ${calculationMode.toUpperCase()} TEMP SELECTION: ${janTempKey} = ${selectedJanTemp} (Critical: ${isCritical})`);
+
+    // ✅ Winter Average Temperature - Direct from ClimateValues.js (matches d_23 pattern)
+    const winterAvgC = cityData.Winter_Tdb_Avg;
+    // Celsius-to-Fahrenheit conversion (integer format like other temp conversions)
+    const winterAvgF =
+      winterAvgC !== null && winterAvgC !== undefined
+        ? (winterAvgC * 9) / 5 + 32
+        : null;
+
+    const climateValues = {
+      d_20: hdd !== null && hdd !== undefined && hdd !== 666 ? hdd : "N/A",
+      d_21:
+        cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "Unavailable", // ✅ Changed for user-editable field
+      j_19: determineClimateZone(hdd),
+      d_23: selectedJanTemp, // ✅ Now uses occupancy-aware temperature selection
+      d_24: cityData.July_2_5_Tdb || "34",
+      l_22: cityData["Elev ASL (m)"] || "80",
+      d_25:
+        winterAvgC !== null && winterAvgC !== undefined ? winterAvgC : "N/A", // ✅ Winter avg from ClimateValues (matches d_23 pattern)
+      e_25:
+        winterAvgF !== null && winterAvgF !== undefined ? winterAvgF : "N/A", // ✅ Fahrenheit conversion
+    };
+
+    // console.log(`[S03] Climate values for ${city} (${calculationMode}):`, climateValues);
+    return climateValues;
   }
 
   //==========================================================================
@@ -482,7 +854,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         k: { content: "Summer Night Mean", classes: ["label-main"] }, // Mean Night-time Outdoor Temp
         l: {
           fieldId: "l_20",
-          semanticPath: "climate.cooling.nightTemp",
+          semanticPath: "climate.summerNightTemp",
           type: "editable",
           label: "Summer Night (Seasonal Mean) ºC",
           value: "20.43", // Default: Alexandria, ON summer night temp
@@ -554,7 +926,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         k: { content: "Summer Mean RH", classes: ["label-main"] },
         l: {
           fieldId: "l_21",
-          semanticPath: "climate.cooling.seasonMeanRH",
+          semanticPath: "climate.summerRelativeHumidity",
           type: "editable",
           label: "Summer Mean RH%",
           value: "55.85", // Default: Alexandria, ON cooling season mean RH at 15h00 LST
@@ -1050,7 +1422,104 @@ window.TEUI.SectionModules.sect03 = (function () {
     );
   }
 
-  // updateWeatherData() removed — graph handles climate data computation
+  /**
+   * ❌ PHASE 4: DEPRECATED - This function has been replaced by climate data integration
+   * in calculateTargetModel() and calculateReferenceModel() for perfect state isolation.
+   * Keeping commented for reference during testing phase.
+   */
+  /*
+  function updateWeatherData() {
+    // Get province and city values from DualState (automatically uses current mode)
+    const provinceValue =
+      DualState.getValue("d_19") ||
+      getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
+    const cityValue =
+      DualState.getValue("h_19") ||
+      getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
+    const timeframe =
+      DualState.getValue("h_20") ||
+      getElement(['[data-dropdown-id="dd_h_20"]'])?.value ||
+      "Present";
+
+    if (!provinceValue || !cityValue) {
+      console.log("S03: Cannot update weather data - missing province or city");
+      return;
+    }
+
+    // Get city data using ClimateDataService
+    const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
+
+    if (!cityData) {
+      console.warn(
+        `S03: No climate data found for ${cityValue}, ${provinceValue}`,
+      );
+      return;
+    }
+
+    // Update HDD value - choosing based on timeframe
+    const hddValue =
+      timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    if (hddValue !== null && hddValue !== undefined && hddValue !== 666) {
+      setFieldValue("d_20", hddValue, "derived");
+    } else {
+      setFieldValue("d_20", "N/A", "derived");
+    }
+
+    // Update CDD value - choosing based on timeframe
+    const cddValue =
+      timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+    if (cddValue !== null && cddValue !== undefined && cddValue !== 666) {
+      setFieldValue("d_21", cddValue, "derived");
+    } else {
+      // Check if fallback to present value is possible
+      if (
+        timeframe === "Future" &&
+        cityData.CDD24 !== null &&
+        cityData.CDD24 !== undefined &&
+        cityData.CDD24 !== 666
+      ) {
+        console.warn(
+          `S03: Future CDD not available for ${cityValue}, ${provinceValue}. Using present value as fallback.`,
+        );
+        setFieldValue("d_21", cityData.CDD24, "derived");
+      } else {
+        setFieldValue("d_21", "N/A", "derived");
+      }
+    }
+
+    // Update other climate values from cityData
+    const climateUpdates = [
+      { fieldId: "d_23", value: cityData.January_2_5, label: "Coldest Days" },
+      { fieldId: "d_24", value: cityData.July_2_5_Tdb, label: "Hottest Days" },
+      { fieldId: "l_22", value: cityData["Elev ASL (m)"], label: "Elevation" },
+    ];
+
+    climateUpdates.forEach((update) => {
+      if (
+        update.value !== null &&
+        update.value !== undefined &&
+        update.value !== 666
+      ) {
+        setFieldValue(update.fieldId, update.value, "derived");
+      } else {
+        setFieldValue(update.fieldId, "N/A", "derived");
+      }
+    });
+
+    // Update climate zone based on HDD
+    const climateZone = determineClimateZone(hddValue);
+    setFieldValue("j_19", climateZone, "calculated");
+
+    // Run all calculations after weather data update
+    calculateAll();
+    // ✅ PHASE 1: Add missing DOM update after calculations
+    ModeManager.updateCalculatedDisplayValues();
+
+    console.log(
+      `S03: Weather data updated for ${cityValue}, ${provinceValue} (${timeframe})`,
+    );
+  }
+  */ // End of deprecated updateWeatherData() function
 
   /**
    * Determine climate zone based on HDD
@@ -1370,69 +1839,565 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (modal) new bootstrap.Modal(modal).show();
   }
 
+  /**
+   * Calculate Celsius to Fahrenheit conversions (Heating only now)
+   */
   function calculateTemperatures() {
-    /* graph computes */
+    // Coldest days conversion (d_23 -> e_23)
+    const coldestC_str = window.TEUI.StateManager?.getValue("d_23");
+    const coldestC = parseFloat(coldestC_str);
+    if (!isNaN(coldestC)) {
+      const coldestF = Math.round((coldestC * 9) / 5 + 32);
+      setFieldValue("e_23", coldestF);
+    }
+
+    // Heating setpoint conversion (h_23 -> i_23)
+    const heatingC_str = window.TEUI.StateManager?.getValue("h_23");
+    const heatingC = parseFloat(heatingC_str);
+    if (!isNaN(heatingC)) {
+      const heatingF = Math.round((heatingC * 9) / 5 + 32);
+      setFieldValue("i_23", heatingF);
+    }
+
+    // Hottest days conversion (d_24 -> e_24)
+    const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
+    const hottestC = parseFloat(hottestC_str);
+    if (!isNaN(hottestC)) {
+      const hottestF = Math.round((hottestC * 9) / 5 + 32);
+      setFieldValue("e_24", hottestF);
+    }
+
+    // Cooling setpoint conversion is now handled by updateCoolingDependents
   }
 
+  /**
+   * Calculate ground facing HDD and CDD
+   * RESTORED from ARCHIVE/GOLD-STANDARDS/OBJECTIVE-4011GS-2025.06.21-SOLSTICE-BASELINE
+   */
   function calculateGroundFacing() {
-    /* graph computes */
+    // --- Ground facing HDD ---
+    const heatingSetpoint = getNumericValue("h_23");
+    const coolingDaysGFH = getNumericValue("m_19"); // Use a separate variable name to avoid confusion
+    const heatingDays = 365 - coolingDaysGFH;
+
+    // Formula: (TsetHeating - 10°C_ground) * HeatingDays
+    const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
+    setFieldValue("d_22", gfhdd);
+
+    // --- Ground facing CDD (h_22) --- ARCHIVE LOGIC RESTORED ---
+    const capacitanceSetting = getFieldValue("h_21") || "Static"; // Default to Static if undefined
+    const coolingSetpoint_h24 = getNumericValue("h_24"); // TsetCool
+    const coolingDays_m19 = getNumericValue("m_19"); // DaysCooling
+    let gfcdd;
+
+    if (capacitanceSetting === "Static") {
+      // Formula: MAX(0, (10 - TsetCool) * DaysCooling)
+      gfcdd = Math.max(0, (10 - coolingSetpoint_h24) * coolingDays_m19);
+    } else {
+      // Assumes 'Capacitance' or any other value
+      // Formula: (10 - TsetCool) * DaysCooling
+      gfcdd = (10 - coolingSetpoint_h24) * coolingDays_m19;
+    }
+
+    // Update h_22 field with the newly calculated GF CDD value
+    // Use Math.round as Excel likely rounds this
+    setFieldValue("h_22", Math.round(gfcdd));
   }
 
+  /**
+   * ❌ DEPRECATED: Winter Average Temperature now handled in getClimateDataForState()
+   * This function has been removed - d_25/e_25 are now climate data fields (like d_23)
+   * and are fetched directly from ClimateValues.js in the climate data loop.
+   *
+   * See getClimateDataForState() lines 661-676 for the new implementation.
+   */
+
+  /**
+   * Calculate all values - DUAL-ENGINE PATTERN
+   * Runs both Target and Reference calculations for complete downstream data
+   */
   function calculateAll() {
-    /* graph computes */
+    // ALWAYS run BOTH engines in parallel for complete downstream data
+    calculateTargetModel(); // Updates Target values (unprefixed)
+    calculateReferenceModel(); // Stores ref_ values for downstream sections
+
+    // MANDATORY: Update DOM display after calculations (strict isolation)
+    ModeManager.updateCalculatedDisplayValues();
   }
 
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Target state
+   * ✅ PHASE 2: Integrated climate data fetch for perfect state isolation
+   */
   function calculateTargetModel() {
-    /* graph computes */
+    // Ensure Target engine always uses Target state regardless of UI mode
+    const originalMode = ModeManager.currentMode;
+    try {
+      ModeManager.currentMode = "target";
+
+      // ✅ STEP 1: Get climate data based on TargetState location with Target occupancy
+      const climateValues = getClimateDataForState(TargetState, "target");
+
+      // ✅ STEP 2: Update both local state AND StateManager immediately
+      Object.entries(climateValues).forEach(([key, value]) => {
+        // ✅ Preserve user-entered CDD values when climate data unavailable
+        if (key === "d_21" && value === "Unavailable") {
+          const currentValue = TargetState.getValue("d_21");
+          // Don't overwrite numeric user values with "Unavailable"
+          if (
+            currentValue &&
+            currentValue !== "Unavailable" &&
+            currentValue !== "N/A" &&
+            !isNaN(parseFloat(currentValue))
+          ) {
+            // console.log(`[S03] Preserving user-entered Target CDD: ${currentValue}`);
+            return; // Skip this update - keep user value
+          }
+        }
+
+        TargetState.setValue(key, value, "calculated");
+        // CRITICAL: Publish to StateManager so downstream sections can access
+        window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
+      });
+
+      // ✅ STEP 3: Run calculations that depend on climate data
+      calculateHeatingSetpoint();
+      calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
+      calculateHeatingCompliance(); // n_23: Check h_23 >= m_23 compliance
+      calculateCoolingSetpoint_h24();
+      calculateTemperatures();
+      // d_25, e_25 now handled in climate data loop (getClimateDataForState) - no separate calculation needed
+      calculateGroundFacing();
+      updateCoolingDependents();
+      updateCriticalOccupancyFlag();
+
+      // ✅ FIX: Store Target calculation results to StateManager (was missing!)
+      storeTargetResults();
+
+      // ✅ CRITICAL: Force S12 recalculation after climate data publication (user changes only)
+      // This ensures S12 gets updated climate data even if listeners fail
+      // PERFORMANCE: Only trigger for user-initiated climate changes, not calculated cascades
+      if (window.TEUI?.SectionModules?.sect12) {
+        // Check if S12 is properly initialized
+        if (!window.TEUI.SectionModules.sect12.isInitialized) {
+          window.TEUI.SectionModules.sect12.forceInitialization();
+        }
+
+        // Only force recalculation for user-initiated changes (location changes)
+        // Skip during initialization cascades to improve performance
+        if (window.TEUI.SectionModules.sect12.calculateTargetModel) {
+          window.TEUI.SectionModules.sect12.calculateTargetModel();
+
+          // Ensure DOM display values are updated after forced calculation
+          if (
+            window.TEUI.SectionModules.sect12.ModeManager
+              ?.updateCalculatedDisplayValues
+          ) {
+            window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
+          }
+        }
+      }
+    } finally {
+      // Restore prior UI mode
+      ModeManager.currentMode = originalMode;
+    }
   }
 
+  /**
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * ✅ PHASE 2: Integrated climate data fetch for perfect state isolation
+   */
   function calculateReferenceModel() {
-    /* graph computes */
+    // Ensure Reference engine always uses Reference state regardless of UI mode
+    const originalMode = ModeManager.currentMode;
+    try {
+      // ✅ STEP 1: Get climate data based on ReferenceState location with Reference occupancy
+      const climateValues = getClimateDataForState(ReferenceState, "reference");
+
+      // ✅ STEP 2: Update ReferenceState with the new climate data
+      Object.entries(climateValues).forEach(([key, value]) => {
+        // ✅ Preserve user-entered CDD values when climate data unavailable
+        if (key === "d_21" && value === "Unavailable") {
+          const currentValue = ReferenceState.getValue("d_21");
+          // Don't overwrite numeric user values with "Unavailable"
+          if (
+            currentValue &&
+            currentValue !== "Unavailable" &&
+            currentValue !== "N/A" &&
+            !isNaN(parseFloat(currentValue))
+          ) {
+            // console.log(`[S03] Preserving user-entered Reference CDD: ${currentValue}`);
+            return; // Skip this update - keep user value
+          }
+        }
+
+        ReferenceState.setValue(key, value, "calculated");
+      });
+
+      // Force Reference mode temporarily for other calculations
+      ModeManager.currentMode = "reference";
+
+      // ✅ STEP 3: Run calculations that depend on climate data
+      calculateHeatingSetpoint();
+      calculateOBCHeatingSetpoint(); // m_23: Building code baseline (no PH override)
+      calculateHeatingCompliance(); // n_23: Check h_23 >= m_23 compliance
+      calculateCoolingSetpoint_h24();
+      calculateTemperatures();
+      // d_25, e_25 now handled in climate data loop (getClimateDataForState) - no separate calculation needed
+      calculateGroundFacing();
+      updateCoolingDependents();
+
+      // ✅ STEP 4: Store all Reference results for downstream sections
+      storeReferenceResults();
+    } catch (error) {
+      console.error("Error during Section 03 calculateReferenceModel:", error);
+    } finally {
+      // ✅ CRITICAL: Always restore original mode, even if errors occur
+      // This prevents mode contamination where subsequent user edits go to wrong model
+      ModeManager.currentMode = originalMode;
+    }
   }
 
+  /**
+   * Store Reference Model calculation results with ref_ prefix for downstream sections
+   *
+   * ✅ FIX (Oct 5, 2025): Only publish CALCULATED outputs, NOT input fields
+   * INPUT fields (d_19, h_19, h_20) are managed by:
+   * - User input → StateManager.setValue("ref_d_19", value, "user-modified")
+   * - Import → StateManager.setValue("ref_d_19", value, "imported")
+   * - ReferenceValues → Not applicable for S03 location fields
+   *
+   * Section calculations should ONLY publish calculated climate data and outputs!
+   */
   function storeReferenceResults() {
-    /* graph computes */
+    if (!window.TEUI?.StateManager) return;
+
+    // ✅ ONLY publish CALCULATED outputs from Reference model calculations
+    const referenceResults = {
+      // ❌ REMOVED INPUT FIELDS - they are NOT calculated by S03:
+      // d_19 (province), h_19 (city), h_20 (current/future weather toggle)
+      // These INPUT fields are set via user input or import, NOT calculated
+
+      // ✅ Climate data - CALCULATED from location lookup (KEEP)
+      d_20: ReferenceState.getValue("d_20"), // Reference HDD (CALCULATED) ✅
+      d_21: ReferenceState.getValue("d_21"), // Reference CDD (CALCULATED) ✅
+      j_19: ReferenceState.getValue("j_19"), // Reference climate zone (CALCULATED) ✅
+      d_23: ReferenceState.getValue("d_23"), // Reference coldest day (CALCULATED) ✅
+      d_24: ReferenceState.getValue("d_24"), // Reference hottest day (CALCULATED) ✅
+      l_22: ReferenceState.getValue("l_22"), // Elevation (CALCULATED) ✅
+
+      // ✅ Calculated setpoints and values (KEEP)
+      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint (CALCULATED) ✅
+      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint (CALCULATED) ✅
+      d_22: ReferenceState.getValue("d_22"), // Reference GF HDD (CALCULATED) ✅
+      h_22: ReferenceState.getValue("h_22"), // Reference GF CDD (CALCULATED) ✅
+      d_25: ReferenceState.getValue("d_25"), // Reference winter average temp (CALCULATED for condensation risk) ✅
+      e_25: ReferenceState.getValue("e_25"), // Reference winter average temp °F (CALCULATED) ✅
+    };
+
+    // Store with ref_ prefix for downstream sections
+    Object.entries(referenceResults).forEach(([fieldId, value]) => {
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          String(value),
+          "calculated"
+        );
+      }
+    });
+
+    // console.log("[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)");
   }
 
+  /**
+   * Store Target Model calculation results to StateManager for downstream sections
+   * ✅ FIX (Oct 5, 2025): Added missing Target results storage
+   * This publishes ONLY the calculated values that aren't already published in the initial climate data loop
+   */
   function storeTargetResults() {
-    /* graph computes */
+    if (!window.TEUI?.StateManager) return;
+
+    // ✅ ONLY publish values CALCULATED by the calculation functions (not from climate lookup)
+    // NOTE: d_20, d_21, j_19, d_23, d_24, l_22, d_25, e_25 are already published in the initial climate data loop
+    const targetResults = {
+      // ✅ Calculated setpoints and derived values (ONLY these need additional publishing)
+      h_23: TargetState.getValue("h_23"), // Target heating setpoint (CALCULATED from occupancy) ✅
+      h_24: TargetState.getValue("h_24"), // Target cooling setpoint (CALCULATED from occupancy) ✅
+      d_22: TargetState.getValue("d_22"), // Target GF HDD (CALCULATED from h_23) ✅
+      h_22: TargetState.getValue("h_22"), // Target GF CDD (CALCULATED from h_24) ✅
+      // d_25, e_25 removed - now published in climate data loop (getClimateDataForState)
+    };
+
+    // Store unprefixed for downstream sections (Target mode)
+    Object.entries(targetResults).forEach(([fieldId, value]) => {
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(fieldId, String(value), "calculated");
+      }
+    });
+
+    // console.log("[S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)");
   }
 
+  // --- New Calculation Functions ---
+
+  /**
+   * Calculate Heating Setpoint (h_23) based on Occupancy Type (d_12)
+   */
   function calculateHeatingSetpoint() {
-    /* graph computes */
+    const referenceStandard = getModeAwareGlobalValue("d_13"); // ✅ PHASE 2: Mode-aware external dependency
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    let heatingSetpoint;
+
+    // 🔍 DIAGNOSTIC: Log what we're reading from StateManager
+    // console.log(
+    //   `[S03 h_23 DEBUG] CALCULATING: d_13="${referenceStandard}", d_12="${occupancyType}"`
+    // );
+
+    // Check if the reference standard indicates a Passive House related standard
+    // Defensive: Check if referenceStandard exists and is a string before calling methods
+    if (
+      referenceStandard &&
+      typeof referenceStandard === "string" &&
+      referenceStandard.toUpperCase().includes("PH")
+    ) {
+      // Case-insensitive check for "PH"
+      heatingSetpoint = 18;
+      // console.log(`[S03 h_23 DEBUG] ✅ PH standard detected → h_23 = 18°C`);
+    } else {
+      // Original logic if not a PH standard: 22°C for Residential or Care occupancies, else 18°C
+      // Ensuring the occupancyType strings match those defined in Section02 d_12 options
+      if (
+        occupancyType === "C-Residential" ||
+        occupancyType === "B2-Care and Treatment" || // Exact match for B2
+        occupancyType === "B3-Detention Care & Treatment" || // Exact match for B3
+        occupancyType.includes("Care")
+      ) {
+        // Broader check for "Care" just in case of variations
+        heatingSetpoint = 22;
+        // console.log(
+        //   `[S03 h_23 DEBUG] ✅ Critical occupancy (non-PH) → h_23 = 22°C`
+        // );
+      } else {
+        heatingSetpoint = 18; // Default for other non-PH, non-Care/Residential occupancies
+        // console.log(
+        //   `[S03 h_23 DEBUG] ✅ Other occupancy (non-PH) → h_23 = 18°C`
+        // );
+      }
+    }
+
+    // console.log(`[S03 h_23 DEBUG] ⚡ SETTING h_23 = ${heatingSetpoint}`);
+    setFieldValue("h_23", heatingSetpoint); // Update state and DOM via S03 local helper
+    // console.log(`[S03 h_23 DEBUG] ✓ setFieldValue() completed`);
+    return heatingSetpoint; // Return value for potential chaining
   }
 
+  /**
+   * Calculate OBC Required Heating Setpoint (m_23) based on Occupancy Type (d_12)
+   * This is the building code baseline - identical to h_23 but WITHOUT PH override
+   * Uses same occupancy logic: 22°C for Residential/Care, 18°C for others
+   */
   function calculateOBCHeatingSetpoint() {
-    /* graph computes */
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    let obcHeatingSetpoint;
+
+    // OBC baseline logic (no PH override - that's only for h_23)
+    // 22°C for Residential or Care occupancies, else 18°C
+    if (
+      occupancyType === "C-Residential" ||
+      occupancyType === "B2-Care and Treatment" ||
+      occupancyType === "B3-Detention Care & Treatment" ||
+      occupancyType.includes("Care")
+    ) {
+      obcHeatingSetpoint = 22;
+    } else {
+      obcHeatingSetpoint = 18; // Default for other occupancies
+    }
+
+    setFieldValue("m_23", obcHeatingSetpoint); // Update state and DOM via S03 local helper
+    return obcHeatingSetpoint; // Return value for potential chaining
   }
 
+  /**
+   * Calculate Base Cooling Setpoint (h_24) based on l_24 override
+   * Excel Formula: H24=IF(L24>24, L24, 24)
+   * If user sets l_24 cooling override higher than 24, use that value, otherwise use 24
+   */
   function calculateCoolingSetpoint_h24() {
-    /* graph computes */
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+
+    // ✅ Read l_24 cooling override (mode-aware: reads Target l_24 or Reference l_24)
+    const override_l24 = getNumericValue("l_24") || 24;
+
+    // ✅ Apply Excel formula: IF(L24>24, L24, 24)
+    const coolingSetpoint = override_l24 > 24 ? override_l24 : 24;
+
+    // ✅ Update state and StateManager (mode-aware: sets h_24 or ref_h_24)
+    setFieldValue("h_24", coolingSetpoint);
+    return coolingSetpoint; // Return value for potential chaining
   }
 
+  /**
+   * Determine the effective cooling setpoint considering the override
+   */
   function determineEffectiveCoolingSetpoint() {
-    /* graph computes */
+    const baseSetpoint_h24 = getNumericValue("h_24") || 24; // Get from S03 internal state
+    const override_l24 = getNumericValue("l_24") || 24; // Get from S03 internal state
+
+    // Use override only if it's a valid number and > 20
+    if (!isNaN(override_l24) && override_l24 > 20) {
+      return override_l24;
+    } else {
+      return baseSetpoint_h24;
+    }
   }
 
+  /**
+   * Calculate NBC Cooling Upper Limit (m_24)
+   * Static value - NBC (National Building Code) acceptable upper limit for cooling setpoint
+   * Canada has adopted this standard, replacing previous ASHRAE 90.1 reference
+   */
   function calculateNBCCoolingLimit() {
-    /* graph computes */
+    const nbcUpperLimit = 26; // NBC standard upper limit in °C
+    setFieldValue("m_24", nbcUpperLimit);
+    return nbcUpperLimit;
   }
 
+  /**
+   * Calculate Heating Setpoint Compliance (n_23)
+   * Compares h_23 (actual heating setpoint) against m_23 (OBC requirement)
+   * Pass (✓) if h_23 >= m_23, Fail (✗) if h_23 < m_23
+   */
   function calculateHeatingCompliance() {
-    /* graph computes */
+    const actualSetpoint = getNumericValue("h_23");
+    const obcRequirement = getNumericValue("m_23");
+
+    // Pass if actual >= required, fail if actual < required
+    const isCompliant = actualSetpoint >= obcRequirement;
+
+    // Set the symbol as text (S08 pattern)
+    setFieldValue("n_23", isCompliant ? "✓" : "✗");
+
+    // Apply CSS class directly to DOM element (S08 pattern)
+    setElementClass("n_23", isCompliant ? "checkmark" : "warning");
+
+    return isCompliant;
   }
 
+  /**
+   * Calculate Cooling Setpoint Compliance (n_24)
+   * Compares h_24 (actual cooling setpoint) against m_24 (NBC upper limit)
+   * Pass (✓) if h_24 <= m_24, Fail (✗) if h_24 > m_24
+   */
   function calculateCoolingCompliance() {
-    /* graph computes */
+    const actualSetpoint = getNumericValue("h_24");
+    const nbcUpperLimit = getNumericValue("m_24");
+
+    // Pass if actual <= limit, fail if actual > limit
+    const isCompliant = actualSetpoint <= nbcUpperLimit;
+
+    // Set the symbol as text (S08 pattern)
+    setFieldValue("n_24", isCompliant ? "✓" : "✗");
+
+    // Apply CSS class directly to DOM element (S08 pattern)
+    setElementClass("n_24", isCompliant ? "checkmark" : "warning");
+
+    return isCompliant;
   }
 
+  /**
+   * Update fields dependent on the effective cooling setpoint (i_24)
+   */
   function updateCoolingDependents() {
-    /* graph computes */
+    const effectiveSetpointC = determineEffectiveCoolingSetpoint();
+
+    // Update i_24 (Fahrenheit conversion)
+    if (!isNaN(effectiveSetpointC)) {
+      const effectiveSetpointF = Math.round((effectiveSetpointC * 9) / 5 + 32);
+      setFieldValue("i_24", effectiveSetpointF);
+    }
+
+    // Update m_24 (NBC upper limit - static value)
+    calculateNBCCoolingLimit();
+
+    // Update n_24 (cooling compliance check)
+    calculateCoolingCompliance();
   }
 
+  /**
+   * Update the critical occupancy flag display based on current mode and occupancy
+   * ✅ FIXED: Now properly mode-aware and removes flag when not critical
+   */
   function updateCriticalOccupancyFlag() {
-    /* graph computes */
+    // ✅ FIXED: Use the same mode-aware pattern as S02 for perfect state isolation
+    const occupancyType =
+      ModeManager.currentMode === "reference"
+        ? window.TEUI.StateManager?.getValue("ref_d_12") || "" // ✅ Reference mode: read ref_d_12
+        : window.TEUI.StateManager?.getValue("d_12") || ""; // ✅ Target mode: read d_12
+
+    const sectionHeader = document.querySelector(
+      "#climateCalculations .section-header"
+    ); // Target the main header
+    if (!sectionHeader) {
+      console.warn("Section 3 header not found for critical flag.");
+      return false;
+    }
+
+    let flagSpan = sectionHeader.querySelector(
+      ".critical-occupancy-header-flag"
+    );
+    let isCritical = occupancyType.includes("Care");
+
+    // console.log(`[S03] Critical flag update: mode=${ModeManager.currentMode}, occupancy="${occupancyType}", critical=${isCritical}`);
+
+    if (isCritical) {
+      if (!flagSpan) {
+        // Create the span if it doesn't exist
+        flagSpan = document.createElement("span");
+        flagSpan.className = "critical-occupancy-header-flag";
+        flagSpan.style.cssText = `
+          color: #dc3545;
+          font-weight: 600;
+          margin-left: 15px;
+          font-size: 14px;
+          background-color: rgba(220, 53, 69, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        `;
+
+        // Insert immediately after the section title text
+        const sectionTitleText = sectionHeader.textContent.trim();
+        if (sectionTitleText.includes("SECTION 3. Climate Calculations")) {
+          // Find the text node or icon and insert after it
+          const iconSpan = sectionHeader.querySelector(".section-icon");
+          if (iconSpan && iconSpan.nextSibling) {
+            // Insert after icon and title text
+            iconSpan.parentNode.insertBefore(
+              flagSpan,
+              iconSpan.nextSibling.nextSibling || null
+            );
+          } else {
+            // Fallback: insert at beginning
+            sectionHeader.insertBefore(
+              flagSpan,
+              sectionHeader.firstChild.nextSibling
+            );
+          }
+        }
+      }
+      flagSpan.textContent = "Critical Occupancy";
+    } else {
+      // ✅ CRITICAL FIX: Remove the flag when not critical (was missing before!)
+      flagSpan?.remove();
+    }
+
+    // Store status on the header dataset for easier access by other functions
+    sectionHeader.dataset.isCritical = isCritical;
+
+    return isCritical; // Return the status for other functions
   }
+
+  // --- End New Calculation Functions ---
 
   /**
    * Creates and injects the Weather Data button into the section header.
@@ -1504,6 +2469,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         const selectedCity = this.value;
         console.log("Section03: City selected:", selectedCity);
         ModeManager.setValue("h_19", selectedCity, "user-modified");
+
+        // ✅ Clear CDD when location changes so new climate data can populate
+        // This prevents preserving previous city's climate value when new city has no data
+        ModeManager.getCurrentState().state.d_21 = undefined;
+
+        calculateAll(); // ✅ Let the engines handle climate data updates
       });
     }
 
@@ -1522,6 +2493,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         const selectedTimeframe = this.value;
         console.log("S03: Timeframe selected:", selectedTimeframe);
         ModeManager.setValue("h_20", selectedTimeframe, "user-modified");
+        calculateAll(); // ✅ Let the engines handle climate data updates
       });
     }
 
@@ -1544,7 +2516,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         // If "Static" is chosen, force the percentage to 0
         if (selectedCapacitance === "Static") {
           ModeManager.setValue("i_21", "0", "system");
+          ModeManager.refreshUI(); // Refresh UI to show the slider reset to 0
         }
+
+        calculateAll(); // CRITICAL: Recalculate GFCDD when capacitance changes
       });
     }
 
@@ -1589,8 +2564,70 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.warn("S03: FieldManager.initializeSliders not available");
     }
 
-    // Graph handles cross-section computation via wildcard listener.
-    // No per-section StateManager listeners needed.
+    // ✅ PHASE 3: Initial climate data handled by calculateAll() in onSectionRendered
+    // No need for explicit updateWeatherData() call here
+
+    // --- StateManager Listeners ---
+    if (window.TEUI && window.TEUI.StateManager) {
+      // ✅ ENHANCED: Listener for d_12 (Target Occupancy) changes
+      window.TEUI.StateManager.addListener(
+        "d_12",
+        function (newOccupancyValue) {
+          // console.log(`[S03] 🎯 Target occupancy changed: ${newOccupancyValue}`);
+
+          // ✅ NEW APPROACH: Trigger full recalculation of BOTH engines
+          // This ensures both Target and Reference models get updated with correct temperatures
+          // based on their respective occupancy values
+          calculateAll();
+
+          // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
+          updateCriticalOccupancyFlag();
+        }
+      );
+
+      // ✅ NEW: Listener for ref_d_12 (Reference Occupancy) changes
+      window.TEUI.StateManager.addListener(
+        "ref_d_12",
+        function (newRefOccupancyValue) {
+          // console.log(`[S03] 🔵 Reference occupancy changed: ${newRefOccupancyValue}`);
+
+          // ✅ NEW APPROACH: Trigger full recalculation of BOTH engines
+          // This ensures both Target and Reference models get updated with correct temperatures
+          // based on their respective occupancy values
+          calculateAll();
+
+          // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
+          updateCriticalOccupancyFlag();
+        }
+      );
+
+      // ✅ h_23 BUG FIX: Restore d_13 listeners for h_23 temperature calculation
+      // h_23 (Tset Heating) depends on BOTH d_12 (occupancy) AND d_13 (standard)
+      // - PH standards: h_23 = 18°C (regardless of occupancy)
+      // - Non-PH + Critical Occupancy: h_23 = 22°C
+      // - Non-PH + Other Occupancy: h_23 = 18°C
+      // Without these listeners, h_23 doesn't update when switching between PH and non-PH standards
+      window.TEUI.StateManager.addListener("d_13", function () {
+        calculateAll(); // Recalculates h_23 based on current d_13 and d_12 values
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      window.TEUI.StateManager.addListener("ref_d_13", function () {
+        calculateAll(); // Recalculates ref_h_23 based on current ref_d_13 and ref_d_12 values
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      // ✅ REMOVED: Self-listeners cause recursion anti-pattern per 4012-CHEATSHEET.md
+      // ✅ ANTI-PATTERN 7 FIX: S03 should NOT listen to its own input fields
+      // - Slider changes: FieldManager now calls calculateAll() after ModeManager.setValue
+      // - Dropdown changes: Direct event handlers call calculateAll() after ModeManager.setValue
+      // - Editable fields: handleEditableBlur calls calculateAll() after ModeManager.setValue
+      //
+      // Removed redundant self-listeners for i_21, ref_i_21, and h_21 that caused
+      // double calculations and violated the clean single-pass calculation flow.
+    } else {
+      console.warn("Section 03: StateManager not found, listeners not added.");
+    }
   }
 
   /**
@@ -1610,9 +2647,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
 
-      // MODE-AWARE: Update BOTH internal state (TargetState/ReferenceState) AND StateManager
+      // ✅ MODE-AWARE: Update BOTH internal state (TargetState/ReferenceState) AND StateManager
       // Use ModeManager.setValue() which handles both automatically
       ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
+
+      calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
       const previousValue = ModeManager.getValue(fieldId) || "0"; // Read from internal state
@@ -1709,7 +2748,41 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Set up event handlers
       initializeEventHandlers();
 
-      // Apply validation tooltips to fields
+      // Initial UI refresh from current state
+      ModeManager.refreshUI();
+
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      // Without this, CSV export shows empty Reference values (missing S03 fields)
+      // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+      // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
+      if (window.TEUI?.StateManager) {
+        [
+          "d_19",
+          "h_19",
+          "h_20",
+          "h_21",
+          "i_21",
+          "m_19",
+          "l_20",
+          "l_21",
+          "l_24",
+        ].forEach(id => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (
+            !window.TEUI.StateManager.getValue(refId) &&
+            val != null &&
+            val !== ""
+          ) {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
+
+      // 5. Perform initial calculations for this section
+      calculateAll();
+
+      // 6. Apply validation tooltips to fields
       if (
         window.TEUI.TooltipManager &&
         window.TEUI.TooltipManager.initialized
@@ -1721,44 +2794,6 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       console.log("S03: Self-Contained State Module initialization complete");
     });
-  }
-
-  /**
-   * Sync province/city dropdowns after CSV/Excel import.
-   * Import sets d_19/h_19 in StateManager but doesn't repopulate dropdown options.
-   * Called from FileHandler.syncPostImportUI() after import.
-   */
-  function syncLocationDropdowns() {
-    const SM = window.TEUI?.StateManager;
-    if (!SM) return;
-
-    const province = SM.getValue("d_19");
-    const city = SM.getValue("h_19");
-    if (!province) return;
-
-    // Sync to DualState internal state
-    DualState.getCurrentState().state.d_19 = province;
-    if (city) DualState.getCurrentState().state.h_19 = city;
-
-    // Set province dropdown value
-    const provinceDropdown = getElement(['[data-dropdown-id="dd_d_19"]']);
-    if (provinceDropdown) {
-      provinceDropdown.value = province;
-    }
-
-    // Repopulate city dropdown for the imported province
-    updateCityDropdown(province);
-
-    // Override auto-selected city with imported city value
-    if (city) {
-      const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
-      if (cityDropdown) {
-        cityDropdown.value = city;
-      }
-      DualState.getCurrentState().state.h_19 = city;
-    }
-
-    console.log(`S03: Location dropdowns synced - ${province}/${city}`);
   }
 
   //==========================================================================
@@ -1778,7 +2813,6 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Utility functions
     showWeatherData: showWeatherData,
     calculateAll: calculateAll,
-    syncLocationDropdowns: syncLocationDropdowns,
 
     // DualState functionality
     DualState: DualState,

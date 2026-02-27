@@ -29,6 +29,7 @@
   let state = null;
   let engine = null;
   let adapter = null;
+  let domBridge = null;
 
   // Configuration
   const config = {
@@ -104,10 +105,14 @@
         return false;
       }
 
-      // Skip initial sync + compute — the first calculateAll() (after CSV
-      // import or page-level recalc) will populate the graph from scratch.
-      // Pre-loading defaults here just creates stale state that survives
-      // into sample project imports.
+      // Step 4: Sync initial values from StateManager
+      if (config.autoSync) {
+        syncFromStateManager();
+      }
+
+      // Step 5: Run initial computation
+      const result = engine.computeAllForModel(state.getActiveModelId());
+      log(`Initial computation complete: ${result.computedNodes} nodes in ${result.duration.toFixed(2)}ms`);
 
       initialized = true;
       log("Initialization complete");
@@ -117,7 +122,8 @@
         graph,
         state,
         engine,
-        getAdapter: () => adapter
+        getAdapter: () => adapter,
+        getDOMBridge: () => domBridge
       };
 
       return true;
@@ -179,12 +185,6 @@
     if (nodes.Energy) {
       nodes.Energy.register(g);
       log("Registered EnergyNodes");
-    }
-
-    // Air quality nodes (S08)
-    if (nodes.AirQuality) {
-      nodes.AirQuality.register(g);
-      log("Registered AirQualityNodes");
     }
 
     // Emissions and carbon nodes
@@ -249,12 +249,6 @@
     if (nodes.Compliance) {
       nodes.Compliance.register(g);
       log("Registered ComplianceNodes");
-    }
-
-    // Section-level compliance display nodes (S07, S09, S12, S15)
-    if (nodes.SectionCompliance) {
-      nodes.SectionCompliance.register(g);
-      log("Registered SectionComplianceNodes");
     }
 
     // F280 peak load & equipment sizing compliance (builds on Section15 peak loads)
@@ -326,12 +320,6 @@
     const targetId = state.getActiveModelId();
     let syncCount = 0;
 
-    // Clear stale state before re-syncing. Without this, values from a
-    // previous CSV load remain in the graph state when the new CSV doesn't
-    // set them, causing downstream computations to use stale inputs.
-    state.clearSharedState();
-    state.clearModelState(targetId);
-
     // Get all registered input IDs and use their legacyId property
     const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
 
@@ -352,7 +340,6 @@
     // Also sync Reference model
     const refModelId = getRefModelId();
     if (refModelId) {
-      state.clearModelState(refModelId);
       let refSyncCount = 0;
       for (const semanticPath of inputIds) {
         const inputNode = graph.getInput(semanticPath);
@@ -390,8 +377,10 @@
       return;
     }
 
-    // NOTE: Caller (Calculator.calculateAll) is responsible for muting SM listeners.
-    // Do NOT mute/unmute here — nested boolean mute breaks the caller's mute scope.
+    // Mute listeners during sync to prevent cascade
+    if (StateManager.muteListeners) {
+      StateManager.muteListeners();
+    }
 
     const targetId = state.getActiveModelId();
     let syncCount = 0;
@@ -407,16 +396,34 @@
         const value = state.getValue(semanticPath);
         if (value !== undefined && value !== null) {
           // Don't trigger recalculation - just set the value
-          StateManager.setValue(legacyId, value, "calculated");
+          StateManager.setValue(legacyId, value, "computed");
           syncCount++;
         }
       }
     }
 
-    // Inputs are NOT synced here — they are already in StateManager from the
-    // user's setValue call (or file load). Only computed outputs need syncing.
+    // Also sync input values that may have been normalized
+    const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
+
+    for (const semanticPath of inputIds) {
+      const inputNode = graph.getInput(semanticPath);
+      const legacyId = inputNode?.legacyId;
+
+      if (legacyId) {
+        const value = state.getValue(semanticPath);
+        if (value !== undefined && value !== null) {
+          StateManager.setValue(legacyId, value, "computed");
+          syncCount++;
+        }
+      }
+    }
 
     log(`Synced ${syncCount} computed values to StateManager`);
+
+    // Unmute listeners after sync
+    if (StateManager.unmuteListeners) {
+      StateManager.unmuteListeners();
+    }
   }
 
   /**
@@ -473,6 +480,81 @@
       adapter.uninstall();
       adapter = null;
       log("LegacyAdapter uninstalled - StateManager restored");
+    }
+  }
+
+  // ============================================================================
+  // DOM BRIDGE
+  // ============================================================================
+
+  /**
+   * Enable DOMBridge for automatic DOM synchronization
+   * @param {string} [containerSelector] - CSS selector for container (optional)
+   */
+  function enableDOMBridge(containerSelector) {
+    if (!initialized) {
+      error("Must initialize before enabling DOMBridge");
+      return false;
+    }
+
+    if (domBridge) {
+      warn("DOMBridge already enabled");
+      return true;
+    }
+
+    const DOMBridge = window.TEUI.DOMBridge;
+    if (!DOMBridge) {
+      error("DOMBridge module not loaded");
+      return false;
+    }
+
+    try {
+      domBridge = DOMBridge.create({ state, engine });
+
+      // Bind ALL elements with data-field-id attribute (inputs, outputs, displays)
+      // This includes Key Values table cells, computed result displays, etc.
+      const allFieldElements = document.querySelectorAll("[data-field-id]");
+      let boundCount = 0;
+
+      allFieldElements.forEach(el => {
+        const fieldId = el.dataset.fieldId;
+        if (fieldId) {
+          domBridge.bind(el, fieldId);
+          boundCount++;
+        }
+      });
+
+      // Also bind elements in specific containers if provided
+      if (containerSelector) {
+        const containers = document.querySelectorAll(containerSelector);
+        containers.forEach(container => {
+          const inputs = container.querySelectorAll("input[id], select[id]");
+          inputs.forEach(el => {
+            if (el.id && !el.dataset.fieldId) {
+              domBridge.bind(el, el.id);
+              boundCount++;
+            }
+          });
+        });
+      }
+
+      domBridge.connect();
+      log(`DOMBridge enabled - bound ${boundCount} elements`);
+      return true;
+    } catch (e) {
+      error("Failed to enable DOMBridge:", e);
+      return false;
+    }
+  }
+
+  /**
+   * Disable DOMBridge
+   */
+  function disableDOMBridge() {
+    if (domBridge) {
+      domBridge.destroy();
+      domBridge = null;
+      log("DOMBridge disabled");
     }
   }
 
@@ -611,35 +693,6 @@
   }
 
   /**
-   * Reset graph state for both Target and Reference models.
-   * Call before CSV import so stale inputs don't survive.
-   */
-  function resetGraphState() {
-    if (!initialized) return;
-
-    const targetId = state.getActiveModelId();
-    const refModelId = getRefModelId();
-
-    state.clearSharedState();
-    if (targetId) state.clearModelState(targetId);
-    if (refModelId) state.clearModelState(refModelId);
-
-    // Seed default values from graph input definitions so fields
-    // not overwritten by CSV import still have sensible values.
-    const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
-    let seeded = 0;
-    for (const sp of inputIds) {
-      const input = graph.getInput(sp);
-      if (input?.defaultValue !== undefined && input.defaultValue !== "") {
-        if (targetId) state.setValueForModel(targetId, sp, input.defaultValue);
-        seeded++;
-      }
-    }
-
-    log(`Graph state reset: cleared + seeded ${seeded} defaults`);
-  }
-
-  /**
    * Debug output
    */
   function debug() {
@@ -654,6 +707,7 @@
     console.log("State:", state.getStats());
     console.log("Engine:", engine.getStats());
     console.log("Adapter:", adapter ? "installed" : "not installed");
+    console.log("DOMBridge:", domBridge ? "enabled" : "not enabled");
     console.groupEnd();
   }
 
@@ -820,12 +874,6 @@
     "building.conditionedFloorArea": "reference.building.conditionedFloorArea",
     "building.serviceLife":          "reference.building.serviceLife",
     "building.typologyEmbodiedCarbon": "reference.emissions.embodied",
-
-    // S05 compliance ratio reference values
-    "emissions.operational.mt":      "reference.emissions.operational.mt",
-    "emissions.ghgi.annual":         "reference.emissions.ghgi.annual",
-    "emissions.embodied.total":      "reference.emissions.embodied.total",
-    "building.userModelledEmbodiedCarbon": "reference.emissions.userModelled",
   };
 
   /**
@@ -839,11 +887,6 @@
     // Merge ComplianceNodes mapping if available
     if (nodes.Compliance?.REF_OUTPUT_TO_TARGET_INPUT) {
       Object.assign(merged, nodes.Compliance.REF_OUTPUT_TO_TARGET_INPUT);
-    }
-
-    // Merge SectionComplianceNodes mapping (S07, S09, S12, S15)
-    if (nodes.SectionCompliance?.REF_OUTPUT_TO_TARGET_INPUT) {
-      Object.assign(merged, nodes.SectionCompliance.REF_OUTPUT_TO_TARGET_INPUT);
     }
 
     return merged;
@@ -986,11 +1029,16 @@
       return 0;
     }
 
-    // NOTE: Caller (Calculator.calculateAll) is responsible for muting SM listeners.
-    // Do NOT mute/unmute here — nested boolean mute breaks the caller's mute scope.
+    // Mute listeners during sync to prevent cascade
+    if (StateManager.muteListeners) {
+      StateManager.muteListeners();
+    }
 
     const refModelId = getRefModelId();
     if (!refModelId) {
+      if (isCutover && StateManager.unmuteListeners) {
+        StateManager.unmuteListeners();
+      }
       return 0;
     }
 
@@ -1008,16 +1056,14 @@
         if (value !== undefined && value !== null) {
           // Don't add ref_ prefix if legacyId already starts with ref_
           const refLegacyId = legacyId.startsWith("ref_") ? legacyId : "ref_" + legacyId;
-          StateManager.setValue(refLegacyId, value, "calculated");
+          StateManager.setValue(refLegacyId, value, "computed");
           syncCount++;
         }
       }
     }
 
     // Sync input values (skip reference.* bridge inputs — those are Target model
-    // concepts whose computed equivalents were already synced in the computed nodes loop).
-    // Unlike syncToStateManager(), ref_ inputs DO need syncing because they may not
-    // already be in StateManager (reference model inputs come from CSV, not user setValue).
+    // concepts whose computed equivalents were already synced in the computed nodes loop)
     const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
 
     for (const semanticPath of inputIds) {
@@ -1033,7 +1079,7 @@
         if (value !== undefined && value !== null) {
           // Don't add ref_ prefix if legacyId already starts with ref_
           const refLegacyId = legacyId.startsWith("ref_") ? legacyId : "ref_" + legacyId;
-          StateManager.setValue(refLegacyId, value, "calculated");
+          StateManager.setValue(refLegacyId, value, "computed");
           syncCount++;
         }
       }
@@ -1041,128 +1087,12 @@
 
     log(`Synced ${syncCount} Reference values to StateManager`);
 
+    // Unmute listeners after sync
+    if (StateManager.unmuteListeners) {
+      StateManager.unmuteListeners();
+    }
+
     return syncCount;
-  }
-
-  // ============================================================================
-  // DIAGNOSTICS
-  // ============================================================================
-
-  /**
-   * Validate that SM input values match graph state values.
-   * Call from browser console: TEUI.ComputationIntegration.validateGraphInputs()
-   *
-   * Reports mismatches where SM has a value but graph state differs.
-   * This catches issues where the LegacyAdapter fails to dual-write,
-   * or where values are written to the wrong model.
-   */
-  function validateGraphInputs() {
-    if (!initialized) { error("Not initialized"); return; }
-    const SM = window.TEUI.StateManager;
-    if (!SM) { error("No StateManager"); return; }
-
-    const targetId = state.getActiveModelId();
-    const refModelId = getRefModelId();
-    const inputIds = graph.getAllInputIds ? graph.getAllInputIds() : [];
-    const mismatches = [];
-
-    for (const semanticPath of inputIds) {
-      const inputNode = graph.getInput(semanticPath);
-      const legacyId = inputNode?.legacyId;
-      if (!legacyId) continue;
-
-      // Target model
-      const smVal = SM.getValue(legacyId);
-      const graphVal = state.getValueForModel(targetId, semanticPath);
-      if (smVal !== undefined && smVal !== null && smVal !== "" && String(smVal) !== String(graphVal)) {
-        mismatches.push({ legacyId, semanticPath, smVal, graphVal, model: "target" });
-      }
-
-      // Reference model — skip reference.* paths since those are target-model
-      // compliance inputs, not reference-model values. The reference model stores
-      // values under base paths (e.g. transmissionLoss.roof.rsi, not reference.transmissionLoss.roof.rsi).
-      if (refModelId && !semanticPath.startsWith("reference.")) {
-        const refLegacyId = legacyId.startsWith("ref_") ? legacyId : "ref_" + legacyId;
-        const refSmVal = SM.getValue(refLegacyId);
-        const refGraphVal = state.getValueForModel(refModelId, semanticPath);
-        if (refSmVal !== undefined && refSmVal !== null && refSmVal !== "" && String(refSmVal) !== String(refGraphVal)) {
-          mismatches.push({ legacyId: refLegacyId, semanticPath, smVal: refSmVal, graphVal: refGraphVal, model: "reference" });
-        }
-      }
-    }
-
-    if (mismatches.length === 0) {
-      console.log("%c[Validate] All SM inputs match graph state", "color: green; font-weight: bold");
-    } else {
-      console.warn(`[Validate] ${mismatches.length} SM↔Graph mismatches:`);
-      console.table(mismatches);
-    }
-    return mismatches;
-  }
-
-  /**
-   * Trace the full h_10 (Target TEUI) dependency chain.
-   * Call from browser console: TEUI.ComputationIntegration.traceH10()
-   *
-   * Shows the current value of every node in the chain from h_15 → h_10,
-   * reading from both graph state and SM for comparison.
-   */
-  function traceH10() {
-    if (!initialized) { error("Not initialized"); return; }
-    const SM = window.TEUI.StateManager;
-    const targetId = state.getActiveModelId();
-
-    // Key fields in the h_10 dependency chain
-    const chain = [
-      // Inputs
-      { id: "building.conditionedFloorArea", legacy: "h_15", type: "INPUT" },
-      { id: "internal.plugLoadDensity", legacy: "d_65", type: "COMPUTED" },
-      { id: "internal.lightingDensity", legacy: "d_66", type: "INPUT" },
-      { id: "internal.equipmentDensity", legacy: "d_67", type: "COMPUTED" },
-      { id: "mechanical.heating.systemType", legacy: "d_113", type: "INPUT" },
-      // Computed: internal gains
-      { id: "internal.plugLoads.annual", legacy: "h_65", type: "COMPUTED" },
-      { id: "internal.lighting.annual", legacy: "h_66", type: "COMPUTED" },
-      { id: "internal.equipment.annual", legacy: "h_67", type: "COMPUTED" },
-      { id: "energy.plugLoads.subtotal", legacy: "h_70", type: "COMPUTED" },
-      // Computed: energy chain
-      { id: "energy.total.targeted", legacy: "d_135", type: "COMPUTED" },
-      { id: "energy.total.all", legacy: "d_136", type: "COMPUTED" },
-      { id: "energy.teui", legacy: "h_136", type: "COMPUTED" },
-      // Computed: emissions chain
-      { id: "energy.target.electricity", legacy: "j_27", type: "COMPUTED" },
-      { id: "energy.target.total", legacy: "j_32", type: "COMPUTED" },
-      // Final: key value
-      { id: "keyValues.target.teui", legacy: "h_10", type: "COMPUTED" },
-      { id: "keyValues.reference.teui", legacy: "e_10", type: "COMPUTED" },
-    ];
-
-    const rows = chain.map(item => {
-      const graphVal = state.getValueForModel(targetId, item.id);
-      const smVal = SM?.getValue(item.legacy);
-      const match = String(graphVal) === String(smVal) ? "✓" : "✗";
-      return {
-        field: item.legacy,
-        semantic: item.id,
-        type: item.type,
-        graphValue: graphVal,
-        smValue: smVal,
-        match
-      };
-    });
-
-    console.log("%c[TraceH10] h_10 dependency chain:", "color: #0af; font-weight: bold");
-    console.table(rows);
-
-    // Also compute h_10 manually for verification
-    const j32 = parseFloat(state.getValueForModel(targetId, "energy.target.total")) || 0;
-    const h15raw = state.getValueForModel(targetId, "building.conditionedFloorArea");
-    const h15 = parseFloat(String(h15raw).replace(/,/g, "")) || 1;
-    const expected = h15 > 0 ? Math.round((j32 / h15) * 10) / 10 : 0;
-    const actual = state.getValueForModel(targetId, "keyValues.target.teui");
-    console.log(`[TraceH10] Manual: ${j32} / ${h15} = ${expected}, graph says: ${actual}`);
-
-    return rows;
   }
 
   // ============================================================================
@@ -1182,18 +1112,20 @@
     enableAdapter,
     disableAdapter,
 
+    // DOM Bridge control
+    enableDOMBridge,
+    disableDOMBridge,
+
     // Parallel mode
     onLegacyValueChange,
 
-    // State management
+    // Sync from StateManager (call after CSV import, file load, etc.)
     syncFromStateManager,
-    resetGraphState,
 
     // Sync TO StateManager (call after computeAll when bypassing legacy)
     syncToStateManager,
 
     // Reference model support
-    getRefModelId,
     populateReferenceModel,
     syncReferenceToStateManager,
 
@@ -1211,9 +1143,7 @@
 
     // Debug
     getStats,
-    debug,
-    validateGraphInputs,
-    traceH10
+    debug
   };
 
   log("Module loaded");

@@ -494,47 +494,43 @@ TEUI.Calculator = (function () {
     }
 
     const CI = window.TEUI.ComputationIntegration;
-    const SM = window.TEUI.StateManager;
 
-    // Mute SM listeners for the entire pipeline to prevent legacy section
-    // listeners from firing during sync and corrupting state.
-    if (SM?.muteListeners) SM.muteListeners();
+    // Step 1: Sync Target inputs from StateManager
+    CI.syncFromStateManager();
 
-    try {
-      // Step 1: Populate Reference model from ReferenceValues.js
-      const refPopResult = CI.populateReferenceModel();
-      console.log(`[Calculator] 📋 Reference model: ${refPopResult.gFieldsCopied} G-fields, ${refPopResult.cFieldsLoaded} C-fields from standard`);
+    // Step 2: Populate Reference model from ReferenceValues.js
+    const refPopResult = CI.populateReferenceModel();
+    console.log(`[Calculator] 📋 Reference model: ${refPopResult.gFieldsCopied} G-fields, ${refPopResult.cFieldsLoaded} C-fields from standard`);
 
-      // Step 2: Compute both Target and Reference models
-      const result = CI.computeAllWithReference();
+    // Step 3: Compute both Target and Reference models
+    const result = CI.computeAllWithReference();
 
-      // End performance timing (graph compute only, excludes sync/stamp/animation)
-      if (window.TEUI?.Clock?.markCalculationEnd) {
-        window.TEUI.Clock.markCalculationEnd();
+    // Step 4: Sync Target computed values to StateManager
+    CI.syncToStateManager();
+
+    // Step 5: Sync Reference computed values to StateManager (ref_* prefix)
+    CI.syncReferenceToStateManager();
+
+    // Step 6: Unmute listeners
+    if (window.TEUI.StateManager?.unmuteListeners) {
+      window.TEUI.StateManager.unmuteListeners();
+    }
+
+    // Step 7: Update all section displays (since listeners were muted during sync)
+    Object.keys(window.TEUI.SectionModules || {}).forEach(sectionKey => {
+      const section = window.TEUI.SectionModules[sectionKey];
+      if (section?.ModeManager?.updateCalculatedDisplayValues) {
+        section.ModeManager.updateCalculatedDisplayValues();
       }
+    });
 
-      // Step 3: Sync Target computed values to StateManager
-      CI.syncToStateManager();
+    if (result) {
+      console.log(`[Calculator] ✅ ComputationGraph complete: ${result.totalComputed} nodes in ${result.totalDuration?.toFixed(2)}ms`);
+    }
 
-      // Step 4: Sync Reference computed values to StateManager (ref_* prefix)
-      CI.syncReferenceToStateManager();
-
-      // Step 5: Stamp all graph-computed values to DOM
-      if (window.TEUI.DOMBridge?.stampAll) {
-        window.TEUI.DOMBridge.stampAll();
-      }
-
-      // Step 6: Section01 supplementary display (explanation text, gauges, mode indicators)
-      const sect01 = window.TEUI.SectionModules?.sect01;
-      if (sect01?.postStamp) {
-        sect01.postStamp();
-      }
-
-      if (result) {
-        console.log(`[Calculator] ✅ ComputationGraph complete: ${result.totalComputed} nodes in ${result.totalDuration?.toFixed(2)}ms`);
-      }
-    } finally {
-      if (SM?.unmuteListeners) SM.unmuteListeners();
+    // End performance timing
+    if (window.TEUI?.Clock?.markCalculationEnd) {
+      window.TEUI.Clock.markCalculationEnd();
     }
   }
 
@@ -984,8 +980,29 @@ TEUI.Calculator = (function () {
 // Initialize when the document is ready
 document.addEventListener("DOMContentLoaded", function () {
   TEUI.Calculator.initialize();
-  // Wildcard SM listener for partial graph recompute is registered in init.js
-  // after ComputationIntegration initializes (it needs CI + graph to be ready).
+
+  // Set up recalculation on state changes
+  if (window.TEUI.StateManager) {
+    // Listen for value changes that should trigger recalculation
+    const stateManager = window.TEUI.StateManager;
+
+    // Restore wildcard listener - it is part of the original architecture.
+    // This listener is crucial for dynamic updates based on any field change,
+    // triggering recalculation of dirty fields to maintain data consistency.
+    // It was temporarily commented out during debugging of d_97 propagation (Aug 2024).
+    stateManager.addListener("*", function (newValue, oldValue, fieldId) {
+      // Skip calculated values to avoid circular recalculation if setValue with 'calculated' already handles deps
+      // However, if a calculated value IS a direct precedent for another, this might still be needed.
+      // The primary guard against infinite loops should be StateManager not auto-triggering from 'calculated' state for registerDependency.
+      if (fieldId.startsWith("cf_") || fieldId.startsWith("dv_")) {
+        return;
+      }
+
+      TEUI.Calculator.recalculateDirtyFields();
+    });
+  }
+
+  // initializeWeatherDataHandlers(); // REMOVED: Called from teui-rendering-complete listener instead
 });
 
 // Move function outside the DOMContentLoaded event handler for proper scope access

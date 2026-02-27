@@ -1935,6 +1935,14 @@ window.TEUI.SectionModules.sect21 = (function () {
     calculateReferenceModel();
     calculateTargetModel();
 
+    // Compute: values are already in the graph state from calculateTargetModel(),
+    // so we just run the engine and sync results back to StateManager for display
+    var ci = window.TEUI?.ComputationIntegration;
+    if (ci?.isInitialized?.()) {
+      ci.computeAll();
+      ci.syncToStateManager();
+    }
+
     // Refresh display with newly computed values
     ModeManager.updateCalculatedDisplayValues();
   }
