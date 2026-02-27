@@ -104,11 +104,6 @@
     n_85: "raw", n_86: "raw", n_87: "raw", n_88: "raw",
     n_89: "raw", n_90: "raw", n_91: "raw", n_92: "raw",
     n_93: "raw", n_94: "raw", n_95: "raw", n_97: "raw",
-    // S11 Envelope: surface temperatures with condensation risk emoji
-    o_85: "condensation", o_86: "condensation", o_87: "condensation",
-    o_88: "condensation", o_89: "condensation", o_90: "condensation",
-    o_91: "condensation", o_92: "condensation", o_93: "condensation",
-    o_94: "condensation", o_95: "condensation",
 
     // S08 Humidity guidance
     k_59: "raw",
@@ -157,12 +152,6 @@
 
   // Tier field → value field mapping (set data-tier attribute)
   const TIER_MAP = { e_10: "f_10", h_10: "i_10" };
-
-  // S11 surface temperature → condensation risk companion node (cr_ fields)
-  const CONDENSATION_FIELDS = [
-    "o_85", "o_86", "o_87", "o_88", "o_89",
-    "o_90", "o_91", "o_92", "o_93", "o_94", "o_95"
-  ];
 
   // ==========================================================================
   // STAMP ALL
@@ -226,9 +215,6 @@
 
       const formatType = FORMAT[legacyId] || "number-2dp-comma";
 
-      // Condensation fields handled by stampCondensationIndicators
-      if (formatType === "condensation") continue;
-
       if (formatType === "raw") {
         el.textContent = String(value);
         stamped++;
@@ -253,9 +239,6 @@
 
     // Stamp Section01 data attributes (tier badges, status indicators)
     stampSection01Attributes(state, targetModelId, legacyToSemantic, parse);
-
-    // Stamp S11 condensation risk indicators (🌵/💧 + surface temp)
-    stampCondensationIndicators(state, refModelId || targetModelId, legacyToSemantic, parse, fmt);
 
     console.log(`[DOMBridge] Stamped ${stamped} values`);
   }
@@ -286,39 +269,6 @@
         const n = parse(text, 0);
         el.dataset.status = n <= 100 ? "pass" : "fail";
       }
-    }
-  }
-
-  /**
-   * Stamp S11 condensation risk indicators.
-   * Graph computes cr_85-cr_95 ("risk"/"safe"/""); bridge renders 💧/🌵 + temp.
-   */
-  function stampCondensationIndicators(state, modelId, lookup, parse, fmt) {
-    for (const oField of CONDENSATION_FIELDS) {
-      const el = document.querySelector(`[data-field-id="${oField}"]`);
-      if (!el) continue;
-
-      const tempPath = lookup.get(oField);
-      if (!tempPath) continue;
-      const tempValue = state.getValueForModel(modelId, tempPath);
-
-      // No assembly (area = 0) → empty cell
-      if (tempValue === "" || tempValue === undefined || tempValue === null) {
-        el.textContent = "";
-        continue;
-      }
-
-      const temp = parse(tempValue, NaN);
-      if (isNaN(temp)) { el.textContent = ""; continue; }
-
-      // Read companion condensation risk node (cr_ field)
-      const crField = "cr_" + oField.slice(2); // o_85 → cr_85
-      const riskPath = lookup.get(crField);
-      const risk = riskPath ? state.getValueForModel(modelId, riskPath) : "";
-
-      const emoji = risk === "risk" ? "\uD83D\uDCA7" : risk === "safe" ? "\uD83C\uDF35" : "";
-      const formatted = fmt(temp, "number-2dp-comma");
-      el.textContent = emoji ? emoji + " " + formatted : formatted;
     }
   }
 

@@ -2041,7 +2041,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     console.log("[S11] ✅ S10 area listeners registered for both modes");
   }
 
-  // Legacy helpers removed — graph computes surface temperatures + condensation risk (cr_85-cr_95)
+  // Condensation risk helpers removed — graph computes surface temperatures
   // calculateComponentRow, calculateThermalBridgePenalty removed — graph computes
   // getFieldFormat, updateReferenceIndicators removed — graph handles indicators
   // calculateReferenceModel, calculateTargetModel removed — graph computes

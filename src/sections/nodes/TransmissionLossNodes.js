@@ -782,33 +782,6 @@
       });
     });
 
-    // ========================================================================
-    // CONDENSATION RISK INDICATORS (rows 85-95)
-    // Passivhaus threshold: risk when T_surface < T_interior - 4.2°C
-    // Returns "risk" or "safe"; DOMBridge renders 💧 or 🌵
-    // ========================================================================
-    const RISK_THRESHOLD = 4.2;
-
-    ALL_COMPONENTS.forEach(({ row, id, label }) => {
-      graph.registerNode({
-        id: `transmissionLoss.${id}.condensationRisk`,
-        legacyId: `cr_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.surfaceTemp`,
-          "climate.heating.setpoint"
-        ],
-        label: `${label} Condensation Risk`,
-        compute: (inputs) => {
-          const surfaceTemp = inputs[`transmissionLoss.${id}.surfaceTemp`];
-          if (surfaceTemp === "" || surfaceTemp === null || surfaceTemp === undefined) return "";
-          const tInterior = parseNum(inputs["climate.heating.setpoint"], 21);
-          return parseNum(surfaceTemp) < (tInterior - RISK_THRESHOLD) ? "risk" : "safe";
-        }
-      });
-    });
-
     console.log("[TransmissionLossNodes] Registered", inputs.length, "inputs");
   }
 
