@@ -231,14 +231,6 @@
 
       if (formatType === "raw") {
         el.textContent = String(value);
-        // Apply checkmark/warning classes for compliance status indicators
-        if (value === "✓") {
-          el.classList.remove("warning");
-          el.classList.add("checkmark");
-        } else if (value === "✗") {
-          el.classList.remove("checkmark");
-          el.classList.add("warning");
-        }
         stamped++;
         continue;
       }
