@@ -126,6 +126,31 @@ def mean(xs):
 
 def station_monthly(path):
     h, rows = read_epw(path)
+    climate_id = os.path.basename(path).split("_")[-2]
+    return {"id": climate_id, "file": os.path.basename(path), **h, **summarise(h, [rows])}
+
+
+def summarise(h, years):
+    """`years`: one or more 8760-row hourly years at the same place. Monthly
+    values are each year's, averaged over the years; the design percentiles
+    pool every year's hours (as a long-record design value does)."""
+    per_year = [one_year(h, rows) for rows in years]
+    months = {k: [mean([y[k][m] for y in per_year]) for m in range(12)] for k in per_year[0]}
+    jan = [r["t"] for rows in years for r in rows if r["month"] == 1]
+    jul = [r["t"] for rows in years for r in rows if r["month"] == 7]
+    year = {
+        "hdd18": sum(months["hdd18"]),
+        "jan_1": percentile_low(jan, 0.01),
+        "jan_2_5": percentile_low(jan, 0.025),
+        "jul_2_5_tdb": percentile_high(jul, 0.025),
+    }
+    return {
+        "year": {k: round(v, 2) for k, v in year.items()},
+        "months": {k: [round(x, 2) for x in v] for k, v in months.items()},
+    }
+
+
+def one_year(h, rows):
     lat, lon, tz = h["lat"], h["lon"], h["tz"]
     months = {k: [] for k in (
         "t_mean", "t_max", "t_min", "dew_mean", "w_mean", "rh_mean", "rh_1500",
@@ -167,23 +192,7 @@ def station_monthly(path):
                 sums[i] += tot
         for i, (name, _, _) in enumerate(SURFACES):
             months["sol_" + name].append(sums[i] / 1000)
-
-    jan = [r["t"] for r in rows if r["month"] == 1]
-    jul = [r["t"] for r in rows if r["month"] == 7]
-    year = {
-        "hdd18": sum(months["hdd18"]),
-        "jan_1": percentile_low(jan, 0.01),
-        "jan_2_5": percentile_low(jan, 0.025),
-        "jul_2_5_tdb": percentile_high(jul, 0.025),
-    }
-    climate_id = os.path.basename(path).split("_")[-2]
-    return {
-        "id": climate_id,
-        "file": os.path.basename(path),
-        **h,
-        "year": {k: round(v, 2) for k, v in year.items()},
-        "months": {k: [round(x, 2) for x in v] for k, v in months.items()},
-    }
+    return months
 
 
 def epw_files(root):
