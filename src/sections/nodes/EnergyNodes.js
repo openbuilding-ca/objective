@@ -547,7 +547,9 @@
 
     // d_139: Peak Cooling Load (Enclosure + Gains)
     // = ((G101×D101+D102×G102)×(D24−H24) + (D65+D66+D67)×H15) / 1000
-    //   + (K79 + D122 + K64 − H124) / (M19×24)
+    //   + (K79 + D122 + K64) / (M19×24)
+    // Free cooling (h_124) is no longer subtracted (Andy 2026-10-30): at the
+    // design hour there is none. The rest of the peak is step 7's (F280).
     {
       id: "energy.peakCooling.totalKw",
       legacyId: "d_139",
@@ -560,7 +562,6 @@
         "radiantGains.subtotal.coolingGain",
         "ventilation.heatGain",
         "internal.occupants.coolingGain",
-        "cooling.freeCoolingLimit",
         "climate.coolingDays"
       ],
       classification: "C",
@@ -579,11 +580,10 @@
         const k79 = parseNum(inputs["radiantGains.subtotal.coolingGain"], 0);
         const d122 = parseNum(inputs["ventilation.heatGain"], 0);
         const k64 = parseNum(inputs["internal.occupants.coolingGain"], 0);
-        const h124 = parseNum(inputs["cooling.freeCoolingLimit"], 0);
         const coolingDays = parseNum(inputs["climate.coolingDays"], 120);
         let result = enclosureKw + internalGainsKw;
         if (coolingDays > 0) {
-          result += (k79 + d122 + k64 - h124) / (coolingDays * 24);
+          result += (k79 + d122 + k64) / (coolingDays * 24);
         }
         return result;
       }

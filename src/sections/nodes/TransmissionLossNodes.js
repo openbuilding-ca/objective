@@ -15,7 +15,8 @@
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
 
   // Component definitions - matches Section11.js legacy structure
-  // NOTE: Ground-facing heat gain uses capacitance factor (i_21 / 100) with fallback to 0.5
+  // NOTE: every heat GAIN (k column) is the component's share of the ISO 52016-1
+  // monthly cooling need (cooling.iso52016); the heat losses are unchanged
   const AIR_FACING_COMPONENTS = [
     { row: 85, id: "roof", label: "Roof/Ceiling", input: "rsi" },
     { row: 86, id: "walls", label: "Walls Above Grade", input: "rsi" },
@@ -219,27 +220,17 @@
         }
       });
 
+      // The component's share of the unmitigated ISO 52016-1 monthly need
+      // (cooling.iso52016, CoolingNodes.js): its transmission inflow in the
+      // months the outdoor side is warmer, plus solar on its outer surface
       graph.registerNode({
         id: `transmissionLoss.${id}.heatGain`,
         legacyId: `k_${row}`,
         section: "S11",
         classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.cooling.degreedays"
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Heat Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const cdd = inputs["climate.cooling.degreedays"];
-          // Legacy returns 0 for heat gains when CDD unavailable
-          if (isUnavailable(cdd)) return 0;
-
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          // Heat gain = Area × U-value × CDD × 24 / 1000
-          return (area * uValue * parseNum(cdd) * 24) / 1000;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[id] ?? 0
       });
     });
 
@@ -269,30 +260,18 @@
         }
       });
 
+      // The component's share of the unmitigated ISO 52016-1 monthly need
+      // (cooling.iso52016, CoolingNodes.js): its transmission inflow in the
+      // months the outdoor side is warmer, against the year's mean outdoor
+      // temperature (ISO 52016-1 6.6.5.1)
       graph.registerNode({
         id: `transmissionLoss.${id}.heatGain`,
         legacyId: `k_${row}`,
         section: "S11",
         classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.groundFacing.cdd",
-          "building.capacitance.percentage"
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Heat Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const groundCdd = parseNum(inputs["climate.groundFacing.cdd"], 0);
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          // Legacy Section11.js: capacitanceFactor = i_21 / 100, fallback to 0.5
-          let capacitanceFactor = parseNum(inputs["building.capacitance.percentage"], 0) / 100;
-          if (capacitanceFactor === 0 || isNaN(capacitanceFactor)) {
-            capacitanceFactor = 0.5;
-          }
-          // Heat gain = Area × U-value × (capacitance × groundCDD × 24) / 1000
-          return (area * uValue * capacitanceFactor * groundCdd * 24) / 1000;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[id] ?? 0
       });
     });
 
@@ -491,16 +470,11 @@
       legacyId: "k_97",
       section: "S11",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.components.subtotalHeatGain",
-        "transmissionLoss.thermalBridgePenalty"
-      ],
+      // The thermal bridges' share of the unmitigated ISO 52016-1 monthly need
+      // (the penalty % on every component's conductance, cooling.iso52016)
+      dependencies: ["cooling.iso52016"],
       label: "Thermal Bridge Penalty Heat Gain (kWh/yr)",
-      compute: (inputs) => {
-        const subtotal = parseNum(inputs["transmissionLoss.components.subtotalHeatGain"]);
-        const penaltyPercent = parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5);
-        return subtotal * (penaltyPercent / 100);
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.tb ?? 0
     });
 
     // ========================================================================

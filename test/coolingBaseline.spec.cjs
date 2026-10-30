@@ -9,6 +9,12 @@
  * after the ISO 52016-1 work ("iso52016"), and compare the two files.
  *
  *   COOLING_LABEL=baseline npx playwright test test/coolingBaseline.spec.cjs --config=playwright.config.cjs
+ *
+ * The ISO 52016-1 cooling fetches the location's climate station, which a
+ * file:// page cannot: serve the repo and point COOLING_URL at it.
+ *
+ *   python3 -m http.server 8770 --bind 127.0.0.1    # in the repo root
+ *   COOLING_LABEL=iso52016 COOLING_URL=http://127.0.0.1:8770/index.html npx playwright test ...
  */
 const { test } = require("@playwright/test");
 const fs = require("fs");
@@ -17,12 +23,14 @@ const path = require("path");
 const CASE_STUDIES_DIR = path.join(__dirname, "computation", "case-studies");
 const LABEL = process.env.COOLING_LABEL || "baseline";
 const OUT_FILE = path.join(__dirname, `cooling-${LABEL}.json`);
+const URL = process.env.COOLING_URL || `file://${path.join(__dirname, "..", "index.html")}`;
 
 const IDS = [
   // inputs that drive cooling
   "climate.location.province",
   "climate.location.city",
   "climate.timeframe",
+  "climate.station",
   "climate.cooling.degreedays",
   "climate.coolingDays",
   "climate.cooling.setpoint",
@@ -52,6 +60,7 @@ const IDS = [
   "energy.peakCooling.totalKw",
   "f280.nominalCoolingCapacity",
   // context
+  "cooling.freeCoolingRaw",
   "energy.ted.heating",
   "energy.teui",
 ];
@@ -61,7 +70,7 @@ test("record the cooling chain for every case study", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("disclaimerSeen", "true");
   });
-  await page.goto(`file://${path.join(__dirname, "..", "index.html")}`);
+  await page.goto(URL);
   await page.waitForFunction(
     () =>
       window.TEUI?.ComputationIntegration?.isInitialized?.() &&

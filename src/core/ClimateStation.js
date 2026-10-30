@@ -108,8 +108,36 @@
   }
 
   /**
-   * Hours per month the outdoor air is cooler AND drier than the indoor state,
-   * and the month's sum of (setpoint - outdoor) over them, K.h.
+   * For a graph node: the station if loaded, else null - and start the load,
+   * which recalculates the page when it lands (a node cannot await).
+   */
+  function request(id) {
+    if (!id) return null;
+    const station = get(id);
+    if (station || pending.has(id)) return station;
+    load(id)
+      .then(() => {
+        if (window.TEUI.Calculator?.calculateAll)
+          window.TEUI.Calculator.calculateAll();
+      })
+      .catch(err => {
+        pending.delete(id);
+        console.warn(
+          `[ClimateStation] ${id}: ${err.message} (served over http?)`
+        );
+      });
+    return null;
+  }
+
+  /**
+   * Per month, on the hourly year:
+   *   hours, kh        the hours the outdoor air is cooler AND drier than the
+   *                    indoor state, and the sum of (setpoint - outdoor) over
+   *                    them, K.h - free cooling's credit
+   *   hotHours, hotKh  the hours the outdoor air is warmer than the setpoint,
+   *                    and the sum of (outdoor - setpoint) over them, K.h -
+   *                    the hours heat recovery runs in cooling (the HRV
+   *                    bypasses its core in the others)
    */
   function freeCooling(station, setpointC, indoorRHPct) {
     const wIn = humidityRatio(
@@ -119,15 +147,20 @@
     );
     const hours = new Array(12).fill(0);
     const kh = new Array(12).fill(0);
+    const hotHours = new Array(12).fill(0);
+    const hotKh = new Array(12).fill(0);
     const { t, w } = station.hourly;
     for (let k = 0; k < HOURS; k++) {
+      const m = MONTH_OF_HOUR[k];
       if (t[k] < setpointC && w[k] < wIn) {
-        const m = MONTH_OF_HOUR[k];
         hours[m] += 1;
         kh[m] += setpointC - t[k];
+      } else if (t[k] > setpointC) {
+        hotHours[m] += 1;
+        hotKh[m] += t[k] - setpointC;
       }
     }
-    return { hours, kh, wIn };
+    return { hours, kh, hotHours, hotKh, wIn };
   }
 
   window.TEUI.ClimateStation = {
@@ -138,6 +171,7 @@
     stationFor,
     load,
     get,
+    request,
     freeCooling,
   };
 })();

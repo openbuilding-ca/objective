@@ -144,79 +144,29 @@
     // NOTE: cooling.latentLoadFactor is now computed by CoolingNodes.js
     // It uses psychrometric calculations (humidity ratios, wet bulb temp) to derive the factor
 
-    // Ventilation cooling load - d_122
-    // Legacy formula from Section13.js lines 2956-2980
+    // Ventilation cooling load - d_122: the ventilation's share of the
+    // unmitigated ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js)
     graph.registerNode({
       id: "ventilation.heatGain",
       legacyId: "d_122",
       section: "S13",
       classification: "C",
-      dependencies: [
-        "ventilation.volumetricRate",
-        "climate.cooling.degreedays",
-        "mechanical.cooling.systemType",
-        "occupancy.occupiedHours",
-        "occupancy.totalHours",
-        "mechanical.ventilation.summerBoost",
-        "cooling.latentLoadFactor"
-      ],
+      dependencies: ["cooling.iso52016"],
       label: "Net Ventilation Heat Gain (kWh/yr)",
-      compute: (inputs) => {
-        const cddRaw = inputs["climate.cooling.degreedays"];
-        // Check for undefined/null/unavailable CDD
-        if (cddRaw === undefined || cddRaw === null || isUnavailable(cddRaw)) {
-          return 0;
-        }
-
-        const cdd = parseNum(cddRaw, 0);
-        // If CDD parses to 0, there's no cooling load
-        if (cdd === 0) {
-          return 0;
-        }
-
-        const volumeRate = parseNum(inputs["ventilation.volumetricRate"]);
-        const coolingSystem = inputs["mechanical.cooling.systemType"] || "No Cooling";
-        const occupiedHours = parseNum(inputs["occupancy.occupiedHours"], 4380);
-        const totalHours = parseNum(inputs["occupancy.totalHours"], 8760);
-        const occupancyFactor = totalHours > 0 ? occupiedHours / totalHours : 0.5;
-
-        // Latent load factor from Cooling.js psychrometrics
-        // Valid latent load factors are always >= 1.0 (formula: 1 + A64/A55)
-        // If 0 or invalid (from NaN || 0 fallback in Cooling.js), use default 1.0
-        const rawLatent = parseNum(inputs["cooling.latentLoadFactor"], 1.0);
-        const latentLoadFactor = rawLatent > 0 ? rawLatent : 1.0;
-
-        // Summer boost factor (l_119)
-        const summerBoost = parseNum(inputs["mechanical.ventilation.summerBoost"], 0);
-        const summerBoostFactor = summerBoost > 0 ? summerBoost : 1.0;
-
-        // Base formula: (1.21 * ventRate * cdd * 24) / 1000
-        const baseEnergy = (1.21 * volumeRate * cdd * 24) / 1000;
-
-        // Apply factors based on cooling system type
-        if (coolingSystem === "Cooling") {
-          return baseEnergy * occupancyFactor * summerBoostFactor * latentLoadFactor;
-        } else {
-          // No Cooling - don't apply occupancy factor
-          return baseEnergy * summerBoostFactor * latentLoadFactor;
-        }
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.vent ?? 0
     });
 
-    // Ventilation energy recovered (cooling season) - d_123
-    // Formula: d_122 * (d_118 / 100) per Section13.js line 2983
+    // Ventilation energy recovered (cooling season) - d_123: what heat
+    // recovery saves of the monthly need, in the months warmer than the
+    // setpoint only (the HRV bypasses its core otherwise)
     graph.registerNode({
       id: "ventilation.energyRecoveredCooling",
       legacyId: "d_123",
       section: "S13",
       classification: "C",
-      dependencies: ["ventilation.heatGain", "mechanical.ventilation.efficiency"],
+      dependencies: ["cooling.iso52016"],
       label: "Ventilation Energy Recovered Cooling (kWh/yr)",
-      compute: (inputs) => {
-        const d122 = parseNum(inputs["ventilation.heatGain"], 0);
-        const efficiency = parseNum(inputs["mechanical.ventilation.efficiency"], 89) / 100;
-        return d122 * efficiency;
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.recovered ?? 0
     });
 
     // ========================================================================

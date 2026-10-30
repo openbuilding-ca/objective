@@ -159,6 +159,25 @@
 
   const ClimateNodes = [
     // ========================================================================
+    // CLIMATE STATION - the CWEC 2020 (else NASA POWER) station the cooling
+    // reads (ClimateStation.js, ClimateStations.js). The id only; the station
+    // itself loads on demand and the cooling node reads it from the cache.
+    // ========================================================================
+    {
+      id: "climate.station",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Climate Station",
+      compute: (inputs) => {
+        const CS = window.TEUI?.ClimateStation;
+        const province = String(inputs["climate.location.province"] || "").trim().toUpperCase();
+        const city = String(inputs["climate.location.city"] || "").trim();
+        return CS ? CS.stationFor(province, city) : null;
+      }
+    },
+
+    // ========================================================================
     // CLIMATE DATA LOOKUP NODES
     // ========================================================================
     {

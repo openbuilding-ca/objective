@@ -358,28 +358,17 @@
       },
     });
 
-    // k_71: Internal cooling load (cooling season fraction)
-    // = (h_70 + h_64 + d_54) × m_19 / 365
+    // k_71: Internal cooling load - the internal gains' share of the
+    // unmitigated ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js);
+    // the gains run every month, annual x days / 365
     graph.registerNode({
       id: "internal.coolingLoad.occupants",
       legacyId: "k_71",
       section: "S09",
       classification: "C",
-      dependencies: [
-        "energy.plugLoads.subtotal",
-        "internal.occupants.annual",
-        "waterHeating.systemLosses",
-        "climate.coolingDays"
-      ],
+      dependencies: ["cooling.iso52016"],
       label: "Internal Gains - Cooling Season (kWh/yr)",
-      compute: (inputs) => {
-        const h70 = parseFloat(inputs["energy.plugLoads.subtotal"]) || 0;
-        const h64 = parseFloat(inputs["internal.occupants.annual"]) || 0;
-        const d54 = parseFloat(inputs["waterHeating.systemLosses"]) || 0;
-        const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-        const coolingFraction = coolingDays / 365;
-        return (h70 + h64 + d54) * coolingFraction;
-      },
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.internal ?? 0,
     });
 
     // ========================================================================
@@ -443,18 +432,30 @@
         },
       });
 
-      // Cooling season split
+      // Cooling split: k_71 (the internal gains' share of the ISO 52016-1
+      // need) in proportion to this row's annual gain - the internal total is
+      // h_70 + h_64 + d_54, and h_70 = h_65 + h_66 + h_67
       graph.registerNode({
         id: `internal.${id}.coolingGain`,
         legacyId: `k_${legacySuffix}`,
         section: "S09",
         classification: "C",
-        dependencies: [annual, "climate.coolingDays"],
+        dependencies: [
+          annual,
+          "internal.coolingLoad.occupants",
+          "energy.plugLoads.subtotal",
+          "internal.occupants.annual",
+          "waterHeating.systemLosses",
+        ],
         label: `${id} Cooling Gain (kWh/yr)`,
         compute: (inputs) => {
-          const annualVal = parseFloat(inputs[annual]) || 0;
-          const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-          return annualVal * coolingDays / 365;
+          const total =
+            (parseFloat(inputs["energy.plugLoads.subtotal"]) || 0) +
+            (parseFloat(inputs["internal.occupants.annual"]) || 0) +
+            (parseFloat(inputs["waterHeating.systemLosses"]) || 0);
+          if (total <= 0) return 0;
+          const k71 = parseFloat(inputs["internal.coolingLoad.occupants"]) || 0;
+          return (k71 * (parseFloat(inputs[annual]) || 0)) / total;
         },
       });
     });
