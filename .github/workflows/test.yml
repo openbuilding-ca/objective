@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Run Playwright Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # not -latest: 26.04 has no Playwright 1.56.1 WebKit
     timeout-minutes: 10
 
     steps:
