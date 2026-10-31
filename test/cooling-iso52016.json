@@ -1,6 +1,6 @@
 {
   "label": "iso52016",
-  "timestamp": "2026-10-31T03:02:05.274Z",
+  "timestamp": "2026-10-31T15:42:12.747Z",
   "results": {
     "01-ThreeFeathersTerrace.csv": {
       "target": {
@@ -39,7 +39,20 @@
         "f280.nominalCoolingCapacity": 96880,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 118979.0434,
-        "energy.teui": 110.97
+        "energy.teui": 110.97,
+        "ventilation.volumetricRate": 3466.458333333333,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 2.6635,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 15725.738181013747,
+          "latent": 62515.383412993186,
+          "latentVent": 44260.70803745621,
+          "latentLeak": 2112.439092914356,
+          "latentPeople": 16142.236282622624
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -77,7 +90,20 @@
         "f280.nominalCoolingCapacity": 122349,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 250331.6272,
-        "energy.teui": 258.97
+        "energy.teui": 258.97,
+        "ventilation.volumetricRate": 4044.2013888888887,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.0809,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 47387.743954345926,
+          "latent": 70590.82642274101,
+          "latentVent": 51637.750624279004,
+          "latentLeak": 2112.449643919154,
+          "latentPeople": 16840.62615454285
+        }
       }
     },
     "02-SolarQ.csv": {
@@ -117,7 +143,20 @@
         "f280.nominalCoolingCapacity": 4741,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 15116.3984,
-        "energy.teui": 98.54
+        "energy.teui": 98.54,
+        "ventilation.volumetricRate": 28,
+        "mechanical.heating.systemType": "Electricity",
+        "mechanical.cooling.effectiveCop": 2.66,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 612.1725181683676,
+          "latent": 309.42076229606874,
+          "latentVent": 178.4073244260683,
+          "latentLeak": 41.64344388560056,
+          "latentPeople": 89.36999398439988
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -155,7 +194,20 @@
         "f280.nominalCoolingCapacity": 8455,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 35888.9307,
-        "energy.teui": 187.58
+        "energy.teui": 187.58,
+        "ventilation.volumetricRate": 94.42527777777777,
+        "mechanical.heating.systemType": "Electricity",
+        "mechanical.cooling.effectiveCop": 3.3,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 2887.248869183524,
+          "latent": 746.3604013372757,
+          "latentVent": 516.0824354059517,
+          "latentLeak": 127.57476155387732,
+          "latentPeople": 102.70320437744655
+        }
       }
     },
     "03-Meadow.csv": {
@@ -195,7 +247,20 @@
         "f280.nominalCoolingCapacity": 8084,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 2222.6786,
-        "energy.teui": 53.03
+        "energy.teui": 53.03,
+        "ventilation.volumetricRate": 44.099999999999994,
+        "mechanical.heating.systemType": "Electricity",
+        "mechanical.cooling.effectiveCop": 0,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 18679.286871479184,
+          "latent": 1417.5625402685373,
+          "latentVent": 526.0988879997645,
+          "latentLeak": 53.933583233508806,
+          "latentPeople": 837.530069035264
+        }
       },
       "reference": {
         "climate.location.province": "QC",
@@ -233,7 +298,20 @@
         "f280.nominalCoolingCapacity": 6180,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 32344.3321,
-        "energy.teui": 286.37
+        "energy.teui": 286.37,
+        "ventilation.volumetricRate": 51.59166666666666,
+        "mechanical.heating.systemType": "Electricity",
+        "mechanical.cooling.effectiveCop": 0,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 5410.025450547883,
+          "latent": 1238.8896575471601,
+          "latentVent": 611.6294304141036,
+          "latentLeak": 267.9842692043685,
+          "latentPeople": 359.275957928688
+        }
       }
     },
     "04-OttawaApartments.csv": {
@@ -273,7 +351,20 @@
         "f280.nominalCoolingCapacity": 35000,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 18123.691,
-        "energy.teui": 211.78
+        "energy.teui": 211.78,
+        "ventilation.volumetricRate": 966,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 18435.70668187643,
+          "latent": 26410.44977281817,
+          "latentVent": 13952.527780145363,
+          "latentLeak": 246.3450364580159,
+          "latentPeople": 12211.57695621479
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -311,7 +402,20 @@
         "f280.nominalCoolingCapacity": 26963,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 31357.866,
-        "energy.teui": 312.75
+        "energy.teui": 312.75,
+        "ventilation.volumetricRate": 82.64233333333333,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 25805.207501477904,
+          "latent": 13570.659573488512,
+          "latentVent": 1191.4915104755032,
+          "latentLeak": 670.6331203426848,
+          "latentPeople": 11708.534942670325
+        }
       }
     },
     "05-TheOaksPhase01Apartments.csv": {
@@ -351,7 +455,20 @@
         "f280.nominalCoolingCapacity": 167774,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 30723.4467,
-        "energy.teui": 99.71
+        "energy.teui": 99.71,
+        "ventilation.volumetricRate": 2340.73,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 3.1032,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 130529.29308133674,
+          "latent": 91134.34289437538,
+          "latentVent": 33809.23432039313,
+          "latentLeak": 7769.488325840012,
+          "latentPeople": 49555.620248142244
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -389,7 +506,20 @@
         "f280.nominalCoolingCapacity": 216803,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 491401.9236,
-        "energy.teui": 214.56
+        "energy.teui": 214.56,
+        "ventilation.volumetricRate": 2057.5,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 71075.31278733439,
+          "latent": 78181.23622268025,
+          "latentVent": 27656.852539175266,
+          "latentLeak": 25306.9238920558,
+          "latentPeople": 25217.459791449197
+        }
       }
     },
     "06-BlossomParkApartments.csv": {
@@ -429,7 +559,20 @@
         "f280.nominalCoolingCapacity": 85048,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 44882.2541,
-        "energy.teui": 89.82
+        "energy.teui": 89.82,
+        "ventilation.volumetricRate": 1652,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 2.0774,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 59629.08956289015,
+          "latent": 53662.9456521032,
+          "latentVent": 25716.434065970676,
+          "latentLeak": 1000.5040487116034,
+          "latentPeople": 26946.007537420923
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -467,7 +610,20 @@
         "f280.nominalCoolingCapacity": 77580,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 176809.9187,
-        "energy.teui": 125.97
+        "energy.teui": 125.97,
+        "ventilation.volumetricRate": 733.4444444444443,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 32172.06740334736,
+          "latent": 28521.450064753117,
+          "latentVent": 10792.109524470803,
+          "latentLeak": 4728.54221898823,
+          "latentPeople": 13000.798321294084
+        }
       }
     },
     "07-DogwoodMURB.csv": {
@@ -507,7 +663,20 @@
         "f280.nominalCoolingCapacity": 111908,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 143844.2234,
-        "energy.teui": 109.78
+        "energy.teui": 109.78,
+        "ventilation.volumetricRate": 1275,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.9308,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 91060.01943534621,
+          "latent": 48033.434686985,
+          "latentVent": 19699.17430783909,
+          "latentLeak": 5823.586974866458,
+          "latentPeople": 22510.673404279445
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -545,7 +714,20 @@
         "f280.nominalCoolingCapacity": 124787,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 295354.5831,
-        "energy.teui": 158.26
+        "energy.teui": 158.26,
+        "ventilation.volumetricRate": 1205.3999999999999,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 51705.4056720622,
+          "latent": 41874.622706348986,
+          "latentVent": 17132.415652581207,
+          "latentLeak": 10714.456318062044,
+          "latentPeople": 14027.750735705733
+        }
       }
     },
     "08-EmbassyCommonsMURB.csv": {
@@ -585,7 +767,20 @@
         "f280.nominalCoolingCapacity": 172870,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 152376.3712,
-        "energy.teui": 105.72
+        "energy.teui": 105.72,
+        "ventilation.volumetricRate": 2550,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.0809,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 124409.89445968147,
+          "latent": 66031.50795858089,
+          "latentVent": 25498.3638416127,
+          "latentLeak": 3350.2123767092944,
+          "latentPeople": 37182.93174025889
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -623,7 +818,20 @@
         "f280.nominalCoolingCapacity": 181403,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 474729.1599,
-        "energy.teui": 135.2
+        "energy.teui": 135.2,
+        "ventilation.volumetricRate": 1607.2,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 60534.66107485906,
+          "latent": 44373.70013860719,
+          "latentVent": 15406.696394127885,
+          "latentLeak": 9635.207250861717,
+          "latentPeople": 19331.796493617596
+        }
       }
     },
     "09-RowingCentre.csv": {
@@ -663,7 +871,20 @@
         "f280.nominalCoolingCapacity": 26952,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 44543.893,
-        "energy.teui": 84.02
+        "energy.teui": 84.02,
+        "ventilation.volumetricRate": 466.66666666666663,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 2.6635,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 4729.535163721479,
+          "latent": 14574.002449124131,
+          "latentVent": 6998.391069399309,
+          "latentLeak": 473.94293669299566,
+          "latentPeople": 7101.6684430318255
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -701,7 +922,20 @@
         "f280.nominalCoolingCapacity": 73514,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 161977.2924,
-        "energy.teui": 422.68
+        "energy.teui": 422.68,
+        "ventilation.volumetricRate": 2111.111111111111,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 37856.87550979682,
+          "latent": 41198.378115366526,
+          "latentVent": 31629.044536318495,
+          "latentLeak": 1420.4660719903518,
+          "latentPeople": 8148.867507057678
+        }
       }
     },
     "10-TheGreenwayResidence.csv": {
@@ -741,7 +975,20 @@
         "f280.nominalCoolingCapacity": 8081,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 10083.9764,
-        "energy.teui": 56.71
+        "energy.teui": 56.71,
+        "ventilation.volumetricRate": 33.32,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.9308,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 4508.328269693744,
+          "latent": 915.5285442806198,
+          "latentVent": 194.29112085963956,
+          "latentLeak": 242.26667646030563,
+          "latentPeople": 478.9707469606747
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -779,7 +1026,20 @@
         "f280.nominalCoolingCapacity": 36696,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 113818.7553,
-        "energy.teui": 210.23
+        "energy.teui": 210.23,
+        "ventilation.volumetricRate": 1434.7763888888887,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.0809,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 8261.943176845027,
+          "latent": 7771.623101936134,
+          "latentVent": 7269.617913427231,
+          "latentLeak": 210.51017123824025,
+          "latentPeople": 291.4950172706627
+        }
       }
     },
     "11-CommunityCentre.csv": {
@@ -819,7 +1079,20 @@
         "f280.nominalCoolingCapacity": 1222502,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 3333277.5922,
-        "energy.teui": 169.11
+        "energy.teui": 169.11,
+        "ventilation.volumetricRate": 29625.385416666668,
+        "mechanical.heating.systemType": "Gas",
+        "mechanical.cooling.effectiveCop": 2.67,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 763776.2342617488,
+          "latent": 674645.172295365,
+          "latentVent": 359701.2270305905,
+          "latentLeak": 64908.49209574565,
+          "latentPeople": 250035.4531690289
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -857,7 +1130,20 @@
         "f280.nominalCoolingCapacity": 1497217,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 5942996.9953,
-        "energy.teui": 178.25
+        "energy.teui": 178.25,
+        "ventilation.volumetricRate": 39500.51388888889,
+        "mechanical.heating.systemType": "Gas",
+        "mechanical.cooling.effectiveCop": 3.3,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 985470.4097548672,
+          "latent": 791189.4482500983,
+          "latentVent": 479604.588871669,
+          "latentLeak": 64908.891726992784,
+          "latentPeople": 246675.96765143645
+        }
       }
     },
     "12-AberdeenHouse.csv": {
@@ -897,7 +1183,20 @@
         "f280.nominalCoolingCapacity": 3366,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 2666.6813,
-        "energy.teui": 84.32
+        "energy.teui": 84.32,
+        "ventilation.volumetricRate": 38.3,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.6964,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 4137.0727460877315,
+          "latent": 541.7271449682538,
+          "latentVent": 154.72893599969018,
+          "latentLeak": 10.481954594573606,
+          "latentPeople": 376.51625437399
+        }
       },
       "reference": {
         "climate.location.province": "ON",
@@ -935,7 +1234,20 @@
         "f280.nominalCoolingCapacity": 6473,
         "cooling.freeCoolingRaw": 0,
         "energy.ted.heating": 27599.1529,
-        "energy.teui": 233.9
+        "energy.teui": 233.9,
+        "ventilation.volumetricRate": 43.733333333333334,
+        "mechanical.heating.systemType": "Heatpump",
+        "mechanical.cooling.effectiveCop": 1.0809,
+        "mechanical.ventilation.recoveryType": "HRV",
+        "cooling.latentMethod": "F280",
+        "building.coolingLatentBasis": "F280",
+        "cooling.iso52016": {
+          "sensible": 7020.659947190412,
+          "latent": 533.8166607554656,
+          "latentVent": 176.2999579430865,
+          "latentLeak": 87.16214136935722,
+          "latentPeople": 270.35456144302185
+        }
       }
     }
   }

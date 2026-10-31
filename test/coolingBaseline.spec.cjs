@@ -65,7 +65,21 @@ const IDS = [
   "cooling.freeCoolingRaw",
   "energy.ted.heating",
   "energy.teui",
+  // the drivers the before/after table explains a difference by
+  "ventilation.volumetricRate",
+  "mechanical.heating.systemType",
+  "mechanical.cooling.effectiveCop",
+  "mechanical.ventilation.recoveryType",
+  "cooling.latentMethod",
+  "building.coolingLatentBasis",
 ];
+
+/** The target row's value of one column of a case-study CSV (header "h_19: City"). */
+function csvField(csv, id) {
+  const [head, row] = csv.split(/\r?\n/);
+  const i = head.split(",").findIndex((h) => h.split(":")[0].trim() === id);
+  return i >= 0 ? (row.split(",")[i] || "").trim() : null;
+}
 
 test("record the cooling chain for every case study", async ({ page }) => {
   test.setTimeout(10 * 60 * 1000);
@@ -90,20 +104,45 @@ test("record the cooling chain for every case study", async ({ page }) => {
   for (const csvFile of csvFiles) {
     const csv = fs.readFileSync(path.join(CASE_STUDIES_DIR, csvFile), "utf-8");
     results[csvFile] = await page.evaluate(
-      async ({ csv, ids }) => {
+      async ({ csv, ids, city }) => {
         window.TEUI.FileHandler.processImportedCSV(csv);
         await new Promise((r) => setTimeout(r, 2000));
         const state = window.TEUI.ComputationIntegration.getState();
+        // Wait until the import has LANDED: the case's city, its climate
+        // station loaded (the ISO node non-null), and TEUI steady - a fixed
+        // 2 s once read the previous project's values (2026-10-31).
+        const active = () => state.getActiveModelId();
+        const get = (id) => state.getValueForModel(active(), id);
+        for (let k = 0, last = null; k < 40; k++) {
+          const teui = get("energy.teui");
+          const landed =
+            (!city || get("climate.location.city") === city) && get("cooling.iso52016") != null;
+          if (landed && teui === last) break;
+          last = teui;
+          await new Promise((r) => setTimeout(r, 500));
+        }
         const models = state.getAllModels ? state.getAllModels() : [];
         const ref = models.find((m) => m.modelType === "reference");
-        const read = (modelId) =>
-          Object.fromEntries(ids.map((id) => [id, state.getValueForModel(modelId, id) ?? null]));
+        const read = (modelId) => {
+          const out = Object.fromEntries(
+            ids.map((id) => [id, state.getValueForModel(modelId, id) ?? null])
+          );
+          const iso = state.getValueForModel(modelId, "cooling.iso52016");
+          out["cooling.iso52016"] = iso && {
+            sensible: iso.sensible,
+            latent: iso.latent.total,
+            latentVent: iso.latent.vent,
+            latentLeak: iso.latent.leak,
+            latentPeople: iso.latent.people,
+          };
+          return out;
+        };
         return {
           target: read(state.getActiveModelId()),
           reference: ref ? read(ref.id) : null,
         };
       },
-      { csv, ids: IDS }
+      { csv, ids: IDS, city: csvField(csv, "h_19") }
     );
     console.log(`${csvFile}: CED mitigated = ${results[csvFile].target["energy.ced.mitigated"]}`);
   }
