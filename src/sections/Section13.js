@@ -495,7 +495,20 @@ window.TEUI.SectionModules.sect13 = (function () {
           tooltip: true,
           label: "HRV/ERV/MVHR Sensible Recovery Efficiency (SRE): %",
         },
-        e: {},
+        e: {
+          fieldId: "e_118",
+          semanticPath: "ventilation.recoveryType",
+          type: "dropdown",
+          dropdownId: "dd_e_118",
+          value: "HRV",
+          section: "mechanicalLoads",
+          tooltip: true,
+          options: [
+            { value: "HRV", name: "HRV" },
+            { value: "ERV", name: "ERV" },
+          ],
+          label: "Heat Recovery Type (HRV: sensible only; ERV: sensible + latent)",
+        },
         f: {
           content: "Ventil. Method",
           classes: ["label-prefix"],
@@ -830,9 +843,21 @@ window.TEUI.SectionModules.sect13 = (function () {
           label: "Latent Load Factor (from Cooling Calculation): %",
         },
         i: {},
-        j: {},
+        j: {
+          content: "ERV LRE",
+          classes: ["label"],
+        },
         k: {},
-        l: {},
+        l: {
+          fieldId: "l_122",
+          semanticPath: "ventilation.ervLatentEfficiency",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+          section: "mechanicalLoads",
+          tooltip: true,
+          label: "ERV Latent Recovery Efficiency (LRE): %",
+        },
         m: {},
         n: {},
       },
@@ -1414,8 +1439,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       handleHeatingSystemChangeForGhosting(newValue);
     }
 
-    // Special handling for cooling system changes (d_116)
-    if (fieldId === "d_116") {
+    // Special handling for cooling system (d_116) and recovery type (e_118) changes
+    if (fieldId === "d_116" || fieldId === "e_118") {
       const currentHeatingSystem = getModeValue("d_113") || "Heatpump";
       handleHeatingSystemChangeForGhosting(currentHeatingSystem);
     }
@@ -1533,6 +1558,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Row 116 other fields: Ghost only when "No Cooling"
     setFieldGhosted("l_116", !isCoolingActive);
     setFieldGhosted("m_116", !isCoolingActive);
+
+    // Row 122 l_122 (ERV latent recovery): active only for an ERV (e_118)
+    const isERV = window.TEUI?.StateManager?.getValue("e_118") === "ERV";
+    setFieldGhosted("l_122", !isERV);
 
     // Row 115: Heating Fuel Impact - Ghost entire row if not Gas or Oil
     const row115 = document.querySelector('tr[data-id="M.2.2"]');

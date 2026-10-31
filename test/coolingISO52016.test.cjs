@@ -223,6 +223,19 @@ const HOUSE = {
       `free-cooling hours ${hrs(fc40)} vs ${hrs(fc50)}`
   );
   if (!(at40.latent.total > at50.latent.total)) fail("drier indoors should cost more latent");
+  // only an ERV recovers latent: 60 % LRE leaves 40 % of the ventilation's,
+  // leakage and occupants untouched; the same 60 % typed under HRV is ignored
+  const fcT = CS.freeCooling(st, 24, 50);
+  const erv = ISO.annual({ ...HOUSE, recoveryType: "ERV", ervLatentPercent: 60 }, st.months, fcT).latent;
+  const hrv = ISO.annual({ ...HOUSE, recoveryType: "HRV", ervLatentPercent: 60 }, st.months, fcT).latent;
+  const off = ISO.annual(HOUSE, st.months, fcT).latent;
+  console.log(
+    `  ERV 60 %: vent latent ${erv.vent.toFixed(1)} vs HRV ${hrv.vent.toFixed(1)} (no recovery ${off.vent.toFixed(1)}); ` +
+      `leak ${erv.leak.toFixed(1)} / ${off.leak.toFixed(1)}`
+  );
+  if (rel(erv.vent, 0.4 * off.vent) > 1e-9) fail("ERV should leave (1 - LRE) of the ventilation latent");
+  if (hrv.vent !== off.vent) fail("an HRV recovers no latent, whatever LRE says");
+  if (erv.leak !== off.leak || erv.people !== off.people) fail("ERV touches only the ventilation");
   if (!(hrs(fc40) < hrs(fc50))) fail("drier indoors should count fewer free-cooling hours");
 
   console.log(ok ? "PASS" : "FAIL");

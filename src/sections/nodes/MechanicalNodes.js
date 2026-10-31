@@ -100,6 +100,23 @@
       unit: "%"
     },
     {
+      id: "mechanical.ventilation.recoveryType",
+      legacyId: "e_118",
+      defaultValue: "HRV",
+      classification: "C",
+      section: "S13",
+      label: "Heat Recovery Type (HRV / ERV)"
+    },
+    {
+      id: "mechanical.ventilation.ervLatentEfficiency",
+      legacyId: "l_122",
+      defaultValue: 0,
+      classification: "C",
+      section: "S13",
+      label: "ERV Latent Recovery Efficiency",
+      unit: "%"
+    },
+    {
       id: "mechanical.ventilation.ach",
       legacyId: "l_118",
       defaultValue: 3.0,

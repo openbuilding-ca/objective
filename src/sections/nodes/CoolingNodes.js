@@ -79,7 +79,9 @@
     "internal.occupants.annual",
     "waterHeating.systemLosses",
     "occupancy.occupants",
-    "occupancy.occupiedHours"
+    "occupancy.occupiedHours",
+    "mechanical.ventilation.recoveryType",
+    "mechanical.ventilation.ervLatentEfficiency"
   ];
 
   // ============================================================================
@@ -240,7 +242,9 @@
             parseNum(inputs["internal.occupants.annual"]) +
             parseNum(inputs["waterHeating.systemLosses"]),
           occupants: parseNum(inputs["occupancy.occupants"], 4),
-          occupiedHours: parseNum(inputs["occupancy.occupiedHours"], 4380)
+          occupiedHours: parseNum(inputs["occupancy.occupiedHours"], 4380),
+          recoveryType: inputs["mechanical.ventilation.recoveryType"] || "HRV",
+          ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"])
         };
         return ISO.annual(b, station.months, CS.freeCooling(station, setpoint, indoorRH));
       }

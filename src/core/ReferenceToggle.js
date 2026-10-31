@@ -167,6 +167,8 @@ TEUI.ReferenceToggle = (function () {
     d_116: "C",
     // Row 121-127
     d_118: "C",
+    e_118: "C",
+    l_122: "C",
     g_118: "C",
     l_118: "C",
     d_119: "C",

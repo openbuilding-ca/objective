@@ -665,6 +665,18 @@
       title: "Ventilation Guidance",
       message: "8.33 l/s is Default, 12.5 l/s is considered best practice",
     },
+    e_118: {
+      cell: "E118",
+      title: "Heat Recovery Type",
+      message:
+        "HRV: recovers sensible heat only (the SRE). ERV: also recovers moisture - enter its rated Latent Recovery Efficiency in the ERV LRE field (row V.3.1, beside the Latent Load Factor), from the unit's HVI / CSA C439 data sheet. Only an ERV reduces the latent cooling load.",
+    },
+    l_122: {
+      cell: "L122",
+      title: "ERV Latent Recovery Efficiency (LRE)",
+      message:
+        "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV.",
+    },
     l_119: {
       cell: "L119",
       title: "Summer Boost",

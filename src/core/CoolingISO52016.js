@@ -56,7 +56,8 @@
  *    coil removes moisture only while it runs. Added to the rows it belongs
  *    to: ventilation, leakage, internal (the occupants'). Free cooling's
  *    extra air enters only on hours drier than inside, so it adds none (it
- *    would remove some; not credited). The HRV moves no moisture.
+ *    would remove some; not credited). An HRV moves no moisture; an ERV
+ *    (S13 e_118) returns its rated latent share (l_122) of the ventilation's.
  *  - DESIGN (the sizing, designLatent): F280's own figures - Ho from the
  *    July 2.5 % dry bulb and its coincident wet bulb at standard pressure
  *    (as its Table 5), Hi = 9.3 g/kg, every occupant home.
@@ -339,13 +340,29 @@
    */
   function latentLoad(b, months, wIn, fC) {
     const occupiedShare = Math.min(1, (b.occupiedHours || 0) / 8760);
+    // LATENT RECOVERY - an ERV only (an HRV's core passes no moisture): the
+    // ventilation's latent x (1 - LRE), LRE the unit's rated latent recovery
+    // at the cooling test condition (HVI / CSA C439 data sheet). Leakage and
+    // the free-cooling boost bypass the core, so they keep theirs.
+    // PENDING THE HOURLY ENGINE (ABCD-OBJECTIVE-PRO P7): this is the monthly
+    // mean, on the month's mean DHD. Hourly, apply the LRE per hour to
+    // 3 W/(L/s·g/kg) x ventLs x max(0, w_out,h - wIn) from the station's
+    // hourly year (ClimateStation's hourly.w, g/kg - the same series
+    // freeCooling reads), on the hours the coil runs; recovery then follows
+    // the weather the way the sensible HRV already does (hotHours / hotKh).
+    // An ERV also returns moisture to a dry winter house - that is the
+    // heating side's, not counted here.
+    const lre =
+      b.recoveryType === "ERV"
+        ? Math.min(1, Math.max(0, (b.ervLatentPercent || 0) / 100))
+        : 0;
     const out = { vent: 0, leak: 0, people: 0, total: 0, months: [] };
     for (let m = 0; m < 12; m++) {
       const t = DAYS[m] * 24 * fC[m]; // the month's cooling hours
       const dhd = Math.max(0, months.w_mean[m] - wIn);
       const mo = {
         dhd,
-        vent: (LATENT_W_PER_LS_GKG * b.ventLs * dhd * t) / 1000,
+        vent: (LATENT_W_PER_LS_GKG * b.ventLs * (1 - lre) * dhd * t) / 1000,
         leak: (LATENT_W_PER_LS_GKG * b.leakLs * dhd * t) / 1000,
         people:
           (LATENT_W_PER_PERSON * (b.occupants || 0) * occupiedShare * t) / 1000,
