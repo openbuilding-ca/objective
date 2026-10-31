@@ -227,8 +227,20 @@ window.TEUI.SectionModules.sect08 = (function () {
         },
         e: { content: "% RH" },
         f: { content: "A.5.2" },
-        g: { label: "" },
-        h: { content: "Indoor Heating Season Avg." },
+        g: {
+          fieldId: "g_59",
+          semanticPath: "airQuality.humidity.coolingLatentBasis",
+          type: "dropdown",
+          dropdownId: "dd_g_59",
+          value: "F280",
+          tooltip: true,
+          options: [
+            { value: "F280", name: "F280 50%" },
+            { value: "Target", name: "Target RH" },
+          ],
+          label: "Indoor State for the Latent Cooling Load",
+        },
+        h: { content: "Indoor Cooling Season Avg." },
         i: {
           fieldId: "i_59",
           semanticPath: "airQuality.humidity.coolingTarget",
@@ -311,13 +323,27 @@ window.TEUI.SectionModules.sect08 = (function () {
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
           if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
+          if (cell.dropdownId) {
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
+            fields[cell.fieldId].options = cell.options;
+          }
         }
       });
     });
     return fields;
   }
+  // The section's dropdowns (g_59, the latent basis) - as Section 13's
   function getDropdownOptions() {
-    return {};
+    const options = {};
+    Object.values(sectionRows).forEach(row => {
+      if (!row.cells) return;
+      Object.values(row.cells).forEach(cell => {
+        if (cell.dropdownId && cell.options) {
+          options[cell.dropdownId] = cell.options;
+        }
+      });
+    });
+    return options;
   }
   function getLayout() {
     const layoutRows = [];

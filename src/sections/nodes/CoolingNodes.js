@@ -56,6 +56,7 @@
     "climate.cooling.setpoint",
     "climate.heating.setpoint",
     "building.indoorRH",
+    "building.coolingLatentBasis",
     "building.conditionedFloorArea",
     "building.typologySelection",
     ...[...AIR_COMPONENTS.map(([key]) => key), ...GROUND_COMPONENTS].flatMap((key) => [
@@ -123,6 +124,19 @@
       section: "S08",
       label: "Indoor Relative Humidity",
       unit: "%"
+    },
+    // The indoor state the coil is controlled to, for the latent load AND
+    // free cooling's "drier" test (Andy 2026-10-31: a CONTROL setpoint, not a
+    // sensor reading): "F280" = CSA F280's Hi, 9.3 g/kg (24 °C / 50 %);
+    // "Target" = the setpoint at i_59's RH. A measured indoor RH belongs to
+    // the hourly engine (P7), as an hourly series beside the station's.
+    {
+      id: "building.coolingLatentBasis",
+      legacyId: "g_59",
+      defaultValue: "F280",
+      classification: "C",
+      section: "S08",
+      label: "Indoor State for the Latent Cooling Load"
     }
     // NOTE: mechanical.ventilation.summerBoost (l_119) is registered in MechanicalNodes
   ];
@@ -246,7 +260,10 @@
           recoveryType: inputs["mechanical.ventilation.recoveryType"] || "HRV",
           ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"])
         };
-        return ISO.annual(b, station.months, CS.freeCooling(station, setpoint, indoorRH));
+        // S08's basis sets the indoor state for latent AND the drier test
+        const wIn =
+          inputs["building.coolingLatentBasis"] === "Target" ? undefined : ISO.F280_INDOOR_W;
+        return ISO.annual(b, station.months, CS.freeCooling(station, setpoint, indoorRH, wIn));
       }
     },
 

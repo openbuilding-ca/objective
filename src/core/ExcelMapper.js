@@ -108,6 +108,7 @@ class ExcelMapper {
       D58: "d_58", // TVOC ppm
       D59: "d_59", // Indoor Heating Season RH % (Slider)
       I59: "i_59", // Indoor Cooling Season RH % (Slider) used in Cooling.js
+      G59: "g_59", // Indoor state for the latent cooling load: F280 | Target (Dropdown)
 
       // Section 09: Occupant Internal Gains (REPORT! Sheet)
       D63: "d_63", // Occupants

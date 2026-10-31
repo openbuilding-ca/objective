@@ -1107,6 +1107,7 @@
           "d_58",
           "d_59",
           "i_59",
+          "g_59",
 
           // Section 09: Occupant Gains
           "d_63",

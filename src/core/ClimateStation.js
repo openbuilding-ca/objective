@@ -152,13 +152,14 @@
    *                    and the sum of (outdoor - setpoint) over them, K.h -
    *                    the hours heat recovery runs in cooling (the HRV
    *                    bypasses its core in the others)
+   *   wIn              the indoor humidity ratio, g/kg: the setpoint at
+   *                    indoorRHPct and the station's pressure, unless wInGkg
+   *                    gives it (S08's F280 basis, 9.3 g/kg)
    */
-  function freeCooling(station, setpointC, indoorRHPct) {
-    const wIn = humidityRatio(
-      setpointC,
-      indoorRHPct,
-      pressureAt(station.meta.elev)
-    );
+  function freeCooling(station, setpointC, indoorRHPct, wInGkg) {
+    const wIn = Number.isFinite(wInGkg)
+      ? wInGkg
+      : humidityRatio(setpointC, indoorRHPct, pressureAt(station.meta.elev));
     const hours = new Array(12).fill(0);
     const kh = new Array(12).fill(0);
     const hotHours = new Array(12).fill(0);

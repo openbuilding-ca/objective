@@ -346,11 +346,17 @@
       message:
         "Enter the Interior Heating Season Average RH% when available. This presently has no impact on OBJECTIVE calculations.",
     },
+    g_59: {
+      cell: "G59",
+      title: "Indoor State for the Latent Cooling Load",
+      message:
+        "The humidity the cooling system is CONTROLLED to - a setpoint, not a sensor reading. F280 50%: CSA F280's 9.3 g/kg (24 °C, 50% RH), the default. Target RH: the setpoint at the cooling season RH slider. Sets the latent load and which hours count as drier for free cooling. Rooms that run wetter than the target (kitchens, bathrooms) are a moisture and air-quality issue, not extra cooling energy.",
+    },
     i_59: {
       cell: "I59",
       title: "Interior Cooling Season RH% Average",
       message:
-        "Enter the Interior Cooling Season Average RH% when available. OBJECTIVE uses this in its dual Tetens formula calculations to determine the latent load on the Cooling system.",
+        "The RH% the cooling system is controlled to in the cooling season. With the latent basis (G59) set to Target RH it sets the latent cooling load (CSA F280 Annex B, on the climate station's monthly humidity) and which hours count as drier for free cooling; with F280 50% those use 9.3 g/kg instead. It always feeds the RH air-quality check.",
     },
     d_60: {
       cell: "D60",

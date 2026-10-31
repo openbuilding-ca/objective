@@ -50,9 +50,10 @@
  * 3 W per L/s per g/kg on the air leakage and the ventilation, 67 W per
  * occupant. Two readings of it:
  *  - ANNUAL (the energy): per month, Ho = the station's mean humidity ratio
- *    and Hi = the indoor air at the setpoint and i_59's RH (the same indoor
- *    state free cooling's "drier" test reads; 24 °C at 50 % is F280's own
- *    9.3 g/kg), over the share of the month that is cooling (f_C) - the
+ *    and Hi = the indoor state the coil is controlled to, S08's basis (g_59):
+ *    F280's 9.3 g/kg by default, or the setpoint at i_59's RH (the same
+ *    state free cooling's "drier" test reads - fc.wIn carries it), over the
+ *    share of the month that is cooling (f_C) - the
  *    coil removes moisture only while it runs. Added to the rows it belongs
  *    to: ventilation, leakage, internal (the occupants'). Free cooling's
  *    extra air enters only on hours drier than inside, so it adds none (it

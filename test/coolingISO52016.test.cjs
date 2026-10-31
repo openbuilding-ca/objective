@@ -223,6 +223,19 @@ const HOUSE = {
       `free-cooling hours ${hrs(fc40)} vs ${hrs(fc50)}`
   );
   if (!(at40.latent.total > at50.latent.total)) fail("drier indoors should cost more latent");
+  // S08's basis: F280 pins the indoor state at 9.3 g/kg whatever the slider
+  // says (latent and free-cooling hours both stay put); Target follows it
+  const f280At = (rh) => CS.freeCooling(st, 24, rh, ISO.F280_INDOOR_W);
+  const fA = f280At(40);
+  const fB = f280At(60);
+  const lA = ISO.annual({ ...HOUSE, boost: 1.5 }, st.months, fA).latent.total;
+  const lB = ISO.annual({ ...HOUSE, boost: 1.5 }, st.months, fB).latent.total;
+  console.log(
+    `  basis F280: wIn ${fA.wIn} g/kg; slider 40 % vs 60 %: latent ${lA.toFixed(1)} vs ${lB.toFixed(1)}, hours ${hrs(fA)} vs ${hrs(fB)}`
+  );
+  if (fA.wIn !== ISO.F280_INDOOR_W || lA !== lB || hrs(fA) !== hrs(fB)) fail("F280 basis should ignore the slider");
+  if (!(Math.abs(fc50.wIn - ISO.F280_INDOOR_W) < 0.2)) fail("Target at 50 % should sit near F280's 9.3 at Toronto's pressure");
+
   // only an ERV recovers latent: 60 % LRE leaves 40 % of the ventilation's,
   // leakage and occupants untouched; the same 60 % typed under HRV is ignored
   const fcT = CS.freeCooling(st, 24, 50);
