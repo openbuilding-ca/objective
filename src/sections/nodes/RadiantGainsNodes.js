@@ -128,7 +128,11 @@
     });
 
     // ========================================================================
-    // COOLING GAINS (k_73 to k_78)
+    // COOLING GAINS (k_73 to k_78): each glazing row's share of the
+    // unmitigated ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js)
+    // - area x SHGC x (1 - summer shading) x the station's monthly irradiation
+    // on the row's orientation, in the months with a need. The heating side
+    // keeps the gain factors above (NRC, ruled 2026-10-30).
     // ========================================================================
     rows.forEach(({ row, label }) => {
       graph.registerNode({
@@ -136,26 +140,9 @@
         legacyId: `k_${row}`,
         section: "S10",
         classification: "C",
-        dependencies: [
-          `radiantGains.row${row}.area`,
-          `radiantGains.row${row}.gainFactor`,
-          `radiantGains.row${row}.shgc`,
-          `radiantGains.row${row}.summerShading`,
-          `radiantGains.row${row}.orientation`
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Cooling Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`radiantGains.row${row}.area`]);
-          const gainFactor = parseNum(inputs[`radiantGains.row${row}.gainFactor`]);
-          const shgc = parseNum(inputs[`radiantGains.row${row}.shgc`], 0.35);
-          const summerShading = parseNum(inputs[`radiantGains.row${row}.summerShading`]) / 100;
-          const orientation = inputs[`radiantGains.row${row}.orientation`] || "Average";
-
-          const shgcNormalized = shgc / 0.5;
-          const coolingModifier = orientation === "Skylight" ? 1.25 : 0.5;
-
-          return area * gainFactor * shgcNormalized * (1 - summerShading) * coolingModifier;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[`glazing${row}`] ?? 0
       });
     });
 

@@ -346,11 +346,17 @@
       message:
         "Enter the Interior Heating Season Average RH% when available. This presently has no impact on OBJECTIVE calculations.",
     },
+    g_59: {
+      cell: "G59",
+      title: "Indoor State for the Latent Cooling Load",
+      message:
+        "The humidity the cooling system is CONTROLLED to - a setpoint, not a sensor reading. F280 50%: CSA F280's 9.3 g/kg (24 °C, 50% RH), the default. Target RH: the setpoint at the cooling season RH slider. Sets the latent load and which hours count as drier for free cooling. Rooms that run wetter than the target (kitchens, bathrooms) are a moisture and air-quality issue, not extra cooling energy.",
+    },
     i_59: {
       cell: "I59",
       title: "Interior Cooling Season RH% Average",
       message:
-        "Enter the Interior Cooling Season Average RH% when available. OBJECTIVE uses this in its dual Tetens formula calculations to determine the latent load on the Cooling system.",
+        "The RH% the cooling system is controlled to in the cooling season. With the latent basis (G59) set to Target RH it sets the latent cooling load (CSA F280 Annex B, on the climate station's monthly humidity) and which hours count as drier for free cooling; with F280 50% those use 9.3 g/kg instead. It always feeds the RH air-quality check.",
     },
     d_60: {
       cell: "D60",
@@ -664,6 +670,24 @@
       cell: "D119",
       title: "Ventilation Guidance",
       message: "8.33 l/s is Default, 12.5 l/s is considered best practice",
+    },
+    e_118: {
+      cell: "E118",
+      title: "Heat Recovery Type",
+      message:
+        "HRV: recovers sensible heat only (the SRE). ERV: also recovers moisture - enter its rated Latent Recovery Efficiency in the ERV LRE field (row V.3.1, beside the Latent Load Factor), from the unit's HVI / CSA C439 data sheet. Only an ERV reduces the latent cooling load.",
+    },
+    i_122: {
+      cell: "I122",
+      title: "Latent Load Method",
+      message:
+        "F280: CSA F280 Annex B as written - the design latent gives an ERV no credit. OBJECTIVE: our own method - the design latent credits the ERV's LRE and uses the S08 indoor state. ASHRAE 140: Class II extracts no latent heat (Section 12.2.1.13), so the latent load is zero and cooling is sensible only. The annual latent credits an ERV under F280 and OBJECTIVE alike.",
+    },
+    l_122: {
+      cell: "L122",
+      title: "ERV Latent Recovery Efficiency (LRE)",
+      message:
+        "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV.",
     },
     l_119: {
       cell: "L119",

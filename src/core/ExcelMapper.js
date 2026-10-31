@@ -108,6 +108,7 @@ class ExcelMapper {
       D58: "d_58", // TVOC ppm
       D59: "d_59", // Indoor Heating Season RH % (Slider)
       I59: "i_59", // Indoor Cooling Season RH % (Slider) used in Cooling.js
+      G59: "g_59", // Indoor state for the latent cooling load: F280 | Target (Dropdown)
 
       // Section 09: Occupant Internal Gains (REPORT! Sheet)
       D63: "d_63", // Occupants
@@ -194,6 +195,9 @@ class ExcelMapper {
       D119: "d_119", // Rate Per Person (Editable Number)
       L119: "l_119", // Summer Boost (Dropdown)
       K120: "k_120", // Unoccupied Setback % (Percentage Dropdown/Slider) - NOTE: Stores value like "0.9"
+      E118: "e_118", // Heat Recovery Type HRV / ERV (Dropdown)
+      L122: "l_122", // ERV Latent Recovery Efficiency % (Editable Number, ERV only)
+      I122: "i_122", // Latent Load Method: F280 | OBJECTIVE | ASHRAE140 (Dropdown)
 
       // Section 15: TEUI Summary (REPORT! Sheet)
       D142: "d_142", // Cost Premium HP (Editable Number)
@@ -358,6 +362,9 @@ class ExcelMapper {
       D119: "ref_d_119",
       L119: "ref_l_119",
       K120: "ref_k_120",
+      E118: "ref_e_118",
+      L122: "ref_l_122",
+      I122: "ref_i_122",
 
       // Section 15: TEUI Summary (REFERENCE! Sheet)
       D142: "ref_d_142",

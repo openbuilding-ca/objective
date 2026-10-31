@@ -257,24 +257,15 @@
     // Migrated from EnvelopeNodes.js during consolidation
     // ========================================================================
 
-    // j_101: Heat Gain Rate (Air-Facing)
-    graph.registerNode({
-      id: "envelope.airFacing.heatGainRate",
-      legacyId: "j_101",
-      section: "S12",
-      classification: "C",
-      dependencies: ["envelope.airFacing.uValue", "climate.cooling.degreedays"],
-      label: "Heat Gain Rate (Ae) (kWh/m²)",
-      compute: (inputs) => {
-        const cdd = inputs["climate.cooling.degreedays"];
-        // Legacy returns 0 when CDD unavailable
-        if (isUnavailable(cdd)) return 0;
-
-        const u = parseNum(inputs["envelope.airFacing.uValue"], 0);
-        // Heat gain = U × CDD × 24 / 1000
-        return (u * parseNum(cdd) * 24) / 1000;
-      }
-    });
+    // Heat gains (rows 101-102): each envelope's share of the unmitigated
+    // ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js) - the sum
+    // of its S11 components' shares, opaque solar included; the j column is
+    // that per m².
+    const AIR_KEYS = ["roof", "walls", "exposedFloor", "doors", "windowNorth", "windowEast",
+      "windowSouth", "windowWest", "skylights"];
+    const GROUND_KEYS = ["wallsBelowGrade", "slabOnGrade"];
+    const share = (inputs, keys) =>
+      keys.reduce((s, k) => s + (inputs["cooling.iso52016"]?.rows?.[k] ?? 0), 0);
 
     // k_101: Total Heat Gain (Air-Facing)
     graph.registerNode({
@@ -282,28 +273,22 @@
       legacyId: "k_101",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.airFacing.heatGainRate", "envelope.airFacing.area"],
+      dependencies: ["cooling.iso52016"],
       label: "Total Heat Gain (Ae) (kWh/yr)",
-      compute: (inputs) => {
-        const rate = parseNum(inputs["envelope.airFacing.heatGainRate"], 0);
-        const area = parseNum(inputs["envelope.airFacing.area"], 0);
-        return rate * area;
-      }
+      compute: (inputs) => share(inputs, AIR_KEYS)
     });
 
-    // j_102: Heat Gain Rate (Ground-Facing)
+    // j_101: Heat Gain Rate (Air-Facing)
     graph.registerNode({
-      id: "envelope.groundFacing.heatGainRate",
-      legacyId: "j_102",
+      id: "envelope.airFacing.heatGainRate",
+      legacyId: "j_101",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.uValue", "climate.groundFacing.cdd"],
-      label: "Heat Gain Rate (Ag) (kWh/m²)",
+      dependencies: ["envelope.airFacing.totalHeatGain", "envelope.airFacing.area"],
+      label: "Heat Gain Rate (Ae) (kWh/m²)",
       compute: (inputs) => {
-        const gfcdd = inputs["climate.groundFacing.cdd"];
-        const u = parseNum(inputs["envelope.groundFacing.uValue"], 0);
-        // Heat gain = U × GF_CDD × 24 / 1000
-        return (u * parseNum(gfcdd, 0) * 24) / 1000;
+        const area = parseNum(inputs["envelope.airFacing.area"], 0);
+        return area > 0 ? parseNum(inputs["envelope.airFacing.totalHeatGain"]) / area : 0;
       }
     });
 
@@ -313,12 +298,22 @@
       legacyId: "k_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.heatGainRate", "envelope.groundFacing.area"],
+      dependencies: ["cooling.iso52016"],
       label: "Total Heat Gain (Ag) (kWh/yr)",
+      compute: (inputs) => share(inputs, GROUND_KEYS)
+    });
+
+    // j_102: Heat Gain Rate (Ground-Facing)
+    graph.registerNode({
+      id: "envelope.groundFacing.heatGainRate",
+      legacyId: "j_102",
+      section: "S12",
+      classification: "C",
+      dependencies: ["envelope.groundFacing.totalHeatGain", "envelope.groundFacing.area"],
+      label: "Heat Gain Rate (Ag) (kWh/m²)",
       compute: (inputs) => {
-        const rate = parseNum(inputs["envelope.groundFacing.heatGainRate"], 0);
         const area = parseNum(inputs["envelope.groundFacing.area"], 0);
-        return rate * area;
+        return area > 0 ? parseNum(inputs["envelope.groundFacing.totalHeatGain"]) / area : 0;
       }
     });
 
@@ -475,36 +470,16 @@
       }
     });
 
-    // k_103: Air Leakage Heat Gain (cooling season)
+    // k_103: Air Leakage Heat Gain - the leakage's share of the unmitigated
+    // ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js)
     graph.registerNode({
       id: "airTightness.heatGain",
       legacyId: "k_103",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "climate.cooling.degreedays"
-      ],
+      dependencies: ["cooling.iso52016"],
       label: "Air Leakage Heat Gain (kWh/yr)",
-      compute: (inputs) => {
-        const cdd = inputs["climate.cooling.degreedays"];
-        // Legacy returns 0 when CDD unavailable
-        if (isUnavailable(cdd)) return 0;
-
-        const nrl50 = parseNum(inputs["airTightness.nrl50"]);
-        const areaAir = parseNum(inputs["envelope.airFacing.area"]);
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-
-        // Legacy formula: (1.21 × NRL50 × area / N_factor × CDD × 24) / 1000
-        const leakageFactor = 1.21;
-        const baseLeakageCoefficient = nFactor > 0
-          ? (leakageFactor * nrl50 * areaAir) / nFactor
-          : 0;
-
-        return (baseLeakageCoefficient * parseNum(cdd) * 24) / 1000;
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.leak ?? 0
     });
 
     // ========================================================================
@@ -537,8 +512,10 @@
     // k_104: Total Envelope Heat Gain
     // Excel: =IF(H21="Capacitance", K98, SUM(K101:K102))
     // NOTE: k_103 (air leakage heat gain) is NOT included in this sum
-    // NOTE: k_101/k_102 are from Section 12 (envelope.*.totalHeatGain) using weighted U-values
-    //       k_98 is from Section 11 (transmissionLoss.components.subtotalHeatGain) using component sums
+    // NOTE: since the ISO 52016-1 cooling, k_101 + k_102 and k_98 are the same
+    //       sum - S11's components' shares of the monthly need - so the
+    //       Capacitance setting no longer changes the cooling (thermal mass is
+    //       C_m from S05's typology, inside the need).
     graph.registerNode({
       id: "envelope.total.heatGain",
       legacyId: "k_104",
