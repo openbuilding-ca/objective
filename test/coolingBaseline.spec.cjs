@@ -4,8 +4,9 @@
  *
  * Imports every case study CSV and records the cooling chain, its climate
  * inputs and TEUI for the Target and Reference models. Writes
- * test/cooling-<label>.json, where <label> comes from COOLING_LABEL
- * (default "baseline"). Run once on the unchanged engine ("baseline"), then
+ * test/cooling-<label>.json, where <label> comes from COOLING_LABEL. Without
+ * it the spec skips: a plain `npm test` must not overwrite a recorded run (it
+ * once replaced the BEFORE file with the new engine's values). Run once on the unchanged engine ("baseline"), then
  * after the ISO 52016-1 work ("iso52016"), and compare the two files.
  *
  *   COOLING_LABEL=baseline npx playwright test test/coolingBaseline.spec.cjs --config=playwright.config.cjs
@@ -21,7 +22,7 @@ const fs = require("fs");
 const path = require("path");
 
 const CASE_STUDIES_DIR = path.join(__dirname, "computation", "case-studies");
-const LABEL = process.env.COOLING_LABEL || "baseline";
+const LABEL = process.env.COOLING_LABEL;
 const OUT_FILE = path.join(__dirname, `cooling-${LABEL}.json`);
 const URL = process.env.COOLING_URL || `file://${path.join(__dirname, "..", "index.html")}`;
 
@@ -82,6 +83,7 @@ function csvField(csv, id) {
 }
 
 test("record the cooling chain for every case study", async ({ page }) => {
+  test.skip(!LABEL, "set COOLING_LABEL to record a run");
   test.setTimeout(10 * 60 * 1000);
   await page.addInitScript(() => {
     localStorage.setItem("disclaimerSeen", "true");
