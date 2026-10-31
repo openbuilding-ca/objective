@@ -1,10 +1,9 @@
 name: Tests
 
+# On demand only (Andy 2026-10-31): Actions > Tests > Run workflow, or `gh workflow run test.yml`.
+# Run the suite locally before a PR: npx playwright test --config=playwright.config.cjs
 on:
-  push:
-    branches: [main, deploy/dev]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
