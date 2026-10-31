@@ -80,6 +80,27 @@
       section: "S13",
       label: "Cooling COP (Dedicated System)"
     },
+    // Which model this is - true only in the Reference model, set by
+    // ComputationIntegration.populateReferenceModel. No legacyId: never a
+    // field, never in a file.
+    {
+      id: "model.isReference",
+      defaultValue: false,
+      classification: "C",
+      section: "S13",
+      label: "Reference Model"
+    },
+    // The selected standard's minimum COPc (ReferenceValues j_116), set on the
+    // Reference model by populateReferenceModel - read, not j_116, because the
+    // CSV import SKIPS ref_j_116 for a heat pump and the previous project's
+    // value stays behind (03's 0.00 reached 04-10 on 2026-10-31).
+    {
+      id: "model.referenceCopCool",
+      defaultValue: null,
+      classification: "C",
+      section: "S13",
+      label: "Reference Standard Minimum COPc"
+    },
 
     // Ventilation
     {
@@ -372,19 +393,35 @@
         "mechanical.cooling.systemType",
         "mechanical.heating.systemType",
         "mechanical.heating.copCoolDerived",
-        "mechanical.cooling.copDedicated"
+        "mechanical.cooling.copDedicated",
+        "model.isReference",
+        "model.referenceCopCool"
       ],
       classification: "C",
       section: "S13",
       label: "Effective Cooling COP",
+      // Andy 2026-10-31: "Reference COP is just the minimum whatever reference
+      // standard tells us it must be, in Reference mode only. In target mode,
+      // HSPF can determine the COPc for a shared Heating/Cooling system, or if
+      // gas or another heating system is selected (Non-heat-pump) then a user
+      // can set whatever COPc matches the equipment's nameplate efficiency."
+      // No cooling: 0 - the load stands, unmet. Reference: the standard's
+      // minimum COPc - for a heat pump straight from the standard
+      // (model.referenceCopCool), otherwise its j_116 as before. Target: a heat
+      // pump's COPc from its HSPF; otherwise the nameplate j_116.
       compute: (inputs) => {
         const coolingType = inputs["mechanical.cooling.systemType"];
         const heatingType = inputs["mechanical.heating.systemType"];
         const copFromHeatpump = parseNum(inputs["mechanical.heating.copCoolDerived"], 1);
         const copDedicated = parseNum(inputs["mechanical.cooling.copDedicated"], 2.66);
+        const isReference = inputs["model.isReference"] === true;
+        const copStandard = parseNum(inputs["model.referenceCopCool"], 0);
 
         if (coolingType === "No Cooling") return 0;
-        if (heatingType === "Heatpump") return copFromHeatpump;
+        if (heatingType === "Heatpump") {
+          if (isReference && copStandard > 0) return copStandard;
+          return copFromHeatpump;
+        }
         if (coolingType === "Cooling") return copDedicated;
         return 0;
       }
@@ -698,6 +735,7 @@
     if (!Registry) return;
 
     for (const input of MechanicalInputs) {
+      if (!input.legacyId) continue; // model.*: not fields
       Registry.register({
         legacyId: input.legacyId,
         semanticPath: input.id,

@@ -78,8 +78,9 @@ def pct(new, old):
     return (new - old) / old * 100
 
 
-def explain(b, n):
-    """One case-model's TEUI change, split exactly: (Δ sensible + latent) / COP / area."""
+def explain(b, n, model):
+    """One case-model's TEUI change, split exactly by the cooling electricity
+    (CED mitigated / COP / area), each run on its own COP."""
     area = num(n["building.conditionedFloorArea"])
     cop = num(n["mechanical.cooling.effectiveCop"])
     if n["mechanical.cooling.systemType"] == "No Cooling" or not cop:
@@ -88,19 +89,36 @@ def explain(b, n):
     latent = iso.get("latent") or 0.0
     ced_b = num(b["energy.ced.mitigated"]) or 0.0
     ced_n = num(n["energy.ced.mitigated"]) or 0.0
-    sens = (ced_n - latent) - ced_b
+    elec_b = num(b["mechanical.cooling.electricalDemand"]) or 0.0
+    cop_b = ced_b / elec_b if elec_b else cop  # BEFORE's COP, from its own d_117
     d_teui = (num(n["energy.teui"]) or 0) - (num(b["energy.teui"]) or 0)
     vent_m2 = (num(n["ventilation.volumetricRate"]) or 0) / area if area else 0
+    if abs(cop_b - cop) < 0.005:
+        sens = (ced_n - latent) - ced_b
+        head = (
+            f"ΔTEUI {d_teui:+.1f} = (NOW sensible − BEFORE CED {sens / area:+.1f} + NOW latent"
+            f" {latent / area:+.1f} kWh/m²) ÷ COP {cop:.2f}"
+        )
+    else:
+        head = (
+            f"ΔTEUI {d_teui:+.1f} = NOW (sensible {(ced_n - latent) / area:.1f} + latent {latent / area:.1f}"
+            f" kWh/m²) ÷ COP {cop:.2f} − BEFORE {ced_b / area:.1f} kWh/m² ÷ COP {cop_b:.2f}"
+        )
     parts = [
-        f"ΔTEUI {d_teui:+.1f} = (NOW sensible − BEFORE CED {sens / area:+.1f} + NOW latent {latent / area:+.1f}"
-        f" kWh/m²) ÷ COP {cop:.2f}",
+        head,
         f"latent: ventilation {iso.get('latentVent', 0):,.0f}, leakage {iso.get('latentLeak', 0):,.0f}, "
         f"occupants {iso.get('latentPeople', 0):,.0f} kWh",
         f"ventilation {vent_m2:.2f} L/s·m²",
     ]
-    if cop < 1.5:
+    if model == "reference" and abs(cop_b - cop) >= 0.005:
         parts.append(
-            f"COP {cop:.2f} is the heat pump's derived cooling COP, max(1, HSPF/3.412 − 1) - it multiplies every kWh"
+            f"the reference's cooling COP moved from {cop_b:.2f} (derived from the heat pump's HSPF) to {cop:.2f},"
+            " the standard's minimum (Andy 2026-10-31: reference = the standard's minimum, in Reference mode only)"
+        )
+    elif cop < 1.5:
+        parts.append(
+            f"COP {cop:.2f} is the target heat pump's derived cooling COP, max(1, HSPF/3.412 − 1) - it multiplies"
+            " every kWh"
         )
     return " · ".join(parts)
 
@@ -149,7 +167,7 @@ def main():
             )
     out += ["", f"**{within} of {total} within {BAR:.0f} %.**", "", "## Every miss, explained", ""]
     for c, m in misses:
-        out.append(f"- **{c[:-4]} — {m}**: {explain(before[c][m], now[c][m])}")
+        out.append(f"- **{c[:-4]} — {m}**: {explain(before[c][m], now[c][m], m)}")
     out += ["", "## The full cooling chain, per case", ""]
     for c in cases:
         out += [
