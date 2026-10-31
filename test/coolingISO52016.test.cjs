@@ -18,6 +18,18 @@
  *    a heavier building (C_m) needs less; free cooling never exceeds its
  *    uncapped potential; f_C keeps January's active cooling under a day
  *    and July's over 25 days.
+ * 4. LATENT IS F280 ANNEX B'S. The indoor state at 24 °C / 50 % is F280's
+ *    Hi = 9.3 g/kg (so i_59 reproduces the standard at its own RH); the
+ *    design Ho from C-2's July 2.5 % dry and wet bulbs, at standard
+ *    pressure, lands within 0.6 g/kg of F280 Table 5's OHR at six cities
+ *    (five round to it; Regina 11.4 vs 12) - at each station's own pressure
+ *    three miss and Calgary is 1.2 off, so the Table is sea-level (the
+ *    control); the annual latent is the difference between the
+ *    need and its sensible part, lands on vent / leak / internal, and is
+ *    near zero on the dry prairie (Calgary) where Toronto's is real; a drier
+ *    indoor setting (i_59 40 %) costs more latent AND counts fewer free-
+ *    cooling hours - the one slider moves both, the same way.
+ *    POSITIVE CONTROL: the identity wet bulb = dry bulb gives saturation.
  */
 const fs = require("fs");
 const path = require("path");
@@ -62,6 +74,8 @@ const HOUSE = {
   hrvPercent: 0,
   leakLs: 8,
   internalKWh: 6000,
+  occupants: 4,
+  occupiedHours: 4380,
 };
 
 (async () => {
@@ -141,6 +155,75 @@ const HOUSE = {
   const days = (m) => both.months.fC[m] * window.TEUI.CoolingISO52016.DAYS[m];
   console.log(`  active cooling: January ${days(0).toFixed(2)} days, July ${days(6).toFixed(1)}; year ${both.coolingDays.toFixed(1)}`);
   if (!(days(0) < 1 && days(6) > 25)) fail("f_C");
+
+  // 4
+  const hi = CS.humidityRatio(24, 50, CS.pressureAt(0));
+  console.log(`latent: indoor 24 °C / 50 % at sea level = ${hi.toFixed(2)} g/kg (F280 Hi ${ISO.F280_INDOOR_W})`);
+  if (Math.abs(hi - ISO.F280_INDOOR_W) > 0.05) fail("indoor state vs F280's 9.3 g/kg");
+  const sat = CS.humidityRatio(20, 100, 101325);
+  if (Math.abs(CS.humidityRatioFromWetBulb(20, 20, 101325) - sat) > 1e-9) fail("wet bulb = dry bulb should be saturation");
+  window.TEUI.ClimateData = undefined;
+  require(path.join(ROOT, "src/core/ClimateValues.js"));
+  const C2 = window.TEUI.ClimateData;
+  // F280-12 Table 5's OHR, g/kg (the standard prints whole numbers)
+  const OHR = [
+    ["BC", "Vancouver (City Hall)", 11],
+    ["AB", "Calgary", 8],
+    ["SK", "Regina", 12],
+    ["MB", "Winnipeg", 15],
+    ["ON", "Toronto (City Hall)", 14],
+    ["NS", "Halifax", 12],
+  ];
+  // F280 computes Ho at standard pressure: within 0.6 g/kg of the Table at
+  // all six (the Table prints whole numbers of rounded design temperatures);
+  // at the station's own pressure the high cities drift (Calgary, 1 045 m).
+  let worstStd = 0;
+  let worstStation = 0;
+  const ohrLine = OHR.map(([prov, city, ohr]) => {
+    const d = C2[prov][city];
+    const ho = CS.humidityRatioFromWetBulb(d.July_2_5_Tdb, d.July_2_5_Twb, ISO.F280_PRESSURE);
+    const hoSt = CS.humidityRatioFromWetBulb(d.July_2_5_Tdb, d.July_2_5_Twb, CS.pressureAt(d["Elev ASL (m)"]));
+    worstStd = Math.max(worstStd, Math.abs(ho - ohr));
+    worstStation = Math.max(worstStation, Math.abs(hoSt - ohr));
+    return `${city} ${ho.toFixed(2)} (${ohr})`;
+  });
+  console.log(`  design Ho vs F280 Table 5 OHR: ${ohrLine.join(", ")}`);
+  console.log(
+    `  worst: standard pressure ${worstStd.toFixed(2)} g/kg, station pressure ${worstStation.toFixed(2)} (control)`
+  );
+  if (worstStd > 0.6) fail("design Ho vs F280 Table 5");
+  if (!(worstStation > 1)) fail("control: station pressure should drift from the Table");
+  const dl = ISO.designLatent({ occupants: 4, ventLs: 40, leakLs: 8, ho: 14.4 });
+  if (Math.abs(dl - (4 * 67 + 3 * 48 * (14.4 - 9.3))) > 1e-9) fail("designLatent arithmetic");
+
+  const L = both.latent;
+  console.log(
+    `  Toronto annual latent ${L.total.toFixed(1)} kWh (vent ${L.vent.toFixed(1)}, leak ${L.leak.toFixed(1)}, people ${L.people.toFixed(1)}); ` +
+      `July DHD ${L.months[6].dhd.toFixed(2)} g/kg; sensible ${both.sensible.toFixed(1)}`
+  );
+  if (!(L.vent > 0 && L.leak > 0 && L.people > 0)) fail("Toronto latent should be real on every term");
+  // the coil removes moisture only while it cools: January's f_C ~ 0.02
+  console.log(`  occupants' latent: January ${L.months[0].people.toFixed(2)} kWh, July ${L.months[6].people.toFixed(1)}`);
+  if (!(L.months[0].people < 0.05 * L.months[6].people)) fail("latent should follow f_C");
+  if (rel(both.unmitigated - both.sensible, L.total) > 1e-9) fail("unmitigated = sensible + latent");
+  if (rel(both.rows.vent - (both.rowsSensible.vent || 0), L.vent) > 1e-9) fail("vent latent on the vent row");
+  if (rel(both.rows.internal - both.rowsSensible.internal, L.people) > 1e-9) fail("people latent on the internal row");
+  const yyc = await CS.load(CS.stationFor("AB", "Calgary"), read);
+  const dry = ISO.annual(HOUSE, yyc.months, CS.freeCooling(yyc, 24, 50));
+  const airDry = dry.latent.vent + dry.latent.leak;
+  console.log(`  Calgary air latent ${airDry.toFixed(1)} kWh vs Toronto ${(L.vent + L.leak).toFixed(1)}`);
+  if (!(airDry < 0.1 * (L.vent + L.leak))) fail("the dry prairie should carry next to no air latent");
+  const fc40 = CS.freeCooling(st, 24, 40);
+  const fc50 = CS.freeCooling(st, 24, 50);
+  const at40 = ISO.annual({ ...HOUSE, boost: 1.5 }, st.months, fc40);
+  const at50 = ISO.annual({ ...HOUSE, boost: 1.5 }, st.months, fc50);
+  const hrs = (fc) => fc.hours.reduce((s, v) => s + v, 0);
+  console.log(
+    `  i_59 40 % vs 50 %: latent ${at40.latent.total.toFixed(1)} vs ${at50.latent.total.toFixed(1)} kWh, ` +
+      `free-cooling hours ${hrs(fc40)} vs ${hrs(fc50)}`
+  );
+  if (!(at40.latent.total > at50.latent.total)) fail("drier indoors should cost more latent");
+  if (!(hrs(fc40) < hrs(fc50))) fail("drier indoors should count fewer free-cooling hours");
 
   console.log(ok ? "PASS" : "FAIL");
   process.exit(ok ? 0 : 1);

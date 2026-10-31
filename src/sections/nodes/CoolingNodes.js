@@ -8,9 +8,10 @@
  * station (cooling.iso52016 -> src/core/CoolingISO52016.js, ABCD-OBJECTIVE-PRO
  * §4.1 step 6). Free cooling (h_124), days of active cooling (m_124) and the
  * gain rows the need is attributed to (k_64-k_79, k_85-k_97, k_101-k_103,
- * d_122, d_123) all read that one node. The psychrometric nodes below (wet
- * bulb, humidity ratios, latent load factor) still run on l_20 / l_21 until
- * step 7 replaces the latent load with F280 Annex B's.
+ * d_122, d_123) all read that one node, the annual latent load included
+ * (F280 Annex B, step 7). The latent load factor is F280 Annex B's design
+ * form, for sizing. l_20 / l_21 (S03's night-time temperature and season RH)
+ * are still shown but no longer feed the energy path.
  *
  * Parnas Tables: docs/parnas-tables/cooling/
  */
@@ -21,45 +22,17 @@
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
 
   // ============================================================================
-  // CONSTANTS (from Cooling.js)
+  // HELPERS
   // ============================================================================
 
-  const CONSTANTS = {
-    airDensity: 1.204,           // kg/m³ - Mass of air at standard conditions
-    specificHeatCapacity: 1005,  // J/(kg·K) - Specific heat capacity of air
-    latentHeatVaporization: 2501000, // J/kg - Latent heat of vaporization
-    outdoorSeasonalRH: 0.7,      // A57 - Outdoor seasonal relative humidity
-  };
-
-  // ============================================================================
-  // HELPER FUNCTIONS
-  // ============================================================================
+  /** W/K per L/s of air - F280ComplianceNodes' AIR_HEAT_CAPACITY. */
+  const AIR_HEAT_CAPACITY = 1.21;
 
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
     if (value === "Unavailable") return defaultVal;
     const num = parseFloat(String(value).replace(/,/g, ""));
     return isNaN(num) ? defaultVal : num;
-  }
-
-  /**
-   * Calculate saturation vapor pressure using Tetens formula
-   * @param {number} temp - Temperature in °C
-   * @returns {number} Saturation vapor pressure in Pa
-   */
-  function saturationVaporPressure(temp) {
-    return 610.94 * Math.exp((17.625 * temp) / (temp + 243.04));
-  }
-
-  /**
-   * Calculate wet bulb temperature from dry bulb and RH
-   * Excel: E64-E66 linear approximation
-   * @param {number} tdb - Dry bulb temperature °C
-   * @param {number} rhPercent - Relative humidity %
-   * @returns {number} Wet bulb temperature °C
-   */
-  function wetBulbTemperature(tdb, rhPercent) {
-    return tdb - (tdb - (tdb - (100 - rhPercent) / 5)) * (0.1 + 0.9 * (rhPercent / 100));
   }
 
   // The building as cooling.iso52016 reads it. S11's air-facing rows with
@@ -104,7 +77,9 @@
     "airTightness.nFactor",
     "energy.plugLoads.subtotal",
     "internal.occupants.annual",
-    "waterHeating.systemLosses"
+    "waterHeating.systemLosses",
+    "occupancy.occupants",
+    "occupancy.occupiedHours"
   ];
 
   // ============================================================================
@@ -156,113 +131,59 @@
 
   const CoolingNodesStage1 = [
     // ========================================================================
-    // Wet Bulb Temperature
-    // ========================================================================
-    {
-      id: "cooling.wetBulbTemperature",
-      legacyId: "cooling_wetBulbTemperature",
-      dependencies: [
-        "climate.cooling.nightTemp",
-        "climate.cooling.seasonMeanRH"
-      ],
-      classification: "C",
-      section: "S13",
-      label: "Wet Bulb Temperature",
-      unit: "°C",
-      compute: (inputs) => {
-        const tdb = parseNum(inputs["climate.cooling.nightTemp"], 20.43);
-        const rh = parseNum(inputs["climate.cooling.seasonMeanRH"], 55.85);
-        return +wetBulbTemperature(tdb, rh).toFixed(4);
-      }
-    },
-
-    // ========================================================================
-    // Humidity Ratios (for latent load factor calculation)
-    // ========================================================================
-    {
-      id: "cooling.humidityRatio.outdoor",
-      legacyId: "cooling_humidityRatioAvg",
-      dependencies: ["cooling.wetBulbTemperature"],
-      classification: "C",
-      section: "S13",
-      label: "Outdoor Humidity Ratio",
-      unit: "kg/kg",
-      compute: (inputs) => {
-        const twb = parseNum(inputs["cooling.wetBulbTemperature"], 15);
-        const pSat = saturationVaporPressure(twb);
-        const partialPressure = pSat * CONSTANTS.outdoorSeasonalRH;
-        const atmPressure = 101325;
-        const humidityRatio = (0.62198 * partialPressure) / (atmPressure - partialPressure);
-        return +humidityRatio.toFixed(6);
-      }
-    },
-    {
-      id: "cooling.humidityRatio.indoor",
-      legacyId: "cooling_humidityRatioIndoor",
-      dependencies: [
-        "climate.cooling.setpoint",
-        "building.indoorRH"
-      ],
-      classification: "C",
-      section: "S13",
-      label: "Indoor Humidity Ratio",
-      unit: "kg/kg",
-      compute: (inputs) => {
-        const setpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
-        const indoorRH = parseNum(inputs["building.indoorRH"], 45) / 100;
-        const pSatIndoor = saturationVaporPressure(setpoint);
-        const partialPressureIndoor = pSatIndoor * indoorRH;
-        const atmPressure = 101325;
-        const humidityRatio = (0.62198 * partialPressureIndoor) / (atmPressure - partialPressureIndoor);
-        return +humidityRatio.toFixed(6);
-      }
-    },
-    {
-      id: "cooling.humidityRatio.difference",
-      legacyId: "cooling_humidityRatio",
-      dependencies: [
-        "cooling.humidityRatio.outdoor",
-        "cooling.humidityRatio.indoor"
-      ],
-      classification: "C",
-      section: "S13",
-      label: "Humidity Ratio Difference",
-      unit: "kg/kg",
-      compute: (inputs) => {
-        const outdoor = parseNum(inputs["cooling.humidityRatio.outdoor"], 0);
-        const indoor = parseNum(inputs["cooling.humidityRatio.indoor"], 0);
-        return +(outdoor - indoor).toFixed(6);
-      }
-    },
-
-    // ========================================================================
-    // Latent Load Factor (A6)
+    // Latent Load Factor - F280-12 Annex B.6.3.1's direct method at DESIGN:
+    // (sensible + latent) / sensible, so f280.nominalCoolingCapacity's
+    // total x max(1, llf) is the Annex's HGb = Σ HGsr + HGlp + HGlal + HGlav
+    // (it "replaces" 6.3.1's 1.3). Sensible = d_139 + the infiltration gain
+    // the F280 node adds (the same 1.21 x NRL50 x Ae / N x ΔT); latent = 67 W
+    // per occupant + 3 W per L/s per g/kg on leakage and ventilation, DHD =
+    // Ho - 9.3 g/kg, Ho at the July 2.5 % dry bulb and its coincident wet
+    // bulb, at standard pressure (as F280's Table 5 OHR). Before the scripts
+    // load: F280's 1.3.
     // ========================================================================
     {
       id: "cooling.latentLoadFactor",
       legacyId: "cooling_latentLoadFactor",
       dependencies: [
-        "climate.cooling.nightTemp",
+        "energy.peakCooling.totalKw",
+        "airTightness.nrl50",
+        "envelope.airFacing.area",
+        "airTightness.nFactor",
+        "climate.temperature.hottest",
+        "climate.temperature.hottestWetBulb",
         "climate.cooling.setpoint",
-        "cooling.humidityRatio.difference"
+        "ventilation.volumetricRate",
+        "occupancy.occupants"
       ],
       classification: "C",
       section: "S13",
       label: "Latent Load Factor",
       compute: (inputs) => {
-        // Formula: A6 = 1 + [latentHeatVaporization × humidityRatioDiff] / [Cp × (nightTemp - setpoint)]
-        const nightTemp = parseNum(inputs["climate.cooling.nightTemp"], 20.43);
-        const setpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
-        const humidityRatioDiff = parseNum(inputs["cooling.humidityRatio.difference"], 0);
-
-        const numerator = CONSTANTS.latentHeatVaporization * humidityRatioDiff;
-        const denominator = CONSTANTS.specificHeatCapacity * (nightTemp - setpoint);
-
-        if (denominator === 0) {
-          return 1.0; // Avoid division by zero
-        }
-
-        return +(1 + numerator / denominator).toFixed(4);
+        const CS = window.TEUI?.ClimateStation;
+        const ISO = window.TEUI?.CoolingISO52016;
+        if (!CS || !ISO) return 1.3;
+        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
+        const leakLs = nFactor > 0
+          ? (parseNum(inputs["airTightness.nrl50"]) * parseNum(inputs["envelope.airFacing.area"])) / nFactor
+          : 0;
+        const tdb = parseNum(inputs["climate.temperature.hottest"], 34);
+        const dT = tdb - parseNum(inputs["climate.cooling.setpoint"], 24);
+        const sensibleW =
+          parseNum(inputs["energy.peakCooling.totalKw"]) * 1000 +
+          (dT > 0 ? AIR_HEAT_CAPACITY * leakLs * dT : 0);
+        if (sensibleW <= 0) return 1;
+        const ho = CS.humidityRatioFromWetBulb(
+          tdb,
+          parseNum(inputs["climate.temperature.hottestWetBulb"], 23),
+          ISO.F280_PRESSURE
+        );
+        const latentW = ISO.designLatent({
+          occupants: parseNum(inputs["occupancy.occupants"], 4),
+          ventLs: parseNum(inputs["ventilation.volumetricRate"]),
+          leakLs,
+          ho
+        });
+        return +(1 + latentW / sensibleW).toFixed(4);
       }
     },
 
@@ -317,7 +238,9 @@
           internalKWh:
             parseNum(inputs["energy.plugLoads.subtotal"]) +
             parseNum(inputs["internal.occupants.annual"]) +
-            parseNum(inputs["waterHeating.systemLosses"])
+            parseNum(inputs["waterHeating.systemLosses"]),
+          occupants: parseNum(inputs["occupancy.occupants"], 4),
+          occupiedHours: parseNum(inputs["occupancy.occupiedHours"], 4380)
         };
         return ISO.annual(b, station.months, CS.freeCooling(station, setpoint, indoorRH));
       }
@@ -442,8 +365,7 @@
     nodesStage1: CoolingNodesStage1,
     nodesStage2: CoolingNodesStage2,
     nodes: [...CoolingNodesStage1, ...CoolingNodesStage2],
-    register: registerCoolingNodes,
-    constants: CONSTANTS
+    register: registerCoolingNodes
   };
 
   console.log("[CoolingNodes] Module loaded");

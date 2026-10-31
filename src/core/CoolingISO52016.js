@@ -44,6 +44,22 @@
  * inflow. The rows sum to the need exactly; a term carrying heat OUT takes
  * none. Free cooling and recovery are the differences between three runs:
  * none, recovery only, both.
+ *
+ * LATENT (ABCD-OBJECTIVE-PRO §4.1 step 7) is CSA F280-12 Annex B's direct
+ * method (B.6.3.1): the design humidity difference DHD = Ho - Hi (never < 0),
+ * 3 W per L/s per g/kg on the air leakage and the ventilation, 67 W per
+ * occupant. Two readings of it:
+ *  - ANNUAL (the energy): per month, Ho = the station's mean humidity ratio
+ *    and Hi = the indoor air at the setpoint and i_59's RH (the same indoor
+ *    state free cooling's "drier" test reads; 24 °C at 50 % is F280's own
+ *    9.3 g/kg), over the share of the month that is cooling (f_C) - the
+ *    coil removes moisture only while it runs. Added to the rows it belongs
+ *    to: ventilation, leakage, internal (the occupants'). Free cooling's
+ *    extra air enters only on hours drier than inside, so it adds none (it
+ *    would remove some; not credited). The HRV moves no moisture.
+ *  - DESIGN (the sizing, designLatent): F280's own figures - Ho from the
+ *    July 2.5 % dry bulb and its coincident wet bulb at standard pressure
+ *    (as its Table 5), Hi = 9.3 g/kg, every occupant home.
  */
 (function () {
   "use strict";
@@ -74,6 +90,18 @@
   const F_SKY_VERTICAL = 0.5;
   const F_SKY_HORIZONTAL = 1;
   const D_THETA_SKY = 11; // K
+
+  // CSA F280-12 Annex B.6.3.1, the direct latent method: W per (L/s · g/kg)
+  // (ρ h_fg of air, 1.2 kg/m³ x 2501 kJ/kg / 1000), W per occupant, and the
+  // indoor humidity ratio at design, g/kg.
+  const LATENT_W_PER_LS_GKG = 3;
+  const LATENT_W_PER_PERSON = 67;
+  const F280_INDOOR_W = 9.3;
+  // ... and the pressure its Table 5 OHR is computed at: standard sea level
+  // (from C-2's design dry and wet bulbs, within 0.6 g/kg of the Table at the
+  // six cities witnessed, five rounding to it; at each station's own pressure
+  // Calgary, 1 045 m, is 1.2 off).
+  const F280_PRESSURE = 101325; // Pa
 
   /**
    * C_m per m² of floor, J/(m²K), from Section 5's typology - ISO 52016-1's
@@ -304,13 +332,59 @@
   }
 
   /**
+   * The annual latent load, kWh, F280 Annex B per month (header): DHD_m =
+   * max(0, w̄_out,m - wIn) on the leakage and ventilation, the occupants'
+   * 67 W over their share of the hours, each month weighted by f_C.
+   *   -> {vent, leak, people, total, months: [{dhd, vent, leak, people}]}
+   */
+  function latentLoad(b, months, wIn, fC) {
+    const occupiedShare = Math.min(1, (b.occupiedHours || 0) / 8760);
+    const out = { vent: 0, leak: 0, people: 0, total: 0, months: [] };
+    for (let m = 0; m < 12; m++) {
+      const t = DAYS[m] * 24 * fC[m]; // the month's cooling hours
+      const dhd = Math.max(0, months.w_mean[m] - wIn);
+      const mo = {
+        dhd,
+        vent: (LATENT_W_PER_LS_GKG * b.ventLs * dhd * t) / 1000,
+        leak: (LATENT_W_PER_LS_GKG * b.leakLs * dhd * t) / 1000,
+        people:
+          (LATENT_W_PER_PERSON * (b.occupants || 0) * occupiedShare * t) / 1000,
+      };
+      out.vent += mo.vent;
+      out.leak += mo.leak;
+      out.people += mo.people;
+      out.months.push(mo);
+    }
+    out.total = out.vent + out.leak + out.people;
+    return out;
+  }
+
+  /**
+   * The design latent gain, W - F280 Annex B.6.3.1 as written: DHD = ho -
+   * 9.3 g/kg (never < 0), ho the outdoor humidity ratio at the July 2.5 %
+   * dry bulb and its coincident wet bulb, g/kg.
+   */
+  function designLatent({ occupants, ventLs, leakLs, ho }) {
+    const dhd = Math.max(0, ho - F280_INDOOR_W);
+    return (
+      LATENT_W_PER_PERSON * occupants +
+      LATENT_W_PER_LS_GKG * (leakLs + ventLs) * dhd
+    );
+  }
+
+  /**
    * The year: the three runs and what the app's ids read.
-   *   unmitigated   Σ need, no free cooling, no recovery     (d_129)
+   *   sensible      Σ need, no free cooling, no recovery
+   *   latent        latentLoad, the same in every run (free cooling's air
+   *                 is drier than inside; the HRV moves no moisture)
+   *   unmitigated   sensible + latent                         (d_129)
    *   recovered     the recovery's saving                    (d_123)
    *   freeCooling   the free cooling's saving, after recovery (h_124)
    *   freeCoolingPotential  Σ the extra flow's K.h credit, uncapped
-   *   mitigated     Σ need with both                          (m_129)
-   *   rows          the unmitigated need by term (attribute)
+   *   mitigated     Σ need with both, + latent                (m_129)
+   *   rowsSensible  the sensible need by term (attribute)
+   *   rows          rowsSensible + the latent on vent, leak and internal;
+   *                 they sum to unmitigated
    *   coolingDays   Σ days x f_C, f_C = Q_C,nd / (Q_C,nd + Q_H,nd) on the
    *                 mitigated run (m_124)
    */
@@ -324,14 +398,27 @@
     const fC = both.map((mo, m) =>
       mo.need > 0 ? mo.need / (mo.need + heating[m]) : 0
     );
+    const latent = latentLoad(b, months, fc.wIn, fC);
+    const rowsSensible = attribute(none);
+    const rows = { ...rowsSensible };
+    for (const [row, kWh] of [
+      ["vent", latent.vent],
+      ["leak", latent.leak],
+      ["internal", latent.people],
+    ]) {
+      if (kWh > 0) rows[row] = (rows[row] || 0) + kWh;
+    }
     return {
-      unmitigated: sum(none),
+      sensible: sum(none),
+      latent,
+      unmitigated: sum(none) + latent.total,
       recovered: sum(none) - sum(hr),
       freeCooling: sum(hr) - sum(both),
       freeCoolingPotential:
         (RHO_C * extraLs * fc.kh.reduce((s, v) => s + v, 0)) / 1000,
-      mitigated: sum(both),
-      rows: attribute(none),
+      mitigated: sum(both) + latent.total,
+      rowsSensible,
+      rows,
       coolingDays: fC.reduce((s, f, m) => s + f * DAYS[m], 0),
       months: { none, hr, both, heating, fC },
     };
@@ -349,6 +436,10 @@
     heatingNeeds,
     run,
     attribute,
+    latentLoad,
+    designLatent,
+    F280_INDOOR_W,
+    F280_PRESSURE,
     annual,
   };
 })();

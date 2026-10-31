@@ -292,6 +292,23 @@
         return data?.July_2_5_Tdb || 34;
       }
     },
+    // The wet bulb coincident with d_24 (NBC C-2's July 2.5 %) - F280's Ho
+    // for the design latent gain (cooling.latentLoadFactor)
+    {
+      id: "climate.temperature.hottestWetBulb",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Hottest Day Coincident Wet Bulb",
+      unit: "°C",
+      compute: (inputs) => {
+        const data = getClimateData(
+          inputs["climate.location.province"],
+          inputs["climate.location.city"]
+        );
+        return data?.July_2_5_Twb ?? 23;
+      }
+    },
     {
       id: "climate.elevation",
       legacyId: "l_22",

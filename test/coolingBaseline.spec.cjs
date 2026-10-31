@@ -49,6 +49,8 @@ const IDS = [
   "envelope.total.heatGain",
   "radiantGains.subtotal.coolingGain",
   "internal.coolingLoad.occupants",
+  "internal.occupants.coolingGain",
+  "climate.temperature.hottestWetBulb",
   "airTightness.heatGain",
   "ventilation.heatGain",
   "transmissionLoss.thermalBridgePenalty.heatGain",

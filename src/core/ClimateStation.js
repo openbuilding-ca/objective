@@ -55,6 +55,20 @@
     return (1000 * 0.622 * pv) / (p - pv);
   }
 
+  /**
+   * Humidity ratio, g/kg, from the dry bulb and the wet bulb (C) at pressure
+   * p (Pa) - ASHRAE Fundamentals ch. 1 eq. 33 (wet bulb above freezing), on
+   * the saturation ratio at the wet bulb. F280's Ho, from the design cooling
+   * dry bulb and its coincident wet bulb.
+   */
+  function humidityRatioFromWetBulb(tdb, twb, p) {
+    const ws = humidityRatio(twb, 100, p) / 1000;
+    const w =
+      ((2501 - 2.326 * twb) * ws - 1.006 * (tdb - twb)) /
+      (2501 + 1.86 * tdb - 4.186 * twb);
+    return 1000 * w;
+  }
+
   const cache = new Map();
   const pending = new Map();
 
@@ -168,6 +182,7 @@
     pSat,
     pressureAt,
     humidityRatio,
+    humidityRatioFromWetBulb,
     stationFor,
     load,
     get,

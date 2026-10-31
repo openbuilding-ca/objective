@@ -549,7 +549,10 @@
     // = ((G101×D101+D102×G102)×(D24−H24) + (D65+D66+D67)×H15) / 1000
     //   + (K79 + D122 + K64) / (M19×24)
     // Free cooling (h_124) is no longer subtracted (Andy 2026-10-30): at the
-    // design hour there is none. The rest of the peak is step 7's (F280).
+    // design hour there is none. The peak is SENSIBLE: D122 and K64 carry
+    // the annual latent load (F280 Annex B), taken back out here - the
+    // latent enters the sizing once, at F280's design conditions
+    // (cooling.latentLoadFactor).
     {
       id: "energy.peakCooling.totalKw",
       legacyId: "d_139",
@@ -562,6 +565,7 @@
         "radiantGains.subtotal.coolingGain",
         "ventilation.heatGain",
         "internal.occupants.coolingGain",
+        "cooling.iso52016",
         "climate.coolingDays"
       ],
       classification: "C",
@@ -578,8 +582,9 @@
         const internalGainsKw = (d65 + d66 + d67) * area / 1000;
         // Annual kWh gains → average kW during cooling season
         const k79 = parseNum(inputs["radiantGains.subtotal.coolingGain"], 0);
-        const d122 = parseNum(inputs["ventilation.heatGain"], 0);
-        const k64 = parseNum(inputs["internal.occupants.coolingGain"], 0);
+        const latent = inputs["cooling.iso52016"]?.latent;
+        const d122 = parseNum(inputs["ventilation.heatGain"], 0) - (latent?.vent ?? 0);
+        const k64 = parseNum(inputs["internal.occupants.coolingGain"], 0) - (latent?.people ?? 0);
         const coolingDays = parseNum(inputs["climate.coolingDays"], 120);
         let result = enclosureKw + internalGainsKw;
         if (coolingDays > 0) {

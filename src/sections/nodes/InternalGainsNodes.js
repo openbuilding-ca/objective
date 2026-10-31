@@ -432,9 +432,10 @@
         },
       });
 
-      // Cooling split: k_71 (the internal gains' share of the ISO 52016-1
-      // need) in proportion to this row's annual gain - the internal total is
-      // h_70 + h_64 + d_54, and h_70 = h_65 + h_66 + h_67
+      // Cooling split: k_71's sensible part (the internal gains' share of the
+      // ISO 52016-1 need) in proportion to this row's annual gain - the
+      // internal total is h_70 + h_64 + d_54, and h_70 = h_65 + h_66 + h_67.
+      // The occupants' latent (F280 Annex B, in k_71 too) is theirs alone.
       graph.registerNode({
         id: `internal.${id}.coolingGain`,
         legacyId: `k_${legacySuffix}`,
@@ -446,6 +447,7 @@
           "energy.plugLoads.subtotal",
           "internal.occupants.annual",
           "waterHeating.systemLosses",
+          "cooling.iso52016",
         ],
         label: `${id} Cooling Gain (kWh/yr)`,
         compute: (inputs) => {
@@ -453,9 +455,11 @@
             (parseFloat(inputs["energy.plugLoads.subtotal"]) || 0) +
             (parseFloat(inputs["internal.occupants.annual"]) || 0) +
             (parseFloat(inputs["waterHeating.systemLosses"]) || 0);
-          if (total <= 0) return 0;
+          const latent = inputs["cooling.iso52016"]?.latent?.people ?? 0;
+          const own = id === "occupants" ? latent : 0;
+          if (total <= 0) return own;
           const k71 = parseFloat(inputs["internal.coolingLoad.occupants"]) || 0;
-          return (k71 * (parseFloat(inputs[annual]) || 0)) / total;
+          return ((k71 - latent) * (parseFloat(inputs[annual]) || 0)) / total + own;
         },
       });
     });
