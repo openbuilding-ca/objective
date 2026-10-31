@@ -62,6 +62,17 @@
  *  - DESIGN (the sizing, designLatent): F280's own figures - Ho from the
  *    July 2.5 % dry bulb and its coincident wet bulb at standard pressure
  *    (as its Table 5), Hi = 9.3 g/kg, every occupant home.
+ *
+ * THE METHOD SELECTOR (S13 i_122; Andy 2026-10-31: "When F280, no credit.
+ * When our own method (OBJECTIVE) we give credit. When ASHRAE 140 - we do
+ * what it requires."):
+ *  - F280       the design latent as the Annex writes it - no ERV credit,
+ *               Hi = 9.3 g/kg; the annual latent as above.
+ *  - OBJECTIVE  the design latent credits the ERV's LRE and takes the same
+ *               indoor state as the annual (S08's basis); the annual as above.
+ *  - ASHRAE140  NO latent, design or annual: 140-2023 Class II §12.2.1.13,
+ *               "No latent heat extraction" - "pure heating-load and
+ *               sensible-cooling-load outputs". (Addendum a leaves §12 alone.)
  */
 (function () {
   "use strict";
@@ -340,7 +351,9 @@
    *   -> {vent, leak, people, total, months: [{dhd, vent, leak, people}]}
    */
   function latentLoad(b, months, wIn, fC) {
-    const occupiedShare = Math.min(1, (b.occupiedHours || 0) / 8760);
+    // ASHRAE 140 Class II extracts no latent heat (header)
+    const on = b.latentMethod === "ASHRAE140" ? 0 : 1;
+    const occupiedShare = on * Math.min(1, (b.occupiedHours || 0) / 8760);
     // LATENT RECOVERY - an ERV only (an HRV's core passes no moisture): the
     // ventilation's latent x (1 - LRE), LRE the unit's rated latent recovery
     // at the cooling test condition (HVI / CSA C439 data sheet). Leakage and
@@ -353,14 +366,11 @@
     // the weather the way the sensible HRV already does (hotHours / hotKh).
     // An ERV also returns moisture to a dry winter house - that is the
     // heating side's, not counted here.
-    const lre =
-      b.recoveryType === "ERV"
-        ? Math.min(1, Math.max(0, (b.ervLatentPercent || 0) / 100))
-        : 0;
+    const lre = ervLre(b);
     const out = { vent: 0, leak: 0, people: 0, total: 0, months: [] };
     for (let m = 0; m < 12; m++) {
       const t = DAYS[m] * 24 * fC[m]; // the month's cooling hours
-      const dhd = Math.max(0, months.w_mean[m] - wIn);
+      const dhd = on * Math.max(0, months.w_mean[m] - wIn);
       const mo = {
         dhd,
         vent: (LATENT_W_PER_LS_GKG * b.ventLs * (1 - lre) * dhd * t) / 1000,
@@ -377,16 +387,37 @@
     return out;
   }
 
+  /** An ERV's latent recovery share, 0-1 (0 for an HRV, whatever l_122 says). */
+  function ervLre(b) {
+    return b.recoveryType === "ERV"
+      ? Math.min(1, Math.max(0, (b.ervLatentPercent || 0) / 100))
+      : 0;
+  }
+
   /**
-   * The design latent gain, W - F280 Annex B.6.3.1 as written: DHD = ho -
-   * 9.3 g/kg (never < 0), ho the outdoor humidity ratio at the July 2.5 %
-   * dry bulb and its coincident wet bulb, g/kg.
+   * The design latent gain, W - F280 Annex B.6.3.1: DHD = ho - hi (never
+   * < 0), ho the outdoor humidity ratio at the July 2.5 % dry bulb and its
+   * coincident wet bulb, g/kg. By method (header): F280 as written (hi =
+   * 9.3 g/kg, no ERV credit) · OBJECTIVE (hi given, the ventilation's share
+   * x (1 - LRE)) · ASHRAE140 none.
    */
-  function designLatent({ occupants, ventLs, leakLs, ho }) {
-    const dhd = Math.max(0, ho - F280_INDOOR_W);
+  function designLatent({
+    occupants,
+    ventLs,
+    leakLs,
+    ho,
+    method = "F280",
+    hi = F280_INDOOR_W,
+    recoveryType,
+    ervLatentPercent,
+  }) {
+    if (method === "ASHRAE140") return 0;
+    const objective = method === "OBJECTIVE";
+    const dhd = Math.max(0, ho - (objective ? hi : F280_INDOOR_W));
+    const lre = objective ? ervLre({ recoveryType, ervLatentPercent }) : 0;
     return (
       LATENT_W_PER_PERSON * occupants +
-      LATENT_W_PER_LS_GKG * (leakLs + ventLs) * dhd
+      LATENT_W_PER_LS_GKG * (leakLs + ventLs * (1 - lre)) * dhd
     );
   }
 

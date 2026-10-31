@@ -842,7 +842,21 @@ window.TEUI.SectionModules.sect13 = (function () {
           dependencies: ["cooling_latentLoadFactor"],
           label: "Latent Load Factor (from Cooling Calculation): %",
         },
-        i: {},
+        i: {
+          fieldId: "i_122",
+          semanticPath: "cooling.latentMethod",
+          type: "dropdown",
+          dropdownId: "dd_i_122",
+          value: "F280",
+          section: "mechanicalLoads",
+          tooltip: true,
+          options: [
+            { value: "F280", name: "F280" },
+            { value: "OBJECTIVE", name: "OBJECTIVE" },
+            { value: "ASHRAE140", name: "ASHRAE 140" },
+          ],
+          label: "Latent Load Method (F280 / OBJECTIVE / ASHRAE 140)",
+        },
         j: {
           content: "ERV LRE",
           classes: ["label"],

@@ -677,6 +677,12 @@
       message:
         "HRV: recovers sensible heat only (the SRE). ERV: also recovers moisture - enter its rated Latent Recovery Efficiency in the ERV LRE field (row V.3.1, beside the Latent Load Factor), from the unit's HVI / CSA C439 data sheet. Only an ERV reduces the latent cooling load.",
     },
+    i_122: {
+      cell: "I122",
+      title: "Latent Load Method",
+      message:
+        "F280: CSA F280 Annex B as written - the design latent gives an ERV no credit. OBJECTIVE: our own method - the design latent credits the ERV's LRE and uses the S08 indoor state. ASHRAE 140: Class II extracts no latent heat (Section 12.2.1.13), so the latent load is zero and cooling is sensible only. The annual latent credits an ERV under F280 and OBJECTIVE alike.",
+    },
     l_122: {
       cell: "L122",
       title: "ERV Latent Recovery Efficiency (LRE)",

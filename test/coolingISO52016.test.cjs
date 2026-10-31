@@ -249,6 +249,26 @@ const HOUSE = {
   if (rel(erv.vent, 0.4 * off.vent) > 1e-9) fail("ERV should leave (1 - LRE) of the ventilation latent");
   if (hrv.vent !== off.vent) fail("an HRV recovers no latent, whatever LRE says");
   if (erv.leak !== off.leak || erv.people !== off.people) fail("ERV touches only the ventilation");
+
+  // the latent METHOD (i_122): design latent with an ERV at 60 % LRE
+  const dIn = { occupants: 4, ventLs: 40, leakLs: 8, ho: 14.4, recoveryType: "ERV", ervLatentPercent: 60 };
+  const dF = ISO.designLatent({ ...dIn, method: "F280" });
+  const dO = ISO.designLatent({ ...dIn, method: "OBJECTIVE" });
+  const dA = ISO.designLatent({ ...dIn, method: "ASHRAE140" });
+  const dhdD = 14.4 - 9.3;
+  console.log(`  design latent, ERV 60 %: F280 ${dF.toFixed(1)} W, OBJECTIVE ${dO.toFixed(1)} W, ASHRAE 140 ${dA} W`);
+  if (Math.abs(dF - (4 * 67 + 3 * 48 * dhdD)) > 1e-9) fail("F280 gives the ERV no design credit");
+  if (Math.abs(dO - (4 * 67 + 3 * (8 + 40 * 0.4) * dhdD)) > 1e-9) fail("OBJECTIVE credits the ERV at design");
+  if (dA !== 0) fail("ASHRAE 140 extracts no latent at design");
+  const dOh = ISO.designLatent({ ...dIn, recoveryType: "HRV", method: "OBJECTIVE" });
+  if (dOh !== dF) fail("OBJECTIVE with an HRV equals F280 (nothing to credit)");
+  // ... and annual: ASHRAE 140 carries none, so the rows are the sensible need
+  const a140 = ISO.annual({ ...HOUSE, latentMethod: "ASHRAE140" }, st.months, fcT);
+  const a140rows = Object.values(a140.rows).reduce((s, v) => s + v, 0);
+  console.log(`  annual, ASHRAE 140: latent ${a140.latent.total}, need ${a140.unmitigated.toFixed(1)} = sensible ${a140.sensible.toFixed(1)}`);
+  if (a140.latent.total !== 0 || rel(a140rows, a140.sensible) > 1e-9) fail("ASHRAE 140 annual should be sensible only");
+  const aObj = ISO.annual({ ...HOUSE, latentMethod: "OBJECTIVE" }, st.months, fcT);
+  if (aObj.latent.total !== off.total) fail("the annual latent is the same under F280 and OBJECTIVE");
   if (!(hrs(fc40) < hrs(fc50))) fail("drier indoors should count fewer free-cooling hours");
 
   console.log(ok ? "PASS" : "FAIL");

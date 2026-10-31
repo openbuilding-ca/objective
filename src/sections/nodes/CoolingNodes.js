@@ -82,7 +82,8 @@
     "occupancy.occupants",
     "occupancy.occupiedHours",
     "mechanical.ventilation.recoveryType",
-    "mechanical.ventilation.ervLatentEfficiency"
+    "mechanical.ventilation.ervLatentEfficiency",
+    "cooling.latentMethod"
   ];
 
   // ============================================================================
@@ -137,6 +138,17 @@
       classification: "C",
       section: "S08",
       label: "Indoor State for the Latent Cooling Load"
+    },
+    // The latent method (S13 i_122; Andy 2026-10-31): F280 (the Annex as
+    // written, no ERV credit at design) · OBJECTIVE (our own: the ERV credited
+    // at design too) · ASHRAE140 (Class II: no latent heat extraction at all)
+    {
+      id: "cooling.latentMethod",
+      legacyId: "i_122",
+      defaultValue: "F280",
+      classification: "C",
+      section: "S13",
+      label: "Latent Load Method"
     }
     // NOTE: mechanical.ventilation.summerBoost (l_119) is registered in MechanicalNodes
   ];
@@ -147,7 +159,9 @@
 
   const CoolingNodesStage1 = [
     // ========================================================================
-    // Latent Load Factor - F280-12 Annex B.6.3.1's direct method at DESIGN:
+    // Latent Load Factor - F280-12 Annex B.6.3.1's direct method at DESIGN,
+    // by the latent method (i_122: F280 as written · OBJECTIVE credits an
+    // ERV · ASHRAE140 none, so llf = 1):
     // (sensible + latent) / sensible, so f280.nominalCoolingCapacity's
     // total x max(1, llf) is the Annex's HGb = Σ HGsr + HGlp + HGlal + HGlav
     // (it "replaces" 6.3.1's 1.3). Sensible = d_139 + the infiltration gain
@@ -169,7 +183,12 @@
         "climate.temperature.hottestWetBulb",
         "climate.cooling.setpoint",
         "ventilation.volumetricRate",
-        "occupancy.occupants"
+        "occupancy.occupants",
+        "cooling.latentMethod",
+        "mechanical.ventilation.recoveryType",
+        "mechanical.ventilation.ervLatentEfficiency",
+        "building.coolingLatentBasis",
+        "building.indoorRH"
       ],
       classification: "C",
       section: "S13",
@@ -193,11 +212,25 @@
           parseNum(inputs["climate.temperature.hottestWetBulb"], 23),
           ISO.F280_PRESSURE
         );
+        // OBJECTIVE's indoor state is S08's basis (F280's 9.3 g/kg, or the
+        // setpoint at i_59's RH - at the same standard pressure as ho)
+        const hi =
+          inputs["building.coolingLatentBasis"] === "Target"
+            ? CS.humidityRatio(
+                parseNum(inputs["climate.cooling.setpoint"], 24),
+                parseNum(inputs["building.indoorRH"], 45),
+                ISO.F280_PRESSURE
+              )
+            : ISO.F280_INDOOR_W;
         const latentW = ISO.designLatent({
           occupants: parseNum(inputs["occupancy.occupants"], 4),
           ventLs: parseNum(inputs["ventilation.volumetricRate"]),
           leakLs,
-          ho
+          ho,
+          method: inputs["cooling.latentMethod"] || "F280",
+          hi,
+          recoveryType: inputs["mechanical.ventilation.recoveryType"],
+          ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"])
         });
         return +(1 + latentW / sensibleW).toFixed(4);
       }
@@ -258,7 +291,8 @@
           occupants: parseNum(inputs["occupancy.occupants"], 4),
           occupiedHours: parseNum(inputs["occupancy.occupiedHours"], 4380),
           recoveryType: inputs["mechanical.ventilation.recoveryType"] || "HRV",
-          ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"])
+          ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"]),
+          latentMethod: inputs["cooling.latentMethod"] || "F280"
         };
         // S08's basis sets the indoor state for latent AND the drier test
         const wIn =
