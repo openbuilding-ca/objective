@@ -480,6 +480,16 @@ body {
   align-self: flex-start;
 }
 
+/* Section 20 (Notes & Debug): readable from its horizontal tab only - never
+   in the vertical scroll, never on paper (the print rule is below) */
+#notes {
+  display: none;
+}
+
+.horizontal-layout #notes.active {
+  display: block;
+}
+
 /* Vertical layout */
 .vertical-layout .tab-container {
   display: none !important;
@@ -2506,6 +2516,11 @@ body.dev-environment {
   @page {
     size: landscape;
     margin: 0.25in; /* Reduced from 0.5in to maximize content space */
+  }
+
+  /* Notes & Debug never prints (beats the .section rule below by id) */
+  #notes {
+    display: none !important;
   }
 
   /* CRITICAL FIX: Allow horizontal overflow to prevent content clipping */
