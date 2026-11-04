@@ -681,7 +681,7 @@
       cell: "I122",
       title: "Latent Load Method",
       message:
-        "F280: CSA F280 Annex B as written - the design latent gives an ERV no credit. OBJECTIVE: our own method - the design latent credits the ERV's LRE and uses the S08 indoor state. ASHRAE 140: Class II extracts no latent heat (Section 12.2.1.13), so the latent load is zero and cooling is sensible only. The annual latent credits an ERV under F280 and OBJECTIVE alike.",
+        "F280: CSA F280 Annex B as written - the design latent gives an ERV no credit. OBJECTIVE: our own method - the design latent credits the ERV's LRE and uses the S08 indoor state. ASHRAE 140: Class II extracts no latent heat (Section 12.2.1.13), so the latent load is zero and cooling is sensible only. ASHRAE 140 is for validation tests only - do not use it for real building design. The annual latent credits an ERV under F280 and OBJECTIVE alike, so the two give the same TEUI and differ only in the design latent (equipment sizing).",
     },
     l_122: {
       cell: "L122",
