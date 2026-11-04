@@ -438,6 +438,14 @@
           }
         }
 
+        // Project notes (the last column) belong to Section 20, not the
+        // StateManager. A file without the column clears them, as a new
+        // building clears the Capital Budget below.
+        const notes = importedData.s18_notes ?? "";
+        delete importedData.s18_notes;
+        delete importedData.ref_s18_notes;
+        window.TEUI.SectionModules.sect20?.setNotes(notes);
+
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
             "No valid data found in standardized CSV.",
@@ -1305,9 +1313,18 @@
             return escapeCSV(combinedHeader);
           })
           .join(",");
-        const targetRow = targetValues.join(",");
-        const referenceRow = referenceValues.join(",");
-        const csvContent = headerRow + "\n" + targetRow + "\n" + referenceRow;
+        // Project notes ride as the last column, Target row only (import
+        // splits rows on newlines, so a note's line breaks become spaces)
+        const notes = window.TEUI.SectionModules.sect20?.getNotes() || "";
+        const notesHeader = escapeCSV("s18_notes: Project Notes");
+        const notesCell = escapeCSV(notes.replace(/\r?\n/g, " "));
+        const targetRow = [...targetValues, notesCell].join(",");
+        const referenceRow = [...referenceValues, ""].join(",");
+        const csvContent = [
+          `${headerRow},${notesHeader}`,
+          targetRow,
+          referenceRow,
+        ].join("\n");
 
         // Future: Add OBC Matrix export here as additional rows (Row 4+)
         // const obcHeaderRow = "# OBC Matrix Data";
