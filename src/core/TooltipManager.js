@@ -651,8 +651,9 @@
     },
     d_118: {
       cell: "D118",
-      title: "Typ. Range 50-90%",
-      message: "Refer to Reference Standard Requirements",
+      title: "Sensible Recovery Efficiency (SRE) - Typ. Range 50-90%",
+      message:
+        "The HRV/ERV's SENSIBLE heat-recovery efficiency from the CAN/CSA-C439 low-temperature test, as published in the manufacturer's literature or HVI's Certified Home Ventilating Products Directory - the figure Canadian codes regulate (NBC 2025 9.36.3.9.(3): at least 60% at 0°C, and also at least 55% at -25°C where the January 2.5% design temperature is below -10°C). Enter the listing at the test temperature your climate requires, at the design ventilation rate. Not a Passive House 'heat recovery rate' (a different test), and not the ERV's moisture recovery (the LRE, row V.3.1). Refer to Reference Standard Requirements.",
     },
     g_118: {
       cell: "G118",
@@ -687,7 +688,7 @@
       cell: "L122",
       title: "ERV Latent Recovery Efficiency (LRE)",
       message:
-        "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV.",
+        "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV. A MOISTURE figure for the cooling season: not the SRE (sensible heat, rated at the 0°C / -25°C heating tests), and not a winter moisture-transfer rating.",
     },
     l_119: {
       cell: "L119",
