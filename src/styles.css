@@ -438,12 +438,15 @@ body {
   transition: transform 0.3s ease;
 }
 
-.section-header.collapsed .toggle-icon {
+/* Collapse is the vertical scroll's: a horizontal tab always shows its whole
+   section (headers toggle only in vertical, init.js), so the sections that
+   start collapsed - WOMBAT, Notes, F280 - still open from their tabs */
+body:not(.horizontal-layout) .section-header.collapsed .toggle-icon {
   transform: rotate(-90deg);
 }
 
 /* Collapsible section content */
-.section-header.collapsed + .section-content {
+body:not(.horizontal-layout) .section-header.collapsed + .section-content {
   max-height: 0 !important;
   opacity: 0 !important;
   overflow: hidden;
