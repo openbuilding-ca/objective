@@ -140,9 +140,9 @@
     },
     l_20: {
       cell: "L20",
-      title: "Cooling Season Mean Overnight °C",
+      title: "Summer Night Mean °C",
       message:
-        "Night-Time Temp Outside in °C (≈ Summer Mean Jun-Aug) USER DEFINED or from Weather File",
+        "The climate station's mean daily minimum temperature, June-August (CWEC 2020 typical year; NASA POWER where no station matches). Read from the data, not editable. Shown for reference: the cooling calculation reads the station's monthly and hourly climate directly.",
     },
     d_21: {
       cell: "D21",
@@ -164,9 +164,9 @@
     },
     l_21: {
       cell: "L21",
-      title: "Cooling Outdoor Mean RH%",
+      title: "Summer Mean RH%",
       message:
-        "Cooling Season Mean RH in % at 15h00 LST (Jun-Sept) USER DEFINED or from Weather File",
+        "The climate station's mean relative humidity, June-August (CWEC 2020 typical year; NASA POWER where no station matches). Read from the data, not editable. Shown for reference: the latent load reads the station's monthly humidity directly.",
     },
     l_22: {
       cell: "L22",

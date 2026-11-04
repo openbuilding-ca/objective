@@ -36,6 +36,25 @@
   }
 
   /**
+   * A station's June-August mean of a monthly field, weighted by the months'
+   * days (30, 31, 31); null until the station has loaded (ClimateStation
+   * .request recalculates on arrival) or where the city has no station.
+   */
+  const SUMMER_MONTHS = [
+    [5, 30],
+    [6, 31],
+    [7, 31],
+  ];
+  function summerMean(stationId, field) {
+    const station = window.TEUI?.ClimateStation?.request(stationId);
+    const values = station?.months?.[field];
+    if (!values) return null;
+    const days = SUMMER_MONTHS.reduce((sum, [, d]) => sum + d, 0);
+    const total = SUMMER_MONTHS.reduce((sum, [m, d]) => sum + values[m] * d, 0);
+    return +(total / days).toFixed(2);
+  }
+
+  /**
    * Check if value is unavailable
    */
   function isUnavailable(value) {
@@ -149,8 +168,8 @@
     },
     // d_12, d_13: canonical inputs live in BuildingInfoNodes
     // (building.majorOccupancy, building.referenceStandard)
-    // l_20, l_21: canonical inputs live in CoolingNodes
-    // (climate.cooling.nightTemp, climate.cooling.seasonMeanRH)
+    // l_20, l_21: computed from the climate station (below, after
+    // climate.station) - no longer inputs
   ];
 
   // ============================================================================
@@ -175,6 +194,37 @@
         const city = String(inputs["climate.location.city"] || "").trim();
         return CS ? CS.stationFor(province, city) : null;
       }
+    },
+
+    // ========================================================================
+    // SUMMER NIGHT MEAN (l_20) + SUMMER MEAN RH (l_21) - the station's own
+    // June-August, day-weighted: the mean daily MINIMUM and the mean RH.
+    // Were user inputs defaulting to 20.43 °C / 55.85 % (a GTA summer, Andy
+    // 2026-10-30: "I did not have the resources to dig in to every single
+    // climate location"); Andy 2026-11-04: "allow the Summer Night Mean and
+    // Summer Mean RH fields to reflect the data ... They can cease to be
+    // user-editable". Shown in S03 only - the cooling reads the station's
+    // months itself (CoolingISO52016), so neither moves an energy number.
+    // ========================================================================
+    {
+      id: "climate.cooling.nightTemp",
+      legacyId: "l_20",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Night Mean (mean daily minimum, Jun-Aug)",
+      unit: "°C",
+      compute: (inputs) => summerMean(inputs["climate.station"], "t_min")
+    },
+    {
+      id: "climate.cooling.seasonMeanRH",
+      legacyId: "l_21",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Mean RH (Jun-Aug)",
+      unit: "%",
+      compute: (inputs) => summerMean(inputs["climate.station"], "rh_mean")
     },
 
     // ========================================================================

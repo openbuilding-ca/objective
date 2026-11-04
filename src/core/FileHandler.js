@@ -1072,8 +1072,7 @@
           "h_21",
           "i_21",
           "m_19",
-          "l_20",
-          "l_21",
+          // l_20 / l_21 are read from the climate station now, not exported
           "l_24",
 
           // Section 04: Actual Energy

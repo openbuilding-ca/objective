@@ -96,26 +96,8 @@
   //   - climate.cooling.setpoint (h_24) in ClimateNodes
   //   - ventilation.volumeRate (h_120) in VentilationNodes
   //   - ventilation.volumetricRate (d_120) in VentilationNodes
+  // (l_20 / l_21 are computed from the climate station now - ClimateNodes)
   const CoolingInputs = [
-    // Climate inputs (from S03) - canonical registration for l_20/l_21
-    {
-      id: "climate.cooling.nightTemp",
-      legacyId: "l_20",
-      defaultValue: 20.43,
-      classification: "G",
-      section: "S03",
-      label: "Night-Time Temperature",
-      unit: "°C"
-    },
-    {
-      id: "climate.cooling.seasonMeanRH",
-      legacyId: "l_21",
-      defaultValue: 55.85,
-      classification: "G",
-      section: "S03",
-      label: "Cooling Season Mean RH",
-      unit: "%"
-    },
     // Building inputs - NOT registered elsewhere
     {
       id: "building.indoorRH",
