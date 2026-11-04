@@ -195,7 +195,7 @@
       cell: "L24",
       title: "Cooling Override °C",
       message:
-        "24°C as Default for design, you may enter a higher value to reduce cooling system loads.You may set a value lower than 24ºC to test the increase on cooling system loads ",
+        "24°C as Default for design. Target model only: enter a higher value to reduce cooling system loads, or a lower one (down to 18°C, where systems commonly cap) to model occupants who set cooling colder than the code assumes. The Reference model always uses the code's 24°C.",
     },
     m_24: {
       cell: "M24",
@@ -693,7 +693,7 @@
       cell: "L119",
       title: "Summer Boost",
       message:
-        "Multiply Cooling Season Ventilation to test effects of increased ventilation on reducing cooling loads - does it help?",
+        'Multiplies the mechanical ventilation rate in the cooling season, on the hours when outdoor air is cooler and drier than indoors, as an automated economiser would. This is free cooling: it reduces the cooling need and never adds load. It has no effect on heating. "None" means no free cooling beyond ordinary ventilation. Passive and stack venting, whether controlled by users or Building Automation Systems (BAS) such as clerestory-window exhaust, is not modelled here.',
     },
     k_120: {
       cell: "K120",

@@ -427,16 +427,26 @@
     {
       id: "climate.cooling.setpoint",
       legacyId: "h_24",
-      dependencies: ["building.majorOccupancy", "climate.cooling.override"],
+      dependencies: [
+        "building.majorOccupancy",
+        "climate.cooling.override",
+        "model.isReference",
+      ],
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint",
       unit: "°C",
+      // Andy 2026-11-04: "users ROUTINELY crank cooling down by dragging Tset
+      // for Cooling lower, resulting in higher ACTUAL cooling loads. The
+      // over-ride is the best way to model this 'bad user' behaviour. It
+      // should be allowed for the Target model, but the Reference model should
+      // still use the hard-coded code-established value. I think a lower bound
+      // of 18ºC is reasonable as that is what actual systems often cap at."
+      // Was Excel H24=IF(L24>24, L24, 24): an override could only raise it.
       compute: (inputs) => {
+        if (inputs["model.isReference"] === true) return 24;
         const override = parseNum(inputs["climate.cooling.override"], 24);
-
-        // Excel Formula: H24=IF(L24>24, L24, 24)
-        return override > 24 ? override : 24;
+        return Math.max(18, override);
       }
     },
     {
