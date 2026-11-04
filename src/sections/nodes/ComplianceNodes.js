@@ -69,6 +69,16 @@
       section: "S13",
       label: "Reference Cooling COP"
     },
+    // Cooling COP in effect (heat pump: from its HSPF; Reference: the
+    // standard's minimum COPc) - what m_116 compares. No legacyId: never a
+    // field, never in a file.
+    {
+      id: "reference.mechanical.cooling.effectiveCop",
+      defaultValue: 0,
+      classification: "C",
+      section: "S13",
+      label: "Reference Effective Cooling COP"
+    },
     // Cooling Intensity
     {
       id: "reference.mechanical.cooling.intensity",
@@ -199,19 +209,23 @@
       id: "compliance.copc.ratio",
       legacyId: "m_116",
       dependencies: [
-        "mechanical.cooling.copDedicated",
-        "reference.mechanical.cooling.copDedicated"
+        "mechanical.cooling.effectiveCop",
+        "reference.mechanical.cooling.effectiveCop"
       ],
       classification: "C",
       section: "S13",
       label: "Cooling COP Compliance Ratio",
       compute: (inputs) => {
         // Parnas table: copc-compliance-ratio.json
-        // Higher COP is better, so target/ref * 100 for percentage
-        const targetCOP = parseNum(inputs["mechanical.cooling.copDedicated"], 0);
-        const refCOP = parseNum(inputs["reference.mechanical.cooling.copDedicated"], 0);
+        // Higher COP is better, so target/ref * 100 for percentage. The COP IN
+        // EFFECT on each side (2026-11-04): it compared the dedicated j_116,
+        // which a heat pump never uses - its greyed 2.66 default against the
+        // standard's 3.3 read 81 % whatever the HSPF. "No Cooling" has no COP
+        // to compare (0): the row is ghosted, 100 %.
+        const targetCOP = parseNum(inputs["mechanical.cooling.effectiveCop"], 0);
+        const refCOP = parseNum(inputs["reference.mechanical.cooling.effectiveCop"], 0);
 
-        if (refCOP > 0) {
+        if (targetCOP > 0 && refCOP > 0) {
           return +((targetCOP / refCOP) * 100).toFixed(0);
         }
         return 100; // Default to 100% if no reference
@@ -372,6 +386,7 @@
     "mechanical.heating.afue":            "reference.mechanical.heating.afue",
     "mechanical.heating.hspf":            "reference.mechanical.heating.hspf",
     "mechanical.cooling.copDedicated":    "reference.mechanical.cooling.copDedicated",
+    "mechanical.cooling.effectiveCop":    "reference.mechanical.cooling.effectiveCop",
     "mechanical.cooling.intensity":       "reference.mechanical.cooling.intensity",
     "mechanical.ventilation.efficiency":  "reference.mechanical.ventilation.efficiency",
     "mechanical.ventilation.ratePerPerson": "reference.mechanical.ventilation.ratePerPerson",
