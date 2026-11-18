@@ -163,6 +163,23 @@ const READ = () => {
               )
             ),
             coolingDays: get("climate.coolingDays"),
+            // The peak sensible gain's terms (energy.peakCooling.totalKw, EnergyNodes.js), in W.
+            peakTerms: (() => {
+              const area = get("building.conditionedFloorArea");
+              const dens = ["internal.plugLoadDensity", "internal.lightingDensity", "internal.equipmentDensity"].map(get);
+              const iso = state.getValueForModel(id, "cooling.iso52016");
+              const hours = get("climate.coolingDays") * 24;
+              const latent = (iso && iso.latent) || {};
+              return {
+                enclosure_W: 1000 * get("energy.peakCooling.enclosureKw"),
+                densities_Wm2: { plug: dens[0], lighting: dens[1], equipment: dens[2] },
+                floorArea_m2: area,
+                internalDensity_W: (dens[0] + dens[1] + dens[2]) * area,
+                solarSeasonAverage_W: (1000 * get("radiantGains.subtotal.coolingGain")) / hours,
+                ventilationSeasonAverage_W: (1000 * (get("ventilation.heatGain") - (latent.vent || 0))) / hours,
+                occupantsSeasonAverage_W: (1000 * (get("internal.occupants.coolingGain") - (latent.people || 0))) / hours,
+              };
+            })(),
             iso52016: (() => {
               const iso = state.getValueForModel(id, "cooling.iso52016");
               if (!iso) return { present: false };

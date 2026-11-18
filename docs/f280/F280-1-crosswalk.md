@@ -18,6 +18,11 @@ its code values except the fields below). Status: standard · derived · equival
 | `h_15: Conditioned Area: m²` | 289.14 | estimate | basement 90.31 (G.1.4) + main on the same footprint 90.31 + upper 108.52 (G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF |
 | `d_105: Total Conditioned Volume` | 730.3 | estimate | basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF |
 | `d_63: Occupant Count` | 5 | derived | Cl. 6.2.4: bedrooms (4) + 1 |
+| `g_63: Occupied Hours/Day` | 12 | objective | OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18) |
+| `d_64: Occupant Activity Level` | Normal | objective | OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person) |
+| `d_66: Lighting Density: W/m²` | 1.5 | objective | OBJECTIVE's standard lighting density (F280 Cl. 6.2.5: 4 W/m2 for lights AND appliances) |
+| `g_67: Equipment Efficiency Spec` | Regular | objective | OBJECTIVE's default equipment spec (the template, a PH house, had Efficient) |
+| `d_80: Gains Utilization Factor (n-Factor)` | NRC 40% | objective | OBJECTIVE's default gains utilization (annual heating only; the template had PH Method) |
 | `d_74: S10: Window Area North: m²` | 15.728 | derived | Table G.1.11 a): N-facing windows summed, ft2 -> m2 |
 | `d_75: S10: Window Area East: m²` | 2.23 | derived | Table G.1.11 a): E-facing windows summed, ft2 -> m2 |
 | `d_76: S10: Window Area South: m²` | 16.592 | derived | Table G.1.11 a): S-facing windows summed, ft2 -> m2 |
@@ -35,10 +40,10 @@ its code values except the fields below). Status: standard · derived · equival
 | `g_75: Window East: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_76: Window South: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_77: Window West: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
-| `h_74: Window North: Summer Shading %` | 0 | placeholder | G.1.11's overhangs and drops shade the base case (Annex A); OBJECTIVE takes a summer shading %; 0 = unshaded, which is the 8.3.6 b) VARIANT, not the base |
-| `h_75: Window East: Summer Shading %` | 0 | placeholder | G.1.11's overhangs and drops shade the base case (Annex A); OBJECTIVE takes a summer shading %; 0 = unshaded, which is the 8.3.6 b) VARIANT, not the base |
-| `h_76: Window South: Summer Shading %` | 0 | placeholder | G.1.11's overhangs and drops shade the base case (Annex A); OBJECTIVE takes a summer shading %; 0 = unshaded, which is the 8.3.6 b) VARIANT, not the base |
-| `h_77: Window West: Summer Shading %` | 0 | placeholder | G.1.11's overhangs and drops shade the base case (Annex A); OBJECTIVE takes a summer shading %; 0 = unshaded, which is the 8.3.6 b) VARIANT, not the base |
+| `h_74: Window North: Summer Shading %` | 0 | derived | north: Cl. 6.2.2.1 treats shade as north-facing, so no change |
+| `h_75: Window East: Summer Shading %` | 0.0 | derived | Annex A: F 0.800 (lat 45.47), shaded 0.0 of 24.0 ft2 (W x H); shaded area at north's 93 W/m2 vs 285.0 -> 0.00 % of this row's solar removed |
+| `h_76: Window South: Summer Shading %` | 10.1 | derived | Annex A: F 1.972 (lat 45.47), shaded 35.0 of 179.2 ft2 (W x H); shaded area at north's 93 W/m2 vs 192.8 -> 10.10 % of this row's solar removed |
+| `h_77: Window West: Summer Shading %` | 1.08 | derived | Annex A: F 0.800 (lat 45.47), shaded 0.3 of 16.0 ft2 (W x H); shaded area at north's 93 W/m2 vs 285.0 -> 1.08 % of this row's solar removed |
 | `d_73: S10: Doors Area: m²` | 5.667 | derived | Table G.1.10 a): two entry doors, the WIC knee-wall door and three attic hatches |
 | `f_73: Door: SHGC` | 0 | standard | opaque doors |
 | `g_88: Doors: U-Value W/m²·K` | 0.9091 | derived | 1 / RSI 1.1 (Table 6I) |

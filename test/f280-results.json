@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-18T22:03:31.678Z",
+  "timestamp": "2026-11-18T22:15:30.067Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -32,22 +32,22 @@
         "ratio": 1.0788156443539492
       },
       "gain": {
-        "result_W": 5122,
+        "result_W": 5716,
         "expected_W": 7321,
         "lowOk": false,
         "highOk": true,
         "pass": false,
-        "ratio": 0.6996116875963388
+        "ratio": 0.780733900225639
       },
       "parts_W": {
         "loss": 12716,
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6641,
-        "latentLoadFactor": 1.2966,
-        "peakCoolingKw": 4.972378840937322,
-        "radiantCoolingGain_kWh": 2652.252173352253,
+        "nominalCooling": 7235,
+        "latentLoadFactor": 1.2658,
+        "peakCoolingKw": 5.56644358699066,
+        "radiantCoolingGain_kWh": 2658.924820347058,
         "rows": {
           "row74.orientation": "North",
           "row74.area": "15.728",
@@ -55,28 +55,28 @@
           "row74.summerShading": "0",
           "row74.gainFactor": 1.31,
           "row74.heatingGain": 16.482944,
-          "row74.coolingGain": 710.821756247312,
+          "row74.coolingGain": 755.7334883142577,
           "row75.orientation": "East",
           "row75.area": "2.23",
           "row75.shgc": "0.4",
           "row75.summerShading": "0",
           "row75.gainFactor": 76.94,
           "row75.heatingGain": 137.26096,
-          "row75.coolingGain": 203.25563672365382,
+          "row75.coolingGain": 216.18549476090854,
           "row76.orientation": "South",
           "row76.area": "16.592",
           "row76.shgc": "0.4",
-          "row76.summerShading": "0",
+          "row76.summerShading": "10.1",
           "row76.gainFactor": 70.74,
           "row76.heatingGain": 938.9744639999999,
-          "row76.coolingGain": 1596.8352285165458,
+          "row76.coolingGain": 1538.1961706773636,
           "row77.orientation": "West",
           "row77.area": "1.486",
           "row77.shgc": "0.4",
-          "row77.summerShading": "0",
+          "row77.summerShading": "1.08",
           "row77.gainFactor": 25.86,
           "row77.heatingGain": 30.742368,
-          "row77.coolingGain": 141.33955186474148
+          "row77.coolingGain": 148.80966659452815
         },
         "ground": {
           "slabOnGrade.rsi": "0",
@@ -89,6 +89,19 @@
           "wallsBelowGrade.heatLoss": 2822.1443478260876
         },
         "coolingDays": 120,
+        "peakTerms": {
+          "enclosure_W": 1114.5996091261331,
+          "densities_Wm2": {
+            "plug": 5,
+            "lighting": 1.5,
+            "equipment": 5
+          },
+          "floorArea_m2": 289.14,
+          "internalDensity_W": 3325.1099999999997,
+          "solarSeasonAverage_W": 923.2377848427285,
+          "ventilationSeasonAverage_W": 0,
+          "occupantsSeasonAverage_W": 203.49619302179832
+        },
         "iso52016": {
           "present": true,
           "keys": [
@@ -105,17 +118,17 @@
             "months"
           ],
           "rows": {
-            "internal": 3938.3866920879304,
+            "internal": 4777.7335860682315,
             "glazing73": 0,
-            "glazing74": 710.821756247312,
-            "glazing75": 203.25563672365382,
-            "glazing76": 1596.8352285165458,
-            "glazing77": 141.33955186474148,
+            "glazing74": 755.7334883142577,
+            "glazing75": 216.18549476090854,
+            "glazing76": 1538.1961706773636,
+            "glazing77": 148.80966659452815,
             "glazing78": 0,
-            "roof": 129.48017381573428,
-            "walls": 342.75845369550103,
-            "vent": 437.53254541649096,
-            "leak": 173.28845149729528
+            "roof": 137.6127368677806,
+            "walls": 365.3094351957703,
+            "vent": 437.96612281983255,
+            "leak": 173.46017348144568
           }
         }
       }
@@ -139,8 +152,8 @@
         "envelope": 8917,
         "infiltration": 2388,
         "ventilation": 2605,
-        "nominalCooling": 7072,
-        "latentLoadFactor": 1.3555,
+        "nominalCooling": 7666,
+        "latentLoadFactor": 1.3192,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -172,8 +185,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 10854,
-        "nominalCooling": 6641,
-        "latentLoadFactor": 1.2966,
+        "nominalCooling": 7235,
+        "latentLoadFactor": 1.2658,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -193,7 +206,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 194
+        "gain": 189
       },
       "expected_change_W": {
         "gain": 1995
@@ -204,8 +217,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6835,
-        "latentLoadFactor": 1.2858,
+        "nominalCooling": 7424,
+        "latentLoadFactor": 1.2573,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -225,7 +238,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 318
+        "gain": 323
       },
       "expected_change_W": {
         "gain": 2467
@@ -236,8 +249,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6959,
-        "latentLoadFactor": 1.2792,
+        "nominalCooling": 7557,
+        "latentLoadFactor": 1.2515,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -257,7 +270,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 171
+        "gain": 203
       },
       "expected_change_W": {
         "gain": 2014
@@ -268,8 +281,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6812,
-        "latentLoadFactor": 1.287,
+        "nominalCooling": 7438,
+        "latentLoadFactor": 1.2566,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -289,7 +302,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": -24
+        "gain": 26
       },
       "expected_change_W": {
         "gain": 3
@@ -300,8 +313,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6617,
-        "latentLoadFactor": 1.298,
+        "nominalCooling": 7261,
+        "latentLoadFactor": 1.2645,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -321,7 +334,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 194
+        "gain": 223
       },
       "expected_change_W": {
         "gain": 2073
@@ -332,8 +345,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6835,
-        "latentLoadFactor": 1.2858,
+        "nominalCooling": 7458,
+        "latentLoadFactor": 1.2558,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -353,7 +366,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 343
+        "gain": 345
       },
       "expected_change_W": {
         "gain": 2529
@@ -364,8 +377,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6984,
-        "latentLoadFactor": 1.278,
+        "nominalCooling": 7579,
+        "latentLoadFactor": 1.2506,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,
@@ -385,7 +398,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 205
+        "gain": 199
       },
       "expected_change_W": {
         "gain": 2054
@@ -396,8 +409,8 @@
         "envelope": 8917,
         "infiltration": 1194,
         "ventilation": 2605,
-        "nominalCooling": 6846,
-        "latentLoadFactor": 1.2851,
+        "nominalCooling": 7434,
+        "latentLoadFactor": 1.2568,
         "ground": {
           "slabOnGrade.rsi": "0",
           "slabOnGrade.uValue": 0,

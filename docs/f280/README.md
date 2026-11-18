@@ -66,12 +66,32 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    leakage rate from AIM-2, which also handles exhaust-only (unbalanced) ventilation. The 2015 workbook's
    AIM-2 results are the target; its inputs are in `AIM2-F280_Example.xls` (open in Excel).
 
-## Inherited from the template (12-AberdeenHouse), not yet set from F280
+## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18)
 
-Fields the build does not set keep the template's values. The ones that can move the peak gain are the
-internal-gain inputs (plug, lighting, equipment densities and the occupant activity). F280 itself uses
-70 W per person (Cl. 6.2.4) and 4 W/m² of floor area with an 800 W minimum (Cl. 6.2.5). Also inherited:
-the gains utilization `d_80` = "PH Method" (annual heating only) and the heating system (heat pump).
+Andy: *"Ideally we match gains NOT by inventing new methods, but by choosing standard OBJECTIVE input values,
+occupant activity levels, and lighting and plug loads and schedule (assumed 12hrs/day residential)."* And:
+*"we derived factors from dynamic modelling... so irradiance/etc. is all included in our factors."* So F280-1
+now uses:
+
+- **Overhangs → each window row's Summer Shading % slider (Section 10).** Annex A's shade line (S = F × O,
+  F by facing and latitude) on each G.1.11 window gives the shaded area. Cl. 6.2.2.1 treats shade as
+  north-facing, so the share of a row's solar removed is shaded/total × (1 − 93 / that facing's solar):
+  N 0, E 0 (every drop below its shade line), S 10.10 %, W 1.08 %. The latitude (45.47) is an estimate.
+- **Internal gains → OBJECTIVE's standard options:** 12 h/day, activity Normal, lighting 1.5 W/m²,
+  equipment Regular (the template, a PH house, had Efficient: 3 W/m² instead of 5), gains utilization NRC 40%
+  (annual heating only). The plug density is computed: 5 W/m² for any residential occupancy.
+
+| Peak gain term (S15 `energy.peakCooling.totalKw`) | OBJECTIVE (W) | F280's own rule |
+|---|---|---|
+| Enclosure U·A·(design temp − 24 °C) | 1115 | Cl. 6.2.1–6.2.3 |
+| Internal: (plug 5 + lighting 1.5 + equipment 5 W/m²) × 289 m² | 3325 | 4 W/m² × 289 = 1156 (min 800), Cl. 6.2.5 |
+| Glazing rows' share of the ISO cooling need (season average) | 923 | peak-hour solar by facing, Cl. 6.2.2 |
+| Occupants (season average) | 204 | 5 × 70 = 350, Cl. 6.2.4 |
+
+**Now:** sensible gain 5716 W vs 7321 (78.1 %); loss unchanged 12 716 W (107.9 %). The internal term is
+about 1800 W over F280's allowance, so the shortfall sits in the glazing term: a season's share of the need
+against F280's design-hour solar. Which of OBJECTIVE's standard options best represents this house (Regular
+or Efficient equipment, activity level) is the verification agent's call.
 
 ## What needs the PDF (the text extract cannot settle these)
 

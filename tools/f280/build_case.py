@@ -18,6 +18,7 @@ below cites its table. Status says how far to trust it:
   equivalent - an equivalent input (ASHRAE 140 Cl. 5.2.1.5 in spirit): OBJECTIVE has no direct field
   estimate   - not in the text extract (the floor plans G.1.1-G.1.3 are images); take off the PDF
   placeholder- needs a method OBJECTIVE lacks; the value is a stand-in and the gap is named
+  objective  - OBJECTIVE's own standard option (Andy: match gains by OBJECTIVE's inputs, never a new method)
 
 Units: Annex G's imperial take-offs are used (the SI tables come through the extract column-
 shifted; the imperial ones multiply out). 1 ft2 = 0.09290304 m2 exactly.
@@ -32,14 +33,24 @@ OUT_MD = os.path.join(ROOT, "docs/f280/F280-1-crosswalk.md")
 FT2 = 0.09290304
 
 # ---- Annex G.1 take-offs, Archetype 1 (imperial) -------------------------------------------
-# Table G.1.11 a) windows: (room, facing, area ft2)
+# Table G.1.11 a) windows: (room, facing, width ft, height ft, overhang ft, drop ft, area ft2)
 WINDOWS = [
-    ("Base area 1", "N", 6), ("Base area 1", "N", 6), ("Family", "N", 21), ("Family", "N", 21),
-    ("Family", "E", 12), ("Family", "E", 12), ("Nook", "N", 33.3), ("Entry", "S", 10),
-    ("Entry", "S", 4), ("Living", "S", 53), ("Stairs", "W", 16), ("Dining", "N", 35),
-    ("Master", "S", 5), ("Master", "S", 35.6), ("Ensuite", "S", 20), ("Bed 2", "S", 45),
-    ("Bed 2", "S", 6), ("Bed 3", "N", 24), ("Bath", "N", 7), ("Bed 4", "N", 16),
+    ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6), ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6),
+    ("Family", "N", 3.33, 6.33, 1.33, 8.85, 21), ("Family", "N", 3.33, 6.33, 1.33, 1.00, 21),
+    ("Family", "E", 2.00, 6.00, 1.33, 8.85, 12), ("Family", "E", 2.00, 6.00, 1.33, 8.85, 12),
+    ("Nook", "N", 5.00, 6.67, 1.33, 8.85, 33.3), ("Entry", "S", 1.50, 6.67, 4.00, 2.00, 10),
+    ("Entry", "S", 4.33, 1.00, 4.00, 1.00, 4), ("Living", "S", 8.00, 6.67, 1.33, 8.85, 53),
+    ("Stairs", "W", 4.00, 4.00, 1.33, 1.00, 16), ("Dining", "N", 5.50, 6.33, 1.33, 8.85, 35),
+    ("Master", "S", 3.58, 1.33, 1.33, 1.00, 5), ("Master", "S", 7.50, 4.75, 1.33, 2.33, 35.6),
+    ("Ensuite", "S", 5.00, 4.00, 1.33, 1.00, 20), ("Bed 2", "S", 8.00, 5.67, 1.33, 2.50, 45),
+    ("Bed 2", "S", 3.83, 1.50, 1.33, 1.00, 6), ("Bed 3", "N", 6.00, 4.00, 1.33, 1.00, 24),
+    ("Bath", "N", 2.00, 3.50, 1.33, 1.00, 7), ("Bed 4", "N", 4.00, 4.00, 1.33, 1.00, 16),
 ]
+# Annex A: the shade-line factor F by facing and north latitude (40, 45, 50, 55); north has none.
+SHADE_F = {"E": (0.8, 0.8, 0.8, 0.8), "W": (0.8, 0.8, 0.8, 0.8), "S": (2.6, 2.0, 1.7, 1.4)}
+# Cl. 6.2.2.1: design solar W/m2 by facing; south (and SE/SW) take the latitude factor.
+SOLAR0 = {"N": 93, "E": 285, "W": 285, "S": 160}
+LATITUDE = 45.47   # Ottawa (Orleans): ESTIMATE, Kieran confirms F280's latitude for the location
 # Table G.1.10 a) doors: (room, facing, area ft2); "Up" = attic hatches in the ceiling
 DOORS = [("Entry", "E", 20), ("Entry", "S", 20), ("WIC", "N", 9), ("WIC", "Up", 4),
          ("Laundry", "Up", 4), ("Laundry", "Up", 4)]
@@ -76,13 +87,47 @@ def m2(ft2):
     return ft2 * FT2
 
 
+def shade_factor(d):
+    lats = (40, 45, 50, 55)
+    f = SHADE_F[d]
+    x = min(max(LATITUDE, lats[0]), lats[-1])
+    for i in range(3):
+        if lats[i] <= x <= lats[i + 1]:
+            return f[i] + (f[i + 1] - f[i]) * (x - lats[i]) / (lats[i + 1] - lats[i])
+    return f[-1]
+
+
+def summer_shading(d):
+    """Annex A's shaded area for one facing, as OBJECTIVE's Summer Shading % on that window row.
+
+    Cl. 6.2.2.1 treats a shaded area as north-facing (93 W/m2), so the share of the facing's solar that
+    the overhangs remove is shaded/total x (1 - 93 / Solar). North windows: no shading change (already north).
+    """
+    if d == "N":
+        return 0, "north: Cl. 6.2.2.1 treats shade as north-facing, so no change"
+    f = shade_factor(d)
+    shaded = total = 0.0
+    for _room, facing, w, h, o, drop, _a in WINDOWS:
+        if facing != d:
+            continue
+        s = f * o
+        shaded += min(h * w, w * max(0.0, s - drop))
+        total += h * w
+    lf = min(1.3, max(0.7, 1 + (LATITUDE - 40) * 0.0375)) if d == "S" else 1.0
+    solar = SOLAR0[d] * lf
+    pct = 100 * (shaded / total) * (1 - SOLAR0["N"] / solar) if total else 0
+    return round(pct, 2), (
+        f"Annex A: F {f:.3f} (lat {LATITUDE}), shaded {shaded:.1f} of {total:.1f} ft2 (W x H); shaded area at "
+        f"north's 93 W/m2 vs {solar:.1f} -> {pct:.2f} % of this row's solar removed")
+
+
 def build():
     rows = []  # (field, label, value, status, source, both_rows)
 
     def put(field, value, status, source, both=True):
         rows.append((field, value, status, source, both))
 
-    win = {d: m2(sum(a for _, f, a in WINDOWS if f == d)) for d in "NESW"}
+    win = {d: m2(sum(w[6] for w in WINDOWS if w[1] == d)) for d in "NESW"}
     wall_doors_ft2 = sum(a for _, f, a in DOORS if f != "Up")
     doors_ft2 = sum(a for _, _, a in DOORS)
     walls_gross = m2(sum(WALLS))
@@ -116,6 +161,11 @@ def build():
         "basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); "
         "inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF")
     put("d_63", occupants, "derived", f"Cl. 6.2.4: bedrooms ({len(BEDROOMS)}) + 1")
+    put("g_63", 12, "objective", "OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18)")
+    put("d_64", "Normal", "objective", "OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person)")
+    put("d_66", 1.5, "objective", "OBJECTIVE's standard lighting density (F280 Cl. 6.2.5: 4 W/m2 for lights AND appliances)")
+    put("g_67", "Regular", "objective", "OBJECTIVE's default equipment spec (the template, a PH house, had Efficient)")
+    put("d_80", "NRC 40%", "objective", "OBJECTIVE's default gains utilization (annual heating only; the template had PH Method)")
     for field, d in (("d_74", "N"), ("d_75", "E"), ("d_76", "S"), ("d_77", "W")):
         put(field, round(win[d], 3), "derived", f"Table G.1.11 a): {d}-facing windows summed, ft2 -> m2")
     put("d_78", 0, "standard", "no skylights in G.1.11")
@@ -125,10 +175,9 @@ def build():
         put(field, round(1 / WINDOW_RSI, 4), "derived", f"1 / RSI {WINDOW_RSI} (Table 6F)")
     for field in ("g_74", "g_75", "g_76", "g_77"):
         put(field, 0, "standard", "no winter shading in the heating calculation")
-    for field in ("h_74", "h_75", "h_76", "h_77"):
-        put(field, 0, "placeholder",
-            "G.1.11's overhangs and drops shade the base case (Annex A); OBJECTIVE takes a summer shading %; "
-            "0 = unshaded, which is the 8.3.6 b) VARIANT, not the base")
+    for field, d in (("h_74", "N"), ("h_75", "E"), ("h_76", "S"), ("h_77", "W")):
+        pct, why = summer_shading(d)
+        put(field, pct, "derived", why)
     put("d_73", round(m2(doors_ft2), 3), "derived",
         "Table G.1.10 a): two entry doors, the WIC knee-wall door and three attic hatches")
     put("f_73", 0, "standard", "opaque doors")
