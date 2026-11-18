@@ -69,7 +69,12 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    an RSI ≤ 0 showing the row as an error, not a number. F280-1 no longer enters 0: Table I.3's slab 0 is the
    ADDED insulation, so the slab carries its uninsulated assembly, 102 mm concrete (0.00045/mm, Table 7B) + the
    slab film 0.17 = RSI 0.216.
-   **What that exposed:** S15's peak heating (`EnergyNodes.js:514–516`) multiplies ground-facing U·A by the
+   ✅ **ALSO FIXED (Andy: "yes, use the 10 °C ground temp"):** S15's enclosure peaks now give ground-facing
+   surfaces OBJECTIVE's 10 °C ground: heating U·A × (setpoint − 10); at peak cooling the ground adds no gain and
+   no credit (a credit would undersize: over, never under). Across the 12 case studies the heating enclosure peak
+   falls 13–40 % and the cooling enclosure peak 16–57 %; their annual results are identical. F280-1: loss 20 041 W
+   (170 %), sensible gain 4927 W (67.3 %).
+   **What that exposed (before the fix):** S15's peak heating (`EnergyNodes.js:514–516`) multiplies ground-facing U·A by the
    OUTDOOR design ΔT (setpoint − coldest), while OBJECTIVE's annual method gives ground-facing areas a 10 °C
    ground (ground-facing HDD). An uninsulated slab at −25 °C air makes the peak 41 481 W (352 %); its row alone
    is 29 502 kWh/yr. F280 takes below grade from BASESIMP. The cooling peak does the same with (hottest − 24).

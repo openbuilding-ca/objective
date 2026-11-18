@@ -489,7 +489,10 @@
     // S15: PEAK LOADS + COSTS + TEUI COMPARISON
     // ========================================================================
 
-    // d_137: Peak Heating Load (Enclosure Only) = (G101×D101 + D102×G102) × (H23−D23) / 1000
+    // d_137: Peak Heating Load (Enclosure Only)
+    //   = (G101×D101 × (H23−D23) + D102×G102 × (H23−10)) / 1000
+    // Ground-facing surfaces see the ground at 10 °C, as the annual method does (climate.groundFacing.hdd);
+    // they used to take the outdoor design temperature, as if a slab sat in January air (Andy 2026-11-18).
     {
       id: "energy.peakHeating.enclosureKw",
       legacyId: "d_137",
@@ -511,13 +514,18 @@
         const d102 = parseNum(inputs["envelope.groundFacing.area"], 0);
         const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
         const coldest = parseNum(inputs["climate.temperature.coldest"], -22);
-        const deltaT = setpoint - coldest;
-        if (deltaT <= 0) return 0;
-        return (g101 * d101 + d102 * g102) * deltaT / 1000;
+        const groundTemp = 10; // OBJECTIVE's ground (ClimateNodes, TransmissionLossNodes, VolumeMetricsNodes)
+        const airDeltaT = Math.max(0, setpoint - coldest);
+        const groundDeltaT = Math.max(0, setpoint - groundTemp);
+        return (g101 * d101 * airDeltaT + d102 * g102 * groundDeltaT) / 1000;
       }
     },
 
-    // d_138: Peak Cooling Load (Enclosure Only) = (G101×D101 + D102×G102) × (D24−H24) / 1000
+    // d_138: Peak Cooling Load (Enclosure Only)
+    //   = (G101×D101 × (D24−H24) + D102×G102 × MAX(0, 10−H24)) / 1000
+    // Ground-facing surfaces see the ground at 10 °C, below the cooling setpoint: no gain at the design
+    // hour, and no credit either - a credit would undersize the cooling (Andy: over, never under; F280
+    // takes no below-grade gain). They used to take the outdoor design temperature, a gain.
     {
       id: "energy.peakCooling.enclosureKw",
       legacyId: "d_138",
@@ -539,14 +547,15 @@
         const d102 = parseNum(inputs["envelope.groundFacing.area"], 0);
         const hottest = parseNum(inputs["climate.temperature.hottest"], 34);
         const coolSetpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
-        const deltaT = hottest - coolSetpoint;
-        if (deltaT <= 0) return 0;
-        return (g101 * d101 + d102 * g102) * deltaT / 1000;
+        const groundTemp = 10; // OBJECTIVE's ground, as above
+        const airDeltaT = Math.max(0, hottest - coolSetpoint);
+        const groundDeltaT = Math.max(0, groundTemp - coolSetpoint);
+        return (g101 * d101 * airDeltaT + d102 * g102 * groundDeltaT) / 1000;
       }
     },
 
     // d_139: Peak Cooling Load (Enclosure + Gains)
-    // = ((G101×D101+D102×G102)×(D24−H24) + (D65+D66+D67)×H15) / 1000
+    // = d_138 (the enclosure, ground-facing at 10 °C) + (D65+D66+D67)×H15 / 1000
     //   + (K79 + D122 + K64) / (M19×24)
     // Free cooling (h_124) is no longer subtracted (Andy 2026-10-30): at the
     // design hour there is none. The peak is SENSIBLE: D122 and K64 carry
