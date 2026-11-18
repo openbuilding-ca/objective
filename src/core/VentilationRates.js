@@ -37,8 +37,9 @@
  *   - Part 9 houses still check against "Dwelling unit", not 9.32.3.3 / F326;
  *   - the case studies carry no space type (each takes its occupancy's
  *     default) except 09 Rowing Centre: Gym, sports arena (play area)
- *     (Andy 2026-11-18) - which reads 95% X: 14 L/s per person x 100 =
- *     1,400 L/s against 10 x 100 + 0.9 x 528 m2 = 1,475 (14.75 to pass).
+ *     (Andy 2026-11-18) - it read 95% X at 14 L/s per person (x 100 = 1,400
+ *     L/s against 10 x 100 + 0.9 x 528 m2 = 1,475); its Target now carries
+ *     14.75 (Andy: yes), 100% - TEUI 84.02 -> 84.48.
  *
  * DATA, not code: a row is changed here, never in a node.
  */
