@@ -22,6 +22,24 @@
  * occupied standby), which the OBC and NBC exclude. Verify against the
  * standard itself before relying on a row.
  *
+ * WHY (the V.1.4 check, ComplianceNodes m_119): it read Target per-person /
+ * Reference per-person whatever the Ventil. Method, so the default building -
+ * Volume by Schedule, which never uses its per-person rate - showed 67% X (its
+ * 8.33 against the file's Reference 12.50). 8.33 L/s per person = 30 m3/h per
+ * person (not 30 cfm); 62.1 asks roughly 2.7-4.6 L/s per person of typical
+ * assembly spaces at their default density. Now: delivered while occupied /
+ * this building's Vbz - the default building 743 L/s required, 6,933
+ * delivered, 933%.
+ *
+ * OPEN (also ABCD-OBJECTIVE-PRO.md §4.2 and §6 in ABCD.EARTH):
+ *   - the rates are unverified against 62.1-2016 itself (see SOURCE);
+ *   - B2 and B3 are stand-ins: 62.1 has no health-care rows (ASHRAE 170);
+ *   - Part 9 houses still check against "Dwelling unit", not 9.32.3.3 / F326;
+ *   - the case studies carry no space type (each takes its occupancy's
+ *     default) except 09 Rowing Centre: Gym, sports arena (play area)
+ *     (Andy 2026-11-18) - which reads 95% X: 14 L/s per person x 100 =
+ *     1,400 L/s against 10 x 100 + 0.9 x 528 m2 = 1,475 (14.75 to pass).
+ *
  * DATA, not code: a row is changed here, never in a node.
  */
 (function () {
