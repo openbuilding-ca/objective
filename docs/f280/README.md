@@ -103,8 +103,10 @@ now uses:
 the actual building code"*; *"F280 seems to undercount, our loads reflect current actual utility bill values."* In the
 code: `src/core/ReferenceValues.js` (sourced from `sources of truth 3037/CODE-VALUES.csv`) sets NBC T1's plug load 5.0
 W/m², lighting 2.0, SHGC max 0.50, slab RSI min 1.96, HRV SRE 60, TB default 50 ("Not Defined in Codes"); equipment
-by occupancy is `EQUIPMENT_LOADS_TABLE` in `InternalGainsNodes.js` (residential Regular 5, Efficient 3). Neither
-names the code clause; Andy to name it. **SHGC:** F280 does prescribe it by window type (Table 6F): double-glazed
+by occupancy is `EQUIPMENT_LOADS_TABLE` in `InternalGainsNodes.js` (residential Regular 5, Efficient 3). The
+equipment table's sources (Andy, 2026-11-18): NREL building data and ComStock, CBECS, RECS, the NECB and ASHRAE
+90.1, now cited in the code. Andy: *"F280 should use them but does not."* The plug figure (5.0 W/m², NBC T1)
+still names no source. **SHGC:** F280 does prescribe it by window type (Table 6F): double-glazed
 low-e 0.40, clear 0.53–0.58. Archetype 1's window is low-e (H.3), so 0.40 is the standard's; Andy's practice for
 more window gain is 0.6.
 

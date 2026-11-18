@@ -36,8 +36,11 @@
     Hyperactive: 424.95,
   };
 
-  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²)
-  // From Section09.js equipmentLoadsTable
+  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²): OBJECTIVE's
+  // "Occupancy-Based Equipment Loads by Specification Type" table, compiled from NREL building data
+  // (ComStock, comstock.nrel.gov), the Commercial and Residential Energy Consumption Surveys (CBECS,
+  // RECS), NRC's National Energy Code for Buildings (NECB) and ASHRAE Standard 90.1. These reflect
+  // measured use; CSA F280's peak allowance (4 W/m², Cl. 6.2.5) is lower (Andy 2026-11-18).
   const EQUIPMENT_LOADS_TABLE = {
     "A-Assembly": {
       Regular: { Elevators: 9.0, "No Elevators": 7.0 },
