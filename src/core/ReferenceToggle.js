@@ -35,6 +35,7 @@ TEUI.ReferenceToggle = (function () {
   const FIELD_CLASSIFICATION = {
     // Row 1-10
     d_12: "C",
+    e_12: "C", // the 62.1 space type travels with its occupancy
     d_13: "C",
     d_14: "A",
     d_15: "C",

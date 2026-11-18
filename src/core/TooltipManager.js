@@ -19,6 +19,12 @@
       message:
         "Select a Major Occupancy (NBC Reference) from the Drop-Down_x000a_Affects: Tset Heating and Equipment Loads",
     },
+    e_12: {
+      cell: "E12",
+      title: "Space Type (ASHRAE 62.1)",
+      message:
+        "The space type within the Major Occupancy that sets the outdoor air the code requires (V.1.4). OBC 2024 / NBC 2025 Art. 6.3.1.1.(2) require outdoor air per ANSI/ASHRAE 62.1-2016: Required = Rp x occupants + Ra x floor area, Rp and Ra from its Table 6.2.2.1 for this space type._x000a_Choose the space that governs the building, or the one most like it (62.1 Note 6). B2 and B3 offer stand-ins: 62.1 lists no health-care spaces, which ASHRAE 170 governs.",
+    },
     h_12: {
       cell: "H12",
       title: "Year Data Entered",
@@ -671,6 +677,12 @@
       cell: "D119",
       title: "Ventilation Guidance",
       message: "8.33 l/s is Default, 12.5 l/s is considered best practice",
+    },
+    m_119: {
+      cell: "M119",
+      title: "Outdoor Air: Delivered / Required",
+      message:
+        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_100% or more passes. Part 9 houses (9.32.3.3) are not yet checked by their own rule.",
     },
     e_118: {
       cell: "E118",

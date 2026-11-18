@@ -656,8 +656,9 @@ window.TEUI.SectionModules.sect13 = (function () {
           type: "calculated",
           value: "112%",
           section: "mechanicalLoads",
-          dependencies: ["d_119", "ref_d_119"],
-          label: "Ventilation Rate Ratio to Reference",
+          tooltip: true,
+          dependencies: ["l_118", "d_119", "g_118", "e_12"],
+          label: "Outdoor Air Delivered / Required (ASHRAE 62.1)",
         },
         n: {
           fieldId: "n_119",

@@ -1,0 +1,488 @@
+/**
+ * VentilationRates.js - the outdoor air a building must receive, by space type.
+ *
+ * OBC 2024 and NBC 2025 Article 6.3.1.1.(2) (Part 3 buildings): outdoor air "in
+ * accordance with" ANSI/ASHRAE 62.1-2016 - normally Section 6.2, the
+ * Ventilation Rate Procedure, whose breathing-zone rate is
+ *
+ *     Vbz = Rp x Pz + Ra x Az        (62.1 Equation 6.2.2.1)
+ *
+ * Rp (L/s per person) and Ra (L/s per m2) are Table 6.2.2.1's, by space type;
+ * Pz the people and Az the floor area. SB-10, ASHRAE 90.1 and the NECB set no
+ * rate - they are energy codes. Part 9 houses follow 9.32.3.3 instead (not here
+ * yet).
+ *
+ * Andy 2026-11-18: "we know total conditioned volume and area and occupant
+ * count from other cells the user inputs, so we can derive whatever the
+ * standard requires us to" - and a rate table instead of one per-person value.
+ *
+ * SOURCE: Table 6.2.2.1 of 62.1-2016, read from an unofficial copy
+ * (hvacsimplified.in) and cross-checked against the 2013 edition: every row
+ * here is identical in both. 2016 adds Note H (rates may drop to zero in
+ * occupied standby), which the OBC and NBC exclude. Verify against the
+ * standard itself before relying on a row.
+ *
+ * DATA, not code: a row is changed here, never in a node.
+ */
+(function () {
+  "use strict";
+
+  window.TEUI = window.TEUI || {};
+
+  // rp: L/s per person · ra: L/s per m2 · density: Table 6.2.2.1's default
+  // people per 100 m2 (used only when the occupant count is unknown; null
+  // where the table gives none) · group: its Table 6.2.2.1 heading.
+  const SPACE_TYPES = {
+    // Correctional Facilities
+    Cell: { rp: 2.5, ra: 0.6, density: 25, group: "Correctional Facilities" },
+    Dayroom: {
+      rp: 2.5,
+      ra: 0.3,
+      density: 30,
+      group: "Correctional Facilities",
+    },
+    "Guard stations": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 15,
+      group: "Correctional Facilities",
+    },
+    "Booking/waiting": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 50,
+      group: "Correctional Facilities",
+    },
+    // Educational Facilities
+    "Daycare (through age 4)": {
+      rp: 5,
+      ra: 0.9,
+      density: 25,
+      group: "Educational Facilities",
+    },
+    "Classrooms (ages 5-8)": {
+      rp: 5,
+      ra: 0.6,
+      density: 25,
+      group: "Educational Facilities",
+    },
+    "Classrooms (age 9 plus)": {
+      rp: 5,
+      ra: 0.6,
+      density: 35,
+      group: "Educational Facilities",
+    },
+    "Lecture classroom": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 65,
+      group: "Educational Facilities",
+    },
+    "Lecture hall (fixed seats)": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 150,
+      group: "Educational Facilities",
+    },
+    "Art classroom": {
+      rp: 5,
+      ra: 0.9,
+      density: 20,
+      group: "Educational Facilities",
+    },
+    "Science laboratories": {
+      rp: 5,
+      ra: 0.9,
+      density: 25,
+      group: "Educational Facilities",
+    },
+    "Computer lab": {
+      rp: 5,
+      ra: 0.6,
+      density: 25,
+      group: "Educational Facilities",
+    },
+    "Media center": {
+      rp: 5,
+      ra: 0.6,
+      density: 25,
+      group: "Educational Facilities",
+    },
+    "Music/theater/dance": {
+      rp: 5,
+      ra: 0.3,
+      density: 35,
+      group: "Educational Facilities",
+    },
+    "Multiuse assembly": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 100,
+      group: "Educational Facilities",
+    },
+    // Food and Beverage Service
+    "Restaurant dining rooms": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 70,
+      group: "Food and Beverage Service",
+    },
+    "Cafeteria/fast-food dining": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 100,
+      group: "Food and Beverage Service",
+    },
+    "Bars, cocktail lounges": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 100,
+      group: "Food and Beverage Service",
+    },
+    // General
+    "Conference/meeting": { rp: 2.5, ra: 0.3, density: 50, group: "General" },
+    // Hotels, Motels, Resorts, Dormitories
+    "Bedroom/living room": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 10,
+      group: "Hotels, Motels, Resorts, Dormitories",
+    },
+    "Barracks sleeping areas": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 20,
+      group: "Hotels, Motels, Resorts, Dormitories",
+    },
+    "Lobbies/prefunction": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 30,
+      group: "Hotels, Motels, Resorts, Dormitories",
+    },
+    "Multipurpose assembly": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 120,
+      group: "Hotels, Motels, Resorts, Dormitories",
+    },
+    // Office Buildings
+    "Office space": { rp: 2.5, ra: 0.3, density: 5, group: "Office Buildings" },
+    "Reception areas": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 30,
+      group: "Office Buildings",
+    },
+    "Main entry lobbies": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 10,
+      group: "Office Buildings",
+    },
+    "Telephone/data entry": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 60,
+      group: "Office Buildings",
+    },
+    // Miscellaneous Spaces
+    "Banks or bank lobbies": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 15,
+      group: "Miscellaneous Spaces",
+    },
+    "Computer (not printing)": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 4,
+      group: "Miscellaneous Spaces",
+    },
+    "General manufacturing": {
+      rp: 5,
+      ra: 0.9,
+      density: 7,
+      group: "Miscellaneous Spaces",
+    },
+    "Photo studios": {
+      rp: 2.5,
+      ra: 0.6,
+      density: 10,
+      group: "Miscellaneous Spaces",
+    },
+    "Shipping/receiving": {
+      rp: 5,
+      ra: 0.6,
+      density: 2,
+      group: "Miscellaneous Spaces",
+    },
+    "Sorting, packing, light assembly": {
+      rp: 3.8,
+      ra: 0.6,
+      density: 7,
+      group: "Miscellaneous Spaces",
+    },
+    "Transportation waiting": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 100,
+      group: "Miscellaneous Spaces",
+    },
+    Warehouses: {
+      rp: 5,
+      ra: 0.3,
+      density: null,
+      group: "Miscellaneous Spaces",
+    },
+    // Public Assembly Spaces
+    "Auditorium seating area": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 150,
+      group: "Public Assembly Spaces",
+    },
+    "Places of religious worship": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 120,
+      group: "Public Assembly Spaces",
+    },
+    Courtrooms: {
+      rp: 2.5,
+      ra: 0.3,
+      density: 70,
+      group: "Public Assembly Spaces",
+    },
+    "Legislative chambers": {
+      rp: 2.5,
+      ra: 0.3,
+      density: 50,
+      group: "Public Assembly Spaces",
+    },
+    Libraries: {
+      rp: 2.5,
+      ra: 0.6,
+      density: 10,
+      group: "Public Assembly Spaces",
+    },
+    Lobbies: {
+      rp: 2.5,
+      ra: 0.3,
+      density: 150,
+      group: "Public Assembly Spaces",
+    },
+    "Museums (children's)": {
+      rp: 3.8,
+      ra: 0.6,
+      density: 40,
+      group: "Public Assembly Spaces",
+    },
+    "Museums/galleries": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 40,
+      group: "Public Assembly Spaces",
+    },
+    // Residential (Note F: 2 people per studio or 1-bedroom unit, +1 per bedroom)
+    "Dwelling unit": { rp: 2.5, ra: 0.3, density: null, group: "Residential" },
+    // Retail
+    "Sales (except as below)": {
+      rp: 3.8,
+      ra: 0.6,
+      density: 15,
+      group: "Retail",
+    },
+    "Mall common areas": { rp: 3.8, ra: 0.3, density: 40, group: "Retail" },
+    Barbershop: { rp: 3.8, ra: 0.3, density: 25, group: "Retail" },
+    "Beauty and nail salons": { rp: 10, ra: 0.6, density: 25, group: "Retail" },
+    "Pet shops (animal areas)": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 10,
+      group: "Retail",
+    },
+    Supermarket: { rp: 3.8, ra: 0.3, density: 8, group: "Retail" },
+    "Coin-operated laundries": {
+      rp: 3.8,
+      ra: 0.6,
+      density: 20,
+      group: "Retail",
+    },
+    // Sports and Entertainment
+    "Gym, sports arena (play area)": {
+      rp: 10,
+      ra: 0.9,
+      density: 7,
+      group: "Sports and Entertainment",
+    },
+    "Spectator areas": {
+      rp: 3.8,
+      ra: 0.3,
+      density: 150,
+      group: "Sports and Entertainment",
+    },
+    "Swimming (pool & deck)": {
+      rp: 0,
+      ra: 2.4,
+      density: null,
+      group: "Sports and Entertainment",
+    },
+    "Disco/dance floors": {
+      rp: 10,
+      ra: 0.3,
+      density: 100,
+      group: "Sports and Entertainment",
+    },
+    "Health club/aerobics room": {
+      rp: 10,
+      ra: 0.3,
+      density: 40,
+      group: "Sports and Entertainment",
+    },
+    "Health club/weight rooms": {
+      rp: 10,
+      ra: 0.3,
+      density: 10,
+      group: "Sports and Entertainment",
+    },
+    "Bowling alley (seating)": {
+      rp: 5,
+      ra: 0.6,
+      density: 40,
+      group: "Sports and Entertainment",
+    },
+    "Gambling casinos": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 120,
+      group: "Sports and Entertainment",
+    },
+    "Game arcades": {
+      rp: 3.8,
+      ra: 0.9,
+      density: 20,
+      group: "Sports and Entertainment",
+    },
+    "Stages, studios": {
+      rp: 5,
+      ra: 0.3,
+      density: 70,
+      group: "Sports and Entertainment",
+    },
+  };
+
+  // The space types offered for each Major Occupancy (S02 B.1), its DEFAULT
+  // first. 62.1 lists no health-care spaces (ASHRAE 170 governs them): B2 and
+  // B3 offer the nearest listed rooms, as 62.1's Note 6 directs for an
+  // unlisted occupancy - stand-ins, flagged in the tooltip.
+  const BY_OCCUPANCY = {
+    "A-Assembly": [
+      "Auditorium seating area",
+      "Places of religious worship",
+      "Courtrooms",
+      "Legislative chambers",
+      "Libraries",
+      "Lobbies",
+      "Museums/galleries",
+      "Museums (children's)",
+      "Multipurpose assembly",
+      "Lobbies/prefunction",
+      "Spectator areas",
+      "Gym, sports arena (play area)",
+      "Health club/aerobics room",
+      "Health club/weight rooms",
+      "Swimming (pool & deck)",
+      "Bowling alley (seating)",
+      "Disco/dance floors",
+      "Stages, studios",
+      "Gambling casinos",
+      "Game arcades",
+      "Restaurant dining rooms",
+      "Cafeteria/fast-food dining",
+      "Bars, cocktail lounges",
+      "Daycare (through age 4)",
+      "Classrooms (ages 5-8)",
+      "Classrooms (age 9 plus)",
+      "Lecture classroom",
+      "Lecture hall (fixed seats)",
+      "Art classroom",
+      "Science laboratories",
+      "Computer lab",
+      "Media center",
+      "Music/theater/dance",
+      "Multiuse assembly",
+      "Transportation waiting",
+    ],
+    "B1-Detention": ["Cell", "Dayroom", "Guard stations", "Booking/waiting"],
+    "B2-Care and Treatment": [
+      "Bedroom/living room",
+      "Office space",
+      "Conference/meeting",
+    ],
+    "B3-Detention Care & Treatment": ["Cell", "Dayroom", "Bedroom/living room"],
+    "C-Residential": [
+      "Dwelling unit",
+      "Bedroom/living room",
+      "Barracks sleeping areas",
+    ],
+    "D-Business & Personal Services": [
+      "Office space",
+      "Conference/meeting",
+      "Reception areas",
+      "Main entry lobbies",
+      "Telephone/data entry",
+      "Banks or bank lobbies",
+      "Barbershop",
+      "Beauty and nail salons",
+      "Photo studios",
+      "Computer (not printing)",
+    ],
+    "E-Mercantile": [
+      "Sales (except as below)",
+      "Mall common areas",
+      "Supermarket",
+      "Pet shops (animal areas)",
+      "Coin-operated laundries",
+    ],
+    "F-Industrial": [
+      "General manufacturing",
+      "Warehouses",
+      "Shipping/receiving",
+      "Sorting, packing, light assembly",
+    ],
+  };
+
+  const STAND_INS = new Set([
+    "B2-Care and Treatment",
+    "B3-Detention Care & Treatment",
+  ]);
+
+  /** The space types offered for an occupancy (every one when it is unknown). */
+  function optionsFor(occupancy) {
+    return BY_OCCUPANCY[occupancy] || Object.keys(SPACE_TYPES);
+  }
+
+  /** The space type in effect: the stored one if the occupancy offers it, else the occupancy's default. */
+  function resolve(occupancy, spaceType) {
+    const offered = optionsFor(occupancy);
+    return offered.includes(spaceType) ? spaceType : offered[0];
+  }
+
+  /** Vbz = Rp x people + Ra x area, in L/s, for the space type in effect. */
+  function requiredOutdoorAir(occupancy, spaceType, occupants, area) {
+    const row = SPACE_TYPES[resolve(occupancy, spaceType)];
+    return row.rp * occupants + row.ra * area;
+  }
+
+  window.TEUI.VentilationRates = Object.freeze({
+    source:
+      "ANSI/ASHRAE 62.1-2016, Table 6.2.2.1 (OBC 2024 / NBC 2025 Art. 6.3.1.1.(2))",
+    spaceTypes: SPACE_TYPES,
+    byOccupancy: BY_OCCUPANCY,
+    isStandIn: occupancy => STAND_INS.has(occupancy),
+    optionsFor,
+    resolve,
+    requiredOutdoorAir,
+  });
+})();

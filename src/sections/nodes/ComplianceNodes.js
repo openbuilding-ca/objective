@@ -320,25 +320,84 @@
     },
 
     // ========================================================================
-    // Ventilation Rate Compliance Ratio (m_119)
+    // Ventilation Rate: the code's outdoor air (V.1.4, m_119)
     // ========================================================================
+    // Andy 2026-11-18: the check compares what the system delivers with what
+    // the code requires of THIS building - OBC 2024 / NBC 2025 Art.
+    // 6.3.1.1.(2), ASHRAE 62.1-2016's Ventilation Rate Procedure:
+    //   required  Vbz = Rp x occupants + Ra x floor area (VentilationRates.js,
+    //             Rp and Ra by the B.1 space type)
+    //   delivered the rate while occupied, by the Ventil. Method - ACH x volume
+    //             / 3.6 (Volume) or L/s per person x occupants (Occupant); a
+    //             schedule does not enter: the minimum applies while occupied.
+    // It was Target per-person / Reference per-person whatever the method: the
+    // default building (Volume by Schedule, which never uses its per-person
+    // rate) read 67% X from the file's Reference 12.50.
     {
-      id: "compliance.ventRate.ratio",
-      legacyId: "m_119",
+      id: "ventilation.requiredOutdoorAir",
       dependencies: [
-        "mechanical.ventilation.ratePerPerson",
-        "reference.mechanical.ventilation.ratePerPerson"
+        "building.majorOccupancy",
+        "building.ventilationSpaceType",
+        "occupancy.occupants",
+        "building.conditionedFloorArea"
       ],
       classification: "C",
       section: "S13",
-      label: "Ventilation Rate Compliance Ratio",
+      label: "Required Outdoor Air (ASHRAE 62.1 Vbz)",
+      unit: "L/s",
       compute: (inputs) => {
-        // Higher ventilation rate is better, so target/ref * 100 for percentage
-        const targetRate = parseNum(inputs["mechanical.ventilation.ratePerPerson"], 0);
-        const refRate = parseNum(inputs["reference.mechanical.ventilation.ratePerPerson"], 0);
-
-        if (refRate > 0) {
-          return +((targetRate / refRate) * 100).toFixed(0);
+        const rates = window.TEUI.VentilationRates;
+        if (!rates) return 0;
+        return +rates
+          .requiredOutdoorAir(
+            inputs["building.majorOccupancy"],
+            inputs["building.ventilationSpaceType"],
+            parseNum(inputs["occupancy.occupants"], 0),
+            parseNum(inputs["building.conditionedFloorArea"], 0)
+          )
+          .toFixed(2);
+      }
+    },
+    {
+      id: "ventilation.deliveredOccupied",
+      dependencies: [
+        "mechanical.ventilation.method",
+        "mechanical.ventilation.ach",
+        "mechanical.ventilation.ratePerPerson",
+        "volume.conditioned",
+        "occupancy.occupants"
+      ],
+      classification: "C",
+      section: "S13",
+      label: "Outdoor Air Delivered While Occupied",
+      unit: "L/s",
+      compute: (inputs) => {
+        const method = inputs["mechanical.ventilation.method"] || "Volume by Schedule";
+        if (method.startsWith("Occupant")) {
+          return +(
+            parseNum(inputs["mechanical.ventilation.ratePerPerson"], 0) *
+            parseNum(inputs["occupancy.occupants"], 0)
+          ).toFixed(2);
+        }
+        return +(
+          (parseNum(inputs["mechanical.ventilation.ach"], 0) *
+            parseNum(inputs["volume.conditioned"], 0)) /
+          3.6
+        ).toFixed(2);
+      }
+    },
+    {
+      id: "compliance.ventRate.ratio",
+      legacyId: "m_119",
+      dependencies: ["ventilation.deliveredOccupied", "ventilation.requiredOutdoorAir"],
+      classification: "C",
+      section: "S13",
+      label: "Outdoor Air Delivered / Required (ASHRAE 62.1)",
+      compute: (inputs) => {
+        const delivered = parseNum(inputs["ventilation.deliveredOccupied"], 0);
+        const required = parseNum(inputs["ventilation.requiredOutdoorAir"], 0);
+        if (required > 0) {
+          return +((delivered / required) * 100).toFixed(0);
         }
         return 100;
       }

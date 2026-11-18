@@ -616,6 +616,18 @@
         }
       }
 
+      // A file with a Major Occupancy but no 62.1 space type (every file
+      // before 2026-11-18): the occupancy's default, not the previous
+      // project's space type - "" resolves to it (VentilationRates.resolve).
+      for (const prefix of ["", "ref_"]) {
+        if (
+          importedData[`${prefix}d_12`] !== undefined &&
+          importedData[`${prefix}e_12`] === undefined
+        ) {
+          this.stateManager.setValue(`${prefix}e_12`, "", "imported");
+        }
+      }
+
       const allEntries = Object.entries(importedData);
 
       // PASS 1: Control fields
@@ -905,6 +917,12 @@
         sect03.syncLocationDropdowns();
       }
 
+      // S02's 62.1 space type follows the imported occupancy
+      const sect02 = window.TEUI?.SectionModules?.sect02;
+      if (sect02?.syncSpaceTypeDropdown) {
+        sect02.syncSpaceTypeDropdown();
+      }
+
       // Update field lock states after import — import sets d_113/d_51 via
       // StateManager.setValue() which bypasses UI event handlers, so we must
       // explicitly call ghosting/visibility functions.
@@ -1072,6 +1090,7 @@
         const userEditableFieldIds = [
           // Section 02: Building Information
           "d_12",
+          "e_12",
           "d_13",
           "d_14",
           "d_15",
