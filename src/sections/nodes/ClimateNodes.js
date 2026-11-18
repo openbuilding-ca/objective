@@ -438,17 +438,21 @@
         const isPH = standard && standard.toUpperCase().includes("PH");
         const isCare = occupancy.includes("Care");
         const isResidential = occupancy.includes("Residential");
-        const isNbcPart9 = standard.startsWith("NBC T");
+        // Part 9 houses on a performance path: NBC's tiers and OBC's SB-12.
+        const isPart9 = standard.startsWith("NBC T") || standard.startsWith("OBC SB12");
 
         // Care occupancies are critical under every standard: the code's 22 °C, never overridden.
         if (isCare) return 22;
         // Passive House: PHPP 9.6a's interior temperature winter, 20 °C (Verification sheet; its Check
         // sheet warns above 20).
         if (isPH) return 20;
-        // Part 9 houses on NBC's performance path: NBC 2025 Sentence 9.36.6.4.(5), 20 °C in living
-        // spaces (19 °C in basements; one zone here, so the living-space value).
-        if (isResidential && isNbcPart9) return 20;
-        // Residential under OBC (SB12, SB10) and NECB: critical occupancy, 22 °C.
+        // Part 9 houses: 20 °C. NBC 2025 Sentence 9.36.6.4.(5): 20 °C in living spaces (19 °C in
+        // basements). OBC SB-12's performance path uses EnerGuide's operating conditions (ERS v15.2
+        // §4.6.2.2, Table 2: 21 °C day / 18 °C night, "a constant weighted average of 20 degrees
+        // Celsius"; 19 °C basements). One zone here, so the living-space value. Not critical occupancy:
+        // a Part 9 house is residential (Andy 2026-11-18).
+        if (isResidential && isPart9) return 20;
+        // Residential under Part 3 (OBC SB10, NECB): critical occupancy, 22 °C.
         if (isResidential) return 22;
         return 18; // Default for other occupancies
       }
@@ -533,10 +537,11 @@
         const actual = parseNum(inputs["climate.heating.setpoint"], 21);
         const occupancy = inputs["building.majorOccupancy"] || "Other";
         const standard = inputs["building.referenceStandard"] || "";
-        // A Part 9 house on NBC's performance path is modelled at the code's own energy set-point,
-        // 20 °C (9.36.6.4.(5)); everything else is held to the design baseline.
-        const nbcPart9House = occupancy.includes("Residential") && standard.startsWith("NBC T");
-        const required = nbcPart9House ? 20 : parseNum(inputs["climate.heating.obcSetpoint"], 22);
+        // A Part 9 house (NBC tiers, OBC SB-12) is modelled at the code's own energy set-point, 20 °C
+        // (NBC 9.36.6.4.(5); SB-12 / EnerGuide); everything else is held to the design baseline.
+        const part9House =
+          occupancy.includes("Residential") && (standard.startsWith("NBC T") || standard.startsWith("OBC SB12"));
+        const required = part9House ? 20 : parseNum(inputs["climate.heating.obcSetpoint"], 22);
 
         // Pass if actual >= required
         return actual >= required ? "✓" : "✗";
