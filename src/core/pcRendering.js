@@ -324,6 +324,9 @@ window.TEUI.PCRendering = (function () {
         .append("svg")
         .attr("width", containerWidth)
         .attr("height", containerHeight)
+        // The drawn size as a viewBox: printed, the browser scales the graph
+        // to the page's width (styles.css @media print)
+        .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
         .append("g")
         .attr(
           "transform",

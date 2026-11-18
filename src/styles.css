@@ -2643,9 +2643,9 @@ body.dev-environment {
   .graphics-section,
   .graphics-section canvas,
   .graphics-section svg,
-  #section16,
-  #section17,
-  #section18 {
+  #sankeyDiagram,
+  #dependencyDiagram,
+  #parallelCoordinates {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -2673,18 +2673,21 @@ body.dev-environment {
     text-decoration: underline;
   }
 
-  /* Page breaks between major sections */
-  #section01,
-  #section02,
-  #section16,
-  #section17,
-  #section18 {
+  /* Page breaks between major sections: Section 2 and each graphics section
+     (16 Sankey, 17 Dependency Graph, 18 Optimize) start a page. These named
+     #section01/02/16/17/18, which no element carries, so they never applied
+     (Andy 2026-11-18: fixed, the pagination change welcome). */
+  #keyValues,
+  #buildingInfo,
+  #sankeyDiagram,
+  #dependencyDiagram,
+  #parallelCoordinates {
     page-break-before: always;
     break-before: page;
   }
 
   /* First section shouldn't force page break */
-  #section01:first-child {
+  #keyValues:first-child {
     page-break-before: auto;
     break-before: auto;
   }
@@ -2695,16 +2698,30 @@ body.dev-environment {
     border: none !important;
   }
 
-  /* REFINEMENT 2: Center Sankey diagram and use full available width */
-  #section16 .section-content,
-  #sankeySection16Container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  /* REFINEMENT 2: Center the Sankey diagram on its page (when drawn narrower
+     than the page). Was #section16 / #sankeySection16Container: neither exists. */
+  #s16DiagramWrapper svg {
+    margin: 0 auto;
   }
 
-  #section16 svg {
+  /* The Sankey (S16) and the Optimize graph (S18) are drawn at the screen's
+     width; their viewBox lets the browser scale them to the page instead of
+     cutting off the right side. ("#section16" never matched: the sections'
+     ids are sankeyDiagram and parallelCoordinates.) */
+  #sankeyDiagram svg,
+  #parallelCoordinates svg {
     max-width: 100% !important;
+    height: auto !important;
+    /* and never taller than a landscape page leaves under the section's
+       header (Letter 8in, A4 7.77in inside the 0.25in margins) - drawn in a
+       narrow window, the Sankey otherwise jumps a page and leaves its header
+       behind */
+    max-height: 6in !important;
+  }
+
+  /* The Sankey's wrapper holds the drawn height inline (600px): printed, it
+     follows the scaled drawing instead of leaving that height empty. */
+  #s16DiagramWrapper {
     height: auto !important;
   }
 
