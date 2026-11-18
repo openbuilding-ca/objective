@@ -501,7 +501,7 @@
         "envelope.airFacing.area",
         "envelope.groundFacing.uValue",
         "envelope.groundFacing.area",
-        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (sizing), not the energy one
         "climate.temperature.coldest"
       ],
       classification: "C",
@@ -512,7 +512,7 @@
         const d101 = parseNum(inputs["envelope.airFacing.area"], 0);
         const g102 = parseNum(inputs["envelope.groundFacing.uValue"], 0);
         const d102 = parseNum(inputs["envelope.groundFacing.area"], 0);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
+        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const coldest = parseNum(inputs["climate.temperature.coldest"], -22);
         const groundTemp = 10; // OBJECTIVE's ground (ClimateNodes, TransmissionLossNodes, VolumeMetricsNodes)
         const airDeltaT = Math.max(0, setpoint - coldest);

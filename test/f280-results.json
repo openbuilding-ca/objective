@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-18T22:55:00.159Z",
+  "timestamp": "2026-11-18T23:38:19.778Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -82,11 +82,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         },
         "coolingDays": 120,
         "peakTerms": {
@@ -100,7 +100,7 @@
           "internalDensity_W": 3325.1099999999997,
           "solarSeasonAverage_W": 256.61756374634615,
           "ventilationSeasonAverage_W": 0,
-          "occupantsSeasonAverage_W": 59.237382180870604
+          "occupantsSeasonAverage_W": 59.2373821808706
         },
         "iso52016": {
           "present": true,
@@ -118,7 +118,7 @@
             "months"
           ],
           "rows": {
-            "internal": 1236.0076117831197,
+            "internal": 1246.3915778417565,
             "glazing73": 0,
             "glazing74": 188.75625456858876,
             "glazing75": 54.82920728301425,
@@ -127,8 +127,8 @@
             "glazing78": 0,
             "roof": 34.21423865100351,
             "walls": 97.07751984229726,
-            "vent": 23.798640859426783,
-            "leak": 9.425652252553302
+            "vent": 30.8380357288949,
+            "leak": 12.213663908342138
           }
         }
       }
@@ -158,11 +158,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -191,11 +191,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -223,11 +223,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -255,11 +255,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -287,11 +287,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -319,11 +319,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -351,11 +351,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -383,11 +383,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     },
@@ -415,11 +415,11 @@
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
           "slabOnGrade.area": "90.311",
-          "slabOnGrade.heatLoss": 29501.593333333334,
+          "slabOnGrade.heatLoss": 24584.661111111116,
           "wallsBelowGrade.rsi": "2.76",
           "wallsBelowGrade.uValue": 0.3623188405797102,
           "wallsBelowGrade.area": "110.39",
-          "wallsBelowGrade.heatLoss": 2822.1443478260876
+          "wallsBelowGrade.heatLoss": 2351.7869565217397
         }
       }
     }

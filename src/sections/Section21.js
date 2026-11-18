@@ -1587,7 +1587,7 @@ window.TEUI.SectionModules.sect21 = (function () {
   // Values resolved via graph state or SM (reverse-lookup at runtime).
   const SOURCE_MAP = {
     // Design conditions (S03)
-    [FIELDS.tsetHeating]:             "building.heatingSetpoint",
+    [FIELDS.tsetHeating]:             "reference.heatingSetpointMin", // the DESIGN set-point (m_23; F280 Cl. 4.2), not the energy one
     [FIELDS.tsetCooling]:             "building.coolingSetpoint",
     [FIELDS.temperatureColdest]:      "climate.coldestTemp",
     [FIELDS.temperatureHottest]:      "climate.hottestTemp",

@@ -194,7 +194,7 @@
         "airTightness.nrl50",
         "envelope.airFacing.area",
         "airTightness.nFactor",
-        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
         "climate.temperature.coldest"
       ],
       label: "F280 Peak Infiltration Heat Loss (W)",
@@ -202,7 +202,7 @@
         const nrl50 = parseNum(inputs["airTightness.nrl50"]);
         const areaAir = parseNum(inputs["envelope.airFacing.area"]);
         const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
+        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
 
         if (nFactor <= 0 || areaAir <= 0) return 0;
@@ -231,14 +231,14 @@
       dependencies: [
         "ventilation.volumeRate",
         "mechanical.ventilation.efficiency",
-        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
         "climate.temperature.coldest"
       ],
       label: "F280 Peak Ventilation Heat Loss (W)",
       compute: (inputs) => {
         const ventRate = parseNum(inputs["ventilation.volumeRate"]);
         const efficiency = parseNum(inputs["mechanical.ventilation.efficiency"]);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
+        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
 
         if (ventRate <= 0) return 0;

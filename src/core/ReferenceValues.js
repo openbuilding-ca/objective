@@ -389,7 +389,7 @@ TEUI.ReferenceValues = {
   "PH Classic": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -433,7 +433,7 @@ TEUI.ReferenceValues = {
   "PH Plus": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -477,7 +477,7 @@ TEUI.ReferenceValues = {
   "PH Premium": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -522,7 +522,7 @@ TEUI.ReferenceValues = {
   EnerPHit: {
     //"h_13": "PH Renovations"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -567,7 +567,7 @@ TEUI.ReferenceValues = {
   "PH Low Energy": {
     //"h_13": "80% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil

@@ -426,29 +426,30 @@
       dependencies: ["building.majorOccupancy", "building.referenceStandard"],
       classification: "C",
       section: "S03",
-      label: "Heating Setpoint",
+      label: "Heating Setpoint (energy)",
       unit: "°C",
+      // The ENERGY set-point: what the annual model heats to. The DESIGN (sizing) set-point is
+      // climate.heating.obcSetpoint (m_23), used by S15's peaks and S21 / F280. Andy 2026-11-18: separate
+      // the two; critical occupancies keep the code's 22 °C ("We cannot over-ride that as it is a code
+      // requirement"); PH is 20 °C, PHPP's own (it was 18, which no source gives).
       compute: (inputs) => {
         const occupancy = inputs["building.majorOccupancy"] || "Other";
         const standard = inputs["building.referenceStandard"] || "OBC SB-10";
-
-        // Check if Passive House standard (case-insensitive)
         const isPH = standard && standard.toUpperCase().includes("PH");
+        const isCare = occupancy.includes("Care");
+        const isResidential = occupancy.includes("Residential");
+        const isNbcPart9 = standard.startsWith("NBC T");
 
-        // PH standards use 18°C regardless of occupancy
-        if (isPH) {
-          return 18;
-        }
-
-        // Non-PH: Check for critical occupancy (Residential or Care)
-        // Use includes() to match values like "C-Residential", "D-Residential MURB", etc.
-        const isCriticalOccupancy =
-          occupancy.includes("Residential") || occupancy.includes("Care");
-
-        if (isCriticalOccupancy) {
-          return 22; // OBC requires 22°C for residential/care
-        }
-
+        // Care occupancies are critical under every standard: the code's 22 °C, never overridden.
+        if (isCare) return 22;
+        // Passive House: PHPP 9.6a's interior temperature winter, 20 °C (Verification sheet; its Check
+        // sheet warns above 20).
+        if (isPH) return 20;
+        // Part 9 houses on NBC's performance path: NBC 2025 Sentence 9.36.6.4.(5), 20 °C in living
+        // spaces (19 °C in basements; one zone here, so the living-space value).
+        if (isResidential && isNbcPart9) return 20;
+        // Residential under OBC (SB12, SB10) and NECB: critical occupancy, 22 °C.
+        if (isResidential) return 22;
         return 18; // Default for other occupancies
       }
     },
@@ -458,8 +459,11 @@
       dependencies: ["building.majorOccupancy"],
       classification: "C",
       section: "S03",
-      label: "OBC Heating Setpoint (Building Code Baseline)",
+      label: "OBC Heating Setpoint (Building Code Baseline; the DESIGN set-point)",
       unit: "°C",
+      // The DESIGN (sizing) set-point: what the heating must hold at the outdoor design temperature.
+      // NBC 2025 9.33.3.1.(1) and CSA F280-12 Cl. 4.2 both give 22 °C in living spaces. S15's peaks and
+      // S21 / F280 read this; the annual model reads climate.heating.setpoint.
       compute: (inputs) => {
         const occupancy = inputs["building.majorOccupancy"] || "Other";
 
@@ -516,13 +520,23 @@
     {
       id: "climate.heating.compliance",
       legacyId: "n_23",
-      dependencies: ["climate.heating.setpoint", "climate.heating.obcSetpoint"],
+      dependencies: [
+        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint",
+        "building.majorOccupancy",
+        "building.referenceStandard"
+      ],
       classification: "C",
       section: "S03",
       label: "Heating Compliance",
       compute: (inputs) => {
         const actual = parseNum(inputs["climate.heating.setpoint"], 21);
-        const required = parseNum(inputs["climate.heating.obcSetpoint"], 22);
+        const occupancy = inputs["building.majorOccupancy"] || "Other";
+        const standard = inputs["building.referenceStandard"] || "";
+        // A Part 9 house on NBC's performance path is modelled at the code's own energy set-point,
+        // 20 °C (9.36.6.4.(5)); everything else is held to the design baseline.
+        const nbcPart9House = occupancy.includes("Residential") && standard.startsWith("NBC T");
+        const required = nbcPart9House ? 20 : parseNum(inputs["climate.heating.obcSetpoint"], 22);
 
         // Pass if actual >= required
         return actual >= required ? "✓" : "✗";
