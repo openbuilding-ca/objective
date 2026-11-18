@@ -598,6 +598,24 @@
         "d_116",
         "ref_d_116",
       ];
+
+      // The cooling choice read as the app now names it (Andy 2026-11-18,
+      // window.TEUI.CoolingSystem): an old file's "Cooling" is the heat pump
+      // cooling on a heat pump, a separate unit otherwise - before PASS 1, whose
+      // dropdown check would reject the old name.
+      const CS = window.TEUI.CoolingSystem;
+      if (CS) {
+        for (const prefix of ["", "ref_"]) {
+          const key = `${prefix}d_116`;
+          if (importedData[key] === undefined || importedData[key] === "")
+            continue;
+          const heating =
+            importedData[`${prefix}d_113`] ??
+            this.stateManager.getValue(`${prefix}d_113`);
+          importedData[key] = CS.normalize(importedData[key], heating);
+        }
+      }
+
       const allEntries = Object.entries(importedData);
 
       // PASS 1: Control fields
@@ -730,19 +748,13 @@
             // ✅ Reference fields: Store directly in StateManager without validation
             // Validation was already done by ExcelMapper normalization
             if (isReferenceField) {
-              // 🔒 CONDITIONAL IMPORT: Skip j_116 when heating system is Heatpump/Electric
-              // In these modes, j_116 (COPc) is CALCULATED from f_113 (HSPF), not user-editable
-              if (fieldId === "ref_j_116") {
-                const refD113Value = this.stateManager.getValue("ref_d_113");
-                if (
-                  refD113Value === "Heatpump" ||
-                  refD113Value === "Electric"
-                ) {
-                  console.log(
-                    `[FileHandler] ⏭️  Skipping ref_j_116 import (ref_d_113="${refD113Value}", calculated field)`
-                  );
-                  return; // Skip import - will be calculated by Section13
-                }
+              // 🔒 CONDITIONAL IMPORT: Skip j_116 while the heat pump cools -
+              // M.3.3 then shows M.1.3 (from HSPF), not the file's to set
+              if (fieldId === "ref_j_116" && this.heatpumpCools("ref_")) {
+                console.log(
+                  "[FileHandler] ⏭️  Skipping ref_j_116 import (the heat pump cools)"
+                );
+                return;
               }
 
               this.stateManager.setValue(fieldId, parsedValue, "imported");
@@ -751,14 +763,11 @@
             }
 
             // 🔒 CONDITIONAL IMPORT: Same check for Target mode j_116
-            if (fieldId === "j_116") {
-              const d113Value = this.stateManager.getValue("d_113");
-              if (d113Value === "Heatpump" || d113Value === "Electric") {
-                console.log(
-                  `[FileHandler] ⏭️  Skipping j_116 import (d_113="${d113Value}", calculated field)`
-                );
-                return; // Skip import - will be calculated by Section13
-              }
+            if (fieldId === "j_116" && this.heatpumpCools("")) {
+              console.log(
+                "[FileHandler] ⏭️  Skipping j_116 import (the heat pump cools)"
+              );
+              return;
             }
 
             // Target fields: Validate and update DOM
@@ -869,6 +878,19 @@
       console.log(
         `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`
       );
+    }
+
+    /**
+     * True while the model's heat pump cools ("Heatpump Heats & Cools", or an
+     * old "Cooling" on a heat pump): M.3.3 is then M.1.3's to show, and a file
+     * neither reads nor writes it. prefix: "" Target, "ref_" Reference.
+     */
+    heatpumpCools(prefix) {
+      const cooling = this.stateManager.getValue(`${prefix}d_116`);
+      const heating = this.stateManager.getValue(`${prefix}d_113`);
+      const CS = window.TEUI.CoolingSystem;
+      if (!CS) return heating === "Heatpump" && cooling !== "No Cooling";
+      return CS.normalize(cooling, heating) === CS.HEATPUMP;
     }
 
     /**
@@ -1242,16 +1264,11 @@
 
         // Get values for each field in the explicit list
         userEditableFieldIds.forEach(fieldId => {
-          // ✅ CONDITIONAL EXPORT: Skip j_116 when d_113="Heatpump"
-          // When Heatpump, j_116 is calculated from j_113, not user-editable
-          // Exporting empty string ensures import won't overwrite calculated value
+          // ✅ CONDITIONAL EXPORT: j_116 empty while the heat pump cools - M.3.3
+          // then shows M.1.3, so an import must not overwrite it
           if (fieldId === "j_116") {
-            const d113Value = this.stateManager.getValue("d_113");
-            if (d113Value === "Heatpump") {
-              targetValues.push(""); // Export empty - j_116 is calculated
-              console.log(
-                "[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)"
-              );
+            if (this.heatpumpCools("")) {
+              targetValues.push("");
             } else {
               const targetValue = this.stateManager.getValue(fieldId) ?? "";
               const formattedTarget = formatExportValue(fieldId, targetValue);
@@ -1259,12 +1276,8 @@
             }
 
             // Same logic for Reference mode
-            const refD113Value = this.stateManager.getValue("ref_d_113");
-            if (refD113Value === "Heatpump") {
-              referenceValues.push(""); // Export empty - ref_j_116 is calculated
-              console.log(
-                "[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)"
-              );
+            if (this.heatpumpCools("ref_")) {
+              referenceValues.push("");
             } else {
               const refFieldId = `ref_${fieldId}`;
               const referenceValue =

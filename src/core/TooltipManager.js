@@ -647,7 +647,7 @@
       cell: "D116",
       title: "Select Cooling System",
       message:
-        "No: No Cooling Provided_x000a_Yes: Cooling by Primary M.1.0 System if Heatpump otherwise;_x000a_Yes: Dedicated Cooling System (When Electricity/Gas/Oil) ",
+        "Heatpump Heats & Cools: the M.1.0 heat pump also cools, at M.1.3 COPcool derived from its HSPF (offered only when M.1.0 is Heatpump)._x000a_Separate Cooling: a cooling unit of its own, at M.3.3 COPcool - beside any heating system, including a heat pump that only heats. M.3.3 starts at the Reference Standard's minimum; enter the unit's nameplate COPcool._x000a_No Cooling: no cooling provided - the cooling load stands, unmet.",
     },
     d_118: {
       cell: "D118",
