@@ -93,5 +93,44 @@ check("ratio, Occupant at 8.33 in a gym: fails", ratio.compute({ "ventilation.de
 check("no requirement (no people, no area): 100", ratio.compute({ "ventilation.deliveredOccupied": 0, "ventilation.requiredOutdoorAir": 0 }), 100);
 check("m_119 no longer reads the Reference's per-person rate", ratio.dependencies.includes("reference.mechanical.ventilation.ratePerPerson"), false);
 
+// --- Part 9 houses: OBC Table 9.32.3.3 (Andy 2026-11-18) ------------------
+// Case 02 Collingwood: C-Residential, OBC SB12 3.1.1.2.C1, 2 people, 293.85
+// m2, Occupant Constant at 14 L/s per person = 28 L/s. Under 62.1's Dwelling
+// unit row it read 30% X (2.5 x 2 + 0.3 x 293.85 = 93.16 L/s).
+console.log("Part 9:");
+check("table, 1 bedroom: 16-24", R.part9FanLs[1].min + "-" + R.part9FanLs[1].max, "16-24");
+check("table, 3 bedrooms: 22-32", R.part9FanLs[3].min + "-" + R.part9FanLs[3].max, "22-32");
+check("table, 5 bedrooms: 30-45", R.part9FanLs[5].min + "-" + R.part9FanLs[5].max, "30-45");
+check("applies: C under SB-12", R.part9Applies("C-Residential", "OBC SB12 3.1.1.2.C1"), true);
+check("applies: C under an NBC tier", R.part9Applies("C-Residential", "NBC T1"), true);
+check("not under NECB (Part 3)", R.part9Applies("C-Residential", "NECB T1 (Z6)"), false);
+check("not under SB-10", R.part9Applies("C-Residential", "OBC SB10 5.5-6 Z6"), false);
+check("not for A under SB-12", R.part9Applies("A-Assembly", "OBC SB12 3.1.1.2.C1"), false);
+check("bedrooms from 2 occupants: 1", R.bedroomsInEffect("", 2), 1);
+check("bedrooms from 5 occupants: 4", R.bedroomsInEffect("", 5), 4);
+check("bedrooms from 1 occupant: at least 1", R.bedroomsInEffect("", 1), 1);
+check("bedrooms chosen: 3", R.bedroomsInEffect("3", 2), 3);
+const house = {
+  ...building,
+  "building.majorOccupancy": "C-Residential",
+  "building.ventilationSpaceType": "",
+  "building.referenceStandard": "OBC SB12 3.1.1.2.C1",
+  "occupancy.occupants": "2",
+  "occupancy.bedrooms": "",
+  "building.conditionedFloorArea": "293.85",
+  "mechanical.ventilation.method": "Occupant Constant",
+  "mechanical.ventilation.ratePerPerson": "14",
+};
+const houseDelivered = delivered.compute(house);
+check("case 02 delivered: 14 x 2", houseDelivered, 28);
+const r = p => required.compute({ ...house, ...p });
+check("case 02 required, bedrooms from occupants (1): 16", r({}), 16);
+check("case 02 ratio: 28 / 16", ratio.compute({ "ventilation.deliveredOccupied": houseDelivered, "ventilation.requiredOutdoorAir": r({}) }), 175);
+check("case 02 at 3 bedrooms: 22", r({ "occupancy.bedrooms": "3" }), 22);
+check("case 02 at 5 bedrooms: 30 (28 fails)", ratio.compute({ "ventilation.deliveredOccupied": houseDelivered, "ventilation.requiredOutdoorAir": r({ "occupancy.bedrooms": "5" }) }), 93);
+check("more than 5 bedrooms: 62.1's Dwelling unit", r({ "occupancy.bedrooms": "More than 5" }), 93.16);
+check("a PH standard: 62.1 (the agreed test)", r({ "building.referenceStandard": "PH Classic" }), 93.16);
+check("the same house under NECB: 62.1", r({ "building.referenceStandard": "NECB T1 (Z6)" }), 93.16);
+
 console.log(ok ? "PASS" : "FAIL");
 process.exit(ok ? 0 : 1);

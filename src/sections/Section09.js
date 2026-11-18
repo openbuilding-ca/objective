@@ -116,6 +116,29 @@ window.TEUI.SectionModules.sect09 = (function () {
           label: "Annual Occupied Hours",
         },
         j: { content: "/ 8760", classes: ["text-left"] },
+        // Bedrooms in the dwelling unit: a Part 9 house's ventilation rule,
+        // OBC Table 9.32.3.3 (V.1.4; VentilationRates.js). "From occupants"
+        // ("") derives them: occupants - 1, at least 1.
+        k: { content: "Bedrooms", classes: ["label-main"] },
+        l: {
+          fieldId: "l_63",
+          semanticPath: "occupancy.bedrooms",
+          type: "dropdown",
+          dropdownId: "dd_l_63",
+          value: "",
+          section: "occupantInternalGains",
+          tooltip: true,
+          label: "Bedrooms (Part 9 dwelling unit)",
+          options: [
+            { value: "", name: "From occupants" },
+            { value: "1", name: "1" },
+            { value: "2", name: "2" },
+            { value: "3", name: "3" },
+            { value: "4", name: "4" },
+            { value: "5", name: "5" },
+            { value: "More than 5", name: "More than 5" },
+          ],
+        },
       },
     },
 

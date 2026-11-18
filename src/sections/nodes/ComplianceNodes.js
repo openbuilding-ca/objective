@@ -335,27 +335,34 @@
     // rate) read 67% X from the file's Reference 12.50.
     {
       id: "ventilation.requiredOutdoorAir",
+      // A Part 9 house (C-Residential under OBC SB-12 or an NBC tier, Andy
+      // 2026-11-18) takes OBC Table 9.32.3.3's fan minimum by bedrooms instead
+      // (VentilationRates.requiredForBuilding).
       dependencies: [
         "building.majorOccupancy",
         "building.ventilationSpaceType",
+        "building.referenceStandard",
         "occupancy.occupants",
+        "occupancy.bedrooms",
         "building.conditionedFloorArea"
       ],
       classification: "C",
       section: "S13",
-      label: "Required Outdoor Air (ASHRAE 62.1 Vbz)",
+      label: "Required Outdoor Air (ASHRAE 62.1 Vbz, or OBC 9.32.3.3 for a Part 9 house)",
       unit: "L/s",
       compute: (inputs) => {
         const rates = window.TEUI.VentilationRates;
         if (!rates) return 0;
         return +rates
-          .requiredOutdoorAir(
-            inputs["building.majorOccupancy"],
-            inputs["building.ventilationSpaceType"],
-            parseNum(inputs["occupancy.occupants"], 0),
-            parseNum(inputs["building.conditionedFloorArea"], 0)
-          )
-          .toFixed(2);
+          .requiredForBuilding({
+            occupancy: inputs["building.majorOccupancy"],
+            spaceType: inputs["building.ventilationSpaceType"],
+            standard: inputs["building.referenceStandard"],
+            occupants: parseNum(inputs["occupancy.occupants"], 0),
+            bedrooms: inputs["occupancy.bedrooms"],
+            area: parseNum(inputs["building.conditionedFloorArea"], 0)
+          })
+          .ls.toFixed(2);
       }
     },
     {

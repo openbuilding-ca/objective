@@ -97,6 +97,7 @@ TEUI.ReferenceToggle = (function () {
     i_59: "C",
     g_59: "C",
     d_63: "C",
+    l_63: "C", // bedrooms travel with the occupants (Part 9 ventilation)
     g_63: "G",
     d_64: "G",
     d_66: "G",

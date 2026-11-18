@@ -377,6 +377,12 @@
       message:
         "Enter the number of declared Occupants (ie. per OBC) but consider full Occupant loads rarely occur. If Occupant loads are known, enter the typical average. ",
     },
+    l_63: {
+      cell: "L63",
+      title: "Bedrooms (Part 9 house)",
+      message:
+        "Bedrooms in the dwelling unit. A Part 9 house - C-Residential under OBC SB-12 or an NBC tier - is ventilated per OBC Table 9.32.3.3: the principal fan's capacity by bedrooms, minimum-maximum L/s: 1: 16-24, 2: 18-28, 3: 22-32, 4: 26-38, 5: 30-45. V.1.4 checks the minimum._x000a_From occupants: occupants - 1, at least 1 (ASHRAE 62.1's 2 people for a studio or 1-bedroom unit, +1 per bedroom). More than 5: ASHRAE 62.1 (9.32.3.1.(1)).",
+    },
     g_63: {
       cell: "G63",
       title: "Occupied Hours",
@@ -682,7 +688,7 @@
       cell: "M119",
       title: "Outdoor Air: Delivered / Required",
       message:
-        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_100% or more passes. Part 9 houses (9.32.3.3) are not yet checked by their own rule.",
+        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_A Part 9 house (C-Residential under OBC SB-12 or an NBC tier) is checked against its own rule instead: OBC Table 9.32.3.3's fan minimum for its bedrooms (G.1.1)._x000a_100% or more passes.",
     },
     e_118: {
       cell: "E118",

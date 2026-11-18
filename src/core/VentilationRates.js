@@ -9,8 +9,8 @@
  *
  * Rp (L/s per person) and Ra (L/s per m2) are Table 6.2.2.1's, by space type;
  * Pz the people and Az the floor area. SB-10, ASHRAE 90.1 and the NECB set no
- * rate - they are energy codes. Part 9 houses follow 9.32.3.3 instead (not here
- * yet).
+ * rate - they are energy codes. Part 9 houses follow OBC Table 9.32.3.3 instead
+ * (the fan's capacity by bedrooms) - PART 9 HOUSES below.
  *
  * Andy 2026-11-18: "we know total conditioned volume and area and occupant
  * count from other cells the user inputs, so we can derive whatever the
@@ -34,7 +34,11 @@
  * OPEN (also ABCD-OBJECTIVE-PRO.md §4.2 and §6 in ABCD.EARTH):
  *   - the rates are unverified against 62.1-2016 itself (see SOURCE);
  *   - B2 and B3 are stand-ins: 62.1 has no health-care rows (ASHRAE 170);
- *   - Part 9 houses still check against "Dwelling unit", not 9.32.3.3 / F326;
+ *   - Part 9 houses take 9.32.3.3 only when C-Residential under OBC SB-12 or
+ *     an NBC tier (Andy's rule, 2026-11-18): a house under a Passive House
+ *     standard (cases 03, 12) still checks against 62.1's "Dwelling unit";
+ *     and one bedroom count serves the building - a duplex (case 10) is two
+ *     dwelling units, each its own 9.32.3.3 fan;
  *   - the case studies carry no space type (each takes its occupancy's
  *     default) except 09 Rowing Centre: Gym, sports arena (play area)
  *     (Andy 2026-11-18) - it read 95% X at 14 L/s per person (x 100 = 1,400
@@ -494,14 +498,87 @@
     return row.rp * occupants + row.ra * area;
   }
 
+  // ==========================================================================
+  // PART 9 HOUSES - OBC 2024 / NBC Table 9.32.3.3 (Andy 2026-11-18: "Yes")
+  // ==========================================================================
+  // A Part 9 dwelling unit's principal ventilation fan: its normal operating
+  // exhaust capacity, L/s, by bedrooms (9.32.3.3.(2)). 9.32.3.1.(1)(b): this
+  // Subsection serves dwelling units with 5 or fewer bedrooms; more than 5
+  // follow CSA F326 or Part 6 - here, 62.1 above.
+  //
+  // WHY: 62.1's Dwelling unit row (Ra 0.3 L/s per m2) is written for apartments
+  // in Part 3 buildings; on a large house with few people the area term rules -
+  // case 02 Collingwood, 2 people, 293.85 m2: 62.1 asks 93 L/s; 9.32.3.3 asks
+  // 16-32 L/s for 1-3 bedrooms.
+  const PART9_FAN_LS = {
+    1: { min: 16, max: 24 },
+    2: { min: 18, max: 28 },
+    3: { min: 22, max: 32 },
+    4: { min: 26, max: 38 },
+    5: { min: 30, max: 45 },
+  };
+
+  // The bedroom choices (S09 G.1.2, l_63): "" derives them from the occupants -
+  // 62.1 Note F's 2 people for a studio or 1-bedroom unit, +1 per bedroom, run
+  // backwards: occupants - 1, at least 1.
+  const BEDROOM_OPTIONS = ["", "1", "2", "3", "4", "5", "More than 5"];
+
+  /**
+   * Which buildings take the Part 9 rule (Andy 2026-11-18): a residential
+   * occupancy (S02 B.1) under a Part 9 energy standard (S.1) - OBC SB-12 or
+   * an NBC tier. One predicate, so the test can be widened in one place.
+   */
+  function part9Applies(occupancy, standard) {
+    const s = String(standard || "");
+    return (
+      occupancy === "C-Residential" &&
+      (s.startsWith("OBC SB12") || s.startsWith("NBC T"))
+    );
+  }
+
+  /** The bedrooms in effect: the chosen count, or derived from the occupants. */
+  function bedroomsInEffect(bedrooms, occupants) {
+    if (bedrooms === "More than 5") return 6;
+    const n = parseInt(bedrooms, 10);
+    if (n >= 1) return n;
+    return Math.max(1, Math.round(occupants) - 1);
+  }
+
+  /**
+   * The outdoor air the code requires, L/s, and the rule that set it: Table
+   * 9.32.3.3's minimum for a Part 9 house of 5 or fewer bedrooms, else 62.1.
+   */
+  function requiredForBuilding(p) {
+    if (part9Applies(p.occupancy, p.standard)) {
+      const beds = bedroomsInEffect(p.bedrooms, p.occupants);
+      const row = PART9_FAN_LS[beds];
+      if (row)
+        return {
+          ls: row.min,
+          rule: "OBC 9.32.3.3",
+          bedrooms: beds,
+          max: row.max,
+        };
+    }
+    return {
+      ls: requiredOutdoorAir(p.occupancy, p.spaceType, p.occupants, p.area),
+      rule: "ASHRAE 62.1",
+    };
+  }
+
   window.TEUI.VentilationRates = Object.freeze({
     source:
-      "ANSI/ASHRAE 62.1-2016, Table 6.2.2.1 (OBC 2024 / NBC 2025 Art. 6.3.1.1.(2))",
+      "ANSI/ASHRAE 62.1-2016, Table 6.2.2.1 (OBC 2024 / NBC 2025 Art. 6.3.1.1.(2)); Part 9 houses OBC 2024 Table 9.32.3.3",
     spaceTypes: SPACE_TYPES,
     byOccupancy: BY_OCCUPANCY,
+    part9FanLs: PART9_FAN_LS,
+    bedroomOptions: BEDROOM_OPTIONS,
     isStandIn: occupancy => STAND_INS.has(occupancy),
     optionsFor,
     resolve,
     requiredOutdoorAir,
+    part9Applies,
+    bedroomsInEffect,
+    requiredForBuilding,
   });
 })();
