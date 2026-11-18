@@ -335,8 +335,9 @@
     // rate) read 67% X from the file's Reference 12.50.
     {
       id: "ventilation.requiredOutdoorAir",
-      // A Part 9 house (C-Residential under OBC SB-12 or an NBC tier, Andy
-      // 2026-11-18) takes OBC Table 9.32.3.3's fan minimum by bedrooms instead
+      // A Part 9 building (C-Residential, 3 storeys or less, footprint 600 m2
+      // or less, not under a Part 3 energy standard - Andy 2026-11-18) takes
+      // OBC Table 9.32.3.3's fan minimum per dwelling unit instead
       // (VentilationRates.requiredForBuilding).
       dependencies: [
         "building.majorOccupancy",
@@ -344,6 +345,8 @@
         "building.referenceStandard",
         "occupancy.occupants",
         "occupancy.bedrooms",
+        "occupancy.dwellingUnits",
+        "volume.numStoreys",
         "building.conditionedFloorArea"
       ],
       classification: "C",
@@ -360,6 +363,8 @@
             standard: inputs["building.referenceStandard"],
             occupants: parseNum(inputs["occupancy.occupants"], 0),
             bedrooms: inputs["occupancy.bedrooms"],
+            units: inputs["occupancy.dwellingUnits"],
+            storeys: parseNum(inputs["volume.numStoreys"], 1),
             area: parseNum(inputs["building.conditionedFloorArea"], 0)
           })
           .ls.toFixed(2);

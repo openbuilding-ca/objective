@@ -379,9 +379,15 @@
     },
     l_63: {
       cell: "L63",
-      title: "Bedrooms (Part 9 house)",
+      title: "Bedrooms per Dwelling Unit (Part 9)",
       message:
-        "Bedrooms in the dwelling unit. A Part 9 house - C-Residential under OBC SB-12 or an NBC tier - is ventilated per OBC Table 9.32.3.3: the principal fan's capacity by bedrooms, minimum-maximum L/s: 1: 16-24, 2: 18-28, 3: 22-32, 4: 26-38, 5: 30-45. V.1.4 checks the minimum._x000a_From occupants: occupants - 1, at least 1 (ASHRAE 62.1's 2 people for a studio or 1-bedroom unit, +1 per bedroom). More than 5: ASHRAE 62.1 (9.32.3.1.(1)).",
+        "Bedrooms in each dwelling unit. A Part 9 building - C-Residential, 3 storeys or less, footprint (area / storeys) 600 m2 or less, not modelled under SB-10, NECB or CaGBC (OBC Div. A 1.3.3.3.(1)) - is ventilated per OBC Table 9.32.3.3: each unit's principal fan by bedrooms, minimum-maximum L/s: 1: 16-24, 2: 18-28, 3: 22-32, 4: 26-38, 5: 30-45. V.1.4 checks the units x the minimum._x000a_From occupants: occupants per unit - 1, at least 1 (ASHRAE 62.1's 2 people for a studio or 1-bedroom unit, +1 per bedroom). More than 5: ASHRAE 62.1 (9.32.3.1.(1)).",
+    },
+    m_63: {
+      cell: "M63",
+      title: "Dwelling Units",
+      message:
+        "The dwelling units in the building (a duplex: 2). In a Part 9 building each has its own principal ventilation fan (OBC Table 9.32.3.3), so V.1.4 requires the units x each one's minimum. Blank: 1.",
     },
     g_63: {
       cell: "G63",
@@ -688,7 +694,7 @@
       cell: "M119",
       title: "Outdoor Air: Delivered / Required",
       message:
-        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_A Part 9 house (C-Residential under OBC SB-12 or an NBC tier) is checked against its own rule instead: OBC Table 9.32.3.3's fan minimum for its bedrooms (G.1.1)._x000a_100% or more passes.",
+        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_A Part 9 building (C-Residential, 3 storeys or less, footprint 600 m2 or less, not under SB-10, NECB or CaGBC) is checked against its own rule instead: OBC Table 9.32.3.3 - the dwelling units x each one's fan minimum for its bedrooms (G.1.1)._x000a_100% or more passes.",
     },
     e_118: {
       cell: "E118",

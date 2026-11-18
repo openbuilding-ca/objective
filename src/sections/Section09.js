@@ -116,10 +116,12 @@ window.TEUI.SectionModules.sect09 = (function () {
           label: "Annual Occupied Hours",
         },
         j: { content: "/ 8760", classes: ["text-left"] },
-        // Bedrooms in the dwelling unit: a Part 9 house's ventilation rule,
-        // OBC Table 9.32.3.3 (V.1.4; VentilationRates.js). "From occupants"
-        // ("") derives them: occupants - 1, at least 1.
-        k: { content: "Bedrooms", classes: ["label-main"] },
+        // Bedrooms per dwelling unit, and the dwelling units: a Part 9
+        // building's ventilation rule, OBC Table 9.32.3.3 - units x the
+        // minimum for the bedrooms (V.1.4; VentilationRates.js). "From
+        // occupants" ("") derives the bedrooms: occupants per unit - 1, at
+        // least 1.
+        k: { content: "Bedrooms / Units", classes: ["label-main"] },
         l: {
           fieldId: "l_63",
           semanticPath: "occupancy.bedrooms",
@@ -138,6 +140,16 @@ window.TEUI.SectionModules.sect09 = (function () {
             { value: "5", name: "5" },
             { value: "More than 5", name: "More than 5" },
           ],
+        },
+        m: {
+          fieldId: "m_63",
+          semanticPath: "occupancy.dwellingUnits",
+          type: "editable",
+          value: "1",
+          section: "occupantInternalGains",
+          classes: ["user-input"],
+          tooltip: true,
+          label: "Dwelling Units",
         },
       },
     },

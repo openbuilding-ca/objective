@@ -34,11 +34,10 @@
  * OPEN (also ABCD-OBJECTIVE-PRO.md §4.2 and §6 in ABCD.EARTH):
  *   - the rates are unverified against 62.1-2016 itself (see SOURCE);
  *   - B2 and B3 are stand-ins: 62.1 has no health-care rows (ASHRAE 170);
- *   - Part 9 houses take 9.32.3.3 only when C-Residential under OBC SB-12 or
- *     an NBC tier (Andy's rule, 2026-11-18): a house under a Passive House
- *     standard (cases 03, 12) still checks against 62.1's "Dwelling unit";
- *     and one bedroom count serves the building - a duplex (case 10) is two
- *     dwelling units, each its own 9.32.3.3 fan;
+ *   - Part 9 is judged by its own scope (storeys, footprint - Andy "Yes",
+ *     2026-11-18), the footprint taken as conditioned area / storeys: an
+ *     approximation of the code's building area. Bedrooms are one count per
+ *     dwelling unit - a building of mixed unit sizes is checked as if alike;
  *   - the case studies carry no space type (each takes its occupancy's
  *     default) except 09 Rowing Centre: Gym, sports arena (play area)
  *     (Andy 2026-11-18) - it read 95% X at 14 L/s per person (x 100 = 1,400
@@ -518,46 +517,70 @@
     5: { min: 30, max: 45 },
   };
 
-  // The bedroom choices (S09 G.1.2, l_63): "" derives them from the occupants -
-  // 62.1 Note F's 2 people for a studio or 1-bedroom unit, +1 per bedroom, run
-  // backwards: occupants - 1, at least 1.
+  // The bedroom choices (S09 G.1.1, l_63), per dwelling unit: "" derives them
+  // from the occupants - 62.1 Note F's 2 people for a studio or 1-bedroom
+  // unit, +1 per bedroom, run backwards: occupants per unit - 1, at least 1.
   const BEDROOM_OPTIONS = ["", "1", "2", "3", "4", "5", "More than 5"];
 
-  /**
-   * Which buildings take the Part 9 rule (Andy 2026-11-18): a residential
-   * occupancy (S02 B.1) under a Part 9 energy standard (S.1) - OBC SB-12 or
-   * an NBC tier. One predicate, so the test can be widened in one place.
-   */
-  function part9Applies(occupancy, standard) {
+  // Energy standards (S.1) for Part 3 buildings: a building modelled under one
+  // keeps 62.1 whatever its size (case 04, a 3-storey 848 m2 NECB apartment).
+  function isPart3Standard(standard) {
     const s = String(standard || "");
     return (
-      occupancy === "C-Residential" &&
-      (s.startsWith("OBC SB12") || s.startsWith("NBC T"))
+      s.startsWith("OBC SB10") || s.startsWith("NECB") || s.startsWith("CaGBC")
     );
   }
 
-  /** The bedrooms in effect: the chosen count, or derived from the occupants. */
-  function bedroomsInEffect(bedrooms, occupants) {
+  /**
+   * Which buildings take the Part 9 rule (Andy 2026-11-18, "Yes" to Part 9's
+   * own scope): OBC Div. A 1.3.3.3.(1) - 3 storeys or less, building area 600
+   * m2 or less - for a residential occupancy (S02 B.1), not modelled under a
+   * Part 3 energy standard. Building area = the footprint, conditioned area /
+   * storeys (S12's storeys, d_103). So the SB-12 houses (02, 10) and the
+   * Passive House ones (03, 12) alike. One predicate, changed in one place.
+   */
+  function part9Applies(p) {
+    const storeys = Number(p.storeys) || 1;
+    return (
+      p.occupancy === "C-Residential" &&
+      !isPart3Standard(p.standard) &&
+      storeys <= 3 &&
+      p.area / storeys <= 600
+    );
+  }
+
+  /** Bedrooms per dwelling unit: the chosen count, or derived from the occupants per unit. */
+  function bedroomsInEffect(bedrooms, occupants, units = 1) {
     if (bedrooms === "More than 5") return 6;
     const n = parseInt(bedrooms, 10);
     if (n >= 1) return n;
-    return Math.max(1, Math.round(occupants) - 1);
+    return Math.max(1, Math.round(occupants / Math.max(1, units)) - 1);
+  }
+
+  /** Dwelling units (S09 G.1.1, m_63): a whole number, at least 1. */
+  function unitsInEffect(units) {
+    const n = Math.round(Number(String(units ?? "").replace(/,/g, "")));
+    return n >= 1 ? n : 1;
   }
 
   /**
-   * The outdoor air the code requires, L/s, and the rule that set it: Table
-   * 9.32.3.3's minimum for a Part 9 house of 5 or fewer bedrooms, else 62.1.
+   * The outdoor air the code requires, L/s, and the rule that set it: for a
+   * Part 9 building, each dwelling unit's Table 9.32.3.3 minimum (units x the
+   * minimum for its bedrooms; a unit of more than 5 bedrooms -> 62.1), else
+   * 62.1.
    */
   function requiredForBuilding(p) {
-    if (part9Applies(p.occupancy, p.standard)) {
-      const beds = bedroomsInEffect(p.bedrooms, p.occupants);
+    if (part9Applies(p)) {
+      const units = unitsInEffect(p.units);
+      const beds = bedroomsInEffect(p.bedrooms, p.occupants, units);
       const row = PART9_FAN_LS[beds];
       if (row)
         return {
-          ls: row.min,
+          ls: units * row.min,
           rule: "OBC 9.32.3.3",
+          units,
           bedrooms: beds,
-          max: row.max,
+          max: units * row.max,
         };
     }
     return {
@@ -577,8 +600,10 @@
     optionsFor,
     resolve,
     requiredOutdoorAir,
+    isPart3Standard,
     part9Applies,
     bedroomsInEffect,
+    unitsInEffect,
     requiredForBuilding,
   });
 })();

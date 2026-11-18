@@ -657,7 +657,16 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "112%",
           section: "mechanicalLoads",
           tooltip: true,
-          dependencies: ["l_118", "d_119", "g_118", "e_12", "d_13", "l_63"],
+          dependencies: [
+            "l_118",
+            "d_119",
+            "g_118",
+            "e_12",
+            "d_13",
+            "l_63",
+            "m_63",
+            "d_103",
+          ],
           label: "Outdoor Air Delivered / Required (ASHRAE 62.1)",
         },
         n: {

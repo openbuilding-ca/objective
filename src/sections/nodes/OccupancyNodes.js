@@ -23,6 +23,9 @@
       // (OBC Table 9.32.3.3, VentilationRates.js). "" derives them from the
       // occupants; "More than 5" sends the check to ASHRAE 62.1.
       { id: "occupancy.bedrooms", legacyId: "l_63", section: "S09", classification: "C", label: "Bedrooms (Part 9 dwelling unit)", defaultValue: "" },
+      // Dwelling units in the building (a duplex: 2) - each its own Table
+      // 9.32.3.3 fan. Blank: 1.
+      { id: "occupancy.dwellingUnits", legacyId: "m_63", section: "S09", classification: "C", label: "Dwelling Units", defaultValue: "1" },
       { id: "occupancy.occupantDensity", legacyId: "h_63", section: "S09", classification: "C", label: "Occupant Density (m²/person)", defaultValue: 35 },
       { id: "occupancy.occupiedHoursPerDay", legacyId: "g_63", section: "S09", classification: "C", label: "Occupied Hours per Day", defaultValue: 12 },
       { id: "occupancy.totalHours", legacyId: "j_63", section: "S09", classification: "C", label: "Total Hours per Year", defaultValue: 8760 },

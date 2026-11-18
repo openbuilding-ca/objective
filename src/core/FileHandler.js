@@ -618,9 +618,9 @@
 
       // Fields added 2026-11-18 that older files lack: the file's own default
       // ("" - VentilationRates resolves it), never the previous project's
-      // value. e_12, the 62.1 space type (beside d_12, the occupancy); l_63,
-      // the bedrooms (beside d_63, the occupants).
-      const addedBeside = { e_12: "d_12", l_63: "d_63" };
+      // value. e_12, the 62.1 space type (beside d_12, the occupancy); l_63
+      // and m_63, the bedrooms and dwelling units (beside d_63, the occupants).
+      const addedBeside = { e_12: "d_12", l_63: "d_63", m_63: "d_63" };
       for (const [added, beside] of Object.entries(addedBeside)) {
         for (const prefix of ["", "ref_"]) {
           if (
@@ -1164,6 +1164,7 @@
           // Section 09: Occupant Gains
           "d_63",
           "l_63",
+          "m_63",
           "g_63",
           "d_64",
           "d_66",

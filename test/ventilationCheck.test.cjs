@@ -101,11 +101,21 @@ console.log("Part 9:");
 check("table, 1 bedroom: 16-24", R.part9FanLs[1].min + "-" + R.part9FanLs[1].max, "16-24");
 check("table, 3 bedrooms: 22-32", R.part9FanLs[3].min + "-" + R.part9FanLs[3].max, "22-32");
 check("table, 5 bedrooms: 30-45", R.part9FanLs[5].min + "-" + R.part9FanLs[5].max, "30-45");
-check("applies: C under SB-12", R.part9Applies("C-Residential", "OBC SB12 3.1.1.2.C1"), true);
-check("applies: C under an NBC tier", R.part9Applies("C-Residential", "NBC T1"), true);
-check("not under NECB (Part 3)", R.part9Applies("C-Residential", "NECB T1 (Z6)"), false);
-check("not under SB-10", R.part9Applies("C-Residential", "OBC SB10 5.5-6 Z6"), false);
-check("not for A under SB-12", R.part9Applies("A-Assembly", "OBC SB12 3.1.1.2.C1"), false);
+// Part 9's own scope (Andy 2026-11-18: "Yes"): C-Residential, 3 storeys or
+// less, footprint (area / storeys) 600 m2 or less, not under a Part 3 standard.
+const p9 = o => R.part9Applies({ occupancy: "C-Residential", standard: "OBC SB12 3.1.1.2.C1", storeys: 1.5, area: 293.85, ...o });
+check("applies: case 02 (SB-12, 1.5 storeys, 196 m2 footprint)", p9({}), true);
+check("applies: case 03 (PH Classic, 1.5, 151.5 m2)", p9({ standard: "PH Classic", area: 151.5 }), true);
+check("applies: case 12 (PH Low Energy, 2, 135.1 m2)", p9({ standard: "PH Low Energy", storeys: 2, area: 135.1 }), true);
+check("applies: case 10 duplex (SB-12, 2, 472.11 m2)", p9({ storeys: 2, area: 472.11 }), true);
+check("applies: an NBC tier", p9({ standard: "NBC T1" }), true);
+check("not: case 04 (NECB, 3 storeys, 848 m2 - Part 9 by size)", p9({ standard: "NECB T1 (Z6)", storeys: 3, area: 848 }), false);
+check("not: under SB-10", p9({ standard: "OBC SB10 5.5-6 Z6" }), false);
+check("not: under CaGBC ZCB", p9({ standard: "CaGBC ZCB" }), false);
+check("not: 4 storeys", p9({ storeys: 4, area: 800 }), false);
+check("not: footprint over 600 m2", p9({ storeys: 2, area: 1300 }), false);
+check("not: A-Assembly", p9({ occupancy: "A-Assembly" }), false);
+check("Part 3 standards: SB-10, NECB, CaGBC", ["OBC SB10 5.5-6 Z6", "NECB T1 (Z6)", "CaGBC ZCB"].every(R.isPart3Standard), true);
 check("bedrooms from 2 occupants: 1", R.bedroomsInEffect("", 2), 1);
 check("bedrooms from 5 occupants: 4", R.bedroomsInEffect("", 5), 4);
 check("bedrooms from 1 occupant: at least 1", R.bedroomsInEffect("", 1), 1);
@@ -120,6 +130,8 @@ const house = {
   "building.conditionedFloorArea": "293.85",
   "mechanical.ventilation.method": "Occupant Constant",
   "mechanical.ventilation.ratePerPerson": "14",
+  "volume.numStoreys": "1.5",
+  "occupancy.dwellingUnits": "1",
 };
 const houseDelivered = delivered.compute(house);
 check("case 02 delivered: 14 x 2", houseDelivered, 28);
@@ -129,8 +141,13 @@ check("case 02 ratio: 28 / 16", ratio.compute({ "ventilation.deliveredOccupied":
 check("case 02 at 3 bedrooms: 22", r({ "occupancy.bedrooms": "3" }), 22);
 check("case 02 at 5 bedrooms: 30 (28 fails)", ratio.compute({ "ventilation.deliveredOccupied": houseDelivered, "ventilation.requiredOutdoorAir": r({ "occupancy.bedrooms": "5" }) }), 93);
 check("more than 5 bedrooms: 62.1's Dwelling unit", r({ "occupancy.bedrooms": "More than 5" }), 93.16);
-check("a PH standard: 62.1 (the agreed test)", r({ "building.referenceStandard": "PH Classic" }), 93.16);
+check("the same house under a PH standard: Part 9 (16)", r({ "building.referenceStandard": "PH Classic" }), 16);
 check("the same house under NECB: 62.1", r({ "building.referenceStandard": "NECB T1 (Z6)" }), 93.16);
+// Dwelling units: each its own Table 9.32.3.3 fan
+check("units: blank -> 1, '2' -> 2, '0' -> 1", [R.unitsInEffect(""), R.unitsInEffect("2"), R.unitsInEffect("0")].join(","), "1,2,1");
+check("bedrooms from 4 occupants in 2 units: 1 each", R.bedroomsInEffect("", 4, 2), 1);
+check("duplex, 2 units, bedrooms from occupants: 2 x 16", r({ "occupancy.dwellingUnits": "2", "occupancy.occupants": "4", "building.conditionedFloorArea": "472.11", "volume.numStoreys": "2" }), 32);
+check("duplex, 2 units of 3 bedrooms: 2 x 22", r({ "occupancy.dwellingUnits": "2", "occupancy.bedrooms": "3", "building.conditionedFloorArea": "472.11", "volume.numStoreys": "2" }), 44);
 
 console.log(ok ? "PASS" : "FAIL");
 process.exit(ok ? 0 : 1);
