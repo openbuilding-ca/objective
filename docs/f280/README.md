@@ -59,9 +59,16 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    the season's solar kWh ÷ (cooling days × 24). That's why turning the house moves the gain about ten times
    less than Annex J. F280 uses peak-hour solar by façade (Cl. 6.2.2); the CTO's gap analysis §6.2 already
    names this.
-3. **A Section 11 row at RSI 0 shows 0 W.** The slab row (95) reads U 0 and 0 W heat loss
-   (`rsi > 0 ? 1 / rsi : 0`). Andy expects an RSI-0 row to show its loss on its own row; F280 itself
-   computes below grade by BASESIMP.
+3. **The RSI-0 bug (Andy: "that is a real bug").** `TransmissionLossNodes.js:159` returns
+   `rsi > 0 ? 1 / rsi : 0`, so an RSI of 0 becomes U 0 and the row shows 0 W, the opposite of an uninsulated
+   assembly. The same node reads a BLANK RSI as 5 (`parseNum(…, 5)`). Andy's rule ("no fallbacks") points to
+   an RSI ≤ 0 showing the row as an error, not a number. F280-1 no longer enters 0: Table I.3's slab 0 is the
+   ADDED insulation, so the slab carries its uninsulated assembly, 102 mm concrete (0.00045/mm, Table 7B) + the
+   slab film 0.17 = RSI 0.216.
+   **What that exposed:** S15's peak heating (`EnergyNodes.js:514–516`) multiplies ground-facing U·A by the
+   OUTDOOR design ΔT (setpoint − coldest), while OBJECTIVE's annual method gives ground-facing areas a 10 °C
+   ground (ground-facing HDD). An uninsulated slab at −25 °C air makes the peak 41 481 W (352 %); its row alone
+   is 29 502 kWh/yr. F280 takes below grade from BASESIMP. The cooling peak does the same with (hottest − 24).
 4. **There is no AIM-2.** Infiltration is 1.21 × NRL50 × area ÷ N-factor × ΔT. F280 Cl. 5.2.3.1 takes the
    leakage rate from AIM-2, which also handles exhaust-only (unbalanced) ventilation. The 2015 workbook's
    AIM-2 results are the target; its inputs are in `AIM2-F280_Example.xls` (open in Excel).
@@ -88,10 +95,10 @@ now uses:
 | Glazing rows' share of the ISO cooling need (season average) | 923 | peak-hour solar by facing, Cl. 6.2.2 |
 | Occupants (season average) | 204 | 5 × 70 = 350, Cl. 6.2.4 |
 
-**Now:** sensible gain 5716 W vs 7321 (78.1 %); loss unchanged 12 716 W (107.9 %). The internal term is
-about 1800 W over F280's allowance, so the shortfall sits in the glazing term: a season's share of the need
-against F280's design-hour solar. Which of OBJECTIVE's standard options best represents this house (Regular
-or Efficient equipment, activity level) is the verification agent's call.
+**Andy's review in the app (2026-11-18)** set: NBC T1 as the reference standard, TB penalty 30 %, Electricity in
+S13, the NBC water method, DWHR 0 % (NBC 9.36), no EV charging (the template had 2787 kWh). **Now:** loss
+41 481 W (352 %) and sensible gain 8500 W (116 %), the loss dominated by the slab at the outdoor ΔT (finding 3).
+Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 W (81 %).
 
 ## What needs the PDF (the text extract cannot settle these)
 

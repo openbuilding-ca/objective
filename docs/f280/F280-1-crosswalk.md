@@ -9,7 +9,7 @@ its code values except the fields below). Status: standard · derived · equival
 |---|---|---|---|
 | `h_14: Project Name` | F280-1 Archetype 1 / 2010s / Ottawa (Orleans) | standard | Cl. 8.3.1 base case |
 | `d_12: Major Occupancy` | C-Residential | standard | Part 9 house |
-| `d_13: Reference Standard` | OBC SB12 3.1.1.2.C1 | equivalent | a non-PH standard, so the heating setpoint is the residential 22 C (a 'PH' standard forces 18 C) |
+| `d_13: Reference Standard` | NBC T1 | objective | Andy 2026-11-18: NBC T1 (a non-PH standard, so the heating setpoint is the residential 22 C) |
 | `d_14: Actual (Bills) or Targeted (Design) Use` | Targeted Use | equivalent | a design case, no bills |
 | `d_19: Province` | ON | standard | Cl. 8.3.1 Ottawa (Orleans) |
 | `h_19: City` | Ottawa (Orléans) | standard | Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1) |
@@ -56,9 +56,9 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_94: Walls Below Grade: Area m²` | 110.39 | derived | Table G.1.5 a): (86.69 + 66.63) ft x 7.75 ft |
 | `f_94: Walls Below Grade: RSI Value K·m²/W` | 2.76 | standard | Table I.3 (2010s): basement walls, insulated full height; F280 computes below grade by BASESIMP |
 | `d_95: Floor Slab: Area m²` | 90.311 | derived | Table G.1.4 a): basement slab |
-| `f_95: Floor Slab: RSI Value K·m²/W` | 0.0 | placeholder | Table I.3 (2010s): uninsulated (0); OBJECTIVE turns RSI 0 into ZERO loss (rsi > 0 ? 1/rsi : 0), F280 uses BASESIMP: a gap to close, not a value to tune |
+| `f_95: Floor Slab: RSI Value K·m²/W` | 0.216 | derived | the UNINSULATED assembly: Table I.3's 0 is the ADDED insulation; 102 mm concrete (H.3.9) x 0.00045 per mm (Table 7B, 2400 kg/m3) + OBJECTIVE's slab surface film 0.17 (TransmissionLossNodes.js). Never 0: OBJECTIVE reads RSI 0 as U 0, zero loss (the RSI-0 bug) |
 | `d_96: Interior Floors: Area m²` | 198.831 | estimate | interior floors: main + upper (estimate) |
-| `d_97: Thermal Bridge Penalty: Factor %` | 0 | equivalent | Annex I's RSIs are EFFECTIVE (framing included), so no thermal-bridge penalty |
+| `d_97: Thermal Bridge Penalty: Factor %` | 30 | objective | Andy 2026-11-18: 0 % is unrealistic, OBJECTIVE's default is ~30 % (Annex I's RSIs already include framing; this covers junctions) |
 | `d_108: NRL₅₀ Target Method` | MEASURED | standard | Table H.3.2 |
 | `g_109: ACH₅₀ Target (Converts B.18.1)` | 1.5 | standard | Table H.3.2: 1.5 ACH50 |
 | `g_118: Ventilation Method (Volume or Occupant Based)` | Volume Constant | equivalent | a constant principal ventilation rate (PVC) |
@@ -71,6 +71,10 @@ its code values except the fields below). Status: standard · derived · equival
 | `i_122: Latent Load Method (F280 / OBJECTIVE / ASHRAE 140)` | F280 | standard | the L-4 method selector: F280 |
 | `l_24: Cooling Override` | 24 | standard | F280 cooling indoor 24 C |
 | `d_116: Select Cooling System` | Cooling | standard | central air conditioning sized by Cl. 6.3 |
+| `d_113: Primary Heating System` | Electricity | objective | Andy 2026-11-18: Electricity, so gains and losses read in kWh (the template had Heatpump) |
+| `d_46: Remove EV Charging from TEUI: kWh/yr` | 0 | objective | no EV charging (the template had 2787 kWh) |
+| `d_49: Water Use Method` | NBC Method | objective | Andy 2026-11-18: NBC method; its standby losses flow to gains (the template had User Defined, 170 L/pp/day) |
+| `d_53: DWHR Efficiency: %` | 0 | objective | Andy 2026-11-18: 0 % for NBC 9.36 (42 % would be OBC; the template had 21 %) |
 | `d_27: Actual Total Electricity Use: kWh/yr` | 0 | standard | a design case: no bills, no on-site renewables |
 | `d_28: Actual Total Fossil Gas Use: m³/yr` | 0 | standard | a design case: no bills, no on-site renewables |
 | `d_29: Actual Total Propane Use: kg/yr` | 0 | standard | a design case: no bills, no on-site renewables |

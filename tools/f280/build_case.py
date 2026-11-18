@@ -146,8 +146,8 @@ def build():
 
     put("h_14", "F280-1 Archetype 1 / 2010s / Ottawa (Orleans)", "standard", "Cl. 8.3.1 base case")
     put("d_12", "C-Residential", "standard", "Part 9 house")
-    put("d_13", "OBC SB12 3.1.1.2.C1", "equivalent",
-        "a non-PH standard, so the heating setpoint is the residential 22 C (a 'PH' standard forces 18 C)")
+    put("d_13", "NBC T1", "objective",
+        "Andy 2026-11-18: NBC T1 (a non-PH standard, so the heating setpoint is the residential 22 C)")
     put("d_14", "Targeted Use", "equivalent", "a design case, no bills")
     put("d_19", "ON", "standard", "Cl. 8.3.1 Ottawa (Orleans)")
     put("h_19", "Ottawa (Orléans)", "standard", "Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1)")
@@ -196,11 +196,14 @@ def build():
     put("f_94", RSI["basement_wall"], "standard",
         "Table I.3 (2010s): basement walls, insulated full height; F280 computes below grade by BASESIMP")
     put("d_95", round(slab, 3), "derived", "Table G.1.4 a): basement slab")
-    put("f_95", RSI["slab"], "placeholder",
-        "Table I.3 (2010s): uninsulated (0); OBJECTIVE turns RSI 0 into ZERO loss (rsi > 0 ? 1/rsi : 0), "
-        "F280 uses BASESIMP: a gap to close, not a value to tune")
+    slab_rsi = round(0.00045 * 102 + 0.17, 3)
+    put("f_95", slab_rsi, "derived",
+        "the UNINSULATED assembly: Table I.3's 0 is the ADDED insulation; 102 mm concrete (H.3.9) x 0.00045 per mm "
+        "(Table 7B, 2400 kg/m3) + OBJECTIVE's slab surface film 0.17 (TransmissionLossNodes.js). Never 0: OBJECTIVE "
+        "reads RSI 0 as U 0, zero loss (the RSI-0 bug)")
     put("d_96", round(slab + upper, 3), "estimate", "interior floors: main + upper (estimate)")
-    put("d_97", 0, "equivalent", "Annex I's RSIs are EFFECTIVE (framing included), so no thermal-bridge penalty")
+    put("d_97", 30, "objective",
+        "Andy 2026-11-18: 0 % is unrealistic, OBJECTIVE's default is ~30 % (Annex I's RSIs already include framing; this covers junctions)")
     put("d_108", "MEASURED", "standard", "Table H.3.2")
     put("g_109", ACH50, "standard", "Table H.3.2: 1.5 ACH50")
     put("g_118", "Volume Constant", "equivalent", "a constant principal ventilation rate (PVC)")
@@ -214,6 +217,10 @@ def build():
     put("i_122", "F280", "standard", "the L-4 method selector: F280")
     put("l_24", 24, "standard", "F280 cooling indoor 24 C")
     put("d_116", "Cooling", "standard", "central air conditioning sized by Cl. 6.3")
+    put("d_113", "Electricity", "objective", "Andy 2026-11-18: Electricity, so gains and losses read in kWh (the template had Heatpump)")
+    put("d_46", 0, "objective", "no EV charging (the template had 2787 kWh)")
+    put("d_49", "NBC Method", "objective", "Andy 2026-11-18: NBC method; its standby losses flow to gains (the template had User Defined, 170 L/pp/day)")
+    put("d_53", 0, "objective", "Andy 2026-11-18: 0 % for NBC 9.36 (42 % would be OBC; the template had 21 %)")
     for field in ("d_27", "d_28", "d_29", "d_30", "d_31", "l_28", "l_29", "l_30", "l_31", "d_44"):
         put(field, 0, "standard", "a design case: no bills, no on-site renewables")
     return rows
