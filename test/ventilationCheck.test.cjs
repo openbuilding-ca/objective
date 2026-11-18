@@ -149,5 +149,13 @@ check("bedrooms from 4 occupants in 2 units: 1 each", R.bedroomsInEffect("", 4, 
 check("duplex, 2 units, bedrooms from occupants: 2 x 16", r({ "occupancy.dwellingUnits": "2", "occupancy.occupants": "4", "building.conditionedFloorArea": "472.11", "volume.numStoreys": "2" }), 32);
 check("duplex, 2 units of 3 bedrooms: 2 x 22", r({ "occupancy.dwellingUnits": "2", "occupancy.bedrooms": "3", "building.conditionedFloorArea": "472.11", "volume.numStoreys": "2" }), 44);
 
+// --- the house rule: grey what does not apply (Andy 2026-11-18) ----------
+console.log("fields in effect:");
+const fe = o => JSON.stringify(R.fieldsInEffect({ occupancy: "C-Residential", standard: "OBC SB12 3.1.1.2.C1", storeys: 1.5, area: 293.85, occupants: 2, bedrooms: "", units: "1", spaceType: "", ...o }));
+check("a Part 9 house: bedrooms, units; no space type", fe({}), JSON.stringify({ bedrooms: true, units: true, spaceType: false }));
+check("a Part 9 house of more than 5 bedrooms: 62.1 -> the space type too", fe({ bedrooms: "More than 5" }), JSON.stringify({ bedrooms: true, units: true, spaceType: true }));
+check("an NECB MURB: the space type only", fe({ standard: "NECB T1 (Z6)", storeys: 5, area: 5917, occupants: 281 }), JSON.stringify({ bedrooms: false, units: false, spaceType: true }));
+check("A-Assembly: the space type only", fe({ occupancy: "A-Assembly", standard: "OBC SB10 5.5-6 Z6" }), JSON.stringify({ bedrooms: false, units: false, spaceType: true }));
+
 console.log(ok ? "PASS" : "FAIL");
 process.exit(ok ? 0 : 1);

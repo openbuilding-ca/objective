@@ -1612,6 +1612,38 @@ window.TEUI.SectionModules.sect13 = (function () {
     refreshCopCoolDisplay(cooling);
   }
 
+  /**
+   * The inputs V.1.4's requirement reads, greyed where they have no effect -
+   * the house rule (Andy 2026-11-18): S09 Bedrooms / Units only under the
+   * Part 9 rule, S02's 62.1 space type only when 62.1 sets the requirement.
+   * VentilationRates.fieldsInEffect is the engine's own predicate, read with
+   * the current mode's values (a field a model lacks falls back to the
+   * Target's, as the Reference model's inputs do).
+   */
+  function updateVentilationFieldsUI() {
+    const R = window.TEUI.VentilationRates;
+    const sm = window.TEUI.StateManager;
+    if (!R || !sm) return;
+    const v = id => {
+      const own = getModeValue(id);
+      return own === undefined || own === null || own === "" ? sm.getValue(id) : own;
+    };
+    const num = id => window.TEUI.parseNumeric(v(id), 0);
+    const f = R.fieldsInEffect({
+      occupancy: v("d_12"),
+      standard: v("d_13"),
+      storeys: num("d_103") || 1,
+      area: num("h_15"),
+      occupants: num("d_63"),
+      bedrooms: v("l_63"),
+      units: v("m_63"),
+      spaceType: v("e_12"),
+    });
+    setFieldGhosted("l_63", !f.bedrooms);
+    setFieldGhosted("m_63", !f.units);
+    setFieldGhosted("e_12", !f.spaceType);
+  }
+
   //==========================================================================
   // GHOSTING FUNCTIONS
   //==========================================================================
@@ -1741,6 +1773,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function onModeSwitch(mode) {
     updateConditionalUI();
+    updateVentilationFieldsUI();
   }
 
   //==========================================================================
@@ -1760,8 +1793,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     onModeSwitch: onModeSwitch,
 
     // After every DOMBridge stamp: it writes j_116 from the graph, so M.3.3's
-    // mirror of M.1.3 (the heat pump cooling) is restored here, following HSPF.
-    postStamp: () => updateCoolingUI(),
+    // mirror of M.1.3 (the heat pump cooling) is restored here, following HSPF;
+    // and the ventilation inputs grey by what this building's check reads.
+    postStamp: () => {
+      updateCoolingUI();
+      updateVentilationFieldsUI();
+    },
 
     // Ghosting functions
     setFieldGhosted: setFieldGhosted,

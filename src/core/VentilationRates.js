@@ -589,6 +589,23 @@
     };
   }
 
+  /**
+   * Which ventilation inputs are in effect for this building - the house rule
+   * (Andy 2026-11-18): "greying out values that are not relevant for a given
+   * building type or standard". The same predicates the check reads, so the
+   * greying can never disagree with the engine: Bedrooms and Dwelling Units
+   * only under the Part 9 rule; the 62.1 space type only when 62.1 sets the
+   * requirement (not for a Part 9 house of 5 bedrooms or fewer).
+   */
+  function fieldsInEffect(p) {
+    const part9 = part9Applies(p);
+    return {
+      bedrooms: part9,
+      units: part9,
+      spaceType: requiredForBuilding(p).rule === "ASHRAE 62.1",
+    };
+  }
+
   window.TEUI.VentilationRates = Object.freeze({
     source:
       "ANSI/ASHRAE 62.1-2016, Table 6.2.2.1 (OBC 2024 / NBC 2025 Art. 6.3.1.1.(2)); Part 9 houses OBC 2024 Table 9.32.3.3",
@@ -605,5 +622,6 @@
     bedroomsInEffect,
     unitsInEffect,
     requiredForBuilding,
+    fieldsInEffect,
   });
 })();
