@@ -206,6 +206,9 @@
           buildingType.includes("B2-Care") || buildingType.includes("B2 - Care") ||
           buildingType.includes("B3-Detention") || buildingType.includes("B3 - Detention");
 
+        // Residential 5 W/m²: NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", PEAK receptacle
+        // load on Operating Schedule G (10.6 full-load h/day, Table A-8.4.3.2.(1)-G). Per NECB it includes
+        // the dwelling's major appliances (Note A-8.4.3.2.(2)); not cited until 2026-11-18 (Andy).
         return isResidentialOrCare ? 5 : 7;
       },
     });
