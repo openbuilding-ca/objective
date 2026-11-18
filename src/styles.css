@@ -569,9 +569,13 @@ option,
   padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
-/* Handle dropdowns spanning columns */
-td[colspan="2"] .form-select {
-  min-width: 180px;
+/* A dropdown whose cell spans the empty cell(s) beside it (a cell's `span`):
+   as wide as its longest option, never wider than the cells it spans - the
+   full name shows, and every column keeps its width. */
+.data-table td[colspan] select.form-select {
+  width: auto;
+  min-width: 140px;
+  max-width: 100%;
 }
 
 /* Sliders */

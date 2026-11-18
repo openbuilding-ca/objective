@@ -168,6 +168,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_d_19",
           value: "ON",
           section: "climateCalculations",
+          span: 2, // spans the empty E: "Newfoundland and Labrador" shows whole
           tooltip: true, // Select a Province
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {

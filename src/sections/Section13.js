@@ -352,6 +352,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_d_116",
           value: "Heatpump Heats & Cools",
           section: "mechanicalLoads",
+          span: 2, // spans the empty E: the choice's full name shows
           tooltip: true,
           // Andy 2026-11-18 (window.TEUI.CoolingSystem, MechanicalNodes): the
           // heat pump option is offered only when M.1.0 is Heatpump
@@ -525,6 +526,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_g_118",
           value: "Volume by Schedule",
           section: "mechanicalLoads",
+          span: 2, // spans the empty H: the method's full name shows
           tooltip: true,
           options: [
             { value: "Volume Constant", name: "Volume Constant" },
