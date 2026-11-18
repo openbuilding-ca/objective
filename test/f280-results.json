@@ -1,0 +1,128 @@
+{
+  "timestamp": "2026-11-18T21:37:48.202Z",
+  "enforce_band": false,
+  "fixture_verified_against_pdf": false,
+  "not_modelled": [
+    {
+      "clause": "8.3.4 b",
+      "reason": "a room test (Annex K); whole house unchanged"
+    },
+    {
+      "clause": "8.3.5 b, c",
+      "reason": "OBJECTIVE has no interior-shading input (blinds, reflective blinds)"
+    },
+    {
+      "clause": "8.3.6 b",
+      "reason": "the base case's G.1 overhangs are not expressed yet (Annex A), so 'no shading' is not a change"
+    },
+    {
+      "clause": "8.3.8 SE, NE, NW, SW",
+      "reason": "OBJECTIVE holds windows in four orientations; a 45-degree turn has no home"
+    }
+  ],
+  "records": [
+    {
+      "case": "F280-1",
+      "clause": "8.3.9",
+      "archetype": 1,
+      "vintage": "2010s",
+      "location": "Ottawa (Orleans)",
+      "loss": {
+        "result_W": 12716,
+        "expected_W": 11787,
+        "lowOk": true,
+        "highOk": true,
+        "pass": true,
+        "ratio": 1.0788156443539492
+      },
+      "gain": {
+        "result_W": 4011,
+        "expected_W": 7321,
+        "lowOk": false,
+        "highOk": true,
+        "pass": false,
+        "ratio": 0.5478793714668406
+      },
+      "parts_W": {
+        "loss": 12716,
+        "envelope": 8917,
+        "infiltration": 1194,
+        "ventilation": 2605,
+        "nominalCooling": 5530,
+        "latentLoadFactor": 1.3787
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.7 b",
+      "variant": "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)",
+      "note": "OBJECTIVE's leakage is NRL50 x area / N-factor, not AIM-2",
+      "change_W": {
+        "loss": 1194,
+        "gain": 149
+      },
+      "expected_change_W": {
+        "loss": 1925,
+        "gain": 118
+      },
+      "sign_settled": false
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.4 c",
+      "variant": "exhaust-only at the HRV's flow",
+      "note": "SRE 0 % (Andy 2026-11-18); AIM-2's unbalanced-flow input does not exist yet",
+      "change_W": {
+        "loss": 8249,
+        "gain": 0
+      },
+      "expected_change_W": {
+        "loss": -897,
+        "gain": 108
+      },
+      "sign_settled": false
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door E",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 0
+      },
+      "expected_change_W": {
+        "gain": 2467
+      },
+      "sign_settled": false
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door N",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 0
+      },
+      "expected_change_W": {
+        "gain": 3
+      },
+      "sign_settled": false
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door W",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 0
+      },
+      "expected_change_W": {
+        "gain": 2529
+      },
+      "sign_settled": false
+    }
+  ]
+}
