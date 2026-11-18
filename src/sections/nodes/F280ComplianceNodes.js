@@ -217,10 +217,13 @@
     });
 
     // ========================================================================
-    // F280 PEAK VENTILATION HEAT LOSS (CSA F280-12 Section 5.2.6)
+    // F280 PEAK VENTILATION HEAT LOSS (CSA F280-12 Cl. 5.2.3.2: HLvairb = PVC × DTDh × 1.2 × (1 − E))
     // Parnas: docs/parnas-tables/f280/peak-ventilation-heat-loss.json
     //
-    // Q_vent = 1.21 × V_dot × (1 - ATRE/100) × deltaT
+    // Q_vent = 1.21 × V_dot (L/s) × (1 - E/100) × deltaT. 1.21 is air's heat capacity per L/s
+    // (W per L/s·K), so the flow must be in L/s: ventilation.volumetricRate (d_120), the rate the
+    // annual ventilation loss (d_121) uses. It read ventilation.volumeRate (h_120, m³/h = L/s × 3.6),
+    // which put the F280 ventilation loss 3.6× high (2026-11-18).
     // ========================================================================
 
     graph.registerNode({
@@ -229,14 +232,14 @@
       section: "SF280",
       classification: "C",
       dependencies: [
-        "ventilation.volumeRate",
+        "ventilation.volumetricRate", // L/s
         "mechanical.ventilation.efficiency",
         "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
         "climate.temperature.coldest"
       ],
       label: "F280 Peak Ventilation Heat Loss (W)",
       compute: (inputs) => {
-        const ventRate = parseNum(inputs["ventilation.volumeRate"]);
+        const ventRate = parseNum(inputs["ventilation.volumetricRate"]); // L/s
         const efficiency = parseNum(inputs["mechanical.ventilation.efficiency"]);
         const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
@@ -249,7 +252,7 @@
         // Net ventilation loss after heat recovery
         const recoveryFactor = Math.max(0, Math.min(1, 1 - efficiency / 100));
 
-        // Q_vent = 1.21 × rate × (1 - ATRE/100) × deltaT
+        // Q_vent = 1.21 × rate (L/s) × (1 - E/100) × deltaT
         return Math.round(AIR_HEAT_CAPACITY * ventRate * recoveryFactor * deltaT);
       }
     });

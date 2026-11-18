@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-18T23:46:58.737Z",
+  "timestamp": "2026-11-18T23:57:53.025Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -24,12 +24,12 @@
       "vintage": "2010s",
       "location": "Ottawa (Orleans)",
       "loss": {
-        "result_W": 20041,
+        "result_W": 18160,
         "expected_W": 11787,
         "lowOk": true,
         "highOk": false,
         "pass": false,
-        "ratio": 1.7002630016119453
+        "ratio": 1.5406804106218714
       },
       "gain": {
         "result_W": 4927,
@@ -40,13 +40,17 @@
         "ratio": 0.6729961084099216
       },
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6446,
         "latentLoadFactor": 1.3083,
         "peakCoolingKw": 4.777972698660754,
+        "ventLs": 51.91215833333333,
+        "ventEfficiency": 76,
+        "designSetpoint": 22,
+        "coldest": -26,
         "radiantCoolingGain_kWh": 739.0585835894769,
         "rows": {
           "row74.orientation": "North",
@@ -148,10 +152,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 21235,
+        "loss": 19354,
         "envelope": 16242,
         "infiltration": 2388,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6931,
         "latentLoadFactor": 1.3654,
         "ground": {
@@ -172,7 +176,7 @@
       "variant": "exhaust-only at the HRV's flow",
       "note": "SRE 0 % (Andy 2026-11-18); AIM-2's unbalanced-flow input does not exist yet",
       "change_W": {
-        "loss": 8249,
+        "loss": 2291,
         "gain": 0
       },
       "expected_change_W": {
@@ -181,10 +185,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 28290,
+        "loss": 20451,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 10854,
+        "ventilation": 3015,
         "nominalCooling": 6446,
         "latentLoadFactor": 1.3083,
         "ground": {
@@ -213,10 +217,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6484,
         "latentLoadFactor": 1.3059,
         "ground": {
@@ -245,10 +249,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6519,
         "latentLoadFactor": 1.3038,
         "ground": {
@@ -277,10 +281,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6493,
         "latentLoadFactor": 1.3054,
         "ground": {
@@ -309,10 +313,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6456,
         "latentLoadFactor": 1.3077,
         "ground": {
@@ -341,10 +345,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6497,
         "latentLoadFactor": 1.3052,
         "ground": {
@@ -373,10 +377,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6527,
         "latentLoadFactor": 1.3033,
         "ground": {
@@ -405,10 +409,10 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 20041,
+        "loss": 18160,
         "envelope": 16242,
         "infiltration": 1194,
-        "ventilation": 2605,
+        "ventilation": 724,
         "nominalCooling": 6492,
         "latentLoadFactor": 1.3055,
         "ground": {

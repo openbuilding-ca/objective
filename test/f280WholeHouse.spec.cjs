@@ -147,6 +147,10 @@ const READ = () => {
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
             peakCoolingKw: get("energy.peakCooling.totalKw"),
+            ventLs: get("ventilation.volumetricRate"),
+            ventEfficiency: get("mechanical.ventilation.efficiency"),
+            designSetpoint: get("climate.heating.obcSetpoint"),
+            coldest: get("climate.temperature.coldest"),
             radiantCoolingGain_kWh: get("radiantGains.subtotal.coolingGain"),
             // Diagnostics: each window row's solar, and each ground row's U and loss.
             rows: Object.fromEntries(
@@ -250,6 +254,10 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       expect(base.iso52016.present, "cooling.iso52016 missing: is the app served?").toBe(true);
       const gain = base.nominalCooling / Math.max(1, base.latentLoadFactor);
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
+      // Units witness (always on): F280's ventilation loss is 1.21 W per (L/s·K) × the flow in L/s ×
+      // (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
+      const ventHand = 1.21 * base.ventLs * (1 - base.ventEfficiency / 100) * (base.designSetpoint - base.coldest);
+      expect(Math.abs(base.ventilation - ventHand)).toBeLessThanOrEqual(1);
       records.push({
         case: name, clause: "8.3.9", ...where,
         loss: { result_W: Math.round(base.loss), expected_W: expected.loss_W, ...band(base.loss, expected.loss_W) },
