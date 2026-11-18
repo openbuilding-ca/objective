@@ -107,6 +107,8 @@ def build():
     put("d_19", "ON", "standard", "Cl. 8.3.1 Ottawa (Orleans)")
     put("h_19", "Ottawa (Orléans)", "standard", "Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1)")
     put("d_39", "Pt.9 Res. Stick Frame", "standard", "Annex H.3: 2x6 wood frame")
+    put("h_21", "Capacitance", "standard",
+        "Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static)")
     put("h_15", round(floor_area, 2), "estimate",
         f"basement {slab:.2f} (G.1.4) + main on the same footprint {slab:.2f} + upper {upper:.2f} "
         "(G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF")

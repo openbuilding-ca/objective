@@ -31,30 +31,47 @@ Note: running the old parity spec (`caseStudyValidation.spec.cjs`) now includes 
 re-records `test/case-study-results.json`. That file dates from March, so don't commit the refresh with
 F280 work.
 
-## First run (2026-11-18), before any fix
+## First run (2026-11-18, served app, corrected), before any fix
+
+The first runs loaded the app from `file://`. There the ISO 52016 cooling (which carries every window row's
+cooling gain) cannot fetch its climate data, so solar cooling read 0. A served app also auto-imports a
+sample case 1.5 s after start (`src/core/init.js`), which can land on top of the F280 case. The harness now
+serves the app, waits for that auto-load, and checks each run's identity by slab area. F280-1 is now on
+Capacitance (Andy: OBJECTIVE ground-couples through it); it had inherited Static from the template.
 
 | | OBJECTIVE | Annex J | Ratio | 8.4.1 |
 |---|---|---|---|---|
-| Loss | 12 716 W | 11 787 W | 107.9 % | pass, **but by a bug** (finding 1) |
-| Sensible gain | 4011 W | 7321 W | 54.8 % | fail |
+| Loss | 12 716 W | 11 787 W | 107.9 % | pass, **but see finding 1** |
+| Sensible gain | 5122 W | 7321 W | 70.0 % | fail |
 
-Loss parts: envelope 8917 W, infiltration 1194 W, ventilation 2605 W.
+Loss parts: envelope 8917 W, infiltration 1194 W, ventilation 2605 W. Variants: 3.0 ACH50 gives +1194 W
+loss and +95 W gain (Annex J: +1925 and +118). Turning the house (each window's Section 10 orientation
+dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000–2500).
 
 ## Findings to check first
 
-1. **The ventilation loss is 3.6× too high.** `f280.peakVentilationHeatLoss` multiplies `ventilation.volumeRate`,
-   which is in m³/h (L/s × 3.6, `VentilationNodes.js`), by 1.21, a per-L/s constant. 51.91 L/s × 1.21 ×
-   (1 − 0.76) × ΔT gives about 724 W, not 2605 W. With that fixed, the loss falls to about 10 835 W
-   (91.9 %, a FAIL on the low side). The exhaust-only variant shows the same factor: +8249 W where about
-   +2200 W is expected.
-2. **The peak gain ignores window orientation.** Turning the house E, N or W moves the gain by 0 W, where
-   Annex J expects up to +2529 W. `energy.peakCooling.totalKw` has no solar-by-orientation term. F280's
-   method is the peak-hour solar on each façade (Cl. 6.2.2, Annex A).
-3. **An uninsulated slab counts as zero loss.** OBJECTIVE takes U = `rsi > 0 ? 1 / rsi : 0`, so the 2010s
-   slab (RSI 0) drops out. F280 computes below grade by BASESIMP.
+1. **The F280 ventilation loss reads 3.6× high.** `f280.peakVentilationHeatLoss` multiplies
+   `ventilation.volumeRate` (labelled m³/h, L/s × 3.6 in `VentilationNodes.js`) by 1.21, which is the
+   per-L/s figure (ρc ≈ 1.21 W per L/s·K). The base reads 2605 W = 1.21 × 186.9 m³/h × 0.24 × 48 K; in
+   L/s it is about 724 W. With that, the loss would be about 10 835 W (91.9 %, low). Exhaust-only shows the
+   same factor (+8249 W).
+2. **The peak solar is the cooling season's average, not a peak hour.** `energy.peakCooling.totalKw` adds
+   the season's solar kWh ÷ (cooling days × 24). That's why turning the house moves the gain about ten times
+   less than Annex J. F280 uses peak-hour solar by façade (Cl. 6.2.2); the CTO's gap analysis §6.2 already
+   names this.
+3. **A Section 11 row at RSI 0 shows 0 W.** The slab row (95) reads U 0 and 0 W heat loss
+   (`rsi > 0 ? 1 / rsi : 0`). Andy expects an RSI-0 row to show its loss on its own row; F280 itself
+   computes below grade by BASESIMP.
 4. **There is no AIM-2.** Infiltration is 1.21 × NRL50 × area ÷ N-factor × ΔT. F280 Cl. 5.2.3.1 takes the
    leakage rate from AIM-2, which also handles exhaust-only (unbalanced) ventilation. The 2015 workbook's
-   AIM-2 results are the target. Its inputs are in `AIM2-F280_Example.xls`, which needs opening in Excel.
+   AIM-2 results are the target; its inputs are in `AIM2-F280_Example.xls` (open in Excel).
+
+## Inherited from the template (12-AberdeenHouse), not yet set from F280
+
+Fields the build does not set keep the template's values. The ones that can move the peak gain are the
+internal-gain inputs (plug, lighting, equipment densities and the occupant activity). F280 itself uses
+70 W per person (Cl. 6.2.4) and 4 W/m² of floor area with an 800 W minimum (Cl. 6.2.5). Also inherited:
+the gains utilization `d_80` = "PH Method" (annual heating only) and the heating system (heat pump).
 
 ## What needs the PDF (the text extract cannot settle these)
 

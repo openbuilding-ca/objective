@@ -14,6 +14,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_19: Province` | ON | standard | Cl. 8.3.1 Ottawa (Orleans) |
 | `h_19: City` | Ottawa (Orléans) | standard | Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1) |
 | `d_39: Typology Selection` | Pt.9 Res. Stick Frame | standard | Annex H.3: 2x6 wood frame |
+| `h_21: Capacitance Method` | Capacitance | standard | Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static) |
 | `h_15: Conditioned Area: m²` | 289.14 | estimate | basement 90.31 (G.1.4) + main on the same footprint 90.31 + upper 108.52 (G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF |
 | `d_105: Total Conditioned Volume` | 730.3 | estimate | basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF |
 | `d_63: Occupant Count` | 5 | derived | Cl. 6.2.4: bedrooms (4) + 1 |

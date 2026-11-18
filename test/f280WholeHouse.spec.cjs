@@ -7,7 +7,7 @@
  * For each F280 case (test/computation/case-studies/F280-*.csv, built by tools/f280/build_case.py)
  * and each variant OBJECTIVE can express, it imports the case, reads S21's whole-house figures, and
  * records them against Annex J's expected values (test/fixtures/f280-annex-j.json) and Cl. 8.4.1's
- * band. Output: test/f280-results.json.
+ * band. Output: test/f280-results.json. The app is SERVED (see URL below), never file://.
  *
  *   LOSS = f280.totalDesignHeatLoss (W), Cl. 5.2.7.
  *   GAIN = the total SENSIBLE heat gain (Cl. 6.2.9) - Annex J's "gain" - which OBJECTIVE does not
@@ -23,6 +23,32 @@
 const { test, expect } = require("@playwright/test");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
+
+// SERVED, never file://: the ISO 52016-1 cooling (cooling.iso52016, which carries every glazing
+// row's cooling gain) fetches the climate station's monthly data, and a file:// page cannot.
+// F280_URL points at a running server; otherwise the harness serves the repo on 127.0.0.1:8771.
+const PORT = 8771;
+const URL = process.env.F280_URL || `http://127.0.0.1:${PORT}/index.html`;
+let server = null;
+test.beforeAll(async () => {
+  if (process.env.F280_URL) return;
+  server = spawn("python3", ["-m", "http.server", String(PORT), "--bind", "127.0.0.1"], {
+    cwd: path.join(__dirname, ".."),
+    stdio: "ignore",
+  });
+  for (let i = 0; i < 50; i++) {
+    try {
+      const r = await fetch(URL);
+      if (r.ok) return;
+    } catch (_) {
+      /* not up yet */
+    }
+    await new Promise((res) => setTimeout(res, 100));
+  }
+  throw new Error(`no server at ${URL}`);
+});
+test.afterAll(() => server && server.kill());
 
 const ENFORCE_BAND = false;
 const CASES_DIR = path.join(__dirname, "computation", "case-studies");
@@ -41,20 +67,22 @@ const VARIANTS = [
     note: "OBJECTIVE's leakage is NRL50 x area / N-factor, not AIM-2" },
   { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0" },
     note: "SRE 0 % (Andy 2026-11-18); AIM-2's unbalanced-flow input does not exist yet" },
-  { clause: "8.3.8", variant: "front door E", rotate: 1 },
-  { clause: "8.3.8", variant: "front door N", rotate: 2 },
-  { clause: "8.3.8", variant: "front door W", rotate: 3 },
+  // Cl. 8.3.8: the front door turns from S through each eighth; every window's Section 10
+  // orientation dropdown (e_74-e_77) turns with the house. Doors stay "Average" (opaque, SHGC 0).
+  ...["SE", "E", "NE", "N", "NW", "W", "SW"].map((d, k) => ({
+    clause: "8.3.8", variant: `front door ${d}`, turn: k + 1,
+  })),
 ];
 const NOT_MODELLED = [
   { clause: "8.3.4 b", reason: "a room test (Annex K); whole house unchanged" },
   { clause: "8.3.5 b, c", reason: "OBJECTIVE has no interior-shading input (blinds, reflective blinds)" },
   { clause: "8.3.6 b", reason: "the base case's G.1 overhangs are not expressed yet (Annex A), so 'no shading' is not a change" },
-  { clause: "8.3.8 SE, NE, NW, SW", reason: "OBJECTIVE holds windows in four orientations; a 45-degree turn has no home" },
 ];
 
-// A front-door turn moves each window orientation round the compass: S->E->N->W for one quarter
-// turn of the house counter-clockwise, as Annex J's sequence reads (base: door S).
-const ORIENT_FIELDS = ["d_76", "d_75", "d_74", "d_77"]; // S, E, N, W
+// The compass, clockwise. Turning the front door from S to SE (one eighth) turns every facade
+// one eighth counter-clockwise: S -> SE, E -> NE, N -> NW, W -> SW.
+const COMPASS = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest"];
+const ORIENTATION_FIELDS = ["e_74", "e_75", "e_76", "e_77"]; // the four window rows' dropdowns
 
 function band(result, expected) {
   const b = FIXTURE.band_8_4_1;
@@ -63,7 +91,7 @@ function band(result, expected) {
   return { lowOk, highOk, pass: lowOk && highOk, ratio: result / expected };
 }
 
-function withOverrides(csvText, set, rotate) {
+function withOverrides(csvText, set, turn) {
   const lines = csvText.split(/\r?\n/);
   const header = parseLine(lines[0]);
   const target = parseLine(lines[1]);
@@ -73,11 +101,13 @@ function withOverrides(csvText, set, rotate) {
     if (i < 0) throw new Error(`${f}: not a column`);
     target[i] = v;
   }
-  if (rotate) {
-    const vals = ORIENT_FIELDS.map((f) => target[col(f)]);
-    ORIENT_FIELDS.forEach((f, k) => {
-      target[col(f)] = vals[(k - rotate + 4) % 4];
-    });
+  if (turn) {
+    for (const f of ORIENTATION_FIELDS) {
+      const i = col(f);
+      const k = COMPASS.indexOf(target[i]);
+      if (k < 0) throw new Error(`${f}: orientation ${target[i]} is not a compass point`);
+      target[i] = COMPASS[(k - turn + 8) % 8];
+    }
   }
   lines[1] = target.map(quote).join(",");
   return lines.join("\n");
@@ -105,37 +135,87 @@ function quote(v) {
   return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
-async function run(page, csvText) {
-  return page.evaluate(
-    (csv) =>
-      new Promise((resolve) => {
-        window.TEUI.FileHandler.processImportedCSV(csv);
-        setTimeout(() => {
-          const state = window.TEUI.ComputationIntegration.getState();
-          const id = state.getActiveModelId();
-          const get = (k) => parseFloat(state.getValueForModel(id, k));
-          resolve({
+const READ = () => {
+  const state = window.TEUI.ComputationIntegration.getState();
+  const id = state.getActiveModelId();
+  const get = (k) => parseFloat(state.getValueForModel(id, k));
+  return {
             loss: get("f280.totalDesignHeatLoss"),
             envelope: get("f280.peakEnvelopeHeatLoss"),
             infiltration: get("f280.peakInfiltrationHeatLoss"),
             ventilation: get("f280.peakVentilationHeatLoss"),
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
-          });
-        }, 500);
-      }),
-    csvText
+            peakCoolingKw: get("energy.peakCooling.totalKw"),
+            radiantCoolingGain_kWh: get("radiantGains.subtotal.coolingGain"),
+            // Diagnostics: each window row's solar, and each ground row's U and loss.
+            rows: Object.fromEntries(
+              [74, 75, 76, 77].flatMap((r) =>
+                ["orientation", "area", "shgc", "summerShading", "gainFactor", "heatingGain", "coolingGain"].map((k) => [
+                  `row${r}.${k}`,
+                  state.getValueForModel(id, `radiantGains.row${r}.${k}`),
+                ])
+              )
+            ),
+            ground: Object.fromEntries(
+              ["slabOnGrade", "wallsBelowGrade"].flatMap((g) =>
+                ["rsi", "uValue", "area", "heatLoss"].map((k) => [`${g}.${k}`, state.getValueForModel(id, `transmissionLoss.${g}.${k}`)])
+              )
+            ),
+            coolingDays: get("climate.coolingDays"),
+            iso52016: (() => {
+              const iso = state.getValueForModel(id, "cooling.iso52016");
+              if (!iso) return { present: false };
+              return { present: true, keys: Object.keys(iso), rows: iso.rows || null };
+            })(),
+          };
+};
+
+async function run(page, csvText) {
+  const slabArea = (() => {
+    const lines = csvText.split(/\r?\n/);
+    const header = parseLine(lines[0]);
+    const i = header.findIndex((h) => h.split(":")[0].trim() === "d_95");
+    return parseFloat(parseLine(lines[1])[i]);
+  })();
+  // Import, then read until the figures hold still: a served app finishes its climate fetch and the
+  // ISO 52016 cooling after the import returns, so a fixed wait can read a half-computed state.
+  await page.evaluate((csv) => window.TEUI.FileHandler.processImportedCSV(csv), csvText);
+  let last = null;
+  let same = 0;
+  let snap = null;
+  for (let i = 0; i < 100; i++) {
+    await page.waitForTimeout(150);
+    snap = await page.evaluate(READ);
+    const key = JSON.stringify([snap.loss, snap.nominalCooling, snap.iso52016.present, snap.radiantCoolingGain_kWh]);
+    same = key === last ? same + 1 : 0;
+    last = key;
+    // Identity: the app's own startup load (a served app fetches its default case study) must not
+    // be what we read. The run counts only when its slab area is the imported case's.
+    const isOurs = Math.abs(parseFloat(snap.ground["slabOnGrade.area"]) - slabArea) < 1e-6;
+    if (same >= 4 && snap.iso52016.present && isOurs) return snap;
+  }
+  throw new Error(
+    `the figures never settled on the imported case (slab ${slabArea} m2; the app shows slab ` +
+      `${snap && snap.ground["slabOnGrade.area"]} m2, loss ${snap && Math.round(snap.loss)} W)`
   );
 }
 
 test.describe("CSA F280-12 whole house (sandbox)", () => {
   test("F280 cases against Annex J", async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("disclaimerSeen", "true"));
-    await page.goto(`file://${path.join(__dirname, "..", "index.html")}`);
+    // A served app auto-imports a sample case 1.5 s after start (src/core/init.js); wait for it, or
+    // it lands on top of the F280 case.
+    const autoLoaded = page.waitForEvent("console", {
+      predicate: (m) => /\[init\.js\] Auto-load/.test(m.text()),
+      timeout: 30000,
+    });
+    await page.goto(URL);
     await page.waitForFunction(
       () => window.TEUI?.ComputationIntegration?.isInitialized?.() && window.TEUI?.FileHandler?.processImportedCSV,
       { timeout: 60000 }
     );
+    await autoLoaded;
 
     const records = [];
     const files = fs.readdirSync(CASES_DIR).filter((f) => /^F280-\d+-.*\.csv$/.test(f)).sort();
@@ -150,6 +230,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       );
       const csvText = fs.readFileSync(path.join(CASES_DIR, file), "utf8");
       const base = await run(page, csvText);
+      expect(base.iso52016.present, "cooling.iso52016 missing: is the app served?").toBe(true);
       const gain = base.nominalCooling / Math.max(1, base.latentLoadFactor);
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
       records.push({
@@ -161,7 +242,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
 
       if (name !== FIXTURE.base_case.case) continue;
       for (const v of VARIANTS) {
-        const r = await run(page, withOverrides(csvText, v.set, v.rotate));
+        const r = await run(page, withOverrides(csvText, v.set, v.turn));
         const g = r.nominalCooling / Math.max(1, r.latentLoadFactor);
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
         const change = { loss: r.loss - base.loss, gain: g - gain };
@@ -170,6 +251,8 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },
           expected_change_W: Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W])),
           sign_settled: false,
+          parts_W: { loss: r.loss, envelope: r.envelope, infiltration: r.infiltration, ventilation: r.ventilation,
+            nominalCooling: r.nominalCooling, latentLoadFactor: r.latentLoadFactor, ground: r.ground },
         });
       }
     }
