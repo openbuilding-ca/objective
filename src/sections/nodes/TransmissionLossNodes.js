@@ -36,6 +36,23 @@
 
   const ALL_COMPONENTS = [...AIR_FACING_COMPONENTS, ...GROUND_FACING_COMPONENTS];
 
+  // Interior surface film resistance by component (m²K/W), by direction of heat flow. Used for the
+  // surface temperatures (o_85-o_95) and as each RSI row's floor: no assembly's total resistance can
+  // fall below its own surface film, so an RSI of 0 (an uninsulated assembly) still loses heat.
+  const R_SI_MAP = {
+    roof: 0.10,           // upward heat flow
+    walls: 0.13,          // horizontal
+    exposedFloor: 0.17,   // downward
+    doors: 0.13,          // horizontal
+    windowNorth: 0.13,    // horizontal
+    windowEast: 0.13,     // horizontal
+    windowSouth: 0.13,    // horizontal
+    windowWest: 0.13,     // horizontal
+    skylights: 0.10,      // upward
+    wallsBelowGrade: 0.13, // horizontal
+    slabOnGrade: 0.17     // downward
+  };
+
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
     if (value === "Unavailable") return defaultVal;
@@ -156,7 +173,9 @@
           label: `${label} U-Value (W/m²K)`,
           compute: (inputs) => {
             const rsi = parseNum(inputs[`transmissionLoss.${id}.rsi`], 5);
-            return rsi > 0 ? 1 / rsi : 0;
+            // Was `rsi > 0 ? 1 / rsi : 0`: an RSI of 0 read as U 0, zero heat loss on the row, the
+            // opposite of an uninsulated assembly. The row's own surface film is the least it can be.
+            return 1 / Math.max(rsi, R_SI_MAP[id]);
           }
         });
       } else {
@@ -697,21 +716,8 @@
     // ========================================================================
     // SURFACE TEMPERATURES (o_85-o_95)
     // T_si = T_interior - (U × ΔT × R_si)
-    // R_si varies by component type; exterior temp varies air vs ground
+    // R_si varies by component type (R_SI_MAP, top of file); exterior temp varies air vs ground
     // ========================================================================
-    const R_SI_MAP = {
-      roof: 0.10,           // upward heat flow
-      walls: 0.13,          // horizontal
-      exposedFloor: 0.17,   // downward
-      doors: 0.13,          // horizontal
-      windowNorth: 0.13,    // horizontal
-      windowEast: 0.13,     // horizontal
-      windowSouth: 0.13,    // horizontal
-      windowWest: 0.13,     // horizontal
-      skylights: 0.10,      // upward
-      wallsBelowGrade: 0.13, // horizontal
-      slabOnGrade: 0.17     // downward
-    };
 
     AIR_FACING_COMPONENTS.forEach(({ row, id, label }) => {
       graph.registerNode({

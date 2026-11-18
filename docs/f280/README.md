@@ -59,7 +59,11 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    the season's solar kWh ÷ (cooling days × 24). That's why turning the house moves the gain about ten times
    less than Annex J. F280 uses peak-hour solar by façade (Cl. 6.2.2); the CTO's gap analysis §6.2 already
    names this.
-3. **The RSI-0 bug (Andy: "that is a real bug").** `TransmissionLossNodes.js:159` returns
+3. ✅ **FIXED (Andy: "You can change OBJECTIVE's method of calc to fix this bug"):** U = 1 / max(RSI, the row's
+   interior surface film, `R_SI_MAP`), so RSI 0 on the slab reads U 5.88 and loses heat; every other RSI is
+   untouched (the 13 cases' parity results identical before and after; witness `test/transmissionRsiZero.spec.cjs`
+   fails on the old code, U 0). The history:
+   **The RSI-0 bug (Andy: "that is a real bug").** `TransmissionLossNodes.js:159` returns
    `rsi > 0 ? 1 / rsi : 0`, so an RSI of 0 becomes U 0 and the row shows 0 W, the opposite of an uninsulated
    assembly. The same node reads a BLANK RSI as 5 (`parseNum(…, 5)`). Andy's rule ("no fallbacks") points to
    an RSI ≤ 0 showing the row as an error, not a number. F280-1 no longer enters 0: Table I.3's slab 0 is the
