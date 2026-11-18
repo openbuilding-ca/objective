@@ -548,7 +548,9 @@ option,
 /* Apply to select elements within table cells */
 .data-table select.form-select {
   width: 100%;
-  min-width: 140px; /* Ensure minimum width for content */
+  /* As wide as its longest option - never clipped, and a short one ("HRV",
+     "None") no longer holds its column at a flat 140px (Andy 2026-11-18) */
+  min-width: max-content;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -562,20 +564,17 @@ option,
   height: calc(100% - 4px); /* Account for margins */
 }
 
-/* Ensure dropdown cells have minimum width */
+/* Dropdown cells: no width floor of their own - the select's longest option
+   is the floor */
 [data-dropdown-id],
 .dropdown-cell {
-  min-width: 140px;
   padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
 /* A dropdown whose cell spans the empty cell(s) beside it (a cell's `span`):
-   as wide as its longest option, never wider than the cells it spans - the
-   full name shows, and every column keeps its width. */
+   as wide as its longest option, not stretched across the cells it spans. */
 .data-table td[colspan] select.form-select {
   width: auto;
-  min-width: 140px;
-  max-width: 100%;
 }
 
 /* Sliders */
@@ -831,6 +830,31 @@ option,
   text-overflow: ellipsis; /* Ensure this is set */
 }
 
+/* Words may wrap, numbers and controls never (Andy 2026-11-18, the fit on a
+   16" MBP and smaller): a description or label keeps its one line whenever the
+   table has room - auto layout gives it its full width first - and wraps only
+   when the window is too narrow, instead of pushing the right-hand columns
+   out of the section. */
+.data-table td.description-cell,
+.data-table td.label,
+.data-table td.label-prefix,
+.data-table td.label-main {
+  white-space: normal;
+}
+
+/* Kept as they were: Wombat's panel takes its width from its table, so a
+   label free to wrap narrows the whole panel; and City's longest names (the
+   airports) would widen Section 03 at every width - it keeps the old 140px. */
+#wombat .data-table td.description-cell,
+#wombat .data-table td.label,
+#wombat .data-table td.label-prefix,
+#wombat .data-table td.label-main {
+  white-space: nowrap;
+}
+.data-table select.form-select[data-field-id="h_19"] {
+  min-width: 140px;
+}
+
 /* Browser-specific fixes */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   /* Safari and Chrome specific fixes */
@@ -997,7 +1021,7 @@ input[type=number].form-control {
 .data-table td select.form-control,
 table.data-table select.form-select {
   width: 100%;
-  min-width: 140px;
+  min-width: max-content; /* its longest option: see .data-table select.form-select */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
