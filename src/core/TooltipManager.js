@@ -210,7 +210,7 @@
       cell: "L26b",
       title: "BASESIMP Peak Heat Loss",
       message:
-        "The foundation's January design heat loss by BASESIMP, W; it enters S15 and the annual figures under F280 Mode On, and S21's sizing always. Unavailable until BASESIMP has its inputs: S11's slab and below-grade wall areas, G.4.6 the exposed perimeter, G.4.5 a depth no deeper than the wall, and a city F280 lists (G.4.9).",
+        "The foundation's January design heat loss by BASESIMP, W; it enters S15 and the annual figures under F280 Mode On, and S21's sizing always. Unavailable until BASESIMP has its inputs: S11's slab area, G.4.6 the exposed perimeter, a city F280 lists (G.4.9), and a G.4.4 configuration that matches the house - a basement (B...) needs S11's below-grade wall area and a G.4.5 depth no deeper than the wall; a slab on grade (SCN, SCB, SCA; NRCan's SlabOnGradeHLR.xls) has none. Hover for the reason.",
     },
     g_111: {
       cell: "111",
