@@ -37,6 +37,12 @@
   window.TEUI = window.TEUI || {};
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
 
+  // Cl. 6.2.4: "A sensible heat gain, HGsp, of 70 W for each person normally expected to occupy the house".
+  // Cl. 6.2.5: "A sensible heat gain, HGlae, of 4 W/m2 of gross floor area, but not lower that 800 W, shall be
+  // applied to the whole house" (lights, appliances and plug loads, one figure). The one source: S21's
+  // design-hour gain below, and S09 under F280 Mode On (InternalGainsNodes.js).
+  window.TEUI.F280Gains = Object.freeze({ personW: 70, laeWPerM2: 4, laeMinW: 800 });
+
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
     if (value === "Unavailable") return defaultVal;
@@ -534,13 +540,8 @@
       classification: "C",
       dependencies: [
         "energy.peakCooling.enclosureKw",
-        "internal.plugLoadDensity",
-        "internal.lightingDensity",
-        "internal.equipmentDensity",
         "building.conditionedFloorArea",
-        "internal.occupants.coolingGain",
-        "cooling.iso52016",
-        "climate.coolingDays",
+        "occupancy.occupants",
         "f280.peakSolarHeatGain",
         "f280.peakInfiltrationHeatGain",
         "f280.peakVentilationHeatGain",
@@ -553,13 +554,13 @@
         if (inputs["f280.peakSolarHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.opaqueSolarCorrection"] === "Unavailable") return "Unavailable";
         const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
-        const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
-          parseNum(inputs["internal.equipmentDensity"]);
-        const internal = density * parseNum(inputs["building.conditionedFloorArea"], 1);
-        const latent = inputs["cooling.iso52016"]?.latent;
-        const occupantsKwh = parseNum(inputs["internal.occupants.coolingGain"]) - (latent?.people ?? 0);
-        const hours = parseNum(inputs["climate.coolingDays"], 120) * 24;
-        const occupants = hours > 0 ? (occupantsKwh / hours) * 1000 : 0;
+        // Cl. 6.2.4 and 6.2.5 at the design hour, whatever the mode (S21 computes F280's way; Andy 2026-11-19
+        // ruled F280's gains over OBJECTIVE's, which this read until then): 70 W per person, and lights,
+        // appliances and plug loads max(4 W/m2 x A, 800 W) - the same figures S09 shows under Mode On
+        const G = window.TEUI.F280Gains;
+        const area = parseNum(inputs["building.conditionedFloorArea"]);
+        const internal = Math.max(G.laeWPerM2 * area, G.laeMinW);
+        const occupants = G.personW * parseNum(inputs["occupancy.occupants"]);
         return enclosure + internal + occupants + parseNum(inputs["f280.peakSolarHeatGain"]) +
           parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]) +
           parseNum(inputs["f280.opaqueSolarCorrection"]);

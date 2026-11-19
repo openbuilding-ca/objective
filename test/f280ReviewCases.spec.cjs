@@ -70,6 +70,12 @@ const READ = () => {
     aim2Error: aim2.error || null,
     aim2_LRairh: num(id, "aim2.heatingRate"),
     aim2_LRairc: num(id, "aim2.coolingRate"),
+    // S09 as shown: under Mode On, F280's gains, calculated; lighting locked at its value in effect
+    s09: Object.fromEntries(["d_65", "d_66", "d_67", "g_64"].map((f) => {
+      const td = document.querySelector(`td[data-field-id="${f}"]`);
+      return [f, td ? `${td.textContent.trim()}${td.getAttribute("contenteditable") === "true" ? " (editable)" : ""}` : null];
+    })),
+    internalAnnual_kWh: num(id, "internal.total.annual"),
     loss_W: num(id, "f280.totalDesignHeatLoss"),
     sensibleGain_W: num(id, "f280.totalSensibleHeatGain"),
   };
@@ -108,7 +114,7 @@ test("the CSA F280 Review Format cases: Off / On / bills", async ({ page }) => {
     await page.evaluate(() => window.TEUI.StateManager.setValue("f280_mode", "Off", "user-modified"));
     const reviewOff = await settle(page);
     const after = await load(page, caseText);
-    results[house] = { off, on, reviewOff: { teui: reviewOff.teui, refTeui: reviewOff.refTeui }, after: { mode: after.mode, teui: after.teui } };
+    results[house] = { off, on, reviewOff: { teui: reviewOff.teui, refTeui: reviewOff.refTeui }, after: { mode: after.mode, teui: after.teui, s09: after.s09 } };
 
     expect(off.groundMethod, `${house} Off`).toBe("OBJECTIVE");
     expect(on.mode, house).toBe("On");
@@ -123,6 +129,12 @@ test("the CSA F280 Review Format cases: Off / On / bills", async ({ page }) => {
     expect(reviewOff.teui, `${house}: Mode Off reads the case`).toBe(off.teui);
     expect(after.mode, `${house}: the case after its review`).not.toBe("On");
     expect(after.teui, house).toBe(off.teui);
+    // S09 (Cl. 6.2.4 / 6.2.5): On shows F280's figures, lighting 0 and locked; the case after it, its own
+    expect(on.s09.d_66, house).toBe("0.00");
+    expect(on.s09.d_67, house).toMatch(/^0(\.0+)?$/);
+    expect(on.s09.g_64, house).toMatch(/^70(\.0+)?$/);
+    expect(after.s09.d_66, house).toMatch(/\(editable\)$/);
+    expect(after.s09.g_64, house).not.toMatch(/^70(\.0+)?$/);
   }
   fs.writeFileSync(path.join(__dirname, "f280-review-results.json"), JSON.stringify(results, null, 2) + "\n");
   for (const [h, r] of Object.entries(results)) {
@@ -130,7 +142,8 @@ test("the CSA F280 Review Format cases: Off / On / bills", async ({ page }) => {
       `${h}: TEUI Off ${r.off.teui.toFixed(1)} On ${r.on.teui.toFixed(1)} bills ${r.on.bills.toFixed(1)} | ` +
         `ground ${r.off.annualGround_kWh.toFixed(0)} -> ${r.on.annualGround_kWh.toFixed(0)} kWh (${r.on.basesimpConfig}, P ${r.on.perimeter_m.toFixed(2)} m, ${r.on.basesimp_W.toFixed(0)} W) | ` +
         `air ${r.off.annualInfiltration_kWh.toFixed(0)} -> ${r.on.annualInfiltration_kWh.toFixed(0)} kWh | ` +
-        `S21 loss ${r.on.loss_W.toFixed(0)} W, gain ${r.on.sensibleGain_W.toFixed(0)} W`
+        `internal ${r.off.internalAnnual_kWh.toFixed(0)} -> ${r.on.internalAnnual_kWh.toFixed(0)} kWh | ` +
+        `S21 loss ${r.on.loss_W.toFixed(0)} W, gain ${r.on.sensibleGain_W.toFixed(0)} W | S09 On ${JSON.stringify(r.on.s09)}`
     );
   }
 });

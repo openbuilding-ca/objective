@@ -184,10 +184,10 @@
       legacyId: "m_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity", "reference.internal.lightingDensity"],
+      dependencies: ["internal.lightingDensity.inEffect", "reference.internal.lightingDensity"],
       label: "Lighting Compliance Ratio",
       compute: (inputs) => {
-        const target = parseNum(inputs["internal.lightingDensity"]);
+        const target = parseNum(inputs["internal.lightingDensity.inEffect"]);
         const ref = parseNum(inputs["reference.internal.lightingDensity"]);
         if (ref > 0) {
           return Math.round((target / ref) * 100) + "%";
@@ -200,10 +200,10 @@
       legacyId: "n_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity", "reference.internal.lightingDensity"],
+      dependencies: ["internal.lightingDensity.inEffect", "reference.internal.lightingDensity"],
       label: "Lighting Compliance Status",
       compute: (inputs) => {
-        const target = parseNum(inputs["internal.lightingDensity"]);
+        const target = parseNum(inputs["internal.lightingDensity.inEffect"]);
         const ref = parseNum(inputs["reference.internal.lightingDensity"]);
         return ref > 0 && target / ref <= 1.0 ? "✓" : "✗";
       }
@@ -510,7 +510,7 @@
 
     // S09: Internal Gains
     "internal.plugLoadDensity":  "reference.internal.plugLoadDensity",
-    "internal.lightingDensity":  "reference.internal.lightingDensity",
+    "internal.lightingDensity.inEffect":  "reference.internal.lightingDensity",
     "internal.equipmentDensity": "reference.internal.equipmentDensity",
 
     // S11: Envelope RSI (for RSI components)

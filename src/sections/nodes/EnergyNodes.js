@@ -580,7 +580,7 @@
       dependencies: [
         "energy.peakCooling.enclosureKw",
         "internal.plugLoadDensity",
-        "internal.lightingDensity",
+        "internal.lightingDensity.inEffect",
         "internal.equipmentDensity",
         "building.conditionedFloorArea",
         "radiantGains.subtotal.coolingGain",
@@ -597,7 +597,7 @@
         const enclosureKw = parseNum(inputs["energy.peakCooling.enclosureKw"], 0);
         // Internal gains density (W/m²) × area → kW
         const d65 = parseNum(inputs["internal.plugLoadDensity"], 0);
-        const d66 = parseNum(inputs["internal.lightingDensity"], 0);
+        const d66 = parseNum(inputs["internal.lightingDensity.inEffect"], 0);
         const d67 = parseNum(inputs["internal.equipmentDensity"], 0);
         const area = parseNum(inputs["building.conditionedFloorArea"], 1);
         const internalGainsKw = (d65 + d66 + d67) * area / 1000;

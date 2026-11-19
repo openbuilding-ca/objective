@@ -92,6 +92,13 @@
   // Default equipment load if lookup fails
   const DEFAULT_EQUIPMENT_LOAD = 5.0;
 
+  // CSA F280-12's internal gains (window.TEUI.F280Gains, F280ComplianceNodes.js), which S21 F280 Mode On
+  // writes into S09 (Andy 2026-11-19: "as hardcodes (not user editable), so it is clear these are
+  // calculated"): S09's plug load carries Cl. 6.2.5's one figure for lights, appliances and plug loads, so
+  // lighting and equipment are 0; G.1.4 is Cl. 6.2.4's 70 W per person (the floor area: S02's conditioned area).
+  const F280_GAINS = () => window.TEUI.F280Gains;
+  const f280On = (inputs) => inputs["f280.mode"] === "On";
+
   /**
    * Format building type for lookup table key
    * From Section09.js formatBuildingTypeForLookup()
@@ -183,9 +190,15 @@
       legacyId: "d_65",
       section: "S09",
       classification: "C",
-      dependencies: ["building.referenceStandard", "building.majorOccupancy"],
+      dependencies: ["building.referenceStandard", "building.majorOccupancy", "f280.mode", "building.conditionedFloorArea"],
       label: "Plug Load Density (W/m²)",
       compute: (inputs) => {
+        // F280 Mode On: Cl. 6.2.5's HGlae over the floor area, max(4 W/m2 x A, 800 W) / A
+        if (f280On(inputs)) {
+          const area = parseNum(inputs["building.conditionedFloorArea"]);
+          if (!(area > 0)) return "Unavailable";
+          return Math.max(F280_GAINS().laeWPerM2 * area, F280_GAINS().laeMinW) / area;
+        }
         const standard = inputs["building.referenceStandard"] || "";
         const buildingType = inputs["building.majorOccupancy"] || "";
 
@@ -220,9 +233,10 @@
       legacyId: "d_67",
       section: "S09",
       classification: "C",
-      dependencies: ["building.majorOccupancy", "internal.efficiencySpec", "internal.elevators"],
+      dependencies: ["building.majorOccupancy", "internal.efficiencySpec", "internal.elevators", "f280.mode"],
       label: "Equipment Density (W/m²)",
       compute: (inputs) => {
+        if (f280On(inputs)) return 0; // F280 Cl. 6.2.5: in the plug load's HGlae
         const rawBuildingType = inputs["building.majorOccupancy"] || "A-Assembly";
         const efficiencyType = inputs["internal.efficiencySpec"] || "Regular";
         const elevatorStatus = inputs["internal.elevators"] || "No Elevators";
@@ -249,12 +263,24 @@
       legacyId: "g_64",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.activityLevel"],
+      dependencies: ["internal.activityLevel", "f280.mode"],
       label: "Occupant Watts per Person (S+L)",
       compute: (inputs) => {
+        if (f280On(inputs)) return F280_GAINS().personW; // F280 Cl. 6.2.4, sensible (its latent: Annex B)
         const level = inputs["internal.activityLevel"] || "Normal";
         return ACTIVITY_WATTS[level] || 117.23;
       },
+    });
+
+    // d_66 in effect: the user's lighting density, or 0 under F280 Mode On (Cl. 6.2.5: in the plug load's
+    // HGlae). The input keeps the user's value for Off; S09 shows this one, locked, under On (Section21.js).
+    graph.registerNode({
+      id: "internal.lightingDensity.inEffect",
+      section: "S09",
+      classification: "C",
+      dependencies: ["internal.lightingDensity", "f280.mode"],
+      label: "Lighting Density in Effect (W/m²)",
+      compute: (inputs) => (f280On(inputs) ? 0 : inputs["internal.lightingDensity"]),
     });
 
     // h_64: Occupant energy annual = (occupants × watts × annualHours) / 1000
@@ -266,7 +292,7 @@
       dependencies: ["internal.occupants.wattsPerPerson", "occupancy.occupants", "occupancy.occupiedHours"],
       label: "Occupant Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.occupants.wattsPerPerson"]) || 117.23;
+        const watts = parseNum(inputs["internal.occupants.wattsPerPerson"], 117.23); // a 0 stays 0 (|| took it for missing)
         const occupants = parseFloat(inputs["occupancy.occupants"]) || 4;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * occupants * hours) / 1000;
@@ -282,7 +308,7 @@
       dependencies: ["internal.plugLoadDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Plug Load Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.plugLoadDensity"]) || 7;
+        const watts = parseNum(inputs["internal.plugLoadDensity"], 7);
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
@@ -295,10 +321,10 @@
       legacyId: "h_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
+      dependencies: ["internal.lightingDensity.inEffect", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Lighting Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.lightingDensity"]) || 1.5;
+        const watts = parseNum(inputs["internal.lightingDensity.inEffect"], 1.5);
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
@@ -314,7 +340,7 @@
       dependencies: ["internal.equipmentDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Equipment Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.equipmentDensity"]) || 3;
+        const watts = parseNum(inputs["internal.equipmentDensity"], 3); // F280 Mode On: 0, never 3
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
