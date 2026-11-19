@@ -401,7 +401,7 @@
     // table, W/m²) × LFactor = 1 + (latitude − 40) × 0.0375, held to 0.7-1.3, on S, SE and SW only.
     // The latitude is F280's own for S03's city (F280Weather.js; a city F280 does not list takes its
     // nearest's). OBJECTIVE's "Average" facing has no Solar0: it takes the mean of the eight compass
-    // points' Solar (2026-11-19, for Andy's review). It replaces S15's season-average solar
+    // points' Solar (Andy 2026-11-19: "Yes that's a right assumption"). It replaces S15's season-average solar
     // (the glazing rows' ISO 52016 share ÷ cooling-season hours, F280-1 289 W).
     // ========================================================================
 
