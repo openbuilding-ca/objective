@@ -784,13 +784,25 @@
       classification: "C",
       dependencies: [
         "airTightness.ach50Target",
-        "volume.conditioned"
+        "volume.conditioned",
+        "airTightness.infiltrationMethod",
+        "airTightness.aim2"
       ],
       label: "Equivalent Leakage Area at 10 Pa (m²)",
+      // A true ELA at 10 Pa (Andy 2026-11-19: "yes"). It read ACH50 x volume / 3600, the 50 Pa FLOW in m3/s
+      // (F280-1: 0.304 where its ELA is 0.0394 m2). Under AIM-2 (B.19.1): AIM-2's ELA in effect - the
+      // prescribed type's, or the Custom measured one (B.19.3). Otherwise: from the ACH50 at the flow
+      // exponent of AIM2.xls's nearest prescribed type (Aim2.typicalN), by AIM2's own relation.
       compute: (inputs) => {
         const ach50 = parseNum(inputs["airTightness.ach50Target"]);
         const volume = parseNum(inputs["volume.conditioned"]);
-        return volume > 0 ? (ach50 * volume) / 3600 : 0;
+        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (r && !r.error) return r.design.ela / 10000;
+        }
+        const A = window.TEUI.Aim2;
+        if (!A || !(volume > 0) || !(ach50 > 0)) return 0;
+        return A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) / 10000;
       }
     });
 

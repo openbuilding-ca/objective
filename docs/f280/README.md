@@ -13,8 +13,8 @@
 > Method (OBJECTIVE (N-factor) | AIM-2 (CSA F280)), B.19.2-B.19.12 its inputs (greyed unless AIM-2), B.19.13 / B.19.14
 > LRairh / LRairc shown either way. It sets F280's air-leakage loss (Cl. 5.2.3) and gain (Cl. 6.2.6) and the annual
 > `i_103` (Andy: "when you get to a fork in the road, take it"): AIM-2 per month on the climate station's mean
-> temperature and wind, HDD-weighted (F280-1: 2687 → 2859 kWh). ⚠ S12 B.18.4 "Ae10 or ELA10 (m²)" computes ACH50 ×
-> volume / 3600 - the 50 Pa FLOW (m³/s), not an area (F280-1: 0.304 against AIM-2's ELA 0.0394 m²); open for Andy.
+> temperature and wind, HDD-weighted (F280-1: 2687 → 2859 kWh). ✅ S12 B.18.4 is now a true ELA at 10 Pa (it computed
+> ACH50 × volume / 3600, the 50 Pa flow): AIM-2's ELA in effect, else from the ACH50 at AIM2's nearest type's n (F280-1: 0.304 → 0.0394 m²).
 >
 > **BASESIMP** (2026-11-19): `src/core/Basesimp.js` is BasementHLR.xls cell for cell (coefficients
 > `src/core/BasesimpData.js` from FoundationCC.xls; weather `src/core/F280Weather.js` from F280_Weather.xls, 675 of

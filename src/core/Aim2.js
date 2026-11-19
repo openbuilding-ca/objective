@@ -170,5 +170,23 @@
     return { monthly, rate: sumWR / sumW };
   }
 
-  window.TEUI.Aim2 = Object.freeze({ compute, seasonalRate });
+  /**
+   * The ELA (cm2, at pa Pa) of a house of ACH50 and volume at flow exponent n - AIM2.xls's own relation
+   * (AIM_2_Calcs B5:B6, n = log(Alpha_C x ACH x V / ELA) / log(50 / Pa)) solved for the ELA.
+   */
+  function elaFromAch50(ach50, volume, n, pa = 10) {
+    const alphaC = BETA / (3600 * Math.sqrt(pa));
+    return (alphaC * ach50 * volume) / (50 / pa) ** n;
+  }
+
+  /**
+   * A flow exponent for a house known only by its ACH50: the n of AIM2.xls's prescribed air-tightness type
+   * nearest in ACH50 (AIM_2_Calcs A12:D15: 10.35 / 0.725, 4.55 / 0.698, 3.57 / 0.7125, 1.5 / 0.7028).
+   */
+  function typicalN(ach50) {
+    const t = data().tightness.reduce((best, x) => (Math.abs(x.ach50 - ach50) < Math.abs(best.ach50 - ach50) ? x : best));
+    return { n: t.n, type: t.name };
+  }
+
+  window.TEUI.Aim2 = Object.freeze({ compute, seasonalRate, elaFromAch50, typicalN });
 })();

@@ -222,7 +222,7 @@
       cell: "112",
       title: "ELA at 10 Pa (Custom)",
       message:
-        "Equivalent leakage area at 10 Pa from the blower-door test, cm2 (CGSB-149.10). Note B.18.4 shows ACH50 x volume / 3600, a 50 Pa flow, not this area.",
+        "Equivalent leakage area at 10 Pa from the blower-door test, cm2 (CGSB-149.10). B.18.4 shows the ELA in effect, in m2.",
     },
     g_112: {
       cell: "112",

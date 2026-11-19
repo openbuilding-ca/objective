@@ -68,6 +68,21 @@ for (const row of legacy.set_2_exhaust_only.rows) {
 }
 console.log("ok  NRCan 2015 test cases (volume, exhaust-only), to their printed 4 decimals");
 
+// --- elaFromAch50 / typicalN: S12 B.18.4's ELA (AIM2's n relation, inverted) --------------------------
+for (const rec of records.filter(r => r.inputs.tightness === "Custom")) {
+  const i = rec.inputs;
+  close(A.elaFromAch50(i.ach50, i.volume, rec.expected.n, i.elaPa), i.ela, `${rec.variant} ELA from ACH50 at Excel's n`);
+}
+assert.strictEqual(A.typicalN(1.5).type, "Energy Tight");
+assert.strictEqual(A.typicalN(4.3).type, "Average (1946-1960)");
+{
+  // F280-1: 1.5 ACH50, 730.3 m3 -> Energy Tight's n -> 394.3 cm2, the ELA AIM-2 takes for the type
+  const ela = A.elaFromAch50(1.5, 730.3, A.typicalN(1.5).n);
+  const typed = A.compute({ ...records.find(r => r.variant === "f280-1-hrv").inputs }).ela;
+  assert.ok(Math.abs(ela - typed) / typed < 1e-3, `F280-1 ELA ${ela} vs the Energy Tight type's ${typed}`);
+}
+checks += 3;
+
 // --- seasonalRate: OBJECTIVE's annual figure under AIM-2 (not the spreadsheet's; its own witnesses) ----
 {
   const p = records.find(r => r.variant === "f280-1-hrv").inputs;
