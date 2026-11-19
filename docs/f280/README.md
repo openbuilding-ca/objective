@@ -216,8 +216,9 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
 ## What needs the PDF (the text extract cannot settle these)
 
 - ✅ The floor area and volume from the plans (Figures G.1.1 b) - G.1.3 b), the PDF 2026-11-19): 90.30 + 96.02 +
-  109.25 = 295.57 m2 (was 289.14: the main floor is not the basement's footprint), Vb 747.9 m3 (was 730.3). F280-1's
-  LOSS PASSES Cl. 8.4.1: 11 570 W, 98.2 %. Open for Kieran: Vb counts the 0.23 m joist spaces or not (+47.2 m3).
+  109.25 = 295.57 m2 (was 289.14: the main floor is not the basement's footprint), Vb 795.1 m3 (was 730.3) with the floors'
+  0.23 m joist spaces, as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house volume ("including ... floors";
+  closets are inside each floor's area). F280-1's LOSS PASSES Cl. 8.4.1.
 - ✅ Table G.1.8's wall areas are GROSS (area = length x height on every row; the PDF, 2026-11-19): the build's
   subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
   open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).

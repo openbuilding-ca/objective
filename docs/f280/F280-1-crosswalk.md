@@ -32,7 +32,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `g_112e: Flue Diameter (mm)` | 0 | standard | no flue (electric heating, sealed combustion) |
 | `h_21: Capacitance Method` | Capacitance | standard | Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static) |
 | `h_15: Conditioned Area: m²` | 295.57 | standard | Figures G.1.1 b) - G.1.3 b): basement 90.30 (int.) + main 96.02 + upper 109.25 m2 |
-| `d_105: Total Conditioned Volume` | 747.8 | standard | Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x 2.77 + 109.25 x 2.46 m3, inside dimensions (Cl. 5.2.3.1 Vb); the 0.23 m joist spaces not counted (+47.2 m3 with them: Kieran confirms) |
+| `d_105: Total Conditioned Volume` | 795.1 | standard | Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x (0.23 + 2.77) + 109.25 x (0.23 + 2.46) m3 - inside dimensions (Cl. 5.2.3.1 Vb), the floors' joist spaces included as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house volume ('including ... floors') |
 | `d_63: Occupant Count` | 5 | derived | Cl. 6.2.4: bedrooms (4) + 1 |
 | `g_63: Occupied Hours/Day` | 12 | objective | OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18) |
 | `d_64: Occupant Activity Level` | Normal | objective | OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person) |
@@ -78,7 +78,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_108: NRL₅₀ Target Method` | MEASURED | standard | Table H.3.2 |
 | `g_109: ACH₅₀ Target (Converts B.18.1)` | 1.5 | standard | Table H.3.2: 1.5 ACH50 |
 | `g_118: Ventilation Method (Volume or Occupant Based)` | Volume Constant | equivalent | a constant principal ventilation rate (PVC) |
-| `l_118: ACH (Air Changes per Hour) for Volume-Based Ventilation` | 0.2499 | equivalent | PVC 51.91 L/s (Table H.3.3 b) x 3.6 / volume; moves with the volume estimate |
+| `l_118: ACH (Air Changes per Hour) for Volume-Based Ventilation` | 0.235 | equivalent | PVC 51.91 L/s (Table H.3.3 b) x 3.6 / volume; moves with the volume estimate |
 | `l_119: Summer Boost Multiplier` | None | standard | no summer boost in F280 |
 | `d_118: HRV/ERV/MVHR Sensible Recovery Efficiency (SRE): %` | 76 | standard | Table H.3.3 b): ASE 76 % (OBJECTIVE's field is labelled SRE) |
 | `e_118: Heat Recovery Type (HRV: sensible only; ERV: sensible + latent)` | HRV | standard | Table H.3.3: HRV-simplified, ATRE 0 % |

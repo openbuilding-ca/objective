@@ -78,6 +78,7 @@ BEDROOMS = ["Master", "Bed 2", "Bed 3", "Bed 4"]
 # Figures G.1.1 b) - G.1.3 b) (pp. 83, 85, 87; Andy's screenshots 2026-11-19), each floor's own box: area m2 (the
 # basement's "INT."), ceiling height m. The main floor is NOT the basement's footprint (96.02 vs 90.30).
 FLOORS = {"basement": (90.30, 2.36), "main": (96.02, 2.77), "upper": (109.25, 2.46)}
+JOIST = 0.23  # the plans' JOIST SPACE, basement and main boxes (m)
 
 # ---- Annex H.3 (2010s vintage) and Annex I.3 (2010s effective RSI, SI) ------------------------
 # Table I.3 b) (2010s, p. 167): CHECKED against the PDF (Andy's screenshot 2026-11-19), all eight values.
@@ -152,9 +153,11 @@ def build():
     slab = m2(sum(SLAB))
     upper = m2(sum(v for k, v in CEILINGS.items() if k not in ("Family", "Nook")))
     floor_area = sum(a for a, _ in FLOORS.values())
-    # Vb, "measured on the inside dimensions" (Cl. 5.2.3.1): each floor's area x its ceiling height; the plans list the
-    # 0.23 m joist spaces separately, not counted here (with them: + 0.23 x (96.02 + 109.25) = +47.2 m3; Kieran confirms)
-    volume = sum(a * h for a, h in FLOORS.values())
+    # Vb, "measured on the inside dimensions" (Cl. 5.2.3.1), as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house
+    # volume: "the entire heated volume of the house including ... basement; ... and floors" (not attic or garage). So
+    # each floor's area x its ceiling height, plus the 0.23 m joist space under the main and upper floors (the plans'
+    # "JOIST SPACE"), each on its floor's area; closets are inside each floor's area
+    volume = sum(a * h for a, h in FLOORS.values()) + JOIST * (FLOORS["main"][0] + FLOORS["upper"][0])
     occupants = len(BEDROOMS) + 1           # Cl. 6.2.4: bedrooms + 1 when unknown
 
     put("h_14", "F280-1 Archetype 1 / 2010s / Ottawa (Orleans)", "standard", "Cl. 8.3.1 base case")
@@ -195,8 +198,9 @@ def build():
     put("h_15", round(floor_area, 2), "standard",
         "Figures G.1.1 b) - G.1.3 b): basement 90.30 (int.) + main 96.02 + upper 109.25 m2")
     put("d_105", round(volume, 1), "standard",
-        "Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x 2.77 + 109.25 x 2.46 m3, inside dimensions (Cl. 5.2.3.1 "
-        "Vb); the 0.23 m joist spaces not counted (+47.2 m3 with them: Kieran confirms)")
+        "Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x (0.23 + 2.77) + 109.25 x (0.23 + 2.46) m3 - inside "
+        "dimensions (Cl. 5.2.3.1 Vb), the floors' joist spaces included as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's "
+        "house volume ('including ... floors')")
     put("d_63", occupants, "derived", f"Cl. 6.2.4: bedrooms ({len(BEDROOMS)}) + 1")
     put("g_63", 12, "objective", "OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18)")
     put("d_64", "Normal", "objective", "OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person)")
