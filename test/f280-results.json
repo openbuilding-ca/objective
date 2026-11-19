@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T18:00:05.688Z",
+  "timestamp": "2026-11-19T19:29:11.036Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -24,24 +24,24 @@
       "vintage": "2010s",
       "location": "Ottawa (Orleans)",
       "loss": {
-        "result_W": 10839,
+        "result_W": 11528,
         "expected_W": 11787,
         "lowOk": false,
         "highOk": true,
         "pass": false,
-        "ratio": 0.9195724102825147
+        "ratio": 0.9780266395181132
       },
       "gain": {
-        "result_W": 5155,
+        "result_W": 5619,
         "expected_W": 7321,
         "lowOk": false,
         "highOk": true,
         "pass": false,
-        "ratio": 0.7041176193204832
+        "ratio": 0.767457984458142
       },
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
         "groundMethod": "BASESIMP",
@@ -53,58 +53,58 @@
         "aim2Error": null,
         "annualInfiltration_kWh": 2858.739692605512,
         "annualGround_kWh": 5777.460921418415,
-        "sensibleGain": 5154.8450910452575,
+        "sensibleGain": 5618.559904218057,
         "infiltrationGain_W": 84.7631535227839,
         "ventilationGain_W": 373.76753999999994,
         "atre": 0,
-        "solarGain_W": 2157.6913164159996,
+        "solarGain_W": 2535.2872967887997,
         "opaqueSolarCorrection_W": 157.44173284990651,
         "s15Cells": [
-          "10,839",
-          "5,155"
+          "11,528",
+          "5,619"
         ],
         "dtdc": 6,
         "f280Latitude": 45.48,
         "designLatent_W": 1375.450114413869,
-        "nominalCooling": 6530,
-        "latentLoadFactor": 1.2668266630947325,
-        "peakCoolingKw": 2.196121009790386,
+        "nominalCooling": 6994,
+        "latentLoadFactor": 1.244804743183617,
+        "peakCoolingKw": 2.338121746173649,
         "ventLs": 51.91215833333333,
         "ventEfficiency": 76,
         "designSetpoint": 22,
         "coldest": -26,
         "hottest": 30,
         "coolingSetpoint": 24,
-        "radiantCoolingGain_kWh": 418.4102341478948,
+        "radiantCoolingGain_kWh": 570.3577164562798,
         "rows": {
           "row74.orientation": "North",
           "row74.area": "15.728",
-          "row74.shgc": "0.4",
+          "row74.shgc": "0.47",
           "row74.summerShading": "0",
           "row74.gainFactor": 1.31,
-          "row74.heatingGain": 16.482944,
-          "row74.coolingGain": 109.70446184616127,
+          "row74.heatingGain": 19.3674592,
+          "row74.coolingGain": 149.7541580034517,
           "row75.orientation": "East",
           "row75.area": "2.23",
-          "row75.shgc": "0.4",
+          "row75.shgc": "0.47",
           "row75.summerShading": "0",
           "row75.gainFactor": 76.94,
-          "row75.heatingGain": 137.26096,
-          "row75.coolingGain": 31.790518868809713,
+          "row75.heatingGain": 161.28162799999998,
+          "row75.coolingGain": 43.39262435429692,
           "row76.orientation": "South",
           "row76.area": "16.592",
-          "row76.shgc": "0.4",
+          "row76.shgc": "0.47",
           "row76.summerShading": "10.1",
           "row76.gainFactor": 70.74,
-          "row76.heatingGain": 938.9744639999999,
-          "row76.coolingGain": 254.73353300062317,
+          "row76.heatingGain": 1103.2949952,
+          "row76.coolingGain": 346.940482326978,
           "row77.orientation": "West",
           "row77.area": "1.486",
-          "row77.shgc": "0.4",
+          "row77.shgc": "0.47",
           "row77.summerShading": "1.08",
           "row77.gainFactor": 25.86,
-          "row77.heatingGain": 30.742368,
-          "row77.coolingGain": 22.181720432300658
+          "row77.heatingGain": 36.122282399999996,
+          "row77.coolingGain": 30.270451771553265
         },
         "ground": {
           "slabOnGrade.rsi": "0.216",
@@ -118,7 +118,7 @@
         },
         "coolingDays": 120,
         "peakTerms": {
-          "enclosure_W": 874.6213482565679,
+          "enclosure_W": 960.740181056568,
           "densities_Wm2": {
             "plug": 4,
             "lighting": 1.5,
@@ -126,9 +126,9 @@
           },
           "floorArea_m2": 289.14,
           "internalDensity_W": 1590.27,
-          "solarSeasonAverage_W": 145.28133130135237,
+          "solarSeasonAverage_W": 198.0408737695416,
           "ventilationSeasonAverage_W": 0,
-          "occupantsSeasonAverage_W": 19.65833023246597
+          "occupantsSeasonAverage_W": 22.780691347539378
         },
         "iso52016": {
           "present": true,
@@ -146,17 +146,17 @@
             "months"
           ],
           "rows": {
-            "internal": 299.9109288398065,
+            "internal": 350.9672340311832,
             "glazing73": 0,
-            "glazing74": 109.70446184616127,
-            "glazing75": 31.790518868809713,
-            "glazing76": 254.73353300062317,
-            "glazing77": 22.181720432300658,
+            "glazing74": 149.7541580034517,
+            "glazing75": 43.39262435429692,
+            "glazing76": 346.940482326978,
+            "glazing77": 30.270451771553265,
             "glazing78": 0,
-            "roof": 19.92938584592919,
-            "walls": 55.59192754942244,
-            "vent": 16.294662831147125,
-            "leak": 6.45363852188901
+            "roof": 23.157285785261212,
+            "walls": 64.53521036532801,
+            "vent": 21.51270838782557,
+            "leak": 8.520289434676329
           }
         }
       }
@@ -176,12 +176,12 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 12898,
-        "envelope": 8384,
+        "loss": 13587,
+        "envelope": 9073,
         "infiltration": 3796,
         "ventilation": 718,
-        "nominalCooling": 6891,
-        "latentLoadFactor": 1.308741591926116,
+        "nominalCooling": 7354,
+        "latentLoadFactor": 1.2837505607813504,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -209,12 +209,12 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 11842,
-        "envelope": 8384,
+        "loss": 12531,
+        "envelope": 9073,
         "infiltration": 468,
         "ventilation": 2990,
-        "nominalCooling": 6284,
-        "latentLoadFactor": 1.2371557643454327,
+        "nominalCooling": 6748,
+        "latentLoadFactor": 1.217316879989074,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -234,19 +234,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1227
+        "gain": 1442
       },
       "expected_change_W": {
         "gain": 1995
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 7757,
-        "latentLoadFactor": 1.2155253345357626,
+        "nominalCooling": 8436,
+        "latentLoadFactor": 1.19481497789155,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -266,19 +266,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1532
+        "gain": 1800
       },
       "expected_change_W": {
         "gain": 2467
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 8062,
-        "latentLoadFactor": 1.20569141835201,
+        "nominalCooling": 8794,
+        "latentLoadFactor": 1.1854007708084835,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -298,19 +298,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1263
+        "gain": 1484
       },
       "expected_change_W": {
         "gain": 2014
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 7793,
-        "latentLoadFactor": 1.2143280860666763,
+        "nominalCooling": 8478,
+        "latentLoadFactor": 1.1936659768623843,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -330,19 +330,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 32
+        "gain": 38
       },
       "expected_change_W": {
         "gain": 3
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6563,
-        "latentLoadFactor": 1.2651583674736524,
+        "nominalCooling": 7032,
+        "latentLoadFactor": 1.2431555168122355,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -362,19 +362,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1296
+        "gain": 1523
       },
       "expected_change_W": {
         "gain": 2073
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 7826,
-        "latentLoadFactor": 1.213219143974163,
+        "nominalCooling": 8517,
+        "latentLoadFactor": 1.1926024302042322,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -394,19 +394,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1562
+        "gain": 1836
       },
       "expected_change_W": {
         "gain": 2529
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 8093,
-        "latentLoadFactor": 1.2047615963074236,
+        "nominalCooling": 8830,
+        "latentLoadFactor": 1.1845133850849625,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -426,19 +426,19 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1260
+        "gain": 1481
       },
       "expected_change_W": {
         "gain": 2054
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 10839,
-        "envelope": 8384,
+        "loss": 11528,
+        "envelope": 9073,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 7791,
-        "latentLoadFactor": 1.2144040010261583,
+        "nominalCooling": 8475,
+        "latentLoadFactor": 1.1937388090267818,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,

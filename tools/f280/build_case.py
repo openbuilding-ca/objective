@@ -33,7 +33,8 @@ OUT_MD = os.path.join(ROOT, "docs/f280/F280-1-crosswalk.md")
 FT2 = 0.09290304
 
 # ---- Annex G.1 take-offs, Archetype 1 (imperial) -------------------------------------------
-# Table G.1.11 a) windows: (room, facing, width ft, height ft, overhang ft, drop ft, area ft2)
+# Table G.1.11 a) windows: (room, facing, width ft, height ft, overhang ft, drop ft, area ft2). CHECKED row for row
+# against the PDF (pp. 95-96, Andy's screenshots 2026-11-19); G.1.11 b) agrees with it.
 WINDOWS = [
     ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6), ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6),
     ("Family", "N", 3.33, 6.33, 1.33, 8.85, 21), ("Family", "N", 3.33, 6.33, 1.33, 1.00, 21),
@@ -54,7 +55,9 @@ LATITUDE = 45.47   # Ottawa (Orleans): ESTIMATE, Kieran confirms F280's latitude
 # Table G.1.10 a) doors: (room, facing, area ft2); "Up" = attic hatches in the ceiling
 DOORS = [("Entry", "E", 20), ("Entry", "S", 20), ("WIC", "N", 9), ("WIC", "Up", 4),
          ("Laundry", "Up", 4), ("Laundry", "Up", 4)]
-# Table G.1.8 a) above-grade walls: area ft2 per row (gross; see the crosswalk's note)
+# Table G.1.8 a) above-grade walls: area ft2 per row. CHECKED against the PDF (pp. 91-92, Andy's screenshots
+# 2026-11-19): GROSS - every row's area is its length x height, nothing deducted. Use the imperial table: G.1.8 b)'s
+# SI rows do not line up with their labels (b's Living S 2.37 m vs a's 12.78 ft = 3.90 m; its lengths are a's shifted).
 WALLS = [140, 175, 11, 132, 81, 40, 29, 7, 34, 49, 80, 71, 169, 116, 139, 100, 116, 73, 49,
          162, 142, 64, 148, 102, 89, 102, 47, 26, 99, 80]
 # Table G.1.7 a) rim joists: lengths ft, all at height 0.77 ft
@@ -74,12 +77,16 @@ SLAB = [546.8, 425.3]
 BEDROOMS = ["Master", "Bed 2", "Bed 3", "Bed 4"]
 
 # ---- Annex H.3 (2010s vintage) and Annex I.3 (2010s effective RSI, SI) ------------------------
+# Table I.3 b) (2010s, p. 167): CHECKED against the PDF (Andy's screenshot 2026-11-19), all eight values.
 RSI = {"ceiling": 9.050, "exposed_floor": 5.348, "basement_wall": 2.760, "slab": 0.0,
        "wall_brick": 3.429, "house_garage_wall": 3.364, "rim": 3.587, "house_garage_header": 3.362}
 ACH50 = 1.5            # Table H.3.2
 PVC_LS = 51.91         # Table H.3.3 b), HRV-simplified
 ASE_PCT = 76           # Table H.3.3 b), apparent sensible effectiveness
-WINDOW_RSI, WINDOW_SHGC = 0.64, 0.40   # Table 6F: operable vinyl, insulating spacer, low-e, 13 mm argon
+# Table 6F (p. 40, double glazed): Operable - Wood/Vinyl, Insulating spacer, Low-E, 13 mm Argon -> RSIw 0.51,
+# SHGC 0.47 (read from Andy's screenshot 2026-11-19; the text extract's column shift had given 0.64 / 0.40, values
+# the double-glazed table does not contain)
+WINDOW_RSI, WINDOW_SHGC = 0.51, 0.47
 DOOR_RSI = 1.1         # Table 6I: insulated metal, polyurethane core, no storm door
 
 

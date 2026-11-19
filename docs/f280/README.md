@@ -213,11 +213,15 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
 ## What needs the PDF (the text extract cannot settle these)
 
 - The conditioned floor area and volume: the plans G.1.1–G.1.3 are images, so `h_15` and `d_105` are estimates.
-- Whether Table G.1.8's wall areas are gross. The build subtracts windows and doors, and does not split out
-  the house/garage walls (I.3 gives RSI 3.364 for those).
-- Table 6F's column order: the 13 mm argon row was read as RSI 0.64, SHGC 0.40.
-- Annex I.3's 2010s values: the extract interleaves the vintages, and the assignment was made by matching
-  H.3's layers.
+- ✅ Table G.1.8's wall areas are GROSS (area = length x height on every row; the PDF, 2026-11-19): the build's
+  subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
+  open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).
+- ✅ Table 6F (p. 40, the PDF 2026-11-19): operable vinyl, insulating spacer, low-E, 13 mm argon is RSI 0.51,
+  SHGC 0.47 - the extract had given 0.64 / 0.40. Loss 10 839 -> 11 528 W (97.8 %), gain 5155 -> 5619 W (76.7 %).
+  ⚠ The turns (8.3.8) now change by 0.72-0.74 of Annex J's on every facing (0.615 at SHGC 0.40): Annex J
+  behaves as if SHGC ~0.65 (Table 6F's CLEAR double glazing). Table H.3.14 (2010s windows, p. ~158-160) settles
+  which window Archetype 1 has.
+- ✅ Annex I.3 b)'s 2010s values (p. 167, the PDF 2026-11-19): the build's eight RSIs are right.
 - Annex J's variant tables (8.3.4–8.3.8) come through column-shifted, and the SIGN of each expected change is
   not settled (`sign_settled: false`). 8.3.4 c) reads −897 W loss for exhaust-only, which looks backwards.
 - G.1.11's overhangs and drops shade the base case (Annex A). OBJECTIVE's summer shading is 0 % for now,

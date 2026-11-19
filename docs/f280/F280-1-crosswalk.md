@@ -44,14 +44,14 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_76: S10: Window Area South: m²` | 16.592 | derived | Table G.1.11 a): S-facing windows summed, ft2 -> m2 |
 | `d_77: S10: Window Area West: m²` | 1.486 | derived | Table G.1.11 a): W-facing windows summed, ft2 -> m2 |
 | `d_78: S10: Skylights: m²` | 0 | standard | no skylights in G.1.11 |
-| `f_74: Window North: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_75: Window East: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_76: Window South: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_77: Window West: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `g_89: Window Area North: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_90: Window Area East: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_91: Window Area South: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_92: Window Area West: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
+| `f_74: Window North: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_75: Window East: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_76: Window South: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_77: Window West: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `g_89: Window Area North: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_90: Window Area East: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_91: Window Area South: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_92: Window Area West: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
 | `g_74: Window North: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_75: Window East: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_76: Window South: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
