@@ -172,7 +172,8 @@ The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation
 
 ## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18) - SUPERSEDED 2026-11-19 for S21
 
-S21 now takes Cl. 6.2.4 / 6.2.5 directly (the section above); F280-1's gain 7040 → 5155 W (70.4 %). Kept for the
+S21 now takes Cl. 6.2.4 / 6.2.5 directly (the section above); F280-1's sensible gain 7040 → 5155 W (70.4 % read as sensible;
+compared as Annex J's nominal, 1.3 x, the gain now passes: 100.4 %, the current state above). Kept for the
 overhang-to-shading mapping and the sources of OBJECTIVE's own gains, which Off still uses.
 
 Andy: *"Ideally we match gains NOT by inventing new methods, but by choosing standard OBJECTIVE input values,
@@ -226,7 +227,8 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
   subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
   open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).
 - ✅ Table 6F (p. 40, the PDF 2026-11-19): operable vinyl, insulating spacer, low-E, 13 mm argon is RSI 0.51,
-  SHGC 0.47 - the extract had given 0.64 / 0.40. Loss 10 839 -> 11 528 W (97.8 %), gain 5155 -> 5619 W (76.7 %).
+  SHGC 0.47 - the extract had given 0.64 / 0.40. Loss 10 839 -> 11 528 W (97.8 %), sensible gain 5155 -> 5619 W; with the plans and Annex J's nominal (x 1.3)
+  that became the PASS on both (99.1 % / 100.4 %).
   ⚠ The turns (8.3.8) now change by 0.72-0.74 of Annex J's on every facing (0.615 at SHGC 0.40): Annex J
   behaves as if SHGC ~0.65 (Table 6F's CLEAR double glazing). ✅ Table H.3.14 (p. 159) CONFIRMS the build's window
   (vinyl operable, double, 13 mm, insulated spacer, argon, single low-e, no interior shading): SHGC 0.47 is the

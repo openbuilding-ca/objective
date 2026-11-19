@@ -567,8 +567,9 @@
       }
     });
 
-    // S15 T.6.10 / T.6.11: the two figures Annex J compares (Cl. 8.4.1), read where the peak loads are
-    // (Andy 2026-11-19). Echoes, in W; the row hides with S21 when F280 Mode is Off.
+    // S15 T.6.10 / T.6.11: the design loss (Annex J compares it as is) and the SENSIBLE gain sum (Annex J compares 1.3 x it,
+    // the nominal capacity of Cl. 6.3.1 - shown 2026-11-19 by Annex K 8.3.3; test/f280WholeHouse.spec.cjs ANNEX_J_LM), read
+    // where the peak loads are (Andy 2026-11-19). Echoes, in W; the row hides with S21 when F280 Mode is Off.
     graph.registerNode({
       id: "f280.s15.designHeatLoss",
       legacyId: "d_140b",

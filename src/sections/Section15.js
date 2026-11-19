@@ -328,9 +328,10 @@ window.TEUI.SectionModules.sect15 = (function () {
     },
 
     // Row 140b: T.6.10 the F280 design loads Annex J compares (Cl. 8.4.1; Andy 2026-11-19: "one cell for Losses,
-    // one for Gains, the two values we're trying to narrow"). Echoes of S21's F280 stream, in W as Annex J
-    // reports them: the total design heat loss (Cl. 5.2.7) and the total SENSIBLE heat gain (Cl. 6.2.9; S21's
-    // nominal cooling is this × the latent multiplier, Cl. 6.3). Hidden with S21 when F280 Mode is Off.
+    // one for Gains, the two values we're trying to narrow"). Echoes of S21's F280 stream, in W: the total design
+    // heat loss (Cl. 5.2.7), as Annex J reports it, and the total SENSIBLE heat gain (Cl. 6.2.9). Annex J's gain is
+    // the NOMINAL capacity, 1.3 x this (Cl. 6.3.1; Annex K 8.3.3, 2026-11-19); S21's own nominal takes Annex B's
+    // latent instead. Hidden with S21 when F280 Mode is Off.
     "140b": {
       id: "T.6.10",
       rowId: "T.6.10",
