@@ -11,12 +11,19 @@
   // Keys the house CSV carries that have no field on the page: d_21o, the CDD override (2026-11-19)
   const STORED_KEYS_WITHOUT_FIELD = ["d_21o"];
 
+  // A "CSA F280 Review Format" row (reviewOf) sits indented under its Part 9 house: the same case with the
+  // Target run as an F280 annual model (S21 F280 Mode On, BASESIMP + AIM-2, the house's foundation and AIM-2
+  // facts), the Reference the case's own; written by tools/f280/review_case.py (Andy 2026-11-19)
   const SAMPLE_PROJECTS = [
     // Part 9 Residences
     { id: "03", file: "03-residence-phi-classic.csv", name: "Part 9: Residence: <strong>PHI Classic</strong>", type: "C-Residential", location: "QC, Hemmingford" },
+    { id: "03-f280", file: "03-residence-phi-classic-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "QC, Hemmingford", reviewOf: "03" },
     { id: "12", file: "12-residence-phi-low-energy.csv", name: "Part 9: Residence: <strong>PHI Low Energy</strong>", type: "C-Residential", location: "ON, Hawkesbury" },
+    { id: "12-f280", file: "12-residence-phi-low-energy-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Hawkesbury", reviewOf: "12" },
     { id: "02", file: "02-residence-sb12-net-zero.csv", name: "Part 9: Residence: <strong>SB12 Net-Zero</strong>", type: "C-Residential", location: "ON, Collingwood" },
+    { id: "02-f280", file: "02-residence-sb12-net-zero-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Collingwood", reviewOf: "02" },
     { id: "10", file: "10-residence-sb12-duplex.csv", name: "Part 9: Residence: <strong>SB12 Net Zero Duplex</strong>", type: "C-Residential", location: "ON, Mississauga" },
+    { id: "10-f280", file: "10-residence-sb12-duplex-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Mississauga", reviewOf: "10" },
     // Part 3 MURBs (C-Occupancy)
     { id: "04", file: "04-apartment-necb-small.csv", name: "Part 3: <strong>MURB</strong> (C-Occupancy): <strong>NECB PHIUS</strong> Small", type: "C-Residential", location: "ON, Hamilton" },
     { id: "06", file: "06-apartment-necb-mid-rise.csv", name: "Part 3: <strong>MURB</strong>: (C-Occupancy) <strong>NECB PHIUS</strong> Mid-Rise", type: "C-Residential", location: "ON, Woodstock" },
@@ -79,8 +86,9 @@
           const link = document.createElement("a");
           link.href = "#";
           link.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+          if (project.reviewOf) link.classList.add("ps-5", "py-1", "small");
           link.innerHTML =
-            `<span>${project.name}</span>` +
+            `<span>${project.reviewOf ? "&#8627; " : ""}${project.name}</span>` +
             `<small class="text-muted">${project.location}</small>`;
           link.addEventListener("click", e => {
             e.preventDefault();
