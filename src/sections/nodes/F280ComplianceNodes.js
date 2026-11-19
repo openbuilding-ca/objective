@@ -19,8 +19,8 @@
  *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3
  *   - Peak ventilation heat loss:   Cl. 5.2.3.2, HLvairb = PVC × DTDh × 1.2 × (1 − E)
  *   - F280 total design heat loss:  Q_total = envelope + Q_inf + Q_vent
- *   - Sensible heat gain, Cl. 6.2.9: enclosure + internal + solar + occupants + air leakage (Cl. 6.2.6)
- *     + ventilation (Cl. 6.2.7, HGsvb = PVC × DTDc × 1.2 × (1 − ATRE)); the nominal cooling
+ *   - Sensible heat gain, Cl. 6.2.9: enclosure + Table 3's solar correction on opaque assemblies
+ *     (Cl. 6.2.1) + internal + solar + occupants + air leakage (Cl. 6.2.6) + ventilation (Cl. 6.2.7, HGsvb = PVC × DTDc × 1.2 × (1 − ATRE)); the nominal cooling
  *     capacity is that × the latent load factor (Cl. 6.3)
  *   - Equipment sizing compliance:  heating >= 100%, cooling 80-125%
  *   - Designer certification validation (NRCan EA, TECA, P.Eng, OAA, BCIN)
@@ -461,6 +461,61 @@
     });
 
     // ========================================================================
+    // F280 SOLAR CORRECTION ON OPAQUE ASSEMBLIES (CSA F280-12 Cl. 6.2.1, Table 3)
+    //
+    // HGcop = A / RSI × (DTDc + SC) on each above-grade opaque assembly; S15's enclosure term (d_138)
+    // carries the A / RSI × DTDc half, so this is the SC half: Σ A × U × (DTDc + SC) − A × U × DTDc over
+    // S11's roof, walls, exposed floor and doors (windows take no SC, Cl. 6.2.2; below grade takes no
+    // gain). Each assembly's DTDc + SC is held at 0 or above, as d_138 holds DTDc: a negative would credit
+    // the gain (over, never under). U carries S11's thermal-bridge factor, as d_138's g_101 does.
+    // Table 3's column is the location's summer daily range (F280Weather's summerRange): up to and
+    // including 14 °C, or over. OBJECTIVE's walls and doors have no facing: they take the mean of the
+    // eight compass points (as the "Average" facing takes for Solar0, Andy 2026-11-19). The exposed floor
+    // reads −3.3 / −6.1 whether it lies over a non-conditioned room or is fully shaded (Table 3's two rows).
+    // ========================================================================
+
+    const F280_SC_WALLS = { // °C: [daily range ≤ 14 °C, > 14 °C]
+      North: [-3.8, -6.7], NorthEast: [-0.6, -3.3], East: [1.7, -1.1], SouthEast: [0.6, -2.2],
+      South: [-2.2, -5.0], SouthWest: [0.6, -2.2], West: [1.7, -1.1], NorthWest: [-0.6, -3.3]
+    };
+    const scWallsAverage = (col) =>
+      Object.values(F280_SC_WALLS).reduce((sum, v) => sum + v[col], 0) / Object.keys(F280_SC_WALLS).length;
+    const F280_SC_OPAQUE = {
+      roof: (col) => [15.0, 12.2][col], // roofs and top storey ceilings
+      walls: scWallsAverage,
+      doors: scWallsAverage,
+      exposedFloor: (col) => [-3.3, -6.1][col] // floors over non-conditioned rooms; fully shaded
+    };
+
+    graph.registerNode({
+      id: "f280.opaqueSolarCorrection",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "climate.location.province",
+        "climate.location.city",
+        "climate.temperature.hottest",
+        "climate.cooling.setpoint",
+        "transmissionLoss.thermalBridgePenalty",
+        ...Object.keys(F280_SC_OPAQUE).flatMap((id) => [`transmissionLoss.${id}.area`, `transmissionLoss.${id}.uValue`])
+      ],
+      label: "F280 Solar Correction on Opaque Assemblies (W)",
+      compute: (inputs) => {
+        const weather = window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"]);
+        if (!weather || !(weather.summerRange >= 0)) return "Unavailable"; // no F280 row for the city
+        const col = weather.summerRange <= 14 ? 0 : 1;
+        const dtdc = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
+        const tbFactor = 1 + parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5) / 100;
+        let total = 0;
+        for (const [id, sc] of Object.entries(F280_SC_OPAQUE)) {
+          const ua = parseNum(inputs[`transmissionLoss.${id}.area`]) * parseNum(inputs[`transmissionLoss.${id}.uValue`]) * tbFactor;
+          total += ua * (Math.max(0, dtdc + sc(col)) - Math.max(0, dtdc));
+        }
+        return total;
+      }
+    });
+
+    // ========================================================================
     // F280 TOTAL SENSIBLE HEAT GAIN (CSA F280-12 Cl. 6.2.9)
     //
     // S15's d_139 terms by OBJECTIVE's own inputs (Andy 2026-11-18: match gains by OBJECTIVE's
@@ -485,13 +540,15 @@
         "climate.coolingDays",
         "f280.peakSolarHeatGain",
         "f280.peakInfiltrationHeatGain",
-        "f280.peakVentilationHeatGain"
+        "f280.peakVentilationHeatGain",
+        "f280.opaqueSolarCorrection"
       ],
       label: "F280 Total Sensible Heat Gain (W)",
       compute: (inputs) => {
         if (inputs["f280.peakInfiltrationHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.peakVentilationHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.peakSolarHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.opaqueSolarCorrection"] === "Unavailable") return "Unavailable";
         const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
         const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
           parseNum(inputs["internal.equipmentDensity"]);
@@ -501,7 +558,8 @@
         const hours = parseNum(inputs["climate.coolingDays"], 120) * 24;
         const occupants = hours > 0 ? (occupantsKwh / hours) * 1000 : 0;
         return enclosure + internal + occupants + parseNum(inputs["f280.peakSolarHeatGain"]) +
-          parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]);
+          parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]) +
+          parseNum(inputs["f280.opaqueSolarCorrection"]);
       }
     });
 

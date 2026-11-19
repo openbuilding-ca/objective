@@ -161,6 +161,8 @@ const READ = () => {
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
             atre: get("mechanical.ventilation.atre"),
             solarGain_W: get("f280.peakSolarHeatGain"),
+            opaqueSolarCorrection_W: get("f280.opaqueSolarCorrection"),
+            dtdc: get("climate.temperature.hottest") - get("climate.cooling.setpoint"),
             f280Latitude: (window.TEUI.F280Weather.lookup(state.getValueForModel(id, "climate.location.province"),
               state.getValueForModel(id, "climate.location.city")) || {}).lat,
             designLatent_W: get("cooling.designLatentW"),

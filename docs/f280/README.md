@@ -1,20 +1,25 @@
 # F280 whole-house verification: start here
 
-> **Current state (2026-11-19, late night).** F280-1 (S21, F280 Mode On): loss **10 839 W (92.0 %; Cl. 8.4.1 needs
+> **Current state (2026-11-19, after the solar correction).** F280-1 (S21, F280 Mode On): loss **10 839 W (92.0 %; Cl. 8.4.1 needs
 > ≥ 11 551 W, −712 W)** = envelope 8384 (above grade 6997 + BASESIMP 1387) + AIM-2 1737 + HRV 718; the TB penalty is 0
 > and in effect, the basement agrees with F280's (1384), so the gap is above grade or the air terms (needs Annex J's
-> parts). Sensible gain **6882 W (94.0 %; needs ≥ 7175 W, −293 W)** = enclosure + internal + occupants (OBJECTIVE's own
-> inputs) + design-hour solar 2158 (Cl. 6.2.2.1) + AIM-2 85 (Cl. 6.2.6) + ventilation 374 (Cl. 6.2.7, ATRE `l_123`);
-> nominal 8258 W = sensible + the design latent (Annex B).
+> parts). Sensible gain **7040 W (96.2 %; needs ≥ 7175 W, −135 W)** = enclosure + Table 3's solar correction on opaque
+> assemblies +157 (Cl. 6.2.1) + internal + occupants (OBJECTIVE's own inputs) + design-hour solar 2158 (Cl. 6.2.2.1) +
+> AIM-2 85 (Cl. 6.2.6) + ventilation 374 (Cl. 6.2.7, ATRE `l_123`); nominal 8415 W = sensible + the design latent (Annex B).
+> **Shipped 2026-11-19 (late):** `f280.opaqueSolarCorrection` (Cl. 6.2.1, Table 3): the SC half of HGcop = A / RSI × (DTDc + SC)
+> on S11's roof (+15.0 / +12.2), walls and doors (the mean of the eight compass points: OBJECTIVE gives them no facing),
+> exposed floor (−3.3 / −6.1); the column by F280's summer daily range (`summerRange`, new in F280Weather.js; ≤ 14 °C or
+> over); each assembly's DTDc + SC held at 0 or above. F280-1: roof +196, walls −22, floor −16, doors −2. It feeds S21's
+> gain only (the annual figures do not read it). Witness `test/opaqueSolarCorrection.test.cjs`. The turns do not move:
+> walls on the compass mean cannot respond to orientation (the turn gap is the glazing's, Cl. 6.2.2.1).
 > **Shipped 2026-11-19:** BASESIMP; AIM-2; S12 B.18.4 = NLA10 (cm²/m²); B.18.1's levels = NBC 2025; S03 G.4.9 for any
 > city (nearest F280 location for Boiestown); ATRE; the F280 gain by clause (ventilation, design-hour solar, the
 > latent split); **S21 F280 Mode** - TWO STREAMS: Off hides every F280-only input and S21 (values kept; the annual
 > figures on OBJECTIVE's methods), On shows them; S21 always computes F280's way. The house CSV carries every F280
 > input and S21's form (`test/csvRoundTripF280.spec.cjs`).
-> **Next:** Cl. 6.2.1's solar correction SC on opaque walls and roofs (Table 3, not in the enclosure term) - likely the
-> gain's −293 W; the loss's −712 W part by part (Kieran / the PDF); exhaust-only (8.3.4 c); the F280 Reference
-> (ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §4.7, pending). The Parnas tables in `docs/parnas-tables/f280/` are stale.
-> Plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0.
+> **Next:** the gain's remaining −135 W and the loss's −712 W part by part (Kieran / the PDF); exhaust-only (8.3.4 c);
+> the F280 Reference (ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §4.7, pending). The Parnas tables in
+> `docs/parnas-tables/f280/` are stale. Plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0.
 >
 > **AIM-2** (2026-11-19): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables `src/core/Aim2Data.js`;
 > January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel computed
