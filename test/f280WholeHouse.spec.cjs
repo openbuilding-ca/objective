@@ -10,9 +10,8 @@
  * band. Output: test/f280-results.json. The app is SERVED (see URL below), never file://.
  *
  *   LOSS = f280.totalDesignHeatLoss (W), Cl. 5.2.7.
- *   GAIN = the total SENSIBLE heat gain (Cl. 6.2.9) - Annex J's "gain" - which OBJECTIVE does not
- *          expose on its own: f280.nominalCoolingCapacity is sensible x max(1, latent load factor)
- *          (Cl. 6.3), so the harness divides that factor back out.
+ *   GAIN = f280.totalSensibleHeatGain (W), the total SENSIBLE heat gain (Cl. 6.2.9) - Annex J's
+ *          "gain". f280.nominalCoolingCapacity is that x max(1, latent load factor) (Cl. 6.3).
  *
  * ENFORCE_BAND is false until the verification agent (Kieran) signs off that F280-1 is modelled as
  * the standard specifies (Cl. 8.3.1-8.3.2). Until then the harness RECORDS pass/fail and asserts
@@ -154,6 +153,9 @@ const READ = () => {
             aim2_LRairc: get("aim2.coolingRate"),
             aim2Error: (state.getValueForModel(id, "airTightness.aim2") || {}).error || null,
             annualInfiltration_kWh: get("airTightness.heatLoss"),
+            sensibleGain: get("f280.totalSensibleHeatGain"),
+            infiltrationGain_W: get("f280.peakInfiltrationHeatGain"),
+            ventilationGain_W: get("f280.peakVentilationHeatGain"),
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
             peakCoolingKw: get("energy.peakCooling.totalKw"),
@@ -161,6 +163,8 @@ const READ = () => {
             ventEfficiency: get("mechanical.ventilation.efficiency"),
             designSetpoint: get("climate.heating.obcSetpoint"),
             coldest: get("climate.temperature.coldest"),
+            hottest: get("climate.temperature.hottest"),
+            coolingSetpoint: get("climate.cooling.setpoint"),
             radiantCoolingGain_kWh: get("radiantGains.subtotal.coolingGain"),
             // Diagnostics: each window row's solar, and each ground row's U and loss.
             rows: Object.fromEntries(
@@ -190,6 +194,7 @@ const READ = () => {
                 floorArea_m2: area,
                 internalDensity_W: (dens[0] + dens[1] + dens[2]) * area,
                 solarSeasonAverage_W: (1000 * get("radiantGains.subtotal.coolingGain")) / hours,
+                // not in F280's gain since 2026-11-19 (Cl. 6.2.7 replaces it: ventilationGain_W)
                 ventilationSeasonAverage_W: (1000 * (get("ventilation.heatGain") - (latent.vent || 0))) / hours,
                 occupantsSeasonAverage_W: (1000 * (get("internal.occupants.coolingGain") - (latent.people || 0))) / hours,
               };
@@ -262,12 +267,15 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       const csvText = fs.readFileSync(path.join(CASES_DIR, file), "utf8");
       const base = await run(page, csvText);
       expect(base.iso52016.present, "cooling.iso52016 missing: is the app served?").toBe(true);
-      const gain = base.nominalCooling / Math.max(1, base.latentLoadFactor);
+      const gain = base.sensibleGain;
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
-      // Units witness (always on): F280's ventilation loss is 1.21 W per (L/s·K) × the flow in L/s ×
-      // (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
-      const ventHand = 1.21 * base.ventLs * (1 - base.ventEfficiency / 100) * (base.designSetpoint - base.coldest);
+      // Units witness (always on): F280's ventilation loss is the clause's 1.2 W per (L/s·K) × the flow
+      // in L/s × (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
+      const ventHand = 1.2 * base.ventLs * (1 - base.ventEfficiency / 100) * (base.designSetpoint - base.coldest);
       expect(Math.abs(base.ventilation - ventHand)).toBeLessThanOrEqual(1);
+      // And its gain, Cl. 6.2.7: 1.2 × PVC × DTDc × (1 − ATRE), ATRE 0 (OBJECTIVE takes none).
+      const ventGainHand = 1.2 * base.ventLs * (base.hottest - base.coolingSetpoint);
+      expect(Math.abs(base.ventilationGain_W - ventGainHand)).toBeLessThanOrEqual(1e-9);
       records.push({
         case: name, clause: "8.3.9", ...where,
         loss: { result_W: Math.round(base.loss), expected_W: expected.loss_W, ...band(base.loss, expected.loss_W) },
@@ -278,7 +286,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       if (name !== FIXTURE.base_case.case) continue;
       for (const v of VARIANTS) {
         const r = await run(page, withOverrides(csvText, v.set, v.turn));
-        const g = r.nominalCooling / Math.max(1, r.latentLoadFactor);
+        const g = r.sensibleGain;
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
         const change = { loss: r.loss - base.loss, gain: g - gain };
         records.push({
