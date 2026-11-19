@@ -240,7 +240,8 @@ def build():
     put("l_119", "None", "standard", "no summer boost in F280")
     put("d_118", ASE_PCT, "standard", "Table H.3.3 b): ASE 76 % (OBJECTIVE's field is labelled SRE)")
     put("e_118", "HRV", "standard", "Table H.3.3: HRV-simplified, ATRE 0 %")
-    put("l_122", 0, "standard", "ATRE 0 % (Table H.3.3)")
+    put("l_122", 0, "standard", "an HRV: no latent recovery (Table H.3.3)")
+    put("l_123", 0, "standard", "Table H.3.3: ATRE 0 % (F280 Cl. 6.2.7)")
     put("g_59", "F280", "standard", "the latent load at F280's indoor state")
     put("i_122", "F280", "standard", "the L-4 method selector: F280")
     put("l_24", 24, "standard", "F280 cooling indoor 24 C")
@@ -261,6 +262,7 @@ NEW_COLUMNS = {
     "h_26": "Exposed Perimeter",
     "l_26": "Soil Conductivity",
     "d_26b": "Water Table Depth",
+    "l_123": "ATRE (F280)",
     "d_111": "Infiltration Method",
     "g_111": "Air Tightness (AIM-2)",
     "d_112": "ELA at 10 Pa for Custom (cm²)",

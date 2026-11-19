@@ -62,10 +62,12 @@ const CASES = {
 // The Cl. 8.3.4-8.3.8 variants OBJECTIVE can express today, as field overrides on F280-1's Target
 // row. The others are listed with the reason they are not modelled yet.
 const VARIANTS = [
-  { clause: "8.3.7 b", variant: "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)", set: { g_109: "3.0" },
-    note: "OBJECTIVE's leakage is NRL50 x area / N-factor, not AIM-2" },
-  { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0" },
-    note: "SRE 0 % (Andy 2026-11-18); AIM-2's unbalanced-flow input does not exist yet" },
+  // Each reaches AIM-2 (S12 B.19, the base case's infiltration method): until 2026-11-19 the 8.3.7 b
+  // variant set only B.18.2, which AIM-2 does not read (it runs on B.19.2's type), so it changed nothing.
+  { clause: "8.3.7 b", variant: "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)", set: { g_109: "3.0", g_111: "Custom", d_112: "844" },
+    note: "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair" },
+  { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0", d_112e: "Exhaust only" },
+    note: "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only" },
   // Cl. 8.3.8: the front door turns from S through each eighth; every window's Section 10
   // orientation dropdown (e_74-e_77) turns with the house. Doors stay "Average" (opaque, SHGC 0).
   ...["SE", "E", "NE", "N", "NW", "W", "SW"].map((d, k) => ({
@@ -156,6 +158,8 @@ const READ = () => {
             sensibleGain: get("f280.totalSensibleHeatGain"),
             infiltrationGain_W: get("f280.peakInfiltrationHeatGain"),
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
+            atre: get("mechanical.ventilation.atre"),
+            designLatent_W: get("cooling.designLatentW"),
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
             peakCoolingKw: get("energy.peakCooling.totalKw"),
@@ -273,9 +277,12 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       // in L/s × (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
       const ventHand = 1.2 * base.ventLs * (1 - base.ventEfficiency / 100) * (base.designSetpoint - base.coldest);
       expect(Math.abs(base.ventilation - ventHand)).toBeLessThanOrEqual(1);
-      // And its gain, Cl. 6.2.7: 1.2 × PVC × DTDc × (1 − ATRE), ATRE 0 (OBJECTIVE takes none).
-      const ventGainHand = 1.2 * base.ventLs * (base.hottest - base.coolingSetpoint);
+      // And its gain, Cl. 6.2.7: 1.2 × PVC × DTDc × (1 − ATRE), ATRE S13 l_123 (F280-1: 0, Table H.3.3).
+      const ventGainHand = 1.2 * base.ventLs * (base.hottest - base.coolingSetpoint) * (1 - base.atre / 100);
       expect(Math.abs(base.ventilationGain_W - ventGainHand)).toBeLessThanOrEqual(1e-9);
+      // The nominal capacity is Annex B's HGb: the sensible + the design latent, the latent factor taken
+      // over the same sensible (rounded to the W).
+      expect(Math.abs(base.nominalCooling - (base.sensibleGain + base.designLatent_W))).toBeLessThanOrEqual(0.5);
       records.push({
         case: name, clause: "8.3.9", ...where,
         loss: { result_W: Math.round(base.loss), expected_W: expected.loss_W, ...band(base.loss, expected.loss_W) },

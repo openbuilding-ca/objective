@@ -196,6 +196,7 @@ class ExcelMapper {
       K120: "k_120", // Unoccupied Setback % (Percentage Dropdown/Slider) - NOTE: Stores value like "0.9"
       E118: "e_118", // Heat Recovery Type HRV / ERV (Dropdown)
       L122: "l_122", // ERV Latent Recovery Efficiency % (Editable Number, ERV only)
+      L123: "l_123", // ATRE % (F280 Cl. 6.2.7; Editable Number)
       I122: "i_122", // Latent Load Method: F280 | OBJECTIVE | ASHRAE140 (Dropdown)
 
       // Section 15: TEUI Summary (REPORT! Sheet)
@@ -362,6 +363,7 @@ class ExcelMapper {
       K120: "ref_k_120",
       E118: "ref_e_118",
       L122: "ref_l_122",
+      L123: "ref_l_123",
       I122: "ref_i_122",
 
       // Section 15: TEUI Summary (REFERENCE! Sheet)

@@ -848,6 +848,12 @@
       message:
         "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV. A MOISTURE figure for the cooling season: not the SRE (sensible heat, rated at the 0°C / -25°C heating tests), and not a winter moisture-transfer rating.",
     },
+    l_123: {
+      cell: "L123",
+      title: "ATRE, Adjusted Total Recovery Efficiency (F280)",
+      message:
+        "The HRV/ERV's apparent adjusted total recovery efficiency at the cooling design test, %, from its CAN/CSA-C439 (HVI) data sheet. F280 Cl. 6.2.7 reduces the design ventilation heat gain by it: PVC x DTDc x 1.2 x (1 - ATRE); 0 when none is reported (F280's default; Annex H.3's HRV is 0). It sizes only (S21); the annual cooling credits recovery by the SRE, and the ERV's latent by its LRE.",
+    },
     l_119: {
       cell: "L119",
       title: "Summer Boost",

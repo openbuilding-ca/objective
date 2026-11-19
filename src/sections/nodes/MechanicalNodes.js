@@ -172,6 +172,17 @@
       unit: "%"
     },
     {
+      // F280 Cl. 6.2.7's ATRE: the HRV/ERV's adjusted total recovery efficiency from CAN/CSA-C439's
+      // cooling test, "or zero if there is no ATRE reported" (Andy 2026-11-19)
+      id: "mechanical.ventilation.atre",
+      legacyId: "l_123",
+      defaultValue: 0,
+      classification: "C",
+      section: "S13",
+      label: "ATRE, Adjusted Total Recovery Efficiency (F280 Cl. 6.2.7)",
+      unit: "%"
+    },
+    {
       id: "mechanical.ventilation.ach",
       legacyId: "l_118",
       defaultValue: 3.0,

@@ -364,23 +364,30 @@
     // ========================================================================
     // F280 PEAK VENTILATION HEAT GAIN (CSA F280-12 Cl. 6.2.7: HGsvb = PVC × DTDc × 1.2 × (1 − ATRE))
     //
-    // PVC = d_120 (L/s), as the loss (Cl. 5.2.3.2). ATRE is the HRV/ERV's adjusted total recovery
-    // efficiency from CAN/CSA-C439's cooling test, "or zero if there is no ATRE reported": OBJECTIVE
-    // takes no ATRE (d_118 is the heating-season sensible figure), so it is 0. Before 2026-11-19 the F280
-    // gain carried only S15's season-average ventilation (d_122's sensible part, 0 on F280-1), not this.
+    // PVC = d_120 (L/s), as the loss (Cl. 5.2.3.2). ATRE = S13 l_123, the HRV/ERV's adjusted total
+    // recovery efficiency from CAN/CSA-C439's cooling test, % - 0 by default, the clause's "or zero if there
+    // is no ATRE reported" (Andy 2026-11-19); not d_118, the heating-season sensible figure. Before
+    // 2026-11-19 the F280 gain carried only S15's season-average ventilation (d_122's sensible part, 0 on
+    // F280-1), not this.
     // ========================================================================
 
     graph.registerNode({
       id: "f280.peakVentilationHeatGain",
       section: "SF280",
       classification: "C",
-      dependencies: ["ventilation.volumetricRate", "climate.temperature.hottest", "climate.cooling.setpoint"],
+      dependencies: [
+        "ventilation.volumetricRate",
+        "climate.temperature.hottest",
+        "climate.cooling.setpoint",
+        "mechanical.ventilation.atre"
+      ],
       label: "F280 Peak Ventilation Heat Gain (W)",
       compute: (inputs) => {
         const pvc = parseNum(inputs["ventilation.volumetricRate"]);
         const deltaT = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
-        const ATRE = 0;
-        return pvc > 0 && deltaT > 0 ? pvc * deltaT * F280_AIR * (1 - ATRE) : 0;
+        const atre = parseNum(inputs["mechanical.ventilation.atre"]) / 100;
+        if (!(atre >= 0 && atre <= 1)) return "Unavailable"; // an ATRE outside 0-100 %: no number
+        return pvc > 0 && deltaT > 0 ? pvc * deltaT * F280_AIR * (1 - atre) : 0;
       }
     });
 
@@ -414,6 +421,7 @@
       label: "F280 Total Sensible Heat Gain (W)",
       compute: (inputs) => {
         if (inputs["f280.peakInfiltrationHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakVentilationHeatGain"] === "Unavailable") return "Unavailable";
         const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
         const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
           parseNum(inputs["internal.equipmentDensity"]);
@@ -431,7 +439,8 @@
     // F280 NOMINAL COOLING CAPACITY (CSA F280-12 Cl. 6.3)
     // Parnas: docs/parnas-tables/f280/nominal-cooling-capacity.json
     //
-    // The total sensible heat gain (Cl. 6.2.9) × the latent load factor (never below 1).
+    // The total sensible heat gain (Cl. 6.2.9) × the latent load factor (never below 1): the factor is
+    // taken over this same sensible (CoolingNodes), so this is sensible + the design latent, Annex B's HGb.
     // ========================================================================
 
     graph.registerNode({
@@ -443,6 +452,7 @@
       label: "F280 Nominal Cooling Capacity (W)",
       compute: (inputs) => {
         if (inputs["f280.totalSensibleHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["cooling.latentLoadFactor"] === "Unavailable") return "Unavailable";
         const llf = Math.max(1.0, parseNum(inputs["cooling.latentLoadFactor"], 1.15));
         return Math.round(parseNum(inputs["f280.totalSensibleHeatGain"]) * llf);
       }

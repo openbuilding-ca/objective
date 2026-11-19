@@ -25,9 +25,6 @@
   // HELPERS
   // ============================================================================
 
-  /** W/K per L/s of air - F280ComplianceNodes' AIR_HEAT_CAPACITY. */
-  const AIR_HEAT_CAPACITY = 1.21;
-
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
     if (value === "Unavailable") return defaultVal;
@@ -141,26 +138,24 @@
 
   const CoolingNodesStage1 = [
     // ========================================================================
-    // Latent Load Factor - F280-12 Annex B.6.3.1's direct method at DESIGN,
-    // by the latent method (i_122: F280 as written · OBJECTIVE credits an
-    // ERV · ASHRAE140 none, so llf = 1):
-    // (sensible + latent) / sensible, so f280.nominalCoolingCapacity's
-    // total x max(1, llf) is the Annex's HGb = Σ HGsr + HGlp + HGlal + HGlav
-    // (it "replaces" 6.3.1's 1.3). Sensible = d_139 + the infiltration gain
-    // the F280 node adds (the same 1.21 x NRL50 x Ae / N x ΔT); latent = 67 W
-    // per occupant + 3 W per L/s per g/kg on leakage and ventilation, DHD =
-    // Ho - 9.3 g/kg, Ho at the July 2.5 % dry bulb and its coincident wet
-    // bulb, at standard pressure (as F280's Table 5 OHR). Before the scripts
-    // load: F280's 1.3.
+    // The design latent gain, W - F280-12 Annex B.6.3.1's direct method at
+    // DESIGN, by the latent method (i_122: F280 as written · OBJECTIVE credits
+    // an ERV · ASHRAE140 none): 67 W per occupant + 3 W per L/s per g/kg on
+    // leakage and ventilation, DHD = Ho - 9.3 g/kg, Ho at the July 2.5 % dry
+    // bulb and its coincident wet bulb, at standard pressure (as F280's Table 5
+    // OHR). The leakage flow is the infiltration method's (S12 B.19.1): AIM-2's
+    // LRairc x Vb / 3.6 L/s, else the N-factor's NRL50 x Ae / N (2026-11-19: it
+    // was the N-factor's under AIM-2 too). null before the scripts load.
     // ========================================================================
     {
-      id: "cooling.latentLoadFactor",
-      legacyId: "cooling_latentLoadFactor",
+      id: "cooling.designLatentW",
       dependencies: [
-        "energy.peakCooling.totalKw",
         "airTightness.nrl50",
         "envelope.airFacing.area",
         "airTightness.nFactor",
+        "airTightness.infiltrationMethod",
+        "airTightness.aim2",
+        "volume.conditioned",
         "climate.temperature.hottest",
         "climate.temperature.hottestWetBulb",
         "climate.cooling.setpoint",
@@ -174,23 +169,24 @@
       ],
       classification: "C",
       section: "S13",
-      label: "Latent Load Factor",
+      label: "Design Latent Heat Gain (W)",
       compute: (inputs) => {
         const CS = window.TEUI?.ClimateStation;
         const ISO = window.TEUI?.CoolingISO52016;
-        if (!CS || !ISO) return 1.3;
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        const leakLs = nFactor > 0
-          ? (parseNum(inputs["airTightness.nrl50"]) * parseNum(inputs["envelope.airFacing.area"])) / nFactor
-          : 0;
-        const tdb = parseNum(inputs["climate.temperature.hottest"], 34);
-        const dT = tdb - parseNum(inputs["climate.cooling.setpoint"], 24);
-        const sensibleW =
-          parseNum(inputs["energy.peakCooling.totalKw"]) * 1000 +
-          (dT > 0 ? AIR_HEAT_CAPACITY * leakLs * dT : 0);
-        if (sensibleW <= 0) return 1;
+        if (!CS || !ISO) return null;
+        let leakLs;
+        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (!r || r.error) return "Unavailable";
+          leakLs = (r.design.cooling.natural * parseNum(inputs["volume.conditioned"])) / 3.6;
+        } else {
+          const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
+          leakLs = nFactor > 0
+            ? (parseNum(inputs["airTightness.nrl50"]) * parseNum(inputs["envelope.airFacing.area"])) / nFactor
+            : 0;
+        }
         const ho = CS.humidityRatioFromWetBulb(
-          tdb,
+          parseNum(inputs["climate.temperature.hottest"], 34),
           parseNum(inputs["climate.temperature.hottestWetBulb"], 23),
           ISO.F280_PRESSURE
         );
@@ -204,7 +200,7 @@
                 ISO.F280_PRESSURE
               )
             : ISO.F280_INDOOR_W;
-        const latentW = ISO.designLatent({
+        return ISO.designLatent({
           occupants: parseNum(inputs["occupancy.occupants"], 4),
           ventLs: parseNum(inputs["ventilation.volumetricRate"]),
           leakLs,
@@ -214,7 +210,31 @@
           recoveryType: inputs["mechanical.ventilation.recoveryType"],
           ervLatentPercent: parseNum(inputs["mechanical.ventilation.ervLatentEfficiency"])
         });
-        return +(1 + latentW / sensibleW).toFixed(4);
+      }
+    },
+
+    // ========================================================================
+    // Latent Load Factor (h_122) - Annex B's (sensible + latent) / sensible, on
+    // F280's own total sensible gain (f280.totalSensibleHeatGain, Cl. 6.2.9),
+    // so f280.nominalCoolingCapacity = sensible x llf = sensible + latent
+    // exactly (it "replaces" 6.3.1's 1.3). It was taken over S15's d_139 + the
+    // N-factor leakage, a different sensible from the one it multiplied
+    // (2026-11-19). Before the scripts load: F280's 1.3.
+    // ========================================================================
+    {
+      id: "cooling.latentLoadFactor",
+      legacyId: "cooling_latentLoadFactor",
+      dependencies: ["f280.totalSensibleHeatGain", "cooling.designLatentW"],
+      classification: "C",
+      section: "S13",
+      label: "Latent Load Factor",
+      compute: (inputs) => {
+        const latentW = inputs["cooling.designLatentW"];
+        if (latentW === null || latentW === undefined) return 1.3;
+        if (latentW === "Unavailable" || inputs["f280.totalSensibleHeatGain"] === "Unavailable") return "Unavailable";
+        const sensibleW = parseNum(inputs["f280.totalSensibleHeatGain"]);
+        if (sensibleW <= 0) return 1;
+        return 1 + latentW / sensibleW;
       }
     },
 
