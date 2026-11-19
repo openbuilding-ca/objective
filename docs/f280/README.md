@@ -1,5 +1,8 @@
 # F280 whole-house verification: start here
 
+> **2026-11-19 late: F280-1's LOSS PASSES Cl. 8.4.1 - 11 570 W, 98.2 %** (Table 6F's window, RSI 0.51 / SHGC 0.47, and the
+> plans' floor area and volume, read from the PDF). Gain 5646 W, 77.1 %: Table H.3.14 (the 2010s window) next.
+>
 > **2026-11-19 end (`f280-review-format`):** the **"CSA F280 Review Format"** rows in Sample Projects, one under each
 > Part 9 house (`tools/f280/review_case.py`; witness `test/f280ReviewCases.spec.cjs`, record `test/f280-review-results.json`):
 > the Target at F280 Mode On with the house's BASESIMP configuration and AIM-2 type, the Reference the case's own.
@@ -212,7 +215,9 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
 
 ## What needs the PDF (the text extract cannot settle these)
 
-- The conditioned floor area and volume: the plans G.1.1–G.1.3 are images, so `h_15` and `d_105` are estimates.
+- ✅ The floor area and volume from the plans (Figures G.1.1 b) - G.1.3 b), the PDF 2026-11-19): 90.30 + 96.02 +
+  109.25 = 295.57 m2 (was 289.14: the main floor is not the basement's footprint), Vb 747.9 m3 (was 730.3). F280-1's
+  LOSS PASSES Cl. 8.4.1: 11 570 W, 98.2 %. Open for Kieran: Vb counts the 0.23 m joist spaces or not (+47.2 m3).
 - ✅ Table G.1.8's wall areas are GROSS (area = length x height on every row; the PDF, 2026-11-19): the build's
   subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
   open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).

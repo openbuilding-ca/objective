@@ -75,6 +75,9 @@ BASEMENT_WALLS = [(86.69, 7.75, 6.75), (66.63, 7.75, 6.75)]
 # Table G.1.4 a) basement slab ft2
 SLAB = [546.8, 425.3]
 BEDROOMS = ["Master", "Bed 2", "Bed 3", "Bed 4"]
+# Figures G.1.1 b) - G.1.3 b) (pp. 83, 85, 87; Andy's screenshots 2026-11-19), each floor's own box: area m2 (the
+# basement's "INT."), ceiling height m. The main floor is NOT the basement's footprint (96.02 vs 90.30).
+FLOORS = {"basement": (90.30, 2.36), "main": (96.02, 2.77), "upper": (109.25, 2.46)}
 
 # ---- Annex H.3 (2010s vintage) and Annex I.3 (2010s effective RSI, SI) ------------------------
 # Table I.3 b) (2010s, p. 167): CHECKED against the PDF (Andy's screenshot 2026-11-19), all eight values.
@@ -147,8 +150,10 @@ def build():
     bsmt_wall = m2(sum(l * h for l, h, _ in BASEMENT_WALLS))
     slab = m2(sum(SLAB))
     upper = m2(sum(v for k, v in CEILINGS.items() if k not in ("Family", "Nook")))
-    floor_area = slab + slab + upper        # basement + main (on the basement's footprint) + upper
-    volume = slab * 2.36 + slab * 2.77 + upper * 2.46   # storey heights from G.1.5 / G.1.8
+    floor_area = sum(a for a, _ in FLOORS.values())
+    # Vb, "measured on the inside dimensions" (Cl. 5.2.3.1): each floor's area x its ceiling height; the plans list the
+    # 0.23 m joist spaces separately, not counted here (with them: + 0.23 x (96.02 + 109.25) = +47.2 m3; Kieran confirms)
+    volume = sum(a * h for a, h in FLOORS.values())
     occupants = len(BEDROOMS) + 1           # Cl. 6.2.4: bedrooms + 1 when unknown
 
     put("h_14", "F280-1 Archetype 1 / 2010s / Ottawa (Orleans)", "standard", "Cl. 8.3.1 base case")
@@ -186,12 +191,11 @@ def build():
     put("g_112e", 0, "standard", "no flue (electric heating, sealed combustion)")
     put("h_21", "Capacitance", "standard",
         "Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static)")
-    put("h_15", round(floor_area, 2), "estimate",
-        f"basement {slab:.2f} (G.1.4) + main on the same footprint {slab:.2f} + upper {upper:.2f} "
-        "(G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF")
-    put("d_105", round(volume, 1), "estimate",
-        "basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); "
-        "inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF")
+    put("h_15", round(floor_area, 2), "standard",
+        "Figures G.1.1 b) - G.1.3 b): basement 90.30 (int.) + main 96.02 + upper 109.25 m2")
+    put("d_105", round(volume, 1), "standard",
+        "Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x 2.77 + 109.25 x 2.46 m3, inside dimensions (Cl. 5.2.3.1 "
+        "Vb); the 0.23 m joist spaces not counted (+47.2 m3 with them: Kieran confirms)")
     put("d_63", occupants, "derived", f"Cl. 6.2.4: bedrooms ({len(BEDROOMS)}) + 1")
     put("g_63", 12, "objective", "OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18)")
     put("d_64", "Normal", "objective", "OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person)")
