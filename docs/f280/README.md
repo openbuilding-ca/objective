@@ -1,5 +1,12 @@
 # F280 whole-house verification: start here
 
+> **2026-11-19 close: F280-1 PASSES Cl. 8.4.1 - loss 11 681 W (99.1 %), gain 7347 W (100.4 %).** Annex J's "gain" is the NOMINAL
+> capacity, CSCn = 1.3 x the sensible sum (Cl. 6.3.1): Annex K 8.3.3's room changes (-387 W x 4 occupied rooms, +111 W x 14) put the
+> internal gains at ~1995 W = 1.3 x (5 x 70 + 4 x 295.57). The harness compares sensible x 1.3 (`ANNEX_J_LM`); the band is still
+> not enforced (`ENFORCE_BAND`, Kieran's sign-off). Variants x 1.3: turns 0.94-0.96 of Annex J, 8.3.7 b 0.95, 8.3.4 c 0.98 / 1.04,
+> 8.3.6 b 1.21. Next: the turns' last 5 % (walls on the compass mean take no turn; Table 3's SC by facing would) and 8.3.6 b's
+> shading (over by 35 W).
+>
 > **2026-11-19, Annex J checked (pp. 171-176): every 8.3.4-8.3.8 variant and 8.3.2 c-f match the fixture** (Annex J's own
 > model: SHGC 0.47, RSI 0.511 - our window). Annex J prints the changes with NO consistent sign: compare magnitudes. 8.3.6 b now
 > modelled (154 W vs 165); exhaust-only +930 W vs 897. **HYPOTHESIS: Annex J's "gain" is the NOMINAL capacity, CSCn = 1.3 x the

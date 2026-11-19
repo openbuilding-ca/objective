@@ -3,7 +3,7 @@
   "recorded": "2026-11-18",
   "sandbox_only": true,
   "verified_against_pdf": "yes for Annex J pp. 171-183 (Andy's screenshots 2026-11-19): 8.3.2 c-f, every 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a) (W and Btuh), 8.3.10 c-d",
-  "gain_is": "total SENSIBLE heat gain (Cl. 6.2.9), before the latent load factor of Cl. 6.3",
+  "gain_is": "the NOMINAL cooling capacity, Cl. 6.3.1 CSCn = LM x sum of HGsr at LM 1.3 - SETTLED 2026-11-19 by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's internal gains over its 18 rooms moves the 4 occupied rooms -387 W and the other 14 +111 W, a total of ~1995 W = 1.3 x (5 x 70 + 4 x 295.57) = 1992 W (no floor area explains it without the 1.3: 4A + 350 = 1995 needs 411 m2)",
   "band_8_4_1": {
     "low": "result >= 98 % of expected OR no more than 146.5 W below it",
     "high": "result <= 120 % of expected OR no more than 146.5 W above it",
@@ -493,7 +493,6 @@
       "atre": 0
     }
   },
-  "gain_is_hypothesis_2026_11_19": "UNSETTLED: 'gain_is' (sensible, before the latent multiplier) was the operator's assumption, not read from the standard. Measured: F280-1's sensible 5652 W x 1.3 (Cl. 6.3.1's LM, 'in most applications a multiplier of 1.3') = 7348 W vs 7321 (100.4 %); x 1.3 the 8.3.8 turns read 0.94-0.96 of Annex J, 8.3.7 b 0.95, 8.3.4 c 0.975 (8.3.6 b 1.21). Annex J's gain may be CSCn = LM x sum of HGsr. The 8.3.9 a) page's column header (p. 177+) settles it. The 8.3.9 a) header says only 'Gain, W', and Cl. 8.4.1 'heat gain value(s)': not settled by Annex J; Annex K's base-case room table (p. 184+) may show whether its room gains are HGsr (sensible) and how they total.",
   "location_and_vintage_8_3_9_page": "177-182",
   "suspected_erratum_in_f280_12": "8.3.9 a) Vancouver 1960s Archetype 2 (12 962 W / 7892 W; 44 226 / 26 929 Btuh) is digit for digit Vancouver 1980s Archetype 1, and smaller than 1960s Archetype 1 though Archetype 2 is the larger house (Ottawa 1960s: 39 022 vs 30 063 W). Transcribed as printed; Kieran to confirm before it is used as a target.",
   "foundation_8_3_10": {
@@ -516,5 +515,10 @@
         "gain_change_W": 0
       }
     ]
+  },
+  "annex_k_8_3_3": {
+    "page": "188-190",
+    "verified": true,
+    "note": "room test (Annex K); whole house 0. Family, Kitchen, Living, Dining -387 W each; the other 14 rooms +111 W each"
   }
 }

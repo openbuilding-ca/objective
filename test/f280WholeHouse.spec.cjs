@@ -61,6 +61,9 @@ const CASES = {
 
 // The Cl. 8.3.4-8.3.8 variants OBJECTIVE can express today, as field overrides on F280-1's Target
 // row. The others are listed with the reason they are not modelled yet.
+// Cl. 6.3.1's latent load multiplier as Annex J's reference applies it (see the base comparison below)
+const ANNEX_J_LM = 1.3;
+
 const VARIANTS = [
   // Each reaches AIM-2 (S12 B.19, the base case's infiltration method): until 2026-11-19 the 8.3.7 b
   // variant set only B.18.2, which AIM-2 does not read (it runs on B.19.2's type), so it changed nothing.
@@ -285,7 +288,12 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       const csvText = fs.readFileSync(path.join(CASES_DIR, file), "utf8");
       const base = await run(page, csvText);
       expect(base.iso52016.present, "cooling.iso52016 missing: is the app served?").toBe(true);
-      const gain = base.sensibleGain;
+      // What Annex J (and K) call "gain" is the NOMINAL capacity, Cl. 6.3.1 CSCn = LM x the sum of HGsr, at its LM 1.3 ("In
+      // most applications a multiplier of 1.3 is appropriate"). Shown by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's
+      // internal gains evenly moves the four occupied rooms -387 W and the other 14 +111 W, so the total is ~1995 W =
+      // 1.3 x (5 x 70 + 4 x 295.57) = 1992 W. Our sensible gain (S21) is the HGsr sum; compare it x 1.3.
+      const sensible = base.sensibleGain;
+      const gain = sensible * ANNEX_J_LM;
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
       // Units witness (always on): F280's ventilation loss is the clause's 1.2 W per (L/s·K) × the flow
       // in L/s × (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
@@ -313,7 +321,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       records.push({
         case: name, clause: "8.3.9", ...where,
         loss: { result_W: Math.round(base.loss), expected_W: expected.loss_W, ...band(base.loss, expected.loss_W) },
-        gain: { result_W: Math.round(gain), expected_W: expected.gain_W, ...band(gain, expected.gain_W) },
+        gain: { result_W: Math.round(gain), sensible_W: Math.round(sensible), lm: ANNEX_J_LM, expected_W: expected.gain_W, ...band(gain, expected.gain_W) },
         parts_W: base,
       });
 
@@ -331,7 +339,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
         const r = await run(page, withOverrides(csvText, v.set, v.turn));
         const g = r.sensibleGain;
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
-        const change = { loss: r.loss - base.loss, gain: g - gain };
+        const change = { loss: r.loss - base.loss, gain: (g - sensible) * ANNEX_J_LM };
         records.push({
           case: name, clause: v.clause, variant: v.variant, note: v.note || "",
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },
@@ -355,7 +363,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
     for (const r of records.filter((x) => x.clause === "8.3.9")) {
       console.log(
         `${r.case}: loss ${r.loss.result_W} W vs ${r.loss.expected_W} (${(100 * r.loss.ratio).toFixed(1)} %, ${r.loss.pass ? "PASS" : "FAIL"}) · ` +
-          `gain ${r.gain.result_W} W vs ${r.gain.expected_W} (${(100 * r.gain.ratio).toFixed(1)} %, ${r.gain.pass ? "PASS" : "FAIL"})`
+          `gain ${r.gain.result_W} W (sensible ${r.gain.sensible_W} x ${r.gain.lm}) vs ${r.gain.expected_W} (${(100 * r.gain.ratio).toFixed(1)} %, ${r.gain.pass ? "PASS" : "FAIL"})`
       );
       if (ENFORCE_BAND) {
         expect(r.loss.pass, `${r.case} loss outside Cl. 8.4.1`).toBe(true);

@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-19T19:45:27.055Z",
+  "timestamp": "2026-11-19T20:00:18.925Z",
   "enforce_band": false,
-  "fixture_verified_against_pdf": "partly: 8.3.2 c-f and every 8.3.4-8.3.8 variant (pp. 171-176, Andy's screenshots 2026-11-19); the 8.3.9 location tables (pp. 177+) not yet",
+  "fixture_verified_against_pdf": "yes for Annex J pp. 171-183 (Andy's screenshots 2026-11-19): 8.3.2 c-f, every 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a) (W and Btuh), 8.3.10 c-d",
   "not_modelled": [
     {
       "clause": "8.3.4 b",
@@ -28,12 +28,14 @@
         "ratio": 0.9910070416560618
       },
       "gain": {
-        "result_W": 5652,
+        "result_W": 7347,
+        "sensible_W": 5652,
+        "lm": 1.3,
         "expected_W": 7321,
-        "lowOk": false,
+        "lowOk": true,
         "highOk": true,
-        "pass": false,
-        "ratio": 0.7719853471490208
+        "pass": true,
+        "ratio": 1.003580951293727
       },
       "parts_W": {
         "loss": 11681,
@@ -164,7 +166,7 @@
       "note": "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair",
       "change_W": {
         "loss": 1808,
-        "gain": 86
+        "gain": 112
       },
       "expected_change_W": {
         "loss": 1925,
@@ -172,7 +174,7 @@
       },
       "magnitude_ratio": {
         "loss": 0.939,
-        "gain": 0.728
+        "gain": 0.946
       },
       "parts_W": {
         "loss": 13489,
@@ -200,7 +202,7 @@
       "note": "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only",
       "change_W": {
         "loss": 930,
-        "gain": -81
+        "gain": -105
       },
       "expected_change_W": {
         "loss": -897,
@@ -208,7 +210,7 @@
       },
       "magnitude_ratio": {
         "loss": 1.037,
-        "gain": 0.751
+        "gain": 0.976
       },
       "parts_W": {
         "loss": 12611,
@@ -236,13 +238,13 @@
       "note": "the overhangs' summer shading (h_74-h_77) at 0",
       "change_W": {
         "loss": 0,
-        "gain": 154
+        "gain": 200
       },
       "expected_change_W": {
         "gain": 165
       },
       "magnitude_ratio": {
-        "gain": 0.934
+        "gain": 1.214
       },
       "parts_W": {
         "loss": 11681,
@@ -270,13 +272,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1442
+        "gain": 1874
       },
       "expected_change_W": {
         "gain": 1995
       },
       "magnitude_ratio": {
-        "gain": 0.723
+        "gain": 0.939
       },
       "parts_W": {
         "loss": 11681,
@@ -304,13 +306,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1800
+        "gain": 2340
       },
       "expected_change_W": {
         "gain": 2467
       },
       "magnitude_ratio": {
-        "gain": 0.73
+        "gain": 0.949
       },
       "parts_W": {
         "loss": 11681,
@@ -338,13 +340,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1484
+        "gain": 1929
       },
       "expected_change_W": {
         "gain": 2014
       },
       "magnitude_ratio": {
-        "gain": 0.737
+        "gain": 0.958
       },
       "parts_W": {
         "loss": 11681,
@@ -372,13 +374,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 38
+        "gain": 50
       },
       "expected_change_W": {
         "gain": 3
       },
       "magnitude_ratio": {
-        "gain": 12.703
+        "gain": 16.514
       },
       "parts_W": {
         "loss": 11681,
@@ -406,13 +408,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1523
+        "gain": 1980
       },
       "expected_change_W": {
         "gain": 2073
       },
       "magnitude_ratio": {
-        "gain": 0.735
+        "gain": 0.955
       },
       "parts_W": {
         "loss": 11681,
@@ -440,13 +442,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1836
+        "gain": 2387
       },
       "expected_change_W": {
         "gain": 2529
       },
       "magnitude_ratio": {
-        "gain": 0.726
+        "gain": 0.944
       },
       "parts_W": {
         "loss": 11681,
@@ -474,13 +476,13 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 1481
+        "gain": 1925
       },
       "expected_change_W": {
         "gain": 2054
       },
       "magnitude_ratio": {
-        "gain": 0.721
+        "gain": 0.937
       },
       "parts_W": {
         "loss": 11681,
