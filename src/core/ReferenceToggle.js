@@ -56,6 +56,14 @@ TEUI.ReferenceToggle = (function () {
     h_20: "G",
     h_21: "G",
     i_21: "G",
+    // G.4.3-G.4.8 (2026-11-19): the method, site and geometry are the building's; where the
+    // insulation sits (the BASESIMP configuration) is construction
+    h_25: "G",
+    l_25: "C",
+    d_26: "G",
+    h_26: "G",
+    l_26: "G",
+    d_26b: "G",
     // Row 21-30
     m_19: "G",
     l_20: "G",

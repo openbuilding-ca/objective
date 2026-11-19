@@ -144,6 +144,10 @@ const READ = () => {
             envelope: get("f280.peakEnvelopeHeatLoss"),
             infiltration: get("f280.peakInfiltrationHeatLoss"),
             ventilation: get("f280.peakVentilationHeatLoss"),
+            // S03 G.4.3: the ground method, and BASESIMP's foundation load (F280 Cl. 5.2.2.1) either way
+            groundMethod: state.getValueForModel(id, "ground.method"),
+            basesimp_W: get("ground.basesimp.peakHeatLoss"),
+            basesimpError: (state.getValueForModel(id, "ground.basesimp") || {}).error || null,
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
             peakCoolingKw: get("energy.peakCooling.totalKw"),

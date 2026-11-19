@@ -173,6 +173,8 @@
       dependencies: ["energy.peakHeating.enclosureKw"],
       label: "F280 Peak Envelope Heat Loss (W)",
       compute: (inputs) => {
+        // Unavailable stays Unavailable (BASESIMP missing an input, S03 G.4.3): never a 0 W envelope
+        if (inputs["energy.peakHeating.enclosureKw"] === "Unavailable") return "Unavailable";
         const kw = parseNum(inputs["energy.peakHeating.enclosureKw"]);
         return Math.round(kw * 1000);
       }
@@ -277,6 +279,7 @@
       ],
       label: "F280 Total Design Heat Loss (W)",
       compute: (inputs) => {
+        if (inputs["f280.peakEnvelopeHeatLoss"] === "Unavailable") return "Unavailable";
         const envelope = parseNum(inputs["f280.peakEnvelopeHeatLoss"]);
         const infiltration = parseNum(inputs["f280.peakInfiltrationHeatLoss"]);
         const ventilation = parseNum(inputs["f280.peakVentilationHeatLoss"]);

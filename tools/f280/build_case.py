@@ -152,6 +152,17 @@ def build():
     put("d_19", "ON", "standard", "Cl. 8.3.1 Ottawa (Orleans)")
     put("h_19", "Ottawa (Orléans)", "standard", "Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1)")
     put("d_39", "Pt.9 Res. Stick Frame", "standard", "Annex H.3: 2x6 wood frame")
+    # Cl. 5.2.2.1: foundation elements in contact with soil by BasementHLR.xls (BASESIMP), S03 G.4.3-G.4.8
+    put("h_25", "BASESIMP", "standard", "Cl. 5.2.2.1: BasementHLR.xls for every foundation element in contact with soil")
+    put("l_25", 1, "equivalent",
+        "BCIN_1 (FoundationCC #1): concrete walls and floor, interior insulation full height (Table H.3.8: 203 mm "
+        "concrete, 2x6 @ 16 in w/R20 batt; H.3.9 slab uninsulated); the walls' 2.760 (f_94, Table I.3) is the added RSI")
+    put("d_26", 2.06, "standard", "Table G.1.4/G.1.5 b): depth below grade 2.06 m, both base areas")
+    put("h_26", 46.72, "derived",
+        "Table G.1.4 b): exposed perimeters 26.42 + 20.30 m; with d_95 a 18.47 x 4.89 m rectangle, height d_94 / 46.72 "
+        "= 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593)")
+    put("l_26", 0.85, "standard", "H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b))")
+    put("d_26b", 8, "standard", "H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value")
     put("h_21", "Capacitance", "standard",
         "Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static)")
     put("h_15", round(floor_area, 2), "estimate",
@@ -227,9 +238,26 @@ def build():
     return rows
 
 
+NEW_COLUMNS = {
+    "h_25": "Ground Heatloss Method",
+    "l_25": "Foundation Configuration (BASESIMP)",
+    "d_26": "Depth Below Grade",
+    "h_26": "Exposed Perimeter",
+    "l_26": "Soil Conductivity",
+    "d_26b": "Water Table Depth",
+}
+
+
 def main():
     with open(TEMPLATE, newline="", encoding="utf-8") as fh:
         header, target, reference = list(csv.reader(fh))
+    # Fields newer than the template (2026-11-19, S03 G.4.3-G.4.8): appended as columns, labelled as the
+    # app's CSV export labels them.
+    for field, label in NEW_COLUMNS.items():
+        if not any(h.split(":")[0].strip() == field for h in header):
+            header.append(f"{field}: {label}")
+            target.append("")
+            reference.append("")
     index = {h.split(":")[0].strip(): i for i, h in enumerate(header)}
     rows = build()
     for field, value, _status, _source, both in rows:

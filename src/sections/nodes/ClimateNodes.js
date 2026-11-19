@@ -139,6 +139,63 @@
       label: "Capacitance Percentage",
       unit: "%"
     },
+    // G.4.3-G.4.8: how a foundation in contact with soil loses heat (Andy 2026-11-19). The OBJECTIVE
+    // method is U x A to a 10 C ground; BASESIMP is CSA F280-12 Cl. 5.2.2.1's BasementHLR.xls
+    // (src/core/Basesimp.js). Its inputs are Cl. 5.2.2.1's a)-d); the added insulation e)-f) is S11's
+    // below-grade RSI, the weather i)-k) F280's own table (F280Weather.js).
+    {
+      id: "ground.method",
+      legacyId: "h_25",
+      defaultValue: "OBJECTIVE",
+      classification: "C",
+      section: "S03",
+      label: "Ground Heatloss Method",
+      validate: (v) => ["OBJECTIVE", "BASESIMP"].includes(v)
+    },
+    {
+      id: "ground.basesimp.configuration",
+      legacyId: "l_25",
+      defaultValue: 1, // BCIN_1: concrete, interior insulation over full height
+      classification: "C",
+      section: "S03",
+      label: "Foundation Configuration (BASESIMP)"
+    },
+    {
+      id: "ground.basesimp.depth",
+      legacyId: "d_26",
+      defaultValue: 2.06, // F280 Archetype 1, Table G.1.5
+      classification: "C",
+      section: "S03",
+      label: "Depth Below Grade",
+      unit: "m"
+    },
+    {
+      id: "ground.basesimp.exposedPerimeter",
+      legacyId: "h_26",
+      defaultValue: 0, // 0 = not given: BASESIMP reports it missing (ground.basesimp)
+      classification: "C",
+      section: "S03",
+      label: "Exposed Perimeter",
+      unit: "m"
+    },
+    {
+      id: "ground.basesimp.soilConductivity",
+      legacyId: "l_26",
+      defaultValue: 0.85, // BasementHLR's suggested value; F280 H.1-H.4 "Dry sand, loam, clay"
+      classification: "C",
+      section: "S03",
+      label: "Soil Conductivity",
+      unit: "W/mK"
+    },
+    {
+      id: "ground.basesimp.waterTable",
+      legacyId: "d_26b",
+      defaultValue: 8, // BasementHLR's suggested value; F280 H.1-H.4 "Normal (7-10 m)"
+      classification: "C",
+      section: "S03",
+      label: "Water Table Depth",
+      unit: "m"
+    },
     {
       id: "climate.coolingDays",
       legacyId: "m_19",

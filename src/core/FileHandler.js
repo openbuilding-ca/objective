@@ -1117,6 +1117,13 @@
           "h_21",
           "i_21",
           "m_19",
+          // G.4.3-G.4.8: the ground heat-loss method and BASESIMP's inputs (2026-11-19)
+          "h_25",
+          "l_25",
+          "d_26",
+          "h_26",
+          "l_26",
+          "d_26b",
           // l_20 / l_21 are read from the climate station now, not exported
           "l_24",
 

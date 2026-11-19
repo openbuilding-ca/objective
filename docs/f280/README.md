@@ -1,12 +1,22 @@
 # F280 whole-house verification: start here
 
-> **Current state (2026-11-18 night; the sections below are the day's history, in order).** F280-1: loss
-> **14 412 W (122.3 %)** = envelope 12 494 (S15 T.6.4 `d_137`) + infiltration 1194 + ventilation 724 (in L/s now);
-> sensible gain **4705 W (64.3 %)**. Fixed today: RSI 0 (film floor), the 10 °C ground in S15's peaks, design vs
-> energy set-points, the F280 ventilation units. F280-1 has no TB penalty (Andy). The base case's ventilation is the HRV
-> at ASE 76 %; exhaust-only is only the 8.3.4 c) variant. The biggest remaining loss term is the basement slab (~5 kW,
-> U·A to 10 °C, no soil); F280 Cl. 5.2.2.1 requires BASESIMP (BasementHLR.xls). The gain lacks a design-hour solar term.
-> The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 (HANDOFF 2026-11-18 night) and §4.6.
+> **Current state (2026-11-19).** F280-1 on **BASESIMP** (S03 G.4.3, the basement by F280 Cl. 5.2.2.1's own
+> BasementHLR.xls; see "BASESIMP" below): loss **10 302 W (87.4 %, under the 98–120 % band)** = envelope 8384
+> (above grade 6997 + basement 1387) + infiltration 1194 + ventilation 724; sensible gain **4705 W (64.3 %)**. On the
+> OBJECTIVE ground method (U·A to 10 °C) the same house reads 14 412 W (122.3 %): the slab's ~5 kW was hiding a
+> ~1.5 kW shortfall elsewhere - infiltration (AIM-2, 8.3.4 / 8.3.7) and ventilation are next. The gain still lacks a
+> design-hour solar term (Cl. 6.2.2.1: about 2150 W for F280-1's windows against OBJECTIVE's season-average 289 W).
+> The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 and §4.6.
+>
+> **BASESIMP** (2026-11-19): `src/core/Basesimp.js` is BasementHLR.xls cell for cell (coefficients
+> `src/core/BasesimpData.js` from FoundationCC.xls; weather `src/core/F280Weather.js` from F280_Weather.xls, 675 of
+> S03's 679 cities). Witness `test/basesimp.test.cjs`: 6 workbooks EXCEL computed (NRCan's BWEB_2/3/4, the
+> interpolation path, F280-1's two basement rooms 791 + 593 W), 220 checks at 1e-9. In the app: S03 G.4.3 Ground
+> Heatloss Method (OBJECTIVE | BASESIMP (CSA F280)), G.4.4-G.4.8 its inputs (greyed unless BASESIMP), G.4.9 the deep
+> ground temperature, G.4.10 BASESIMP's load (shown under either method). It sets S15 T.6.4 (`d_137`) and so F280's
+> envelope; S11's ANNUAL figures still use U·A to 10 °C (open: which months make the heating season). F280-1 as one
+> foundation: an 18.47 x 4.89 m rectangle from the slab area and the exposed perimeter 46.72 m, 1387 W, against F280's
+> room-by-room 1384 W.
 
 Sandbox only (Andy, 2026-11-18): the F280 cases and Annex J's values stay in `andy-rnd`. The plan and the
 rulings are in the ABCD.EARTH repo, `ABCD-OBJECTIVE-PRO.md` §4.3.

@@ -162,6 +162,50 @@
       message:
         "Static: Conventional Thermal Transfer_x000a_Capacitance: Simulates Thermal Mass Transfer & Storage Characteristics (uses G.4.2) - 50% assumes equilibrium reached_x000a__x000a_Capacitance only if sub-grade surfaces form part of conditioned volume",
     },
+    h_25: {
+      cell: "H25",
+      title: "Ground Heatloss Method",
+      message:
+        "How foundation elements in contact with soil (S11 Walls Below Grade and Slab) lose heat at the design condition._x000a__x000a_OBJECTIVE: U x A to the ground at 10 C._x000a_BASESIMP (CSA F280): the basement heat-loss spreadsheet F280-12 Cl. 5.2.2.1 requires (BasementHLR.xls, NRCan), from G.4.4-G.4.8, S11's areas and below-grade RSI as ADDED insulation, and F280's own weather for this city. Changes the peak heating load (S15 T.6.4 and F280).",
+    },
+    l_25: {
+      cell: "L25",
+      title: "Foundation Configuration (BASESIMP)",
+      message:
+        "Where the insulation sits, as F280's FoundationCC.xls numbers it (145 configurations, described in BSMCFG.TXT). BCIN_1: concrete walls and floor, interior insulation over full height. S11's below-grade RSI values are read as the ADDED insulation.",
+    },
+    d_26: {
+      cell: "D26",
+      title: "Depth Below Grade",
+      message: "Depth of the basement floor below grade, m (F280 Cl. 5.2.2.1 a)). BASESIMP covers basements 0.65-2.4 m deep.",
+    },
+    h_26: {
+      cell: "H26",
+      title: "Exposed Perimeter",
+      message:
+        "The foundation's exposed perimeter, m (F280 Cl. 5.2.2.1 a), p)). With S11's slab area it sets the length and width: at least a square's perimeter = the outline of a rectangle, all exposed; less = a square with only this much exposed (an attached house). The wall height is S11's below-grade wall area / this perimeter.",
+    },
+    l_26: {
+      cell: "L26",
+      title: "Soil Conductivity",
+      message: "W/mK (F280 Cl. 5.2.2.1 b), \"as suggested in the spreadsheet\"): 0.85 for F280's archetype site, \"Dry sand, loam, clay\".",
+    },
+    d_26b: {
+      cell: "D26b",
+      title: "Water Table Depth",
+      message: "Depth of the water table below grade, m (F280 Cl. 5.2.2.1 c)): 8 m for F280's \"Normal (7-10 m)\".",
+    },
+    h_26b: {
+      cell: "H26b",
+      title: "Deep Ground Temperature (F280)",
+      message: "From F280's weather table for this city (F280 Cl. 5.2.2.1 j)). Unavailable when F280 does not list the city.",
+    },
+    l_26b: {
+      cell: "L26b",
+      title: "BASESIMP Peak Heat Loss",
+      message:
+        "The foundation's January design heat loss by BASESIMP, W - shown whichever method G.4.3 selects, so the two can be compared; it enters S15 and F280 only under BASESIMP.",
+    },
     i_21: {
       cell: "I21",
       title: "Capacitance Factor",

@@ -493,6 +493,10 @@
     //   = (G101×D101 × (H23−D23) + D102×G102 × (H23−10)) / 1000
     // Ground-facing surfaces see the ground at 10 °C, as the annual method does (climate.groundFacing.hdd);
     // they used to take the outdoor design temperature, as if a slab sat in January air (Andy 2026-11-18).
+    // S03 G.4.3 = BASESIMP (Andy 2026-11-19): the ground-facing term is instead the foundation's January
+    // design load by CSA F280-12 Cl. 5.2.2.1 (ground.basesimp, BasementHLR.xls's Loads!B49), which
+    // covers the whole below-grade wall (its above-grade strip included) and the slab - S11 rows 94-95,
+    // the same surfaces as D102. When BASESIMP cannot run (a missing input), so does this: Unavailable.
     {
       id: "energy.peakHeating.enclosureKw",
       legacyId: "d_137",
@@ -502,7 +506,9 @@
         "envelope.groundFacing.uValue",
         "envelope.groundFacing.area",
         "climate.heating.obcSetpoint", // the DESIGN set-point (sizing), not the energy one
-        "climate.temperature.coldest"
+        "climate.temperature.coldest",
+        "ground.method",
+        "ground.basesimp"
       ],
       classification: "C",
       section: "S15",
@@ -516,8 +522,14 @@
         const coldest = parseNum(inputs["climate.temperature.coldest"], -22);
         const groundTemp = 10; // OBJECTIVE's ground (ClimateNodes, TransmissionLossNodes, VolumeMetricsNodes)
         const airDeltaT = Math.max(0, setpoint - coldest);
+        const air = g101 * d101 * airDeltaT;
+        if (inputs["ground.method"] === "BASESIMP") {
+          const bs = inputs["ground.basesimp"];
+          if (!bs || bs.error) return "Unavailable";
+          return (air + bs.heatingLoad) / 1000;
+        }
         const groundDeltaT = Math.max(0, setpoint - groundTemp);
-        return (g101 * d101 * airDeltaT + d102 * g102 * groundDeltaT) / 1000;
+        return (air + d102 * g102 * groundDeltaT) / 1000;
       }
     },
 

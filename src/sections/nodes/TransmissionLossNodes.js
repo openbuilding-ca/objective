@@ -799,9 +799,153 @@
       });
     });
 
+    // ========================================================================
+    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.3-G.4.10)
+    // ========================================================================
+    graph.registerNode({
+      id: "ground.basesimp",
+      section: "S03",
+      classification: "C",
+      dependencies: [
+        "ground.basesimp.configuration",
+        "ground.basesimp.depth",
+        "ground.basesimp.exposedPerimeter",
+        "ground.basesimp.soilConductivity",
+        "ground.basesimp.waterTable",
+        "transmissionLoss.slabOnGrade.area",
+        "transmissionLoss.wallsBelowGrade.area",
+        "transmissionLoss.slabOnGrade.rsi",
+        "transmissionLoss.wallsBelowGrade.rsi",
+        "climate.location.province",
+        "climate.location.city",
+        "climate.heating.obcSetpoint",
+        "climate.cooling.setpoint",
+        "climate.temperature.coldest",
+        "climate.temperature.hottest"
+      ],
+      label: "BASESIMP foundation heat loss (F280 Cl. 5.2.2.1)",
+      compute: (inputs) => basesimpFor(inputs)
+    });
+
+    graph.registerNode({
+      id: "ground.basesimp.deepGround",
+      legacyId: "h_26b",
+      section: "S03",
+      classification: "C",
+      dependencies: ["ground.basesimp"],
+      label: "Deep Ground Temperature (F280)",
+      compute: (inputs) => inputs["ground.basesimp"]?.weather?.deepGround ?? "Unavailable"
+    });
+
+    graph.registerNode({
+      id: "ground.basesimp.peakHeatLoss",
+      legacyId: "l_26b",
+      section: "S03",
+      classification: "C",
+      dependencies: ["ground.basesimp"],
+      label: "BASESIMP Peak Heat Loss (W)",
+      compute: (inputs) => {
+        const r = inputs["ground.basesimp"];
+        return r && !r.error ? r.heatingLoad : "Unavailable";
+      }
+    });
+
     console.log("[TransmissionLossNodes] Registered", inputs.length, "inputs");
   }
 
-  window.TEUI.ComputationNodes.TransmissionLoss = { register, AIR_FACING_COMPONENTS, GROUND_FACING_COMPONENTS };
+  /**
+   * BasementHLR.xls's inputs from the model (F280 Cl. 5.2.2.1 a)-q)):
+   *   a) the outside length and width come from S11's slab area A and the exposed perimeter P (G.4.6):
+   *      P at least a square's (4 x sqrt A) is the outline of a rectangle of area A, all of it exposed
+   *      (L + W = P / 2, L x W = A); a shorter P is a square of area A with only P exposed - the
+   *      workbook's own attached-house case (Input!G7). The height is S11's below-grade wall area / P;
+   *      the depth below grade is G.4.5. F280 Archetype 1 this way: 1387 W, F280's room-by-room 1384 W.
+   *   b) c) d) soil, water table and configuration: G.4.7, G.4.8, G.4.4.
+   *   e) f) the ADDED insulation: S11's below-grade wall RSI (all as interior: BasementHLR reads the
+   *      walls' insulation only as max(interior, exterior) or their sum, so the split never changes a
+   *      result) and S11's slab RSI.
+   *   i) j) k) heating degree days, deep ground temperature, monthly dry bulbs: F280's weather table
+   *      for S03's city (F280Weather.js) - none when F280 does not list the city.
+   *   l) m) n) room and design temperatures: S03's design set-point and L.3.1 / L.3.2.
+   *   o) no radiant slab; q) no openings in the above-grade foundation wall (OBJECTIVE does not
+   *      separate them).
+   * Returns Basesimp.compute()'s result plus the geometry and weather used, or { error } naming what
+   * is missing - never a substitute value.
+   */
+  function basesimpFor(inputs) {
+    const B = window.TEUI.Basesimp;
+    const W = window.TEUI.F280Weather;
+    if (!B || !W) return { error: "BASESIMP is not loaded" };
+    const area = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
+    const wallArea = parseNum(inputs["transmissionLoss.wallsBelowGrade.area"]);
+    const perimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
+    const depth = parseNum(inputs["ground.basesimp.depth"]);
+    if (!(area > 0)) return { error: "no slab area (S11 D.4.11)" };
+    if (!(wallArea > 0)) return { error: "no below-grade wall area (S11)" };
+    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6)" };
+    const height = wallArea / perimeter;
+    if (!(depth > 0) || depth > height) {
+      return { error: `depth below grade ${depth} m must be above 0 and at most the wall height ${height.toFixed(2)} m` };
+    }
+    const province = inputs["climate.location.province"];
+    const city = inputs["climate.location.city"];
+    const weather = W.lookup(province, city);
+    if (!weather) return { error: `F280's weather table does not list ${city}, ${province}` };
+
+    const side = Math.sqrt(area);
+    let length, width, exposedPerimeter;
+    if (perimeter >= 4 * side) {
+      const half = perimeter / 2;
+      const root = Math.sqrt(half * half - 4 * area);
+      length = (half + root) / 2;
+      width = (half - root) / 2;
+      exposedPerimeter = 0; // the whole outline
+    } else {
+      length = width = side;
+      exposedPerimeter = perimeter;
+    }
+    const configuration = parseNum(inputs["ground.basesimp.configuration"], 1);
+    if (!window.TEUI.BasesimpData?.configs?.[configuration]) {
+      return { error: `no BASESIMP configuration #${configuration}` };
+    }
+    const result = B.compute({
+      configuration,
+      length,
+      width,
+      height,
+      depth,
+      soilk: parseNum(inputs["ground.basesimp.soilConductivity"]),
+      wtable: parseNum(inputs["ground.basesimp.waterTable"]),
+      interior: parseNum(inputs["transmissionLoss.wallsBelowGrade.rsi"]),
+      exterior: 0,
+      slab: parseNum(inputs["transmissionLoss.slabOnGrade.rsi"]),
+      overlap: 0,
+      exposedPerimeter,
+      windowArea: 0,
+      doorArea: 0,
+      hdd: weather.hdd,
+      deepGround: weather.deepGround,
+      monthly: weather.monthly,
+      heating: {
+        month: 1,
+        room: parseNum(inputs["climate.heating.obcSetpoint"], 22),
+        design: parseNum(inputs["climate.temperature.coldest"]),
+        slab: 0
+      },
+      cooling: {
+        month: 7,
+        room: parseNum(inputs["climate.cooling.setpoint"], 24),
+        design: parseNum(inputs["climate.temperature.hottest"])
+      }
+    });
+    return { ...result, geometry: { length, width, height, depth, perimeter }, weather };
+  }
+
+  window.TEUI.ComputationNodes.TransmissionLoss = {
+    register,
+    AIR_FACING_COMPONENTS,
+    GROUND_FACING_COMPONENTS,
+    basesimpFor
+  };
   console.log("[TransmissionLossNodes] Module loaded");
 })();

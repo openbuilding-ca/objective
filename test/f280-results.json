@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T00:06:25.457Z",
+  "timestamp": "2026-11-19T03:00:11.907Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -24,12 +24,12 @@
       "vintage": "2010s",
       "location": "Ottawa (Orleans)",
       "loss": {
-        "result_W": 14412,
+        "result_W": 10302,
         "expected_W": 11787,
-        "lowOk": true,
-        "highOk": false,
+        "lowOk": false,
+        "highOk": true,
         "pass": false,
-        "ratio": 1.2227029778569611
+        "ratio": 0.8740137439552049
       },
       "gain": {
         "result_W": 4705,
@@ -40,10 +40,13 @@
         "ratio": 0.6426465207996047
       },
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
+        "groundMethod": "BASESIMP",
+        "basesimp_W": 1386.873412517603,
+        "basesimpError": null,
         "nominalCooling": 6224,
         "latentLoadFactor": 1.3229,
         "peakCoolingKw": 4.555510904876324,
@@ -152,8 +155,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 15606,
-        "envelope": 12494,
+        "loss": 11496,
+        "envelope": 8384,
         "infiltration": 2388,
         "ventilation": 724,
         "nominalCooling": 6708,
@@ -185,8 +188,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 16703,
-        "envelope": 12494,
+        "loss": 12593,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 3015,
         "nominalCooling": 6224,
@@ -217,8 +220,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6270,
@@ -249,8 +252,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6312,
@@ -281,8 +284,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6280,
@@ -313,8 +316,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6235,
@@ -345,8 +348,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6285,
@@ -377,8 +380,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6321,
@@ -409,8 +412,8 @@
       },
       "sign_settled": false,
       "parts_W": {
-        "loss": 14412,
-        "envelope": 12494,
+        "loss": 10302,
+        "envelope": 8384,
         "infiltration": 1194,
         "ventilation": 724,
         "nominalCooling": 6278,
