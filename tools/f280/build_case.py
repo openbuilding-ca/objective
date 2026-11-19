@@ -152,8 +152,7 @@ def build():
     put("d_19", "ON", "standard", "Cl. 8.3.1 Ottawa (Orleans)")
     put("h_19", "Ottawa (Orléans)", "standard", "Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1)")
     put("d_39", "Pt.9 Res. Stick Frame", "standard", "Annex H.3: 2x6 wood frame")
-    # Cl. 5.2.2.1: foundation elements in contact with soil by BasementHLR.xls (BASESIMP), S03 G.4.3-G.4.8
-    put("h_25", "BASESIMP", "standard", "Cl. 5.2.2.1: BasementHLR.xls for every foundation element in contact with soil")
+    # Cl. 5.2.2.1: foundation elements in contact with soil by BasementHLR.xls (BASESIMP, F280 Mode On), S03 G.4.4-G.4.8
     put("l_25", 1, "equivalent",
         "BCIN_1 (FoundationCC #1): concrete walls and floor, interior insulation full height (Table H.3.8: 203 mm "
         "concrete, 2x6 @ 16 in w/R20 batt; H.3.9 slab uninsulated); the walls' 2.760 (f_94, Table I.3) is the added RSI")
@@ -163,8 +162,7 @@ def build():
         "= 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593)")
     put("l_26", 0.85, "standard", "H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b))")
     put("d_26b", 8, "standard", "H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value")
-    # Cl. 5.2.3 / 6.2.6: air leakage by AIM2.xls (AIM-2), S12 B.19.1-B.19.12
-    put("d_111", "AIM2", "standard", "Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise")
+    # Cl. 5.2.3 / 6.2.6: air leakage by AIM2.xls (AIM-2, F280 Mode On), S12 B.19.2-B.19.12
     put("g_111", "Energy Tight", "equivalent",
         "H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 "
         "at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50")
@@ -257,7 +255,6 @@ def build():
 
 
 NEW_COLUMNS = {
-    "h_25": "Ground Heatloss Method",
     "l_25": "Foundation Configuration (BASESIMP)",
     "d_26": "Depth Below Grade",
     "h_26": "Exposed Perimeter",
@@ -265,7 +262,6 @@ NEW_COLUMNS = {
     "d_26b": "Water Table Depth",
     "l_123": "ATRE (F280)",
     "f280_mode": "F280 Mode",
-    "d_111": "Infiltration Method",
     "g_111": "Air Tightness (AIM-2)",
     "d_112": "ELA at 10 Pa for Custom (cm²)",
     "g_112": "Highest Ceiling Above Grade (m)",

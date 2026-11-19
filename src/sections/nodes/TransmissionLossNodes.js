@@ -271,7 +271,7 @@
         ],
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
-          // S03 G.4.3 = BASESIMP: the row's share of the foundation's heating-season loss
+          // F280 Mode On (BASESIMP): the row's share of the foundation's heating-season loss
           // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
           if (inputs["ground.methodInEffect"] === "BASESIMP") {
             const bs = inputs["ground.basesimp"];
@@ -809,7 +809,7 @@
     });
 
     // ========================================================================
-    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.3-G.4.10)
+    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.4-G.4.10)
     // ========================================================================
     graph.registerNode({
       id: "ground.basesimp",

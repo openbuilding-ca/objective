@@ -145,12 +145,12 @@ const READ = () => {
             envelope: get("f280.peakEnvelopeHeatLoss"),
             infiltration: get("f280.peakInfiltrationHeatLoss"),
             ventilation: get("f280.peakVentilationHeatLoss"),
-            // S03 G.4.3: the ground method, and BASESIMP's foundation load (F280 Cl. 5.2.2.1) either way
-            groundMethod: state.getValueForModel(id, "ground.method"),
+            // the annual ground method (F280 Mode's), and BASESIMP's foundation load (F280 Cl. 5.2.2.1) either way
+            groundMethod: state.getValueForModel(id, "ground.methodInEffect"),
             basesimp_W: get("ground.basesimp.peakHeatLoss"),
             basesimpError: (state.getValueForModel(id, "ground.basesimp") || {}).error || null,
             // S12 B.19.1: the infiltration method, and AIM-2's design rates (F280 Cl. 5.2.3 / 6.2.6) either way
-            infiltrationMethod: state.getValueForModel(id, "airTightness.infiltrationMethod"),
+            infiltrationMethod: state.getValueForModel(id, "airTightness.infiltrationMethodInEffect"),
             aim2_LRairh: get("aim2.heatingRate"),
             aim2_LRairc: get("aim2.coolingRate"),
             aim2Error: (state.getValueForModel(id, "airTightness.aim2") || {}).error || null,

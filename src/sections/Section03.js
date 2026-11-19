@@ -564,23 +564,8 @@ window.TEUI.SectionModules.sect03 = (function () {
           section: "climateCalculations",
           dependencies: ["d_25"],
         },
-        // G.4.3: how foundation elements in contact with soil lose heat (Andy 2026-11-19)
-        f: { content: "G.4.3", classes: ["label-prefix"] },
-        g: { content: "Ground Heatloss Method", classes: ["label-main"] },
-        h: {
-          fieldId: "h_25",
-          semanticPath: "ground.method",
-          type: "dropdown",
-          label: "Ground Heatloss Method",
-          dropdownId: "dd_h_25",
-          value: "OBJECTIVE",
-          section: "climateCalculations",
-          tooltip: true,
-          options: [
-            { value: "OBJECTIVE", name: "OBJECTIVE Ground Heatloss Method" },
-            { value: "BASESIMP", name: "BASESIMP (CSA F280)" },
-          ],
-        },
+        // G.4.3, the ground heat-loss method, retired 2026-11-19: S21 F280 Mode chooses it (BASESIMP On,
+        // OBJECTIVE's Off; ground.methodInEffect).
         j: { content: "G.4.4", classes: ["label-prefix"] },
         k: { content: "Foundation Config.", classes: ["label-main"] },
         l: {
@@ -601,7 +586,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Rows 26 and 26b: BASESIMP's inputs (CSA F280-12 Cl. 5.2.2.1), greyed unless G.4.3 is BASESIMP
+    // Rows 26 and 26b: BASESIMP's inputs (CSA F280-12 Cl. 5.2.2.1), shown under F280 Mode On
     26: {
       id: "G.4.5",
       rowId: "G.4.5",
@@ -1388,8 +1373,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
 
-    // G.4.3 ground heat-loss method and G.4.4 BASESIMP configuration
-    ["h_25", "l_25"].forEach(fieldId => {
+    // G.4.4 BASESIMP configuration
+    ["l_25"].forEach(fieldId => {
       const dropdown = getElement([`[data-dropdown-id="dd_${fieldId}"]`]);
       if (!dropdown) return;
       const fresh = dropdown.cloneNode(true);
@@ -1602,16 +1587,13 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * G.4.3-G.4.10 for the current model: both dropdowns show the stored choice. BASESIMP's inputs are never
-   * greyed: shown only under F280 Mode (S21), where they always drive F280's sizing whatever G.4.3 chooses
-   * for the annual figures (two streams, Andy 2026-11-19; they greyed unless G.4.3 was BASESIMP). When
+   * G.4.4-G.4.10 for the current model: the dropdown shows the stored choice. BASESIMP's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they drive F280's sizing and, On, the annual figures
+   * (Andy 2026-11-19). When
    * BASESIMP cannot run, G.4.10 says why (the node's error) on hover.
    */
   function updateGroundUI() {
-    const method = getModeValue("h_25") || "OBJECTIVE";
     const config = String(getModeValue("l_25") || "1");
-    const methodSelect = getElement(['[data-dropdown-id="dd_h_25"]']);
-    if (methodSelect && methodSelect.value !== method) methodSelect.value = method;
     const configSelect = getElement(['[data-dropdown-id="dd_l_25"]']);
     if (configSelect && configSelect.value !== config) configSelect.value = config;
 

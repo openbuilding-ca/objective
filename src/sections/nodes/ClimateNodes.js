@@ -139,19 +139,10 @@
       label: "Capacitance Percentage",
       unit: "%"
     },
-    // G.4.3-G.4.8: how a foundation in contact with soil loses heat (Andy 2026-11-19). The OBJECTIVE
+    // G.4.4-G.4.8: how a foundation in contact with soil loses heat (Andy 2026-11-19; F280 Mode picks the method). The OBJECTIVE
     // method is U x A to a 10 C ground; BASESIMP is CSA F280-12 Cl. 5.2.2.1's BasementHLR.xls
     // (src/core/Basesimp.js). Its inputs are Cl. 5.2.2.1's a)-d); the added insulation e)-f) is S11's
     // below-grade RSI, the weather i)-k) F280's own table (F280Weather.js).
-    {
-      id: "ground.method",
-      legacyId: "h_25",
-      defaultValue: "OBJECTIVE",
-      classification: "C",
-      section: "S03",
-      label: "Ground Heatloss Method",
-      validate: (v) => ["OBJECTIVE", "BASESIMP"].includes(v)
-    },
     {
       id: "ground.basesimp.configuration",
       legacyId: "l_25",

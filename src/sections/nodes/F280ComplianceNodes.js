@@ -13,7 +13,7 @@
  *
  * F280 additions (this module):
  * TWO STREAMS (Andy 2026-11-19): these nodes are the F280 stream - always F280's methods (BASESIMP,
- * AIM-2, Cl. 6.2's design-hour gains), whatever S03 G.4.3 / S12 B.19.1 say; those choose the ANNUAL
+ * AIM-2, Cl. 6.2's design-hour gains), in either mode; F280 Mode On also puts BASESIMP and AIM-2 in the ANNUAL
  * stream's methods, and only under F280 Mode (ground.methodInEffect, airTightness.infiltrationMethodInEffect).
  *   - Peak envelope heat loss:      U·A × DTDh above grade + BASESIMP below (Cl. 5.2.1, 5.2.2.1)
  *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3
@@ -136,9 +136,9 @@
         defaultValue: false
       },
 
-      // F280 Mode (S21 F.00; Andy 2026-11-19): two streams. Off - the default - hides every F280-only
-      // input and S21, and the annual stream runs on OBJECTIVE's methods whatever G.4.3 / B.19.1 hold
-      // (their values are kept). On shows them, and those two selectors choose the ANNUAL method too.
+      // F280 Mode (S21 F.00; Andy 2026-11-19). Off - the default - hides every F280-only input and S21
+      // (their values are kept), and the annual stream runs on OBJECTIVE's methods. On shows them and puts
+      // F280's methods (BASESIMP, AIM-2) in the ANNUAL stream: OBJECTIVE as an F280 model.
       // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). Per MODEL
       // (Andy 2026-11-19: "S21 should allow Reference to be ON for F280, and Target OFF. As with ALL other
       // settings in the app - Target and Reference models can be nearly 100% independent by design").
@@ -181,27 +181,30 @@
     graph.registerInputs(inputs);
 
     // ========================================================================
-    // THE ANNUAL STREAM'S METHODS (Andy 2026-11-19, two streams): S03 G.4.3 and S12 B.19.1 choose the
-    // annual figures' ground and air-leakage methods only under F280 Mode; Off, OBJECTIVE's, whatever
-    // the hidden selectors hold. Every annual consumer reads these, never the selectors.
+    // THE ANNUAL STREAM'S METHODS: S21 F280 Mode alone chooses them (Andy 2026-11-19: "When the master
+    // toggle is set in S21, all input values and F280 options should activate"; and "I'd like to actually
+    // see what F280 gives us if run as an annual model like OBJECTIVE"). On: BASESIMP and AIM-2, F280's
+    // own (Cl. 5.2.2.1, 5.2.3). Off: OBJECTIVE's. The per-method selectors S03 G.4.3 and S12 B.19.1 are
+    // retired (FileHandler maps an older file's BASESIMP / AIM-2 choice to Mode On). Every annual
+    // consumer reads these.
     // ========================================================================
 
     graph.registerNode({
       id: "ground.methodInEffect",
       section: "S03",
       classification: "C",
-      dependencies: ["f280.mode", "ground.method"],
+      dependencies: ["f280.mode"],
       label: "Ground Heat-Loss Method in Effect (annual)",
-      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["ground.method"] === "BASESIMP" ? "BASESIMP" : "OBJECTIVE")
+      compute: (inputs) => (inputs["f280.mode"] === "On" ? "BASESIMP" : "OBJECTIVE")
     });
 
     graph.registerNode({
       id: "airTightness.infiltrationMethodInEffect",
       section: "S12",
       classification: "C",
-      dependencies: ["f280.mode", "airTightness.infiltrationMethod"],
+      dependencies: ["f280.mode"],
       label: "Infiltration Method in Effect (annual)",
-      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["airTightness.infiltrationMethod"] === "AIM2" ? "AIM2" : "OBJECTIVE")
+      compute: (inputs) => (inputs["f280.mode"] === "On" ? "AIM2" : "OBJECTIVE")
     });
 
     // ========================================================================
@@ -210,7 +213,7 @@
     //
     // The F280 stream's own: above grade U·A × DTDh (S15 d_137's air-facing half) + BELOW grade by
     // BASESIMP, Cl. 5.2.2.1 ("the spreadsheet calculation called BasementHLR.xls shall be used"),
-    // whatever S03 G.4.3 says (it read d_137, which followed G.4.3 - 2026-11-19, two streams).
+    // in either F280 Mode (it read d_137, which followed the annual method, to 2026-11-19).
     // ========================================================================
 
     graph.registerNode({
@@ -238,8 +241,8 @@
 
     // ========================================================================
     // F280 PEAK AIR-LEAKAGE HEAT LOSS (CSA F280-12 Cl. 5.2.3): HLairb = LRairh × Vb / 3.6 × DTDh × 1.2,
-    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, whatever S12 B.19.1
-    // says (2026-11-19, two streams; it took OBJECTIVE's N-factor unless B.19.1 was AIM-2). AIM-2 missing
+    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, in either F280 Mode
+    // (2026-11-19; it took OBJECTIVE's N-factor unless the annual method was AIM-2). AIM-2 missing
     // an input: Unavailable.
     // ========================================================================
 
@@ -355,7 +358,7 @@
 
     // ========================================================================
     // F280 PEAK AIR-LEAKAGE HEAT GAIN (CSA F280-12 Cl. 6.2.6): HGsalb = LRairc × Vb / 3.6 × DTDc × 1.2 -
-    // AIM-2's, whatever S12 B.19.1 says (two streams, as the loss).
+    // AIM-2's, in either F280 Mode (as the loss).
     // ========================================================================
 
     graph.registerNode({

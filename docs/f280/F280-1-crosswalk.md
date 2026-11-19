@@ -14,13 +14,11 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_19: Province` | ON | standard | Cl. 8.3.1 Ottawa (Orleans) |
 | `h_19: City` | Ottawa (Orléans) | standard | Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1) |
 | `d_39: Typology Selection` | Pt.9 Res. Stick Frame | standard | Annex H.3: 2x6 wood frame |
-| `h_25: Ground Heatloss Method` | BASESIMP | standard | Cl. 5.2.2.1: BasementHLR.xls for every foundation element in contact with soil |
 | `l_25: Foundation Configuration (BASESIMP)` | 1 | equivalent | BCIN_1 (FoundationCC #1): concrete walls and floor, interior insulation full height (Table H.3.8: 203 mm concrete, 2x6 @ 16 in w/R20 batt; H.3.9 slab uninsulated); the walls' 2.760 (f_94, Table I.3) is the added RSI |
 | `d_26: Depth Below Grade` | 2.06 | standard | Table G.1.4/G.1.5 b): depth below grade 2.06 m, both base areas |
 | `h_26: Exposed Perimeter` | 46.72 | derived | Table G.1.4 b): exposed perimeters 26.42 + 20.30 m; with d_95 a 18.47 x 4.89 m rectangle, height d_94 / 46.72 = 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593) |
 | `l_26: Soil Conductivity` | 0.85 | standard | H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b)) |
 | `d_26b: Water Table Depth` | 8 | standard | H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value |
-| `d_111: Infiltration Method` | AIM2 | standard | Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise |
 | `g_111: Air Tightness (AIM-2)` | Energy Tight | equivalent | H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50 |
 | `d_112: ELA at 10 Pa for Custom (cm²)` | 0 | standard | not used: the prescribed type carries its ELA |
 | `g_112: Highest Ceiling Above Grade (m)` | 5.53 | derived | highest ceiling above grade: basement wall above grade 2.36 - 2.06 = 0.30 (G.1.5) + main 2.77 + upper 2.46 (G.1.8) m |

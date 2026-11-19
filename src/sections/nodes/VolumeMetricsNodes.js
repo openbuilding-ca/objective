@@ -81,11 +81,22 @@
     if (!(volume > 0)) return { error: "no conditioned volume (S12 d_105)" };
     const storeys = AIM2_STOREYS[parseNum(inputs["volume.numStoreys"])];
     if (!storeys) return { error: `AIM-2 covers houses of 1 to 3 storeys (S12 d_103 = ${inputs["volume.numStoreys"]})` };
-    const height = parseNum(inputs["aim2.ceilingHeight"]);
-    if (!(height > 0)) return { error: "no highest-ceiling height above grade (S12 B.19.4)" };
+    // B.19.4 blank: the storeys x S12's Typ. F2F Ht. (g_106; Andy 2026-11-19: "It's Typ. F2F Ht. in S12").
+    // F280-1's Annex-derived 5.53 m over 2 storeys is 2.77 m a storey.
+    const typedHeight = parseNum(inputs["aim2.ceilingHeight"]);
+    const height = typedHeight > 0
+      ? typedHeight
+      : parseNum(inputs["volume.numStoreys"]) * parseNum(inputs["volume.floorToFloorHeight"]);
+    if (!(height > 0)) return { error: "no highest-ceiling height above grade (S12 B.19.4, or d_103 x g_106)" };
     const tightness = inputs["aim2.tightness"] || "Custom";
-    const ela = parseNum(inputs["aim2.ela"]);
-    if (tightness === "Custom" && !(ela > 0)) return { error: "no ELA at 10 Pa for Custom (S12 B.19.3)" };
+    const ach50 = parseNum(inputs["airTightness.ach50Target"]);
+    // B.19.3 blank for Custom: the ELA from B.18.2's ACH50 at AIM2's nearest prescribed type's flow
+    // exponent - the ELA S12 B.18.4 (NLA10) already takes without a measured one.
+    const typedEla = parseNum(inputs["aim2.ela"]);
+    const ela = tightness !== "Custom" || typedEla > 0
+      ? typedEla
+      : ach50 > 0 ? A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) : 0;
+    if (tightness === "Custom" && !(ela > 0)) return { error: "no ELA at 10 Pa for Custom (S12 B.19.3), and no ACH50 (B.18.2) to derive one" };
     const city = inputs["climate.location.city"];
     const weather = W.lookup(inputs["climate.location.province"], city);
     if (!weather) return { error: `F280's weather table does not list ${city}` };
@@ -108,7 +119,7 @@
       storeys,
       foundation: inputs["aim2.foundation"] || "Full",
       tightness,
-      ach50: parseNum(inputs["airTightness.ach50Target"]),
+      ach50,
       ela,
       elaPa: 10,
       volume,
@@ -131,7 +142,7 @@
       const m = station.months;
       seasonal = A.seasonalRate(p, parseNum(inputs["climate.heating.setpoint"], 21), m.t_mean, m.wind_mean, m.hdd18);
     }
-    return { design, seasonal, inputs: p, weather };
+    return { design, seasonal, inputs: p, weather, derived: { ceilingHeight: !(typedHeight > 0), ela: tightness === "Custom" && !(typedEla > 0) } };
   }
 
   function register(graph) {
@@ -148,10 +159,9 @@
       // Conditioned volume (user input or from S02)
       { id: "volume.conditioned", legacyId: "d_105", section: "S12", classification: "C", label: "Conditioned Volume (m³)", defaultValue: 0 },
 
-      // B.19.1-B.19.14: the infiltration method and AIM-2's inputs (CSA F280-12 Cl. 5.2.3, AIM2.xls;
+      // B.19.2-B.19.14: AIM-2's inputs (F280 Mode picks the method) (CSA F280-12 Cl. 5.2.3, AIM2.xls;
       // src/core/Aim2.js). Defaults: OBJECTIVE's N-factor; AIM-2's site as F280's archetypes (H.1-H.4:
       // "Low crops x/H > 20", "Light local shielding" walls and flue), the station open flat (AIM2.xls's).
-      { id: "airTightness.infiltrationMethod", legacyId: "d_111", section: "S12", classification: "C", label: "Infiltration Method", defaultValue: "OBJECTIVE" },
       { id: "aim2.tightness", legacyId: "g_111", section: "S12", classification: "C", label: "Air Tightness (AIM-2)", defaultValue: "Custom" },
       { id: "aim2.ela", legacyId: "d_112", section: "S12", classification: "C", label: "ELA at 10 Pa for Custom (cm²)", defaultValue: 0 },
       { id: "aim2.ceilingHeight", legacyId: "g_112", section: "S12", classification: "C", label: "Highest Ceiling Above Grade (m)", defaultValue: 0 },
@@ -305,7 +315,7 @@
       ],
       label: "Heat Loss Rate (Ag) (kWh/m²/yr)",
       compute: (inputs) => {
-        // S03 G.4.3 = BASESIMP: the foundation's heating-season loss per m2 of ground-facing area, so
+        // F280 Mode On (BASESIMP): the foundation's heating-season loss per m2 of ground-facing area, so
         // i_102 = h_102 x d_102 is BASESIMP's (ground.basesimp.annual, S11 rows 94-95 the same split)
         if (inputs["ground.methodInEffect"] === "BASESIMP") {
           const bs = inputs["ground.basesimp"];
@@ -555,7 +565,7 @@
     });
 
     // ========================================================================
-    // AIM-2 (S12 B.19.1-B.19.14): CSA F280-12 Cl. 5.2.3's air-leakage rate (AIM2.xls, src/core/Aim2.js)
+    // AIM-2 (S12 B.19.2-B.19.14): CSA F280-12 Cl. 5.2.3's air-leakage rate (AIM2.xls, src/core/Aim2.js)
     // at the design condition, and the heating season's mean rate for the annual figure
     // ========================================================================
     graph.registerNode({
@@ -566,7 +576,8 @@
         "aim2.tightness", "aim2.ela", "aim2.ceilingHeight", "aim2.siteTerrain", "aim2.stationTerrain",
         "aim2.wallShielding", "aim2.flueShielding", "aim2.buildingType", "aim2.foundation",
         "aim2.ventilationBalance", "aim2.flueDiameter",
-        "airTightness.ach50Target", "volume.conditioned", "volume.numStoreys", "ventilation.volumetricRate",
+        "airTightness.ach50Target", "volume.conditioned", "volume.numStoreys", "volume.floorToFloorHeight",
+        "ventilation.volumetricRate",
         "climate.location.province", "climate.location.city", "climate.station",
         "climate.heating.obcSetpoint", "climate.heating.setpoint", "climate.cooling.setpoint",
         "climate.temperature.coldest", "climate.temperature.hottest"
@@ -625,7 +636,7 @@
         if (isUnavailable(hdd)) return "Unavailable";
         const leakageFactor = 1.21;
 
-        // S12 B.19.1 = AIM-2: the same form with AIM-2's heating-season mean rate in place of the
+        // F280 Mode On (AIM-2): the same form with AIM-2's heating-season mean rate in place of the
         // N-factor's (airTightness.aim2.seasonal, AC/H -> L/s = rate x volume / 3.6)
         if (inputs["airTightness.infiltrationMethodInEffect"] === "AIM2") {
           const r = inputs["airTightness.aim2"];
@@ -678,7 +689,7 @@
       label: "Total Envelope Heat Loss (kWh/yr)",
       compute: (inputs) => {
         // i_104 = i_101 + i_102 + i_103
-        // i_102 is Unavailable only when BASESIMP cannot run (S03 G.4.3): then so is the total
+        // i_102 is Unavailable only when BASESIMP cannot run (F280 Mode On): then so is the total
         if (inputs["envelope.groundFacing.totalHeatLoss"] === "Unavailable") return "Unavailable";
         // Use default 0 to handle "Unavailable" values gracefully
         const i101 = parseNum(inputs["envelope.airFacing.totalHeatLoss"], 0);
@@ -787,7 +798,7 @@
     // = the ELA at 10 Pa (cm2) / the air-facing envelope area (d_101, the area NRL50 uses).
     // History: it read ACH50 x volume / 3600, the 50 Pa FLOW in m3/s (to 2026-11-19, F280-1 0.304), then
     // the ELA in m2 (e056780, F280-1 0.0394); the code states airtightness as NLA10, not a bare ELA.
-    // The ELA: under AIM-2 (B.19.1), AIM-2's in effect - the prescribed type's, or the Custom measured
+    // The ELA: under AIM-2 (F280 Mode On), AIM-2's in effect - the prescribed type's, or the Custom measured
     // one (B.19.3, the only MEASURED NLA10: 9.36.5.3.(3) wants a multi-point test). Otherwise derived
     // from the ACH50 at the flow exponent of AIM2.xls's nearest prescribed type (Aim2.typicalN).
     // ========================================================================

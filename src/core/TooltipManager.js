@@ -162,12 +162,6 @@
       message:
         "Static: Conventional Thermal Transfer_x000a_Capacitance: Simulates Thermal Mass Transfer & Storage Characteristics (uses G.4.2) - 50% assumes equilibrium reached_x000a__x000a_Capacitance only if sub-grade surfaces form part of conditioned volume",
     },
-    h_25: {
-      cell: "H25",
-      title: "Ground Heatloss Method",
-      message:
-        "How foundation elements in contact with soil (S11 Walls Below Grade and Slab) lose heat at the design condition._x000a__x000a_OBJECTIVE: U x A to the ground at 10 C._x000a_BASESIMP (CSA F280): the basement heat-loss spreadsheet F280-12 Cl. 5.2.2.1 requires (BasementHLR.xls, NRCan), from G.4.4-G.4.8, S11's areas and below-grade RSI as ADDED insulation, and F280's own weather for this city._x000a__x000a_Two streams (F280 Mode, S21): this chooses the ANNUAL figures' method (S11 rows 94-95, S12, S15 T.6.4), and only under F280 Mode On. S21 (F280 sizing) always uses BASESIMP.",
-    },
     l_25: {
       cell: "L25",
       title: "Foundation Configuration (BASESIMP)",
@@ -199,13 +193,13 @@
       cell: "110",
       title: "NLA10, Normalized Leakage Area at 10 Pa",
       message:
-        "The equivalent leakage area at 10 Pa per m2 of air-facing envelope (D.101), cm2/m2 - NBC 9.36.5's third airtightness metric beside ACH50 and NLR50 (Tables 9.36.5.4.-A/-B). MEASURED only when B.19.1 is AIM-2 with a Custom ELA (B.19.3) from a multi-point test (9.36.5.3.(3)); otherwise derived from the ACH50 at the flow exponent of AIM-2's nearest air-tightness type, an estimate. M checks it against B.18.1's level's NLA10 maximum, or against the Reference when B.18.1 names no NBC level. A level is met by ANY one metric (9.36.5.4.(1)), and the three disagree for a house whose volume-to-area ratio differs from the table's reference house (about 1.27 m guarded, 1.40 m unguarded).",
+        "The equivalent leakage area at 10 Pa per m2 of air-facing envelope (D.101), cm2/m2 - NBC 9.36.5's third airtightness metric beside ACH50 and NLR50 (Tables 9.36.5.4.-A/-B). MEASURED only under F280 Mode On (AIM-2) with a Custom ELA (B.19.3) from a multi-point test (9.36.5.3.(3)); otherwise derived from the ACH50 at the flow exponent of AIM-2's nearest air-tightness type, an estimate. M checks it against B.18.1's level's NLA10 maximum, or against the Reference when B.18.1 names no NBC level. A level is met by ANY one metric (9.36.5.4.(1)), and the three disagree for a house whose volume-to-area ratio differs from the table's reference house (about 1.27 m guarded, 1.40 m unguarded).",
     },
     f280_mode: {
       cell: "F.00",
       title: "F280 Mode",
       message:
-        "Two streams, set per model (Target and Reference each have their own). OFF (the default): OBJECTIVE alone - every input that exists only for CSA F280 is hidden (S03 G.4.3-G.4.10, S12 B.19.1-B.19.14, S13 ATRE and the design latent load factor) and so is the rest of this section; their values are kept, and none of them moves a result. ON: they are shown; S03 G.4.3 and S12 B.19.1 then choose the annual figures' methods too (OBJECTIVE, or BASESIMP / AIM-2). This section's F280 sizing always uses F280's own methods (BASESIMP, AIM-2, the design-hour gains of Cl. 6.2), whichever mode.",
+        "Set per model (Target and Reference each have their own). OFF (the default): OBJECTIVE alone - every input that exists only for CSA F280 is hidden (S03 G.4.4-G.4.10, S12 B.19.2-B.19.14, S13 ATRE and the design latent load factor, S15 T.6.10) and so is the rest of this section; their values are kept, and none of them moves a result. ON: OBJECTIVE runs as an F280 model - the annual figures take F280's ground (BASESIMP, Cl. 5.2.2.1) and air leakage (AIM-2, Cl. 5.2.3), and their inputs are shown. This section's F280 sizing always uses F280's own methods (BASESIMP, AIM-2, the design-hour gains of Cl. 6.2), whichever mode.",
     },
     h_26b: {
       cell: "H26b",
@@ -216,13 +210,7 @@
       cell: "L26b",
       title: "BASESIMP Peak Heat Loss",
       message:
-        "The foundation's January design heat loss by BASESIMP, W - shown whichever method G.4.3 selects, so the two can be compared; it enters S15 and F280 only under BASESIMP. Unavailable until BASESIMP has its inputs: S11's slab and below-grade wall areas, G.4.6 the exposed perimeter, G.4.5 a depth no deeper than the wall, and a city F280 lists (G.4.9).",
-    },
-    d_111: {
-      cell: "111",
-      title: "Infiltration Method",
-      message:
-        "OBJECTIVE (N-factor): the 50 Pa leakage / N - one seasonal average natural rate._x000a_AIM-2 (CSA F280): the Alberta Infiltration Model as F280-12 Cl. 5.2.3 requires (AIM2.xls) - stack and wind at the design temperatures and January / July wind, shielding, terrain, leakage split, flues, and the ventilation balance; for the annual i_103 it runs month by month on the climate station (mean temperature and wind, HDD-weighted)._x000a__x000a_Two streams (F280 Mode, S21): this chooses the ANNUAL figure's method (i_103), and only under F280 Mode On. S21 (F280 sizing: Cl. 5.2.3, 6.2.6) always uses AIM-2.",
+        "The foundation's January design heat loss by BASESIMP, W; it enters S15 and the annual figures under F280 Mode On, and S21's sizing always. Unavailable until BASESIMP has its inputs: S11's slab and below-grade wall areas, G.4.6 the exposed perimeter, G.4.5 a depth no deeper than the wall, and a city F280 lists (G.4.9).",
     },
     g_111: {
       cell: "111",

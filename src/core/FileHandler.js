@@ -441,9 +441,9 @@
           }
         }
 
-        // S21 F280 Mode (Andy 2026-11-19, two streams; per model): a file without the column takes Off,
-        // unless that model already chose an F280 method (S03 G.4.3 BASESIMP, S12 B.19.1 AIM-2 - possible
-        // only from 2026-11-19) - it opens On, so its annual figures read as they were saved.
+        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
+        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
+        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On.
         if (!("f280_mode" in importedData)) {
           for (const p of ["", "ref_"]) {
             const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
@@ -1131,8 +1131,7 @@
           "h_21",
           "i_21",
           "m_19",
-          // G.4.3-G.4.8: the ground heat-loss method and BASESIMP's inputs (2026-11-19)
-          "h_25",
+          // G.4.4-G.4.8: BASESIMP's inputs (2026-11-19; G.4.3's method is F280 Mode's)
           "l_25",
           "d_26",
           "h_26",
@@ -1257,8 +1256,7 @@
           "d_108",
           "g_109",
           "g_106", // floor-to-floor height (not exported before 2026-11-19)
-          // B.19.1-B.19.12: the infiltration method and AIM-2's inputs (2026-11-19)
-          "d_111",
+          // B.19.2-B.19.12: AIM-2's inputs (2026-11-19; B.19.1's method is F280 Mode's)
           "g_111",
           "d_112",
           "g_112",
