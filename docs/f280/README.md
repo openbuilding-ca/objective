@@ -7,7 +7,8 @@
 > them at the design hour in either mode (F280-1 gain 7040 → **5155 W, 70.4 %**: the window-side gap, Table 6F /
 > G.1.9 / G.1.11), and S09 shows them, calculated, under Mode On - which the annual stream also reads, so On puts every
 > Part 9 house UNDER its bills (TEUI On / bills: 56.7 / 56.3, 84.7 / 103.5, 46.6 / 57.8, −12.1 / 14.8; before the S09
-> half 57.9, 99.6, 64.0, 13.3). ❓ Andy: S09's annual figures keep OBJECTIVE's gains under On (S21 alone F280's)?
+> half 57.9, 99.6, 64.0, 13.3). RULED (Andy): On = F280's gains, Off = OBJECTIVE's; why On reads under the bills:
+> "F280 Mode as an ANNUAL model" below.
 >
 > **Current state (2026-11-19, after the solar correction).** F280-1 (S21, F280 Mode On): loss **10 839 W (92.0 %; Cl. 8.4.1 needs
 > ≥ 11 551 W, −712 W)** = envelope 8384 (above grade 6997 + BASESIMP 1387) + AIM-2 1737 + HRV 718; the TB penalty is 0
