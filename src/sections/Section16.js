@@ -190,8 +190,13 @@ window.TEUI.SectionModules.sect16 = (function () {
           left: 30,
         };
 
-        // Set SVG dimensions
-        this.svg.attr("width", this.width).attr("height", this.height);
+        // Set SVG dimensions. The viewBox (the same drawn size) lets the
+        // browser scale the drawing - printed, it fits the page's width
+        // instead of losing its right side (styles.css @media print).
+        this.svg
+          .attr("width", this.width)
+          .attr("height", this.height)
+          .attr("viewBox", `0 0 ${this.width} ${this.height}`);
 
         // Create main group with margin offset
         const g = this.svg
@@ -1230,7 +1235,11 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Update SVG dimensions, ensuring they are at least 1px
       this.svg
         .attr("width", Math.max(1, this.width))
-        .attr("height", Math.max(1, this.height));
+        .attr("height", Math.max(1, this.height))
+        .attr(
+          "viewBox",
+          `0 0 ${Math.max(1, this.width)} ${Math.max(1, this.height)}`
+        );
 
       // Update the sankey layout extent, ensuring non-negative dimensions for the layout
       this.sankey.extent([

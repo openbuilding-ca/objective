@@ -12,9 +12,16 @@
  *   energy.peakHeating.intensity    (d_140) — max heating intensity (W/m²)
  *
  * F280 additions (this module):
- *   - Peak infiltration heat loss:  Q_inf  = 1.21 × NRL50 × Ae/N × deltaT
- *   - Peak ventilation heat loss:   Q_vent = 1.21 × V × (1-ATRE/100) × deltaT
+ * TWO STREAMS (Andy 2026-11-19): these nodes are the F280 stream - always F280's methods (BASESIMP,
+ * AIM-2, Cl. 6.2's design-hour gains), whatever S03 G.4.3 / S12 B.19.1 say; those choose the ANNUAL
+ * stream's methods, and only under F280 Mode (ground.methodInEffect, airTightness.infiltrationMethodInEffect).
+ *   - Peak envelope heat loss:      U·A × DTDh above grade + BASESIMP below (Cl. 5.2.1, 5.2.2.1)
+ *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3
+ *   - Peak ventilation heat loss:   Cl. 5.2.3.2, HLvairb = PVC × DTDh × 1.2 × (1 − E)
  *   - F280 total design heat loss:  Q_total = envelope + Q_inf + Q_vent
+ *   - Sensible heat gain, Cl. 6.2.9: enclosure + internal + solar + occupants + air leakage (Cl. 6.2.6)
+ *     + ventilation (Cl. 6.2.7, HGsvb = PVC × DTDc × 1.2 × (1 − ATRE)); the nominal cooling
+ *     capacity is that × the latent load factor (Cl. 6.3)
  *   - Equipment sizing compliance:  heating >= 100%, cooling 80-125%
  *   - Designer certification validation (NRCan EA, TECA, P.Eng, OAA, BCIN)
  *
@@ -37,8 +44,9 @@
     return isNaN(num) ? defaultVal : num;
   }
 
-  // Volumetric heat capacity of air: rho × Cp = 1.204 × 1005 / 1000 = 1.21 W·s/(L·K)
-  const AIR_HEAT_CAPACITY = 1.21;
+  // F280's own factor, W per L/s·K: every air equation in the standard writes 1.2 (Cl. 5.2.3, 5.2.3.2,
+  // 6.2.6, 6.2.7)
+  const F280_AIR = 1.2;
 
   // W to BTU/h conversion factor
   const W_TO_BTU = 3.41214;
@@ -128,6 +136,21 @@
         defaultValue: false
       },
 
+      // F280 Mode (S21 F.00; Andy 2026-11-19): two streams. Off - the default - hides every F280-only
+      // input and S21, and the annual stream runs on OBJECTIVE's methods whatever G.4.3 / B.19.1 hold
+      // (their values are kept). On shows them, and those two selectors choose the ANNUAL method too.
+      // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). Per MODEL
+      // (Andy 2026-11-19: "S21 should allow Reference to be ON for F280, and Target OFF. As with ALL other
+      // settings in the app - Target and Reference models can be nearly 100% independent by design").
+      {
+        id: "f280.mode",
+        legacyId: "f280_mode",
+        section: "SF280",
+        classification: "A",
+        label: "F280 Mode",
+        defaultValue: "Off"
+      },
+
       // F280 form metadata
       {
         id: "f280.projectNumber",
@@ -158,11 +181,36 @@
     graph.registerInputs(inputs);
 
     // ========================================================================
-    // F280 PEAK ENVELOPE HEAT LOSS (CSA F280-12 Section 5.2)
+    // THE ANNUAL STREAM'S METHODS (Andy 2026-11-19, two streams): S03 G.4.3 and S12 B.19.1 choose the
+    // annual figures' ground and air-leakage methods only under F280 Mode; Off, OBJECTIVE's, whatever
+    // the hidden selectors hold. Every annual consumer reads these, never the selectors.
+    // ========================================================================
+
+    graph.registerNode({
+      id: "ground.methodInEffect",
+      section: "S03",
+      classification: "C",
+      dependencies: ["f280.mode", "ground.method"],
+      label: "Ground Heat-Loss Method in Effect (annual)",
+      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["ground.method"] === "BASESIMP" ? "BASESIMP" : "OBJECTIVE")
+    });
+
+    graph.registerNode({
+      id: "airTightness.infiltrationMethodInEffect",
+      section: "S12",
+      classification: "C",
+      dependencies: ["f280.mode", "airTightness.infiltrationMethod"],
+      label: "Infiltration Method in Effect (annual)",
+      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["airTightness.infiltrationMethod"] === "AIM2" ? "AIM2" : "OBJECTIVE")
+    });
+
+    // ========================================================================
+    // F280 PEAK ENVELOPE HEAT LOSS (CSA F280-12 Cl. 5.2.1, 5.2.2)
     // Parnas: docs/parnas-tables/f280/peak-envelope-heat-loss.json
     //
-    // Uses energy.peakHeating.enclosureKw (d_137) from EnergyNodes.js,
-    // converted from kW to Watts.
+    // The F280 stream's own: above grade U·A × DTDh (S15 d_137's air-facing half) + BELOW grade by
+    // BASESIMP, Cl. 5.2.2.1 ("the spreadsheet calculation called BasementHLR.xls shall be used"),
+    // whatever S03 G.4.3 says (it read d_137, which followed G.4.3 - 2026-11-19, two streams).
     // ========================================================================
 
     graph.registerNode({
@@ -170,19 +218,29 @@
       legacyId: "f280_hl_env",
       section: "SF280",
       classification: "C",
-      dependencies: ["energy.peakHeating.enclosureKw"],
+      dependencies: [
+        "envelope.airFacing.uValue",
+        "envelope.airFacing.area",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
+        "climate.temperature.coldest",
+        "ground.basesimp"
+      ],
       label: "F280 Peak Envelope Heat Loss (W)",
       compute: (inputs) => {
-        const kw = parseNum(inputs["energy.peakHeating.enclosureKw"]);
-        return Math.round(kw * 1000);
+        // BASESIMP missing an input: Unavailable (its reason on S03 G.4.10), never a 0 W foundation
+        const bs = inputs["ground.basesimp"];
+        if (!bs || bs.error) return "Unavailable";
+        const dT = Math.max(0, parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22));
+        const air = parseNum(inputs["envelope.airFacing.uValue"]) * parseNum(inputs["envelope.airFacing.area"]) * dT;
+        return Math.round(air + bs.heatingLoad);
       }
     });
 
     // ========================================================================
-    // F280 PEAK INFILTRATION HEAT LOSS (CSA F280-12 Section 5.2.5)
-    // Parnas: docs/parnas-tables/f280/peak-infiltration-heat-loss.json
-    //
-    // Q_inf = 1.21 × NRL50 × Ae / N × deltaT
+    // F280 PEAK AIR-LEAKAGE HEAT LOSS (CSA F280-12 Cl. 5.2.3): HLairb = LRairh × Vb / 3.6 × DTDh × 1.2,
+    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, whatever S12 B.19.1
+    // says (2026-11-19, two streams; it took OBJECTIVE's N-factor unless B.19.1 was AIM-2). AIM-2 missing
+    // an input: Unavailable.
     // ========================================================================
 
     graph.registerNode({
@@ -191,36 +249,29 @@
       section: "SF280",
       classification: "C",
       dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "climate.heating.setpoint",
-        "climate.temperature.coldest"
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
+        "climate.temperature.coldest",
+        "airTightness.aim2",
+        "volume.conditioned"
       ],
       label: "F280 Peak Infiltration Heat Loss (W)",
       compute: (inputs) => {
-        const nrl50 = parseNum(inputs["airTightness.nrl50"]);
-        const areaAir = parseNum(inputs["envelope.airFacing.area"]);
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
-        const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
-
-        if (nFactor <= 0 || areaAir <= 0) return 0;
-
-        const deltaT = setpoint - designTemp;
-        if (deltaT <= 0) return 0;
-
-        // Q_inf = 1.21 × NRL50 × area / N-factor × deltaT
-        const baseCoeff = (AIR_HEAT_CAPACITY * nrl50 * areaAir) / nFactor;
-        return Math.round(baseCoeff * deltaT);
+        const r = inputs["airTightness.aim2"];
+        if (!r || r.error) return "Unavailable";
+        const dT = parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22);
+        return Math.round(r.design.heating.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, dT) * F280_AIR);
       }
     });
 
     // ========================================================================
-    // F280 PEAK VENTILATION HEAT LOSS (CSA F280-12 Section 5.2.6)
+    // F280 PEAK VENTILATION HEAT LOSS (CSA F280-12 Cl. 5.2.3.2: HLvairb = PVC × DTDh × 1.2 × (1 − E))
     // Parnas: docs/parnas-tables/f280/peak-ventilation-heat-loss.json
     //
-    // Q_vent = 1.21 × V_dot × (1 - ATRE/100) × deltaT
+    // PVC in L/s: ventilation.volumetricRate (d_120), the rate the annual ventilation loss (d_121)
+    // uses. It read ventilation.volumeRate (h_120, m³/h = L/s × 3.6), which put the F280 ventilation
+    // loss 3.6× high (2026-11-18). E = S13's recovery efficiency (d_118; F280 asks the HRV's apparent
+    // sensible effectiveness at the design temperature, CAN/CSA-C439). The factor is the clause's 1.2,
+    // not OBJECTIVE's 1.21 (2026-11-19: F280-1 724 → 718 W).
     // ========================================================================
 
     graph.registerNode({
@@ -229,16 +280,16 @@
       section: "SF280",
       classification: "C",
       dependencies: [
-        "ventilation.volumeRate",
+        "ventilation.volumetricRate", // L/s
         "mechanical.ventilation.efficiency",
-        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
         "climate.temperature.coldest"
       ],
       label: "F280 Peak Ventilation Heat Loss (W)",
       compute: (inputs) => {
-        const ventRate = parseNum(inputs["ventilation.volumeRate"]);
+        const ventRate = parseNum(inputs["ventilation.volumetricRate"]); // L/s
         const efficiency = parseNum(inputs["mechanical.ventilation.efficiency"]);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
+        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
 
         if (ventRate <= 0) return 0;
@@ -249,8 +300,8 @@
         // Net ventilation loss after heat recovery
         const recoveryFactor = Math.max(0, Math.min(1, 1 - efficiency / 100));
 
-        // Q_vent = 1.21 × rate × (1 - ATRE/100) × deltaT
-        return Math.round(AIR_HEAT_CAPACITY * ventRate * recoveryFactor * deltaT);
+        // HLvairb = PVC × DTDh × 1.2 × (1 − E)
+        return Math.round(ventRate * deltaT * F280_AIR * recoveryFactor);
       }
     });
 
@@ -274,6 +325,8 @@
       ],
       label: "F280 Total Design Heat Loss (W)",
       compute: (inputs) => {
+        if (inputs["f280.peakEnvelopeHeatLoss"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakInfiltrationHeatLoss"] === "Unavailable") return "Unavailable";
         const envelope = parseNum(inputs["f280.peakEnvelopeHeatLoss"]);
         const infiltration = parseNum(inputs["f280.peakInfiltrationHeatLoss"]);
         const ventilation = parseNum(inputs["f280.peakVentilationHeatLoss"]);
@@ -301,12 +354,163 @@
     });
 
     // ========================================================================
-    // F280 NOMINAL COOLING CAPACITY (CSA F280-12 Section 6.3.1)
+    // F280 PEAK AIR-LEAKAGE HEAT GAIN (CSA F280-12 Cl. 6.2.6): HGsalb = LRairc × Vb / 3.6 × DTDc × 1.2 -
+    // AIM-2's, whatever S12 B.19.1 says (two streams, as the loss).
+    // ========================================================================
+
+    graph.registerNode({
+      id: "f280.peakInfiltrationHeatGain",
+      section: "SF280",
+      classification: "C",
+      dependencies: ["climate.temperature.hottest", "climate.cooling.setpoint", "airTightness.aim2", "volume.conditioned"],
+      label: "F280 Peak Air-Leakage Heat Gain (W)",
+      compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        if (!r || r.error) return "Unavailable";
+        const deltaT = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
+        return r.design.cooling.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, deltaT) * F280_AIR;
+      }
+    });
+
+    // ========================================================================
+    // F280 PEAK VENTILATION HEAT GAIN (CSA F280-12 Cl. 6.2.7: HGsvb = PVC × DTDc × 1.2 × (1 − ATRE))
+    //
+    // PVC = d_120 (L/s), as the loss (Cl. 5.2.3.2). ATRE = S13 l_123, the HRV/ERV's adjusted total
+    // recovery efficiency from CAN/CSA-C439's cooling test, % - 0 by default, the clause's "or zero if there
+    // is no ATRE reported" (Andy 2026-11-19); not d_118, the heating-season sensible figure. Before
+    // 2026-11-19 the F280 gain carried only S15's season-average ventilation (d_122's sensible part, 0 on
+    // F280-1), not this.
+    // ========================================================================
+
+    graph.registerNode({
+      id: "f280.peakVentilationHeatGain",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "ventilation.volumetricRate",
+        "climate.temperature.hottest",
+        "climate.cooling.setpoint",
+        "mechanical.ventilation.atre"
+      ],
+      label: "F280 Peak Ventilation Heat Gain (W)",
+      compute: (inputs) => {
+        const pvc = parseNum(inputs["ventilation.volumetricRate"]);
+        const deltaT = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
+        const atre = parseNum(inputs["mechanical.ventilation.atre"]) / 100;
+        if (!(atre >= 0 && atre <= 1)) return "Unavailable"; // an ATRE outside 0-100 %: no number
+        return pvc > 0 && deltaT > 0 ? pvc * deltaT * F280_AIR * (1 - atre) : 0;
+      }
+    });
+
+    // ========================================================================
+    // F280 PEAK SOLAR HEAT GAIN THROUGH GLAZING (CSA F280-12 Cl. 6.2.2.1)
+    //
+    // HGct = A × (SHGC × Solar + DTDc / RSI): the DTDc / RSI half is the enclosure term (d_138's U·A·ΔT
+    // carries the windows), so this is Σ A × SHGC × Solar over S10's glazing rows 73-78, each row's
+    // summer shading (h_) taken off (Andy 2026-11-18: shading is each row's slider; F280-1's sliders
+    // carry Annex A's shaded area treated as north). Solar = Solar0 by the row's facing (the clause's
+    // table, W/m²) × LFactor = 1 + (latitude − 40) × 0.0375, held to 0.7-1.3, on S, SE and SW only.
+    // The latitude is F280's own for S03's city (F280Weather.js; a city F280 does not list takes its
+    // nearest's). OBJECTIVE's "Average" facing has no Solar0: it takes the mean of the eight compass
+    // points' Solar (Andy 2026-11-19: "Yes that's a right assumption"). It replaces S15's season-average solar
+    // (the glazing rows' ISO 52016 share ÷ cooling-season hours, F280-1 289 W).
+    // ========================================================================
+
+    const F280_SOLAR0 = {
+      North: 93, NorthEast: 194, East: 285, SouthEast: 252, South: 160, SouthWest: 252, West: 285, NorthWest: 194,
+      Skylight: 534 // the clause's "Horizontal"
+    };
+    const LATITUDE_CORRECTED = new Set(["South", "SouthEast", "SouthWest"]);
+    const f280Solar = (facing, lFactor) => {
+      if (facing === "Average") {
+        const compass = Object.keys(F280_SOLAR0).filter((k) => k !== "Skylight");
+        return compass.reduce((sum, k) => sum + f280Solar(k, lFactor), 0) / compass.length;
+      }
+      const solar0 = F280_SOLAR0[facing];
+      if (solar0 === undefined) return undefined;
+      return solar0 * (LATITUDE_CORRECTED.has(facing) ? lFactor : 1);
+    };
+    const GLAZING_ROWS = [73, 74, 75, 76, 77, 78];
+
+    graph.registerNode({
+      id: "f280.peakSolarHeatGain",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "climate.location.province",
+        "climate.location.city",
+        ...GLAZING_ROWS.flatMap((r) => ["area", "orientation", "shgc", "summerShading"].map((k) => `radiantGains.row${r}.${k}`))
+      ],
+      label: "F280 Peak Solar Heat Gain through Glazing (W)",
+      compute: (inputs) => {
+        const weather = window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"]);
+        if (!weather) return "Unavailable"; // no F280 latitude for the city (an NBC group heading)
+        const lFactor = Math.min(1.3, Math.max(0.7, 1 + (weather.lat - 40) * 0.0375));
+        let total = 0;
+        for (const r of GLAZING_ROWS) {
+          const area = parseNum(inputs[`radiantGains.row${r}.area`]);
+          const shgc = parseNum(inputs[`radiantGains.row${r}.shgc`]);
+          if (!(area > 0) || !(shgc > 0)) continue;
+          const solar = f280Solar(inputs[`radiantGains.row${r}.orientation`], lFactor);
+          if (solar === undefined) return "Unavailable"; // a facing the clause's table has no row for
+          const shading = parseNum(inputs[`radiantGains.row${r}.summerShading`]) / 100;
+          total += area * shgc * solar * (1 - shading);
+        }
+        return total;
+      }
+    });
+
+    // ========================================================================
+    // F280 TOTAL SENSIBLE HEAT GAIN (CSA F280-12 Cl. 6.2.9)
+    //
+    // S15's d_139 terms by OBJECTIVE's own inputs (Andy 2026-11-18: match gains by OBJECTIVE's
+    // inputs) - the enclosure (d_138), internal gains (plug + lighting + equipment × area), the
+    // occupants' sensible gain as a season average (÷ cooling days × 24) - with d_139's season-average
+    // ventilation and solar replaced by the design-condition terms, Cl. 6.2.7 and Cl. 6.2.2.1, plus the
+    // air leakage (Cl. 6.2.6).
+    // ========================================================================
+
+    graph.registerNode({
+      id: "f280.totalSensibleHeatGain",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "energy.peakCooling.enclosureKw",
+        "internal.plugLoadDensity",
+        "internal.lightingDensity",
+        "internal.equipmentDensity",
+        "building.conditionedFloorArea",
+        "internal.occupants.coolingGain",
+        "cooling.iso52016",
+        "climate.coolingDays",
+        "f280.peakSolarHeatGain",
+        "f280.peakInfiltrationHeatGain",
+        "f280.peakVentilationHeatGain"
+      ],
+      label: "F280 Total Sensible Heat Gain (W)",
+      compute: (inputs) => {
+        if (inputs["f280.peakInfiltrationHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakVentilationHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakSolarHeatGain"] === "Unavailable") return "Unavailable";
+        const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
+        const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
+          parseNum(inputs["internal.equipmentDensity"]);
+        const internal = density * parseNum(inputs["building.conditionedFloorArea"], 1);
+        const latent = inputs["cooling.iso52016"]?.latent;
+        const occupantsKwh = parseNum(inputs["internal.occupants.coolingGain"]) - (latent?.people ?? 0);
+        const hours = parseNum(inputs["climate.coolingDays"], 120) * 24;
+        const occupants = hours > 0 ? (occupantsKwh / hours) * 1000 : 0;
+        return enclosure + internal + occupants + parseNum(inputs["f280.peakSolarHeatGain"]) +
+          parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]);
+      }
+    });
+
+    // ========================================================================
+    // F280 NOMINAL COOLING CAPACITY (CSA F280-12 Cl. 6.3)
     // Parnas: docs/parnas-tables/f280/nominal-cooling-capacity.json
     //
-    // Uses energy.peakCooling.totalKw (d_139) from EnergyNodes.js
-    // (envelope + internal gains + solar/vent/occ − free cooling).
-    // F280 additionally adds infiltration peak and latent load factor.
+    // The total sensible heat gain (Cl. 6.2.9) × the latent load factor (never below 1): the factor is
+    // taken over this same sensible (CoolingNodes), so this is sensible + the design latent, Annex B's HGb.
     // ========================================================================
 
     graph.registerNode({
@@ -314,43 +518,13 @@
       legacyId: "f280_cl_total",
       section: "SF280",
       classification: "C",
-      dependencies: [
-        "energy.peakCooling.totalKw",
-        // Infiltration terms (not in Section15's d_139)
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "climate.temperature.hottest",
-        "climate.cooling.setpoint",
-        // Latent load factor
-        "cooling.latentLoadFactor"
-      ],
+      dependencies: ["f280.totalSensibleHeatGain", "cooling.latentLoadFactor"],
       label: "F280 Nominal Cooling Capacity (W)",
       compute: (inputs) => {
-        // Peak cooling with gains from EnergyNodes (envelope + internal + solar/vent/occ)
-        const peakCoolingKw = parseNum(inputs["energy.peakCooling.totalKw"]);
-
-        // Add infiltration peak gain (F280-specific, not in d_139)
-        const nrl50 = parseNum(inputs["airTightness.nrl50"]);
-        const areaAir = parseNum(inputs["envelope.airFacing.area"]);
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        const hottest = parseNum(inputs["climate.temperature.hottest"], 34);
-        const setpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
-        const deltaT_cool = hottest - setpoint;
-
-        let infGainKw = 0;
-        if (nFactor > 0 && deltaT_cool > 0) {
-          // 1.21 × NRL50 × Ae / N × deltaT / 1000 (W to kW)
-          infGainKw = (AIR_HEAT_CAPACITY * nrl50 * areaAir / nFactor) * deltaT_cool / 1000;
-        }
-
-        const totalKw = peakCoolingKw + infGainKw;
-
-        // Apply latent load factor per F280 §6.3.1
-        const llf = parseNum(inputs["cooling.latentLoadFactor"], 1.15);
-        const llfClamped = Math.max(1.0, llf);
-
-        return Math.round(totalKw * llfClamped * 1000); // kW to W
+        if (inputs["f280.totalSensibleHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["cooling.latentLoadFactor"] === "Unavailable") return "Unavailable";
+        const llf = Math.max(1.0, parseNum(inputs["cooling.latentLoadFactor"], 1.15));
+        return Math.round(parseNum(inputs["f280.totalSensibleHeatGain"]) * llf);
       }
     });
 

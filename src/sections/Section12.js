@@ -689,19 +689,20 @@ window.TEUI.SectionModules.sect12 = (function () {
     110: {
       id: "B.18.4",
       rowId: "B.18.4",
-      label: "Ae₁₀ or ELA₁₀ (m²)",
+      label: "NLA₁₀ Normalized Leakage Area",
       cells: {
-        c: { label: "Ae₁₀ or ELA₁₀ (m²)" },
+        c: { label: "NLA₁₀ Normalized Leakage Area" },
         d: {
           fieldId: "d_110",
-          semanticPath: "airLeakage.ela10",
+          semanticPath: "airLeakage.nla10",
           type: "calculated",
-          value: "2.898",
+          value: "0",
           section: "volumeSurfaceMetrics",
+          tooltip: true,
           dependencies: ["d_109", "d_105"],
-          label: "Ae₁₀ or ELA₁₀: m²",
+          label: "NLA₁₀: cm²/m²",
         },
-        e: { content: "m²", classes: ["unit-label"] },
+        e: { content: "cm²/m²", classes: ["unit-label"] },
         f: { content: "B.18.5.1 n-Factor", classes: ["label-main"] },
         g: {
           fieldId: "g_110",
@@ -728,26 +729,92 @@ window.TEUI.SectionModules.sect12 = (function () {
         l: {},
         m: {
           fieldId: "m_110",
-          semanticPath: "airLeakage.elaComplianceRatio",
+          semanticPath: "airLeakage.nla10ComplianceRatio",
           type: "calculated",
           value: "173%",
           section: "volumeSurfaceMetrics",
           classes: ["percentage-value"],
           dependencies: ["d_110"],
-          label: "ELA₁₀ Ratio to Reference Standard",
+          label: "NLA₁₀ Ratio to the Airtightness Level (or the Reference)",
         },
         n: {
           fieldId: "n_110",
-          semanticPath: "airLeakage.elaComplianceStatus",
+          semanticPath: "airLeakage.nla10ComplianceStatus",
           type: "calculated",
           value: "✓",
           section: "volumeSurfaceMetrics",
           dependencies: ["m_110"],
-          label: "ELA₁₀ Compliance Status",
+          label: "NLA₁₀ Compliance Status",
         },
       },
     },
   };
+
+  // Rows 111-112f, B.19.1-B.19.14: the infiltration method and AIM-2's inputs (CSA F280-12 Cl. 5.2.3,
+  // AIM2.xls; Andy 2026-11-19). Two label / value pairs a row (C-E, F-H); greyed unless AIM-2 (the house
+  // rule). The node side: VolumeMetricsNodes (airTightness.aim2), F280ComplianceNodes.
+  const AIM2_ROWS = (function () {
+    const A = () => window.TEUI.Aim2Data || { terrain: [], shielding: [], tightness: [] };
+    const indexed = list => list.map((t, i) => ({ value: String(i + 1), name: t.name }));
+    const fixed = names => names.map(n => ({ value: n, name: n }));
+    const field = (id, path, kind, value, extra = {}) => ({
+      fieldId: id,
+      semanticPath: path,
+      type: kind,
+      value,
+      section: "volumeSurfaceMetrics",
+      tooltip: true,
+      ...(kind === "dropdown" ? { dropdownId: `dd_${id}` } : {}),
+      ...(kind === "editable" ? { classes: ["user-input", "editable"] } : {}),
+      ...extra,
+    });
+    const row = (key, [pre1, label1, f1, unit1], [pre2, label2, f2, unit2]) => [
+      key,
+      {
+        id: pre1,
+        rowId: pre1,
+        label: label1,
+        cells: {
+          c: { label: label1 }, // column B shows the row id
+          d: f1,
+          e: { content: unit1 || "", classes: ["unit-label"] },
+          f: { content: `${pre2} ${label2}`, classes: ["label-main"] },
+          g: f2,
+          h: { content: unit2 || "", classes: ["unit-label"] },
+          i: {}, j: {}, k: {}, l: {}, m: {}, n: {},
+        },
+      },
+    ];
+    return Object.fromEntries([
+      row(111,
+        ["B.19.1", "Infiltration Method", field("d_111", "airLeakage.infiltrationMethod", "dropdown", "OBJECTIVE", {
+          options: [{ value: "OBJECTIVE", name: "OBJECTIVE (N-factor)" }, { value: "AIM2", name: "AIM-2 (CSA F280)" }] })],
+        ["B.19.2", "Air Tightness (AIM-2)", field("g_111", "aim2.tightness", "dropdown", "Custom", {
+          getOptions: () => [...A().tightness.map(t => ({ value: t.name, name: `${t.name} (${t.ach50} ACH50)` })),
+            { value: "Custom", name: "Custom: B.18.2's ACH50 + this ELA" }] })]),
+      row(112,
+        ["B.19.3", "ELA₁₀ for Custom", field("d_112", "aim2.ela", "editable", "0"), "cm²"],
+        ["B.19.4", "Highest Ceiling Above Grade", field("g_112", "aim2.ceilingHeight", "editable", "0"), "m"]),
+      row("112b",
+        ["B.19.5", "Building Site Terrain", field("d_112b", "aim2.siteTerrain", "dropdown", "4", { getOptions: () => indexed(A().terrain) })],
+        ["B.19.6", "Weather Station Terrain", field("g_112b", "aim2.stationTerrain", "dropdown", "3", { getOptions: () => indexed(A().terrain) })]),
+      row("112c",
+        ["B.19.7", "Wall Shielding", field("d_112c", "aim2.wallShielding", "dropdown", "2", { getOptions: () => indexed(A().shielding) })],
+        ["B.19.8", "Flue Shielding", field("g_112c", "aim2.flueShielding", "dropdown", "2", { getOptions: () => indexed(A().shielding) })]),
+      row("112d",
+        ["B.19.9", "House Type", field("d_112d", "aim2.buildingType", "dropdown", "Detached", { options: fixed(["Detached", "Semi-Detached"]) })],
+        ["B.19.10", "Foundation Type", field("g_112d", "aim2.foundation", "dropdown", "Full", {
+          options: fixed(["Crawl Space", "Slab-on-Grade", "Shallow", "Full"]) })]),
+      row("112e",
+        ["B.19.11", "Ventilation Balance", field("d_112e", "aim2.ventilationBalance", "dropdown", "Balanced", {
+          options: fixed(["Balanced", "Exhaust only", "Supply only"]) })],
+        ["B.19.12", "Flue Diameter", field("g_112e", "aim2.flueDiameter", "editable", "0"), "mm"]),
+      row("112f",
+        ["B.19.13", "LRairh: Heating Design", field("d_112f", "aim2.heatingRate", "calculated", ""), "AC/H"],
+        ["B.19.14", "LRairc: Cooling Design", field("g_112f", "aim2.coolingRate", "calculated", ""), "AC/H"]),
+    ]);
+  })();
+  Object.assign(sectionRows, AIM2_ROWS);
 
   //==========================================================================
   // ACCESSOR METHODS
@@ -900,6 +967,35 @@ window.TEUI.SectionModules.sect12 = (function () {
         });
       }
     });
+  }
+
+  /**
+   * B.19.1-B.19.14 for the current model: each dropdown shows its stored choice. AIM-2's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they always drive F280's sizing whatever B.19.1 chooses
+   * for the annual figure (two streams, Andy 2026-11-19; they greyed unless B.19.1 was AIM-2). When AIM-2
+   * cannot run, B.19.13 says why on hover.
+   */
+  const AIM2_FIELDS = ["g_111", "d_112", "g_112", "d_112b", "g_112b", "d_112c", "g_112c", "d_112d",
+    "g_112d", "d_112e", "g_112e", "d_112f", "g_112f"];
+  function updateAim2UI() {
+    const sectionElement = document.getElementById("volumeSurfaceMetrics");
+    if (!sectionElement) return;
+    ["d_111", ...AIM2_FIELDS].forEach(id => {
+      const select = sectionElement.querySelector(`select[data-field-id="${id}"]`);
+      const v = getModeValue(id);
+      if (select && v !== undefined && v !== null && v !== "" && select.value !== String(v)) select.value = String(v);
+    });
+    const out = sectionElement.querySelector('td[data-field-id="d_112f"]');
+    const state = window.TEUI.ComputationIntegration?.getState?.();
+    if (out && state) {
+      const r = state.getValueForModel(state.getActiveModelId(), "airTightness.aim2");
+      out.title = r?.error
+        ? `AIM-2 cannot run: ${r.error}`
+        : r?.design
+          ? `n ${r.design.n.toFixed(3)}, ELA ${r.design.ela.toFixed(1)} cm2 @ 10 Pa; season mean ` +
+            (r.seasonal ? `${r.seasonal.rate.toFixed(4)} AC/H` : "(station loading)") + `; F280 weather: ${r.weather.city}`
+          : "";
+    }
   }
 
   function initializeEventHandlers() {
@@ -1149,6 +1245,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     getLayout: getLayout,
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+    postStamp: updateAim2UI,
     onModeSwitch: onModeSwitch,
     get isInitialized() {
       return isInitialized;

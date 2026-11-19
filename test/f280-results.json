@@ -1,0 +1,449 @@
+{
+  "timestamp": "2026-11-19T12:48:50.131Z",
+  "enforce_band": false,
+  "fixture_verified_against_pdf": false,
+  "not_modelled": [
+    {
+      "clause": "8.3.4 b",
+      "reason": "a room test (Annex K); whole house unchanged"
+    },
+    {
+      "clause": "8.3.5 b, c",
+      "reason": "OBJECTIVE has no interior-shading input (blinds, reflective blinds)"
+    },
+    {
+      "clause": "8.3.6 b",
+      "reason": "the base case's G.1 overhangs are not expressed yet (Annex A), so 'no shading' is not a change"
+    }
+  ],
+  "records": [
+    {
+      "case": "F280-1",
+      "clause": "8.3.9",
+      "archetype": 1,
+      "vintage": "2010s",
+      "location": "Ottawa (Orleans)",
+      "loss": {
+        "result_W": 10839,
+        "expected_W": 11787,
+        "lowOk": false,
+        "highOk": true,
+        "pass": false,
+        "ratio": 0.9195724102825147
+      },
+      "gain": {
+        "result_W": 6882,
+        "expected_W": 7321,
+        "lowOk": false,
+        "highOk": true,
+        "pass": false,
+        "ratio": 0.9400959417222667
+      },
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "groundMethod": "BASESIMP",
+        "basesimp_W": 1386.873412517603,
+        "basesimpError": null,
+        "infiltrationMethod": "AIM2",
+        "aim2_LRairh": 0.1486530146124772,
+        "aim2_LRairc": 0.0580331052463261,
+        "aim2Error": null,
+        "annualInfiltration_kWh": 2858.739692605512,
+        "annualGround_kWh": 5777.460921418415,
+        "sensibleGain": 6882.442389348715,
+        "infiltrationGain_W": 84.7631535227839,
+        "ventilationGain_W": 373.76753999999994,
+        "atre": 0,
+        "solarGain_W": 2157.6913164159996,
+        "f280Latitude": 45.48,
+        "designLatent_W": 1375.450114413869,
+        "nominalCooling": 8258,
+        "latentLoadFactor": 1.199849128638188,
+        "peakCoolingKw": 4.555510904876324,
+        "ventLs": 51.91215833333333,
+        "ventEfficiency": 76,
+        "designSetpoint": 22,
+        "coldest": -26,
+        "hottest": 30,
+        "coolingSetpoint": 24,
+        "radiantCoolingGain_kWh": 833.1567133432125,
+        "rows": {
+          "row74.orientation": "North",
+          "row74.area": "15.728",
+          "row74.shgc": "0.4",
+          "row74.summerShading": "0",
+          "row74.gainFactor": 1.31,
+          "row74.heatingGain": 16.482944,
+          "row74.coolingGain": 214.73627362127448,
+          "row75.orientation": "East",
+          "row75.area": "2.23",
+          "row75.shgc": "0.4",
+          "row75.summerShading": "0",
+          "row75.gainFactor": 76.94,
+          "row75.heatingGain": 137.26096,
+          "row75.coolingGain": 62.29773611632697,
+          "row76.orientation": "South",
+          "row76.area": "16.592",
+          "row76.shgc": "0.4",
+          "row76.summerShading": "10.1",
+          "row76.gainFactor": 70.74,
+          "row76.heatingGain": 938.9744639999999,
+          "row76.coolingGain": 512.5319922845608,
+          "row77.orientation": "West",
+          "row77.area": "1.486",
+          "row77.shgc": "0.4",
+          "row77.summerShading": "1.08",
+          "row77.gainFactor": 25.86,
+          "row77.heatingGain": 30.742368,
+          "row77.coolingGain": 43.59071132105026
+        },
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        },
+        "coolingDays": 120,
+        "peakTerms": {
+          "enclosure_W": 874.6213482565679,
+          "densities_Wm2": {
+            "plug": 5,
+            "lighting": 1.5,
+            "equipment": 5
+          },
+          "floorArea_m2": 289.14,
+          "internalDensity_W": 3325.1099999999997,
+          "solarSeasonAverage_W": 289.2905254663932,
+          "ventilationSeasonAverage_W": 0,
+          "occupantsSeasonAverage_W": 66.4890311533635
+        },
+        "iso52016": {
+          "present": true,
+          "keys": [
+            "sensible",
+            "latent",
+            "unmitigated",
+            "recovered",
+            "freeCooling",
+            "freeCoolingPotential",
+            "mitigated",
+            "rowsSensible",
+            "rows",
+            "coolingDays",
+            "months"
+          ],
+          "rows": {
+            "internal": 1425.366419429482,
+            "glazing73": 0,
+            "glazing74": 214.73627362127448,
+            "glazing75": 62.29773611632697,
+            "glazing76": 512.5319922845608,
+            "glazing77": 43.59071132105026,
+            "glazing78": 0,
+            "roof": 38.94401183535488,
+            "walls": 109.85040850009536,
+            "vent": 52.45436515851475,
+            "leak": 20.774993329787847
+          }
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.7 b",
+      "variant": "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)",
+      "note": "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair",
+      "change_W": {
+        "loss": 2059,
+        "gain": 110
+      },
+      "expected_change_W": {
+        "loss": 1925,
+        "gain": 118
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 12898,
+        "envelope": 8384,
+        "infiltration": 3796,
+        "ventilation": 718,
+        "nominalCooling": 8618,
+        "latentLoadFactor": 1.2324723814031782,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.4 c",
+      "variant": "exhaust-only at the HRV's flow",
+      "note": "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only",
+      "change_W": {
+        "loss": 1003,
+        "gain": -75
+      },
+      "expected_change_W": {
+        "loss": -897,
+        "gain": 108
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 11842,
+        "envelope": 8384,
+        "infiltration": 468,
+        "ventilation": 2990,
+        "nominalCooling": 8012,
+        "latentLoadFactor": 1.1769678074202585,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door SE",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1230
+      },
+      "expected_change_W": {
+        "gain": 1995
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9488,
+        "latentLoadFactor": 1.1695544146265664,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door E",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1537
+      },
+      "expected_change_W": {
+        "gain": 2467
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9795,
+        "latentLoadFactor": 1.1633605165994512,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door NE",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1266
+      },
+      "expected_change_W": {
+        "gain": 2014
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9524,
+        "latentLoadFactor": 1.168794592523352,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door N",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 33
+      },
+      "expected_change_W": {
+        "gain": 3
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 8291,
+        "latentLoadFactor": 1.1988872151906316,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door NW",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1300
+      },
+      "expected_change_W": {
+        "gain": 2073
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9558,
+        "latentLoadFactor": 1.16810175274429,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door W",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1568
+      },
+      "expected_change_W": {
+        "gain": 2529
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9826,
+        "latentLoadFactor": 1.162760548015615,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.8",
+      "variant": "front door SW",
+      "note": "",
+      "change_W": {
+        "loss": 0,
+        "gain": 1264
+      },
+      "expected_change_W": {
+        "gain": 2054
+      },
+      "sign_settled": false,
+      "parts_W": {
+        "loss": 10839,
+        "envelope": 8384,
+        "infiltration": 1737,
+        "ventilation": 718,
+        "nominalCooling": 9522,
+        "latentLoadFactor": 1.16884428295676,
+        "ground": {
+          "slabOnGrade.rsi": "0.216",
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": "90.311",
+          "slabOnGrade.heatLoss": 3977.7308394611696,
+          "wallsBelowGrade.rsi": "2.76",
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": "110.39",
+          "wallsBelowGrade.heatLoss": 1799.7300819572456
+        }
+      }
+    }
+  ]
+}

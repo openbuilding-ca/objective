@@ -789,9 +789,9 @@
           state.setValueForModel(refModelId, semanticPath, stdValue);
           cFieldsLoaded++;
           debug.cFieldsFromStandard.push({ legacyId, semanticPath, value: stdValue });
-        } else if (!legacyId && inputNode.defaultValue !== undefined) {
-          // No legacyId means no CSV/standard path — use declared default
-          // (e.g., CDD user override defaults to null, not Target's value)
+        } else if ((!legacyId || inputNode.copyToReference === false) && inputNode.defaultValue !== undefined) {
+          // No legacyId means no CSV/standard path — use declared default; nor for an input that
+          // must never take the Target's (copyToReference: false - the CDD user override, d_21o)
           state.setValueForModel(refModelId, semanticPath, inputNode.defaultValue);
         } else {
           // Priority 3: Copy from Target (shared input)
@@ -1094,8 +1094,20 @@
         "climate.timeframe": ["climate.cooling.degreedays.userOverride"]
       };
 
+      // The overrides' own StateManager keys (d_21o), written past the adapter so they do not
+      // re-enter this handler
+      const setOverrideKey = (key, value) => {
+        if (SM?._original_setValue) SM._original_setValue.call(SM, key, value, "user-modified");
+        else SM?.setValue(key, value, "user-modified");
+      };
+      const OVERRIDE_KEYS = { "climate.cooling.degreedays.userOverride": "d_21o" };
+
       if (semanticPath && CLEARS_OVERRIDES[semanticPath]) {
         for (const path of CLEARS_OVERRIDES[semanticPath]) {
+          if (OVERRIDE_KEYS[path]) {
+            setOverrideKey(OVERRIDE_KEYS[path], "");
+            setOverrideKey("ref_" + OVERRIDE_KEYS[path], "");
+          }
           state.setValueForModel(targetId, path, null);
           if (refModelId) state.setValueForModel(refModelId, path, null);
         }
@@ -1113,6 +1125,7 @@
         if (editModelId) {
           state.setValueForModel(editModelId, overridePath, overrideValue);
         }
+        if (OVERRIDE_KEYS[overridePath]) setOverrideKey((isRef ? "ref_" : "") + OVERRIDE_KEYS[overridePath], overrideValue ?? "");
       }
 
       // Editable-computed overrides are C-class (per-model)
@@ -1158,7 +1171,7 @@
 
       // Section supplementary display stamps
       const modules = window.TEUI.SectionModules || {};
-      for (const key of ["sect01", "sect16", "sect21"]) {
+      for (const key of ["sect01", "sect03", "sect12", "sect13", "sect16", "sect21"]) {
         if (modules[key]?.postStamp) modules[key].postStamp();
       }
 

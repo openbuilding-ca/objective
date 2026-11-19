@@ -1,0 +1,6 @@
+# Cloudflare Pages response headers.
+# Every file revalidates on every load (an unchanged file answers 304 by its ETag),
+# so a deploy reaches returning visitors at once. Without this the zone's 4-hour
+# browser TTL let Safari pair a new page with a cached old case-study CSV or script.
+/*
+  Cache-Control: no-cache

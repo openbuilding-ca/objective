@@ -33,6 +33,40 @@
   }
 
   // ============================================================================
+  // THE COOLING CHOICE (M.3.0, d_116) - one source for the nodes, Section 13
+  // and the file import (window.TEUI.CoolingSystem)
+  // ============================================================================
+  //
+  // Andy 2026-11-18: three options - the heat pump heats AND cools (its COPcool
+  // derived from HSPF, M.1.3), a separate cooling unit (its own COPcool, M.3.3,
+  // which can sit beside a heat pump that only heats), or no cooling. The heat
+  // pump option is offered only when M.1.0 is Heatpump.
+  //
+  // Files before 2026-11-18 store "Cooling": on a heat pump that meant the heat
+  // pump cools (M.3.3 locked), otherwise a dedicated unit - normalize() reads it
+  // that way, so every old file computes as it did.
+  const COOLING = {
+    HEATPUMP: "Heatpump Heats & Cools",
+    SEPARATE: "Separate Cooling",
+    NONE: "No Cooling",
+    LEGACY: "Cooling",
+  };
+
+  function normalizeCooling(coolingType, heatingType) {
+    const isHP = heatingType === "Heatpump";
+    if (coolingType === COOLING.NONE) return COOLING.NONE;
+    if (coolingType === COOLING.SEPARATE) return COOLING.SEPARATE;
+    // The heat pump option, the legacy "Cooling", or unset (the default):
+    // the heat pump cools if there is one, otherwise a separate unit.
+    return isHP ? COOLING.HEATPUMP : COOLING.SEPARATE;
+  }
+
+  window.TEUI.CoolingSystem = Object.freeze({
+    ...COOLING,
+    normalize: normalizeCooling,
+  });
+
+  // ============================================================================
   // INPUT NODES
   // ============================================================================
 
@@ -67,7 +101,7 @@
     {
       id: "mechanical.cooling.systemType",
       legacyId: "d_116",
-      defaultValue: "Cooling",
+      defaultValue: COOLING.HEATPUMP,
       classification: "C",
       section: "S13",
       label: "Cooling System Type"
@@ -135,6 +169,17 @@
       classification: "C",
       section: "S13",
       label: "ERV Latent Recovery Efficiency",
+      unit: "%"
+    },
+    {
+      // F280 Cl. 6.2.7's ATRE: the HRV/ERV's adjusted total recovery efficiency from CAN/CSA-C439's
+      // cooling test, "or zero if there is no ATRE reported" (Andy 2026-11-19)
+      id: "mechanical.ventilation.atre",
+      legacyId: "l_123",
+      defaultValue: 0,
+      classification: "C",
+      section: "S13",
+      label: "ATRE, Adjusted Total Recovery Efficiency (F280 Cl. 6.2.7)",
       unit: "%"
     },
     {
@@ -217,18 +262,6 @@
         const copHeat = parseNum(inputs["mechanical.heating.copHeat"], 1);
         // COPcool = max(1, COPheat - 1)
         return +Math.max(1, copHeat - 1).toFixed(4);
-      }
-    },
-    {
-      id: "mechanical.heating.ceer",
-      dependencies: ["mechanical.heating.copCoolDerived"],
-      classification: "C",
-      section: "S13",
-      label: "CEER (Combined Energy Efficiency Ratio)",
-      compute: (inputs) => {
-        const copCool = parseNum(inputs["mechanical.heating.copCoolDerived"], 1);
-        // CEER = 3.412 × COPcool
-        return +(3.412 * copCool).toFixed(2);
       }
     },
 
@@ -405,25 +438,33 @@
       // HSPF can determine the COPc for a shared Heating/Cooling system, or if
       // gas or another heating system is selected (Non-heat-pump) then a user
       // can set whatever COPc matches the equipment's nameplate efficiency."
-      // No cooling: 0 - the load stands, unmet. Reference: the standard's
-      // minimum COPc - for a heat pump straight from the standard
-      // (model.referenceCopCool), otherwise its j_116 as before. Target: a heat
-      // pump's COPc from its HSPF; otherwise the nameplate j_116.
+      // No cooling: 0 - the load stands, unmet. The heat pump heats and cools:
+      // Target at its COPc from HSPF (M.1.3); Reference at ITS M.3.3, which
+      // holds the standard's minimum by default (ReferenceValues j_116) and
+      // takes a value typed on the Reference or mirrored from the Target (Andy
+      // 2026-11-19, "Yes": a default, not a lock - it returned the standard's
+      // minimum whatever was set; model.referenceCopCool remains the fallback
+      // when the Reference has no M.3.3 at all). Separate cooling (Andy 2026-11-18):
+      // M.3.3, the unit's own COPc, in either model and beside any heating -
+      // a heat pump that only heats keeps its HSPF for heating alone.
       compute: (inputs) => {
-        const coolingType = inputs["mechanical.cooling.systemType"];
         const heatingType = inputs["mechanical.heating.systemType"];
+        const coolingType = normalizeCooling(inputs["mechanical.cooling.systemType"], heatingType);
         const copFromHeatpump = parseNum(inputs["mechanical.heating.copCoolDerived"], 1);
         const copDedicated = parseNum(inputs["mechanical.cooling.copDedicated"], 2.66);
         const isReference = inputs["model.isReference"] === true;
         const copStandard = parseNum(inputs["model.referenceCopCool"], 0);
 
-        if (coolingType === "No Cooling") return 0;
-        if (heatingType === "Heatpump") {
-          if (isReference && copStandard > 0) return copStandard;
+        if (coolingType === COOLING.NONE) return 0;
+        if (coolingType === COOLING.HEATPUMP) {
+          if (isReference) {
+            const copReference = parseNum(inputs["mechanical.cooling.copDedicated"], 0);
+            if (copReference > 0) return copReference;
+            if (copStandard > 0) return copStandard;
+          }
           return copFromHeatpump;
         }
-        if (coolingType === "Cooling") return copDedicated;
-        return 0;
+        return copDedicated;
       }
     },
     {
@@ -462,11 +503,11 @@
       unit: "kWh/yr",
       compute: (inputs) => {
         const heatingType = inputs["mechanical.heating.systemType"] || "";
-        const coolingType = inputs["mechanical.cooling.systemType"] || "No Cooling";
+        const coolingType = normalizeCooling(inputs["mechanical.cooling.systemType"], heatingType);
 
-        // l_116 is only for dedicated cooling, not heatpump cooling
-        // When heating is Heatpump, the sink goes to l_114 instead
-        if (heatingType === "Heatpump" || coolingType !== "Cooling") {
+        // M.3.4: the separate unit's sink only. When the heat pump cools, its
+        // sink is M.1.6 (l_114).
+        if (coolingType !== COOLING.SEPARATE) {
           return 0;
         }
 
@@ -634,51 +675,64 @@
       }
     },
 
-    // j_114: CEER (Combined Energy Efficiency Ratio) = 3.412 × COPcool
+    // j_114 (M.1.5): the heat pump's own CEER = 3.412 × M.1.3 COPcool, whatever
+    // the cooling choice. It read "mechanical.cooling.cop", which no node or
+    // input defines, so it showed 3.412 × the 2.66 fallback at every HSPF.
     {
       id: "mechanical.heating.ceer",
       legacyId: "j_114",
-      dependencies: ["mechanical.cooling.cop"],
+      dependencies: ["mechanical.heating.copCoolDerived"],
       classification: "C",
       section: "S13",
-      label: "CEER",
+      label: "CEER (Heat Pump)",
       compute: (inputs) => {
-        const cop = parseNum(inputs["mechanical.cooling.cop"], 2.66);
+        const cop = parseNum(inputs["mechanical.heating.copCoolDerived"], 1);
         return +(3.412 * cop).toFixed(2);
       }
     },
 
-    // j_117: CEER for dedicated cooling system
+    // j_117 (M.3.6): the CEER of the cooling in effect = 3.412 × the COP the
+    // model cools at - M.1.3 when the heat pump cools, M.3.3 for a separate
+    // unit, 0 with no cooling.
     {
       id: "mechanical.cooling.ceer",
       legacyId: "j_117",
-      dependencies: ["mechanical.cooling.copDedicated", "mechanical.cooling.cop", "mechanical.cooling.systemType"],
+      dependencies: ["mechanical.cooling.effectiveCop"],
       classification: "C",
       section: "S13",
       label: "Cooling System CEER",
       compute: (inputs) => {
-        const systemType = inputs["mechanical.cooling.systemType"] || "Cooling";
-        const cop = systemType === "Cooling"
-          ? parseNum(inputs["mechanical.cooling.copDedicated"], 2.66)
-          : parseNum(inputs["mechanical.cooling.cop"], 2.66);
-        return +(3.412 * cop).toFixed(1);
+        const cop = parseNum(inputs["mechanical.cooling.effectiveCop"], 0);
+        return +(3.412 * cop).toFixed(2);
       }
     },
 
-    // l_114: Heatpump cooling sink energy (only for HP systems)
+    // l_114 (M.1.6): the heat pump's cooling sink, only when the heat pump
+    // cools = cooling electricity × (the COP it cools at − 1). It read
+    // "mechanical.cooling.cop", which nothing defines: it moved with HSPF
+    // only through the electricity, always × (2.66 − 1) - 94,351 kWh at HSPF
+    // 7.1 where 4,598 is right.
     {
       id: "mechanical.cooling.sinkEnergy",
       legacyId: "l_114",
-      dependencies: ["mechanical.cooling.electricalDemand", "mechanical.cooling.cop", "mechanical.heating.systemType"],
+      dependencies: [
+        "mechanical.cooling.electricalDemand",
+        "mechanical.cooling.effectiveCop",
+        "mechanical.heating.systemType",
+        "mechanical.cooling.systemType"
+      ],
       classification: "C",
       section: "S13",
       label: "Cooling Sink Energy (kWh/yr)",
       compute: (inputs) => {
-        const system = inputs["mechanical.heating.systemType"] || "Heatpump";
-        if (system !== "Heatpump") return 0;
+        const coolingType = normalizeCooling(
+          inputs["mechanical.cooling.systemType"],
+          inputs["mechanical.heating.systemType"]
+        );
+        if (coolingType !== COOLING.HEATPUMP) return 0;
         const cooling = parseNum(inputs["mechanical.cooling.electricalDemand"], 0);
-        const cop = parseNum(inputs["mechanical.cooling.cop"], 2.66);
-        return cooling * (cop - 1);
+        const cop = parseNum(inputs["mechanical.cooling.effectiveCop"], 1);
+        return cop > 1 ? cooling * (cop - 1) : 0;
       }
     },
 

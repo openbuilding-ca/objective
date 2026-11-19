@@ -33,7 +33,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -73,7 +73,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -113,7 +113,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -153,7 +153,7 @@ TEUI.ReferenceValues = {
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
     i_59: "45", // Ideal RH% averaged annually
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     //t_65: "7.0", // Reference Occupant Load (W/m²) set by occupancy
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     g_67: "Regular", // Default Eppt Efficienct Spec.
@@ -196,7 +196,7 @@ TEUI.ReferenceValues = {
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Default Eppt Efficienct Spec.
     //t_65: "7.0", // Reference Occupant Load (W/m²) set by occupancy
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -237,7 +237,7 @@ TEUI.ReferenceValues = {
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Default Eppt Efficienct Spec.
     //t_65: "7.0", // Reference Occupant Load (W/m²) set by occupancy
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -278,7 +278,7 @@ TEUI.ReferenceValues = {
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Default Eppt Efficienct Spec.
     //t_65: "7.0", // Reference Occupant Load (W/m²) set by occupancy
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -358,7 +358,7 @@ TEUI.ReferenceValues = {
     d_58: "150", // Max. CO2 per Health Canada ppm
     d_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
     f_73: "0.50", // SHGC of Glazing Max.
     f_74: "0.50", // SHGC of Glazing Max.
@@ -389,7 +389,7 @@ TEUI.ReferenceValues = {
   "PH Classic": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -433,7 +433,7 @@ TEUI.ReferenceValues = {
   "PH Plus": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -477,7 +477,7 @@ TEUI.ReferenceValues = {
   "PH Premium": {
     //"h_13": "90% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -489,7 +489,7 @@ TEUI.ReferenceValues = {
     d_65: "2.1", // PH Specific Plug Loads in W/m²
     d_66: "1.1", // Max. Permissible Lighting Load
     g_67: "Regular", // REFERENCE OVERRIDE: Section09.js forces Regular for all Reference models
-    d_65: "5.0", // Reference Plug Load (W/m²)
+    d_65: "5.0", // Reference Plug Load (W/m²): NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", peak receptacle load on Schedule G (major appliances included, per NECB)
     d_66: "1.1", // Reference Lighting Load (W/m²)
     // t_67: "5.0", // Reference Equipment Load (W/m²) - THIS IS ESTABLISHED BY OCCUPANCY AT D13
     f_73: "0.50", // SHGC of Glazing Max.
@@ -522,7 +522,7 @@ TEUI.ReferenceValues = {
   EnerPHit: {
     //"h_13": "PH Renovations"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil
@@ -567,7 +567,7 @@ TEUI.ReferenceValues = {
   "PH Low Energy": {
     //"h_13": "80% less than NBC"
     d_39: "Pt.3 Steel", // Reference Typology default for PH standard
-    h_23: "18", // PH Tsetpoint in °C
+    h_23: "20", // PH Tsetpoint in °C: PHPP 9.6a interior temperature winter (was 18, which no source gives; Andy 2026-11-18)
     d_51: "Electric", // DHW System Type for Reference model
     d_52: "100", // DWH System Efficiency when Electric
     k_52: "92", // DWH AFUE when Gas or Oil

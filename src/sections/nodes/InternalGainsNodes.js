@@ -36,8 +36,12 @@
     Hyperactive: 424.95,
   };
 
-  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²)
-  // From Section09.js equipmentLoadsTable
+  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²): OBJECTIVE's
+  // "Occupancy-Based Equipment Loads by Specification Type" table, compiled from NREL building data
+  // (ComStock, comstock.nrel.gov), the Commercial and Residential Energy Consumption Surveys (CBECS,
+  // RECS), NRC's National Energy Code for Buildings (NECB), ASHRAE Standard 90.1, the ASHRAE
+  // Handbook and the Building Performance Institute (BPI). These reflect
+  // measured use; CSA F280's peak allowance (4 W/m², Cl. 6.2.5) is lower (Andy 2026-11-18).
   const EQUIPMENT_LOADS_TABLE = {
     "A-Assembly": {
       Regular: { Elevators: 9.0, "No Elevators": 7.0 },
@@ -202,6 +206,9 @@
           buildingType.includes("B2-Care") || buildingType.includes("B2 - Care") ||
           buildingType.includes("B3-Detention") || buildingType.includes("B3 - Detention");
 
+        // Residential 5 W/m²: NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", PEAK receptacle
+        // load on Operating Schedule G (10.6 full-load h/day, Table A-8.4.3.2.(1)-G). Per NECB it includes
+        // the dwelling's major appliances (Note A-8.4.3.2.(2)); not cited until 2026-11-18 (Andy).
         return isResidentialOrCare ? 5 : 7;
       },
     });
