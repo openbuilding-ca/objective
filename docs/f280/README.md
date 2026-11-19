@@ -1,5 +1,13 @@
 # F280 whole-house verification: start here
 
+> **Current state (2026-11-18 night; the sections below are the day's history, in order).** F280-1: loss
+> **14 412 W (122.3 %)** = envelope 12 494 (S15 T.6.4 `d_137`) + infiltration 1194 + ventilation 724 (in L/s now);
+> sensible gain **4705 W (64.3 %)**. Fixed today: RSI 0 (film floor), the 10 °C ground in S15's peaks, design vs
+> energy set-points, the F280 ventilation units. F280-1 has no TB penalty (Andy). The base case's ventilation is the HRV
+> at ASE 76 %; exhaust-only is only the 8.3.4 c) variant. The biggest remaining loss term is the basement slab (~5 kW,
+> U·A to 10 °C, no soil); F280 Cl. 5.2.2.1 requires BASESIMP (BasementHLR.xls). The gain lacks a design-hour solar term.
+> The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 (HANDOFF 2026-11-18 night) and §4.6.
+
 Sandbox only (Andy, 2026-11-18): the F280 cases and Annex J's values stay in `andy-rnd`. The plan and the
 rulings are in the ABCD.EARTH repo, `ABCD-OBJECTIVE-PRO.md` §4.3.
 
