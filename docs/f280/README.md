@@ -1,13 +1,17 @@
 # F280 whole-house verification: start here
 
-> **Current state (2026-11-19, late).** F280-1 on **BASESIMP** (S03 G.4.3) and **AIM-2** (S12 B.19.1): loss
+> **Current state (2026-11-19, night).** F280-1 on **BASESIMP** (S03 G.4.3) and **AIM-2** (S12 B.19.1): loss
 > **10 839 W (92.0 %, under the 98–120 % band)** = envelope 8384 (above grade 6997 + basement 1387) + infiltration
-> 1737 (AIM-2, LRairh 0.14865 AC/H) + ventilation 718 (Cl. 5.2.3.2 at the clause's 1.2); sensible gain **5014 W
-> (68.5 %)**, now `f280.totalSensibleHeatGain` (Cl. 6.2.9), which carries Cl. 6.2.7's ventilation gain (374 W, ATRE 0:
-> OBJECTIVE takes none) in place of S15's season-average ventilation (0 W). On the OBJECTIVE methods (U·A to 10 °C,
-> N-factor) the same house reads 14 412 W (122.3 %). Next: the design-hour solar gain (Cl. 6.2.2.1: ~2150 W for
-> F280-1's windows against the season average 289 W). Open with Andy: B.18.4's ELA vs NBC's NLA10, and an ATRE input.
-> The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 and §4.6.
+> 1737 (AIM-2, LRairh 0.14865 AC/H) + ventilation 718 (Cl. 5.2.3.2); sensible gain **6882 W (94.0 %)**,
+> `f280.totalSensibleHeatGain` (Cl. 6.2.9) = enclosure + internal + occupants (OBJECTIVE's own inputs) + the
+> DESIGN-HOUR solar 2158 W (Cl. 6.2.2.1, `f280.peakSolarHeatGain`) + air leakage 85 (Cl. 6.2.6) + ventilation 374
+> (Cl. 6.2.7, ATRE S13 `l_123`, 0 per Table H.3.3). Nominal = sensible + the design latent (`cooling.designLatentW`,
+> Annex B) = 6389 W before the solar, now 8258 W. Variants: 3.0 ACH50 +2059 / +110 W (Annex J +1925 / +118); turning
+> the house +1230..+1568 W (Annex J +1995..+2529); exhaust-only for Kieran (signs). Also 2026-11-19: S12 B.18.4 is
+> NBC's NLA10 (cm²/m²) against B.18.1's level; S03 G.4.9 reads F280's table for any city (nearest F280 location
+> for a city it lacks). Open: the opaque walls' solar correction SC (Cl. 6.2.1, Table 3), the remaining orientation
+> response, the loss at 92 %; Andy's "F280 mode" master toggle. The Parnas tables in `docs/parnas-tables/f280/` predate
+> all of this (stale). Plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0.
 >
 > **AIM-2** (2026-11-19): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables `src/core/Aim2Data.js`;
 > January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel computed
