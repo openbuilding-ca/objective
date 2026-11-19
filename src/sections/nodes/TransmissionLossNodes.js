@@ -845,9 +845,14 @@
       legacyId: "h_26b",
       section: "S03",
       classification: "C",
-      dependencies: ["ground.basesimp"],
+      // From F280's weather table for S03's city, whether or not BASESIMP has its geometry: it read
+      // BASESIMP's result, so any missing BASESIMP input (G.4.6 perimeter 0, no slab) showed it
+      // Unavailable for every city (Andy 2026-11-19)
+      dependencies: ["climate.location.province", "climate.location.city"],
       label: "Deep Ground Temperature (F280)",
-      compute: (inputs) => inputs["ground.basesimp"]?.weather?.deepGround ?? "Unavailable"
+      compute: (inputs) =>
+        window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"])?.deepGround ??
+        "Unavailable"
     });
 
     graph.registerNode({
@@ -878,7 +883,7 @@
    *      walls' insulation only as max(interior, exterior) or their sum, so the split never changes a
    *      result) and S11's slab RSI.
    *   i) j) k) heating degree days, deep ground temperature, monthly dry bulbs: F280's weather table
-   *      for S03's city (F280Weather.js) - none when F280 does not list the city.
+   *      for S03's city (F280Weather.js; a city F280 does not list takes its nearest F280 location's).
    *   l) m) n) room and design temperatures: S03's design set-point and L.3.1 / L.3.2.
    *   o) no radiant slab; q) no openings in the above-grade foundation wall (OBJECTIVE does not
    *      separate them).

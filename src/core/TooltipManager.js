@@ -198,13 +198,13 @@
     h_26b: {
       cell: "H26b",
       title: "Deep Ground Temperature (F280)",
-      message: "From F280's weather table for this city (F280 Cl. 5.2.2.1 j)). Unavailable when F280 does not list the city.",
+      message: "From F280's weather table for this city (F280 Cl. 5.2.2.1 j)). A city F280 does not list takes its nearest F280 location's (one today: Boiestown, from Fredericton, 59 km). Unavailable only for NBC's group headings (Victoria Region, Halifax Region), which carry no climate data.",
     },
     l_26b: {
       cell: "L26b",
       title: "BASESIMP Peak Heat Loss",
       message:
-        "The foundation's January design heat loss by BASESIMP, W - shown whichever method G.4.3 selects, so the two can be compared; it enters S15 and F280 only under BASESIMP.",
+        "The foundation's January design heat loss by BASESIMP, W - shown whichever method G.4.3 selects, so the two can be compared; it enters S15 and F280 only under BASESIMP. Unavailable until BASESIMP has its inputs: S11's slab and below-grade wall areas, G.4.6 the exposed perimeter, G.4.5 a depth no deeper than the wall, and a city F280 lists (G.4.9).",
     },
     d_111: {
       cell: "111",

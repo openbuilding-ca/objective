@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write src/core/F280Weather.js: CSA F280-12's weather table, for BASESIMP (src/core/Basesimp.js).
 
-    python3 tools/f280/f280_weather.py <F280_Weather.xlsx> > src/core/F280Weather.js
+    python3 tools/f280/f280_weather.py <F280_Weather.xlsx> data/climate/c2-geocode.json > src/core/F280Weather.js
 
 F280 Cl. 5.2.2.1 i)-k): BasementHLR.xls takes the heating degree days, the deep ground temperature and the
 monthly average dry bulbs - F280's own weather data, which ships as F280_Weather.xls ("Interpreted from
@@ -9,11 +9,15 @@ CSA_F280_Table 5_Final_2012-01-03.xls by Philip Jarrett Environment Canada", cor
 copy beside the standard). Open it in Excel and save as .xlsx first. Every value is copied as stored.
 
 Keyed by province and a normalised city name (accents, case and punctuation dropped), so S03's city -
-"Ottawa (Orléans)" - finds F280's "Ottawa (Orleans)". A city F280 does not list has no entry: BASESIMP
-then says so (no nearest-city substitute).
+"Ottawa (Orléans)" - finds F280's "Ottawa (Orleans)". An S03 city F280 does not list takes its NEAREST F280
+location (Andy 2026-11-19: "If cities are missing, can we consider a 'nearest neighbour' lookup?"): the
+shortest great-circle distance from S03's place (c2-geocode.json, NRCan's names, tools/climate/c2_geocode.py)
+to F280's own latitude and longitude. The pairing and its km are written into the file, and lookup() returns
+them with the row (nearest: { city, km }). On 2026-11-19 that is one city: Boiestown -> Fredericton, 59 km.
 """
 
 import json
+import math
 import sys
 import unicodedata
 
@@ -24,9 +28,7 @@ PROV = {"AB": "AB", "BC": "BC", "MB": "MB", "NB": "NB", "NL": "NL", "NS": "NS", 
 
 
 # S03 (NBC 2025 C-2) names whose F280 (2012) spelling differs beyond accents, case and Saint/St - each the
-# same place (a rename or a respelling; HDD and design temperature agree where both list them). Left out on
-# purpose: "Victoria Region" and "Halifax Region" (group headings with no data of their own), Boiestown
-# and Puvirnituq (F280 does not list them).
+# same place (a rename or a respelling; HDD and design temperature agree where both list them).
 ALIAS = {
     ("BC", "Vancouver (Granville St. & 41st Ave)"): "Vancouver (Granville & 41 Ave)",
     ("BC", "Victoria (Gonzales Hts)"): "Victoria Gonzales Height",
@@ -39,7 +41,18 @@ ALIAS = {
     ("NT", "Behchokǫ̀ / Rae-Edzo"): "Rae-Edzo",
     ("NT", "Ulukhaktok / Holman"): "Ulukhaqtuuq / Holman",
     ("NU", "Igluligaarjuk / Chesterfield Inlet"): "Igluligaarjuk / Chesterfield Inl",
+    ("QC", "Puvirnituq"): "Puvinrituq",  # F280's spelling; 1 km apart, HDD 9200 and -36 in both
 }
+
+# NBC C-2's group headings: S03 lists them, but they carry no climate data of their own, so no F280 row either.
+HEADINGS = {("BC", "Victoria Region"), ("NS", "Halifax Region")}
+
+
+def great_circle_km(a, b):
+    """Shortest distance on a 6371 km sphere between two (lat, lon) in degrees - choosing a neighbour only."""
+    la1, lo1, la2, lo2 = map(math.radians, (*a, *b))
+    c = math.sin(la1) * math.sin(la2) + math.cos(la1) * math.cos(la2) * math.cos(lo1 - lo2)
+    return 6371 * math.acos(min(1.0, c))
 
 
 def key(name):
@@ -49,7 +62,7 @@ def key(name):
     return "".join({"saint": "st", "sainte": "ste"}.get(w, w) for w in words)
 
 
-def main(path):
+def main(path, geocode_path):
     ws = openpyxl.load_workbook(path, data_only=True)["Weather_Data"]
     header = [c.value for c in ws[3]]
     want = ["Seq", "City", "Region", "DegDay", "DHDBT", "DCDBT", "Strange", "OHR", "DGTEMP", "JanWind", "JulWind",
@@ -80,21 +93,36 @@ def main(path):
         if f"{prov}|{key(f280)}" not in out:
             raise SystemExit(f"alias {prov} {city} -> {f280}: F280 has no such row")
     alias = {f"{p}|{key(c)}": f"{p}|{key(f)}" for (p, c), f in ALIAS.items()}
+    nearest = {}
+    for place in json.load(open(geocode_path, encoding="utf-8"))["locations"]:
+        prov, city = place["province"], place["name"]
+        k = f"{prov}|{key(city)}"
+        if (prov, city) in HEADINGS or k in out or k in alias:
+            continue
+        km, best = min((great_circle_km((place["lat"], place["lon"]), (r["lat"], r["lon"])), f) for f, r in out.items())
+        nearest[k] = [best, round(km)]
+        print(f"nearest: {prov} {city} -> {out[best]['city']}, {round(km)} km", file=sys.stderr)
     print("  const TABLE = %s;" % json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     print("  const ALIAS = %s;" % json.dumps(alias, separators=(",", ":")))
+    print("  // S03 cities F280 does not list -> [F280's nearest location, km] (great circle, NRCan's coordinates)")
+    print("  const NEAREST = %s;" % json.dumps(nearest, separators=(",", ":")))
     print("  // the same normalisation as the tool's key(): accents, case, punctuation; Saint/Sainte -> St/Ste")
     print("  const key = name => String(name).normalize(\"NFKD\").replace(/[\\u0300-\\u036f]/g, \"\").toLowerCase()")
     print("    .replace(/[^a-z0-9]+/g, \" \").trim().split(\" \").map(w => ({ saint: \"st\", sainte: \"ste\" })[w] || w).join(\"\");")
-    print("  // S03's province and city -> F280's row, or null when F280 does not list the city")
+    print("  // S03's province and city -> F280's row; a city F280 does not list -> its nearest F280 location's row,")
+    print("  // with nearest: { city, km }; null for a heading or an unknown city")
     print("  const lookup = (province, city) => {")
     print("    const k = `${province}|${key(city)}`;")
-    print("    return TABLE[ALIAS[k] || k] || null;")
+    print("    const row = TABLE[ALIAS[k] || k];")
+    print("    if (row) return row;")
+    print("    const n = NEAREST[k];")
+    print("    return n ? { ...TABLE[n[0]], nearest: { city: TABLE[n[0]].city, km: n[1] } } : null;")
     print("  };")
     print("  window.TEUI.F280Weather = Object.freeze({ lookup, size: %d });" % len(out))
     print("})();")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         raise SystemExit(__doc__)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
