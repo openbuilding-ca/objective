@@ -87,7 +87,8 @@ ACH50 = 1.5            # Table H.3.2
 PVC_LS = 51.91         # Table H.3.3 b), HRV-simplified
 ASE_PCT = 76           # Table H.3.3 b), apparent sensible effectiveness
 # Table 6F (p. 40, double glazed): Operable - Wood/Vinyl, Insulating spacer, Low-E, 13 mm Argon -> RSIw 0.51,
-# SHGC 0.47 (read from Andy's screenshot 2026-11-19; the text extract's column shift had given 0.64 / 0.40, values
+# SHGC 0.47 - the window Table H.3.14 (p. 159) specifies: vinyl operable, double, 13 mm, insulated spacer, argon,
+# single low-e, no interior shading (read from Andy's screenshots 2026-11-19; the text extract's column shift had given 0.64 / 0.40, values
 # the double-glazed table does not contain)
 WINDOW_RSI, WINDOW_SHGC = 0.51, 0.47
 DOOR_RSI = 1.1         # Table 6I: insulated metal, polyurethane core, no storm door

@@ -1,7 +1,7 @@
 # F280 whole-house verification: start here
 
 > **2026-11-19 late: F280-1's LOSS PASSES Cl. 8.4.1 - 11 570 W, 98.2 %** (Table 6F's window, RSI 0.51 / SHGC 0.47, and the
-> plans' floor area and volume, read from the PDF). Gain 5646 W, 77.1 %: Table H.3.14 (the 2010s window) next.
+> plans' floor area and volume, read from the PDF). Gain 5646 W, 77.1 %: H.3.14 confirms the window; next, Annex J's own pages against the fixture.
 >
 > **2026-11-19 end (`f280-review-format`):** the **"CSA F280 Review Format"** rows in Sample Projects, one under each
 > Part 9 house (`tools/f280/review_case.py`; witness `test/f280ReviewCases.spec.cjs`, record `test/f280-review-results.json`):
@@ -224,8 +224,10 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
 - ✅ Table 6F (p. 40, the PDF 2026-11-19): operable vinyl, insulating spacer, low-E, 13 mm argon is RSI 0.51,
   SHGC 0.47 - the extract had given 0.64 / 0.40. Loss 10 839 -> 11 528 W (97.8 %), gain 5155 -> 5619 W (76.7 %).
   ⚠ The turns (8.3.8) now change by 0.72-0.74 of Annex J's on every facing (0.615 at SHGC 0.40): Annex J
-  behaves as if SHGC ~0.65 (Table 6F's CLEAR double glazing). Table H.3.14 (2010s windows, p. ~158-160) settles
-  which window Archetype 1 has.
+  behaves as if SHGC ~0.65 (Table 6F's CLEAR double glazing). ✅ Table H.3.14 (p. 159) CONFIRMS the build's window
+  (vinyl operable, double, 13 mm, insulated spacer, argon, single low-e, no interior shading): SHGC 0.47 is the
+  standard's. So the turn ratio is NOT the window. Suspect: `test/fixtures/f280-annex-j.json` itself, read from the
+  same column-shifting extract (`verified_against_pdf: false`) - check its base case and variants against Annex J.
 - ✅ Annex I.3 b)'s 2010s values (p. 167, the PDF 2026-11-19): the build's eight RSIs are right.
 - Annex J's variant tables (8.3.4–8.3.8) come through column-shifted, and the SIGN of each expected change is
   not settled (`sign_settled: false`). 8.3.4 c) reads −897 W loss for exhaust-only, which looks backwards.
