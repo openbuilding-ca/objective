@@ -29,6 +29,9 @@
 > 8.3.9 a)'s Vancouver 1960s Archetype 2 row repeats Vancouver 1980s Archetype 1 digit for digit. (5) The other 31 cases of
 > 8.3.9 are not built (F280-1 is Archetype 1 / 2010s / Ottawa).
 >
+> **Peak loads, OBJECTIVE vs F280** on the four Part 9 houses: the section of that name below (envelopes within 4 %; OBJECTIVE's
+> S15 peaks omit the air and the latent F280 adds).
+>
 > **What the app does (all shipped 2026-11-18/19):** S21 F280 Mode is the master switch, per model (Target and Reference
 > independent): On puts BASESIMP and AIM-2 in the annual stream and holds F280's internal gains in S09 (70 W per person, Cl.
 > 6.2.4; 4 W/m2, 800 W floor, Cl. 6.2.5); Off hides every F280-only input and S21 and runs OBJECTIVE's methods. S21 computes F280's
@@ -171,6 +174,56 @@ analysis"*. Measured on the four Part 9 houses (the "CSA F280 Review Format" row
 The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation, air leakage): they move TEUI by
 −3.8 to +0.8. The gains move it by −1.2 to −25.4. For Annex J none of this matters: Annex J compares design W
 (above), never annual energy. It matters for any claim that "F280, annualized, predicts energy use".
+
+## Peak loads: OBJECTIVE vs F280 on the four Part 9 houses (measured 2026-11-19)
+
+Each house loaded as its case study (OBJECTIVE, F280 Mode Off) and as its "CSA F280 Review Format" case (Mode On), every
+figure read from the app (`main` at `04c72b4`). **No column is "reality":** the bills give annual energy only, so nothing
+measured says what these houses' peak loads are. Note the scopes: OBJECTIVE's S15 heating peak (T.6.4, `d_137`) is the
+ENCLOSURE ONLY (no leakage, no ventilation); its cooling peak (T.6.5, `d_139`) is SENSIBLE, with the cooling season's
+AVERAGE solar. F280's figures (S21) are full design loads.
+
+**Heating peak (kW)**
+
+| House | OBJECTIVE enclosure (Off) | F280 enclosure (On) | F280 air: leakage + ventilation | F280 total design loss |
+|---|---|---|---|---|
+| 03 Hemmingford | 3.13 | 3.23 | 0.70 | **3.93** |
+| 02 Collingwood | 6.97 | 6.82 | 0.57 | **7.38** |
+| 12 Hawkesbury | 2.87 | 2.97 | 0.57 | **3.54** |
+| 10 Port Credit | 8.69 | 8.53 | 3.97 | **12.50** |
+
+The envelopes agree within ±4 % (OBJECTIVE's ground at 10 °C vs F280's BASESIMP). The whole difference is AIR, which
+OBJECTIVE's S15 heating peak does not carry: small in the tight PH houses (~0.6 kW), but 4 kW at Port Credit, 32 % of the
+design loss (AIM-2 on a large semi-detached volume, 1476 m³, and an HRV at 55 % recovery). OBJECTIVE's heating peak
+under-reads wherever the air terms matter.
+
+**Cooling peak (kW)**
+
+| House | OBJECTIVE sensible (Off) | F280 sensible (T.6.11) | F280 nominal x 1.3 (T.6.12, Annex J's) | S21 nominal (Annex B latent) |
+|---|---|---|---|---|
+| 03 Hemmingford | 6.98 | 8.44 | 10.97 | 9.38 |
+| 02 Collingwood | 3.50 | 3.24 | 4.21 | 3.91 |
+| 12 Hawkesbury | 2.48 | 3.35 | 4.35 | 4.12 |
+| 10 Port Credit | 5.84 | 5.24 | 6.81 | 6.49 |
+
+Sensible against sensible, it splits by house type. In the two SB12 houses OBJECTIVE is 8-12 % HIGHER (its own internal
+gains, 5 W/m² plug plus lighting and equipment, exceed F280's 4 W/m² for everything). In the two PH houses it is
+17-26 % LOWER: they have large glazing, and F280 takes DESIGN-HOUR solar by facing (Cl. 6.2.2.1) where OBJECTIVE's peak
+averages the season's solar (the first run's finding 2, still true of S15). With the latent added, either F280 nominal
+is above OBJECTIVE's sensible figure for every house.
+
+Side notes:
+- **Hemmingford's F280 cooling looks wrong:** 11 kW nominal on 152 m², for a house that has no cooling (S13 "No
+  Cooling") and no overheating on record. That is the 8.4 kW design-hour sensible gain: most likely unshaded PH glazing at
+  full design-hour solar. Check the case's summer shading before reading anything into it.
+- **Mode On moves OBJECTIVE's own cooling peak:** under On, S15 T.6.5 falls (Collingwood 3.50 -> 1.87 kW) because S09
+  then carries F280's smaller gains - as ruled (On = F280's gains), and the same effect as on TEUI (the section above).
+- Mode Off leaves S21's loss Unavailable on the three slab houses: their case studies carry no BASESIMP slab
+  configuration (S03 G.4.4); their review cases do.
+
+**In short:** OBJECTIVE's ENVELOPE heating agrees with F280's within 4 %, but its peaks omit what F280 adds - the air in
+heating, the latent in cooling - and its cooling peak averages the solar F280 takes at the design hour. Without measured
+peaks, these houses cannot say which is nearer the truth.
 
 ## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18) - SUPERSEDED 2026-11-19 for S21
 
