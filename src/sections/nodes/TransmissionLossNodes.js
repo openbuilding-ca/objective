@@ -266,14 +266,14 @@
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
           "climate.groundFacing.hdd",
-          "ground.method",
+          "ground.methodInEffect",
           "ground.basesimp"
         ],
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
           // S03 G.4.3 = BASESIMP: the row's share of the foundation's heating-season loss
           // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
-          if (inputs["ground.method"] === "BASESIMP") {
+          if (inputs["ground.methodInEffect"] === "BASESIMP") {
             const bs = inputs["ground.basesimp"];
             if (!bs || bs.error) return "Unavailable";
             return id === "slabOnGrade" ? bs.annual.slab : bs.annual.walls;

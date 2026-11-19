@@ -12,7 +12,11 @@
  *   energy.peakHeating.intensity    (d_140) — max heating intensity (W/m²)
  *
  * F280 additions (this module):
- *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3 (or OBJECTIVE's 1.21 × NRL50 × Ae/N × deltaT)
+ * TWO STREAMS (Andy 2026-11-19): these nodes are the F280 stream - always F280's methods (BASESIMP,
+ * AIM-2, Cl. 6.2's design-hour gains), whatever S03 G.4.3 / S12 B.19.1 say; those choose the ANNUAL
+ * stream's methods, and only under F280 Mode (ground.methodInEffect, airTightness.infiltrationMethodInEffect).
+ *   - Peak envelope heat loss:      U·A × DTDh above grade + BASESIMP below (Cl. 5.2.1, 5.2.2.1)
+ *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3
  *   - Peak ventilation heat loss:   Cl. 5.2.3.2, HLvairb = PVC × DTDh × 1.2 × (1 − E)
  *   - F280 total design heat loss:  Q_total = envelope + Q_inf + Q_vent
  *   - Sensible heat gain, Cl. 6.2.9: enclosure + internal + solar + occupants + air leakage (Cl. 6.2.6)
@@ -39,10 +43,6 @@
     const num = parseFloat(String(value).replace(/,/g, ""));
     return isNaN(num) ? defaultVal : num;
   }
-
-  // Volumetric heat capacity of air: rho × Cp = 1.204 × 1005 / 1000 = 1.21 W·s/(L·K) - OBJECTIVE's own
-  // (the N-factor leakage path)
-  const AIR_HEAT_CAPACITY = 1.21;
 
   // F280's own factor, W per L/s·K: every air equation in the standard writes 1.2 (Cl. 5.2.3, 5.2.3.2,
   // 6.2.6, 6.2.7)
@@ -136,6 +136,20 @@
         defaultValue: false
       },
 
+      // F280 Mode (S21 F.00; Andy 2026-11-19): two streams. Off - the default - hides every F280-only
+      // input and S21, and the annual stream runs on OBJECTIVE's methods whatever G.4.3 / B.19.1 hold
+      // (their values are kept). On shows them, and those two selectors choose the ANNUAL method too.
+      // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). "G": one mode
+      // for Target and Reference.
+      {
+        id: "f280.mode",
+        legacyId: "f280_mode",
+        section: "SF280",
+        classification: "G",
+        label: "F280 Mode",
+        defaultValue: "Off"
+      },
+
       // F280 form metadata
       {
         id: "f280.projectNumber",
@@ -166,11 +180,36 @@
     graph.registerInputs(inputs);
 
     // ========================================================================
-    // F280 PEAK ENVELOPE HEAT LOSS (CSA F280-12 Section 5.2)
+    // THE ANNUAL STREAM'S METHODS (Andy 2026-11-19, two streams): S03 G.4.3 and S12 B.19.1 choose the
+    // annual figures' ground and air-leakage methods only under F280 Mode; Off, OBJECTIVE's, whatever
+    // the hidden selectors hold. Every annual consumer reads these, never the selectors.
+    // ========================================================================
+
+    graph.registerNode({
+      id: "ground.methodInEffect",
+      section: "S03",
+      classification: "C",
+      dependencies: ["f280.mode", "ground.method"],
+      label: "Ground Heat-Loss Method in Effect (annual)",
+      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["ground.method"] === "BASESIMP" ? "BASESIMP" : "OBJECTIVE")
+    });
+
+    graph.registerNode({
+      id: "airTightness.infiltrationMethodInEffect",
+      section: "S12",
+      classification: "C",
+      dependencies: ["f280.mode", "airTightness.infiltrationMethod"],
+      label: "Infiltration Method in Effect (annual)",
+      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["airTightness.infiltrationMethod"] === "AIM2" ? "AIM2" : "OBJECTIVE")
+    });
+
+    // ========================================================================
+    // F280 PEAK ENVELOPE HEAT LOSS (CSA F280-12 Cl. 5.2.1, 5.2.2)
     // Parnas: docs/parnas-tables/f280/peak-envelope-heat-loss.json
     //
-    // Uses energy.peakHeating.enclosureKw (d_137) from EnergyNodes.js,
-    // converted from kW to Watts.
+    // The F280 stream's own: above grade U·A × DTDh (S15 d_137's air-facing half) + BELOW grade by
+    // BASESIMP, Cl. 5.2.2.1 ("the spreadsheet calculation called BasementHLR.xls shall be used"),
+    // whatever S03 G.4.3 says (it read d_137, which followed G.4.3 - 2026-11-19, two streams).
     // ========================================================================
 
     graph.registerNode({
@@ -178,21 +217,29 @@
       legacyId: "f280_hl_env",
       section: "SF280",
       classification: "C",
-      dependencies: ["energy.peakHeating.enclosureKw"],
+      dependencies: [
+        "envelope.airFacing.uValue",
+        "envelope.airFacing.area",
+        "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
+        "climate.temperature.coldest",
+        "ground.basesimp"
+      ],
       label: "F280 Peak Envelope Heat Loss (W)",
       compute: (inputs) => {
-        // Unavailable stays Unavailable (BASESIMP missing an input, S03 G.4.3): never a 0 W envelope
-        if (inputs["energy.peakHeating.enclosureKw"] === "Unavailable") return "Unavailable";
-        const kw = parseNum(inputs["energy.peakHeating.enclosureKw"]);
-        return Math.round(kw * 1000);
+        // BASESIMP missing an input: Unavailable (its reason on S03 G.4.10), never a 0 W foundation
+        const bs = inputs["ground.basesimp"];
+        if (!bs || bs.error) return "Unavailable";
+        const dT = Math.max(0, parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22));
+        const air = parseNum(inputs["envelope.airFacing.uValue"]) * parseNum(inputs["envelope.airFacing.area"]) * dT;
+        return Math.round(air + bs.heatingLoad);
       }
     });
 
     // ========================================================================
-    // F280 PEAK INFILTRATION HEAT LOSS (CSA F280-12 Section 5.2.5)
-    // Parnas: docs/parnas-tables/f280/peak-infiltration-heat-loss.json
-    //
-    // Q_inf = 1.21 × NRL50 × Ae / N × deltaT
+    // F280 PEAK AIR-LEAKAGE HEAT LOSS (CSA F280-12 Cl. 5.2.3): HLairb = LRairh × Vb / 3.6 × DTDh × 1.2,
+    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, whatever S12 B.19.1
+    // says (2026-11-19, two streams; it took OBJECTIVE's N-factor unless B.19.1 was AIM-2). AIM-2 missing
+    // an input: Unavailable.
     // ========================================================================
 
     graph.registerNode({
@@ -201,38 +248,17 @@
       section: "SF280",
       classification: "C",
       dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
         "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
         "climate.temperature.coldest",
-        "airTightness.infiltrationMethod",
         "airTightness.aim2",
         "volume.conditioned"
       ],
       label: "F280 Peak Infiltration Heat Loss (W)",
       compute: (inputs) => {
-        // S12 B.19.1 = AIM-2: Cl. 5.2.3 itself, HLairb = LRairh x Vb / 3.6 x DTDh x 1.2 (LRairh = AIM2.xls's)
-        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
-          const r = inputs["airTightness.aim2"];
-          if (!r || r.error) return "Unavailable";
-          const dT = parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22);
-          return Math.round(r.design.heating.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, dT) * 1.2);
-        }
-        const nrl50 = parseNum(inputs["airTightness.nrl50"]);
-        const areaAir = parseNum(inputs["envelope.airFacing.area"]);
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
-        const designTemp = parseNum(inputs["climate.temperature.coldest"], -22);
-
-        if (nFactor <= 0 || areaAir <= 0) return 0;
-
-        const deltaT = setpoint - designTemp;
-        if (deltaT <= 0) return 0;
-
-        // Q_inf = 1.21 × NRL50 × area / N-factor × deltaT
-        const baseCoeff = (AIR_HEAT_CAPACITY * nrl50 * areaAir) / nFactor;
-        return Math.round(baseCoeff * deltaT);
+        const r = inputs["airTightness.aim2"];
+        if (!r || r.error) return "Unavailable";
+        const dT = parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22);
+        return Math.round(r.design.heating.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, dT) * F280_AIR);
       }
     });
 
@@ -327,37 +353,21 @@
     });
 
     // ========================================================================
-    // F280 PEAK AIR-LEAKAGE HEAT GAIN (CSA F280-12 Cl. 6.2.6)
-    // Under AIM-2 (S12 B.19.1): HGsalb = LRairc × Vb / 3.6 × DTDc × 1.2. Otherwise OBJECTIVE's
-    // N-factor leakage at the cooling ΔT.
+    // F280 PEAK AIR-LEAKAGE HEAT GAIN (CSA F280-12 Cl. 6.2.6): HGsalb = LRairc × Vb / 3.6 × DTDc × 1.2 -
+    // AIM-2's, whatever S12 B.19.1 says (two streams, as the loss).
     // ========================================================================
 
     graph.registerNode({
       id: "f280.peakInfiltrationHeatGain",
       section: "SF280",
       classification: "C",
-      dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "climate.temperature.hottest",
-        "climate.cooling.setpoint",
-        "airTightness.infiltrationMethod",
-        "airTightness.aim2",
-        "volume.conditioned"
-      ],
+      dependencies: ["climate.temperature.hottest", "climate.cooling.setpoint", "airTightness.aim2", "volume.conditioned"],
       label: "F280 Peak Air-Leakage Heat Gain (W)",
       compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        if (!r || r.error) return "Unavailable";
         const deltaT = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
-        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
-          const r = inputs["airTightness.aim2"];
-          if (!r || r.error) return "Unavailable";
-          return r.design.cooling.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, deltaT) * F280_AIR;
-        }
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-        if (!(nFactor > 0) || !(deltaT > 0)) return 0;
-        // 1.21 × NRL50 × Ae / N × ΔT
-        return AIR_HEAT_CAPACITY * parseNum(inputs["airTightness.nrl50"]) * parseNum(inputs["envelope.airFacing.area"]) / nFactor * deltaT;
+        return r.design.cooling.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, deltaT) * F280_AIR;
       }
     });
 

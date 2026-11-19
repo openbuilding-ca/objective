@@ -86,6 +86,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `e_118: Heat Recovery Type (HRV: sensible only; ERV: sensible + latent)` | HRV | standard | Table H.3.3: HRV-simplified, ATRE 0 % |
 | `l_122: ERV Latent Recovery Efficiency (LRE): %` | 0 | standard | an HRV: no latent recovery (Table H.3.3) |
 | `l_123: ATRE (F280)` | 0 | standard | Table H.3.3: ATRE 0 % (F280 Cl. 6.2.7) |
+| `f280_mode: F280 Mode` | On | objective | S21 F280 Mode On: the F280 inputs shown, BASESIMP and AIM-2 for the annual figures too |
 | `g_59: Indoor State for the Latent Cooling Load` | F280 | standard | the latent load at F280's indoor state |
 | `i_122: Latent Load Method (F280 / OBJECTIVE / ASHRAE 140)` | F280 | standard | the L-4 method selector: F280 |
 | `l_24: Cooling Override` | 24 | standard | F280 cooling indoor 24 C |

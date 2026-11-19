@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T12:06:30.953Z",
+  "timestamp": "2026-11-19T12:48:50.131Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -52,6 +52,7 @@
         "aim2_LRairc": 0.0580331052463261,
         "aim2Error": null,
         "annualInfiltration_kWh": 2858.739692605512,
+        "annualGround_kWh": 5777.460921418415,
         "sensibleGain": 6882.442389348715,
         "infiltrationGain_W": 84.7631535227839,
         "ventilationGain_W": 373.76753999999994,

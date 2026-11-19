@@ -1095,6 +1095,14 @@ table.data-table select.form-select:hover {
 /* Removed conflicting alignment utility classes - now handled by universal rules */
 
 /* Style for disabled/non-applicable input fields */
+/* F280 Mode Off (S21 F.00, Andy 2026-11-19): F280-only rows go, a shared row's F280 cells keep their place */
+.f280-hidden-row {
+  display: none !important;
+}
+.f280-hidden-cell {
+  visibility: hidden;
+}
+
 .disabled-input {
   color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
   font-style: italic !important;

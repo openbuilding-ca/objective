@@ -27,6 +27,7 @@ window.TEUI.SectionModules.sect21 = (function () {
   const FIELDS = {
     // === F280 OWN INPUTS (editable) ===
     // Project metadata
+    f280Mode:                     "f280_mode",
     projectNumber:                "f280_proj_num",
     complianceType:               "f280_comp_type",
     codeReference:                "f280_code_ref",
@@ -129,6 +130,35 @@ window.TEUI.SectionModules.sect21 = (function () {
         l: { content: "", classes: ["section-subheader"] },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "Status", classes: ["section-subheader"] },
+      },
+    },
+
+    // ---- F280 Mode (Andy 2026-11-19): two streams; Off hides every F280-only input and S21 below ----
+    mode: {
+      id: "F.00",
+      rowId: "F.00",
+      label: "F280 Mode",
+      cells: {
+        c: { label: "F280 Mode" },
+        d: {
+          fieldId: FIELDS.f280Mode,
+          type: "dropdown",
+          dropdownId: "f280_mode",
+          value: "Off",
+          tooltip: true,
+          label: "F280 Mode",
+          options: ["Off", "On"],
+        },
+        e: {},
+        f: {},
+        g: {},
+        h: {},
+        i: {},
+        j: {},
+        k: {},
+        l: {},
+        m: {},
+        n: {},
       },
     },
 
@@ -1483,6 +1513,7 @@ window.TEUI.SectionModules.sect21 = (function () {
   // Explicit row ordering to prevent JavaScript numeric-key-first iteration
   const ROW_ORDER = [
     "header",
+    "mode",
     "subheader_meta", 1, 2, 3,
     "subheader_design", 4, 5, 6, 7, 8, 9, 10, 11, 12,
     "subheader_envelope", 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
@@ -1533,6 +1564,7 @@ window.TEUI.SectionModules.sect21 = (function () {
 
   // Editable field IDs owned by this section
   const EDITABLE_FIELDS = [
+    FIELDS.f280Mode,
     FIELDS.projectNumber,
     FIELDS.codeReference,
     FIELDS.installedHeatingCapacity,
@@ -1681,6 +1713,45 @@ window.TEUI.SectionModules.sect21 = (function () {
   // 5. HELPER FUNCTIONS
   //==========================================================================
 
+  /**
+   * F280 Mode (S21 F.00; Andy 2026-11-19: "can Off HIDE all of the F280 fields that do not strictly
+   * belong or form part of OBJECTIVE analysis"). Off hides them; their values are kept, and no hidden
+   * field moves a result (the annual stream reads ground.methodInEffect / airTightness.infiltrationMethodInEffect,
+   * OBJECTIVE's under Off). Rows go whole; a field sharing a row with OBJECTIVE fields goes with the
+   * label cells before it (labels = how many). h_122 (the DESIGN latent load factor, F280 sizing) hides
+   * its value only: its row label also heads i_122, the latent method, which the annual stream reads.
+   */
+  const F280_ONLY_ROWS = [
+    "G.4.5", "G.4.8", // S03: depth, perimeter, soil k; water table, deep ground, BASESIMP's load
+    "B.19.1", "B.19.3", "B.19.5", "B.19.7", "B.19.9", "B.19.11", "B.19.13", // S12: AIM-2
+  ];
+  const F280_ONLY_CELLS = [
+    { id: "h_25", labels: 2 }, // S03 G.4.3 Ground Heatloss Method
+    { id: "l_25", labels: 2 }, // S03 G.4.4 Foundation Config.
+    { id: "l_123", labels: 2 }, // S13 ATRE (F280)
+    { id: "h_122", labels: 0 }, // S13 V.3.2 the design latent load factor
+  ];
+  function applyF280Mode() {
+    const on = (window.TEUI.StateManager?.getValue(FIELDS.f280Mode) || "Off") === "On";
+    F280_ONLY_ROWS.forEach(id => {
+      document.querySelectorAll(`tr[data-id="${id}"]`).forEach(tr => tr.classList.toggle("f280-hidden-row", !on));
+    });
+    F280_ONLY_CELLS.forEach(({ id, labels }) => {
+      let td = document.querySelector(`td[data-field-id="${id}"]`);
+      for (let k = 0; td && k <= labels; k++, td = td.previousElementSibling) {
+        td.classList.toggle("f280-hidden-cell", !on);
+      }
+    });
+    // S21: everything below the mode row
+    const s21 = document.getElementById("f280Compliance");
+    s21?.querySelectorAll("tr[data-id]").forEach(tr => {
+      const id = tr.getAttribute("data-id");
+      if (id !== "F.00" && id !== "S21-ID") tr.classList.toggle("f280-hidden-row", !on);
+    });
+    const select = s21?.querySelector(`select[data-field-id="${FIELDS.f280Mode}"]`);
+    if (select && select.value !== (on ? "On" : "Off")) select.value = on ? "On" : "Off";
+  }
+
   function updateServiceOrgVisibility() {
     var certType = getModeValue(FIELDS.certType) || "Other";
     var shouldGhost = certType !== "NRCan EA";
@@ -1827,6 +1898,13 @@ window.TEUI.SectionModules.sect21 = (function () {
 
     console.log('[S21] Dropdown changed: ' + fieldId + ' = "' + value + '"');
 
+    if (fieldId === FIELDS.f280Mode) {
+      // one mode for the file: Target and Reference together (classification G)
+      window.TEUI.StateManager?.setValue(fieldId, value, "user-modified");
+      window.TEUI.StateManager?.setValue("ref_" + fieldId, value, "user-modified");
+      applyF280Mode();
+      return;
+    }
     if (fieldId) {
       setModeValue(fieldId, value, "user-modified");
 
@@ -1936,7 +2014,10 @@ window.TEUI.SectionModules.sect21 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
     onModeSwitch: onModeSwitch,
-    postStamp: stampDisplayFields,
+    postStamp: function () {
+      stampDisplayFields();
+      applyF280Mode();
+    },
   };
 })();
 

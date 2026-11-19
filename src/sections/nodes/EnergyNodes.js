@@ -507,7 +507,7 @@
         "envelope.groundFacing.area",
         "climate.heating.obcSetpoint", // the DESIGN set-point (sizing), not the energy one
         "climate.temperature.coldest",
-        "ground.method",
+        "ground.methodInEffect",
         "ground.basesimp"
       ],
       classification: "C",
@@ -523,7 +523,7 @@
         const groundTemp = 10; // OBJECTIVE's ground (ClimateNodes, TransmissionLossNodes, VolumeMetricsNodes)
         const airDeltaT = Math.max(0, setpoint - coldest);
         const air = g101 * d101 * airDeltaT;
-        if (inputs["ground.method"] === "BASESIMP") {
+        if (inputs["ground.methodInEffect"] === "BASESIMP") {
           const bs = inputs["ground.basesimp"];
           if (!bs || bs.error) return "Unavailable";
           return (air + bs.heatingLoad) / 1000;

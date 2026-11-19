@@ -299,7 +299,7 @@
       dependencies: [
         "envelope.groundFacing.uValue",
         "climate.groundFacing.hdd",
-        "ground.method",
+        "ground.methodInEffect",
         "ground.basesimp",
         "envelope.groundFacing.area"
       ],
@@ -307,7 +307,7 @@
       compute: (inputs) => {
         // S03 G.4.3 = BASESIMP: the foundation's heating-season loss per m2 of ground-facing area, so
         // i_102 = h_102 x d_102 is BASESIMP's (ground.basesimp.annual, S11 rows 94-95 the same split)
-        if (inputs["ground.method"] === "BASESIMP") {
+        if (inputs["ground.methodInEffect"] === "BASESIMP") {
           const bs = inputs["ground.basesimp"];
           const area = parseNum(inputs["envelope.groundFacing.area"]);
           if (!bs || bs.error || !(area > 0)) return "Unavailable";
@@ -348,11 +348,11 @@
       legacyId: "i_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area", "ground.method"],
+      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area", "ground.methodInEffect"],
       label: "Total Heat Loss (Ag) (kWh/yr)",
       compute: (inputs) => {
         // BASESIMP missing an input: Unavailable, never 0 kWh (the OBJECTIVE path keeps its old reading)
-        if (inputs["ground.method"] === "BASESIMP" && inputs["envelope.groundFacing.heatLossRate"] === "Unavailable") {
+        if (inputs["ground.methodInEffect"] === "BASESIMP" && inputs["envelope.groundFacing.heatLossRate"] === "Unavailable") {
           return "Unavailable";
         }
         // i_102 = h_102 × d_102
@@ -615,7 +615,7 @@
         "envelope.airFacing.area",
         "airTightness.nFactor",
         "climate.heating.degreedays",
-        "airTightness.infiltrationMethod",
+        "airTightness.infiltrationMethodInEffect",
         "airTightness.aim2",
         "volume.conditioned"
       ],
@@ -627,7 +627,7 @@
 
         // S12 B.19.1 = AIM-2: the same form with AIM-2's heating-season mean rate in place of the
         // N-factor's (airTightness.aim2.seasonal, AC/H -> L/s = rate x volume / 3.6)
-        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+        if (inputs["airTightness.infiltrationMethodInEffect"] === "AIM2") {
           const r = inputs["airTightness.aim2"];
           if (!r || r.error || !r.seasonal) return "Unavailable";
           const ls = (r.seasonal.rate * parseNum(inputs["volume.conditioned"])) / 3.6;
@@ -800,7 +800,7 @@
         "airTightness.ach50Target",
         "volume.conditioned",
         "envelope.airFacing.area",
-        "airTightness.infiltrationMethod",
+        "airTightness.infiltrationMethodInEffect",
         "airTightness.aim2"
       ],
       label: "NLA10, Normalized Leakage Area at 10 Pa (cm²/m²)",
@@ -809,7 +809,7 @@
         const volume = parseNum(inputs["volume.conditioned"]);
         const area = parseNum(inputs["envelope.airFacing.area"]);
         if (!(area > 0)) return 0;
-        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+        if (inputs["airTightness.infiltrationMethodInEffect"] === "AIM2") {
           const r = inputs["airTightness.aim2"];
           if (r && !r.error) return r.design.ela / area;
         }

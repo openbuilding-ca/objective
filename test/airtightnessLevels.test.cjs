@@ -60,7 +60,7 @@ for (const m of ["MEASURED", "PH_CLASSIC", "PH_LOW", "PH_PLUS"]) {
 const nla10 = nodes.find(n => n.id === "airTightness.nla10");
 // F280-1 under AIM-2: its Energy Tight ELA 394.3 cm2 (rounded in AIM2.xls's label) over 414.285 m2
 const aim2 = { design: { ela: 394.3 } };
-const f280 = nla10.compute({ "airTightness.infiltrationMethod": "AIM2", "airTightness.aim2": aim2, "envelope.airFacing.area": 414.285,
+const f280 = nla10.compute({ "airTightness.infiltrationMethodInEffect": "AIM2", "airTightness.aim2": aim2, "envelope.airFacing.area": 414.285,
   "airTightness.ach50Target": 1.5, "volume.conditioned": 730.3 });
 check("F280-1's NLA10 = 394.3 / 414.285 cm2/m2", f280 === 394.3 / 414.285, `got ${f280}`);
 

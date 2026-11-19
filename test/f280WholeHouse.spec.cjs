@@ -155,6 +155,7 @@ const READ = () => {
             aim2_LRairc: get("aim2.coolingRate"),
             aim2Error: (state.getValueForModel(id, "airTightness.aim2") || {}).error || null,
             annualInfiltration_kWh: get("airTightness.heatLoss"),
+            annualGround_kWh: get("envelope.groundFacing.totalHeatLoss"),
             sensibleGain: get("f280.totalSensibleHeatGain"),
             infiltrationGain_W: get("f280.peakInfiltrationHeatGain"),
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
@@ -308,6 +309,15 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       });
 
       if (name !== FIXTURE.base_case.case) continue;
+      // TWO STREAMS (Andy 2026-11-19): F280 Mode Off puts the ANNUAL figures on OBJECTIVE's methods and
+      // leaves S21 - F280's own stream - exactly where it was.
+      const off = await run(page, withOverrides(csvText, { f280_mode: "Off" }));
+      for (const k of ["loss", "envelope", "infiltration", "ventilation", "sensibleGain", "nominalCooling"]) {
+        expect(off[k], `F280 Mode Off moved S21's ${k}`).toBe(base[k]);
+      }
+      expect(off.annualGround_kWh, "F280 Mode Off left the annual ground on BASESIMP").not.toBe(base.annualGround_kWh);
+      expect(off.annualInfiltration_kWh, "F280 Mode Off left the annual leakage on AIM-2").not.toBe(base.annualInfiltration_kWh);
+
       for (const v of VARIANTS) {
         const r = await run(page, withOverrides(csvText, v.set, v.turn));
         const g = r.sensibleGain;

@@ -970,9 +970,10 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   /**
-   * B.19.1-B.19.14 for the current model: each dropdown shows its stored choice, and AIM-2's inputs grey
-   * unless B.19.1 is AIM-2 (the house rule); B.19.13 / B.19.14 stay live (greyed) so the methods compare.
-   * When AIM-2 cannot run, B.19.13 says why on hover.
+   * B.19.1-B.19.14 for the current model: each dropdown shows its stored choice. AIM-2's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they always drive F280's sizing whatever B.19.1 chooses
+   * for the annual figure (two streams, Andy 2026-11-19; they greyed unless B.19.1 was AIM-2). When AIM-2
+   * cannot run, B.19.13 says why on hover.
    */
   const AIM2_FIELDS = ["g_111", "d_112", "g_112", "d_112b", "g_112b", "d_112c", "g_112c", "d_112d",
     "g_112d", "d_112e", "g_112e", "d_112f", "g_112f"];
@@ -983,15 +984,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       const select = sectionElement.querySelector(`select[data-field-id="${id}"]`);
       const v = getModeValue(id);
       if (select && v !== undefined && v !== null && v !== "" && select.value !== String(v)) select.value = String(v);
-    });
-    const off = (getModeValue("d_111") || "OBJECTIVE") !== "AIM2";
-    AIM2_FIELDS.forEach(id => {
-      const cell = sectionElement.querySelector(`td[data-field-id="${id}"]`);
-      if (!cell) return;
-      cell.classList.toggle("disabled-input", off);
-      const input = cell.querySelector("input, select");
-      if (input) input.disabled = off;
-      if (cell.classList.contains("editable")) cell.contentEditable = !off;
     });
     const out = sectionElement.querySelector('td[data-field-id="d_112f"]');
     const state = window.TEUI.ComputationIntegration?.getState?.();

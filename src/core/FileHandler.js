@@ -438,6 +438,15 @@
           }
         }
 
+        // S21 F280 Mode (Andy 2026-11-19, two streams): a file without the column takes Off, unless it
+        // already chose an F280 method (S03 G.4.3 BASESIMP, S12 B.19.1 AIM-2 - possible only from
+        // 2026-11-19) - it opens On, so its annual figures read as they were saved.
+        if (!("f280_mode" in importedData)) {
+          const f280 = importedData.h_25 === "BASESIMP" || importedData.d_111 === "AIM2";
+          importedData.f280_mode = f280 ? "On" : "Off";
+          importedData.ref_f280_mode = importedData.f280_mode;
+        }
+
         // Project notes (the last column) belong to Section 20, not the
         // StateManager. A file without the column clears them, as a new
         // building clears the Capital Budget below.
@@ -1267,6 +1276,9 @@
           "l_122",
           "i_122",
           "l_123",
+
+          // Section 21: F280 Mode (Off hides the F280-only inputs; two streams, 2026-11-19)
+          "f280_mode",
 
           // Section 15: Summary
           "d_142",

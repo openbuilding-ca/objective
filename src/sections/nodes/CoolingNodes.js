@@ -143,17 +143,13 @@
     // an ERV · ASHRAE140 none): 67 W per occupant + 3 W per L/s per g/kg on
     // leakage and ventilation, DHD = Ho - 9.3 g/kg, Ho at the July 2.5 % dry
     // bulb and its coincident wet bulb, at standard pressure (as F280's Table 5
-    // OHR). The leakage flow is the infiltration method's (S12 B.19.1): AIM-2's
-    // LRairc x Vb / 3.6 L/s, else the N-factor's NRL50 x Ae / N (2026-11-19: it
-    // was the N-factor's under AIM-2 too). null before the scripts load.
+    // OHR). The leakage flow is AIM-2's, LRairc x Vb / 3.6 L/s - the F280 stream
+    // (two streams, 2026-11-19; it was the N-factor's NRL50 x Ae / N). It sizes
+    // only (S21, via the latent load factor). null before the scripts load.
     // ========================================================================
     {
       id: "cooling.designLatentW",
       dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "airTightness.infiltrationMethod",
         "airTightness.aim2",
         "volume.conditioned",
         "climate.temperature.hottest",
@@ -174,17 +170,9 @@
         const CS = window.TEUI?.ClimateStation;
         const ISO = window.TEUI?.CoolingISO52016;
         if (!CS || !ISO) return null;
-        let leakLs;
-        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
-          const r = inputs["airTightness.aim2"];
-          if (!r || r.error) return "Unavailable";
-          leakLs = (r.design.cooling.natural * parseNum(inputs["volume.conditioned"])) / 3.6;
-        } else {
-          const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-          leakLs = nFactor > 0
-            ? (parseNum(inputs["airTightness.nrl50"]) * parseNum(inputs["envelope.airFacing.area"])) / nFactor
-            : 0;
-        }
+        const r = inputs["airTightness.aim2"];
+        if (!r || r.error) return "Unavailable";
+        const leakLs = (r.design.cooling.natural * parseNum(inputs["volume.conditioned"])) / 3.6;
         const ho = CS.humidityRatioFromWetBulb(
           parseNum(inputs["climate.temperature.hottest"], 34),
           parseNum(inputs["climate.temperature.hottestWetBulb"], 23),

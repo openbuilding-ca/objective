@@ -196,6 +196,7 @@ TEUI.ReferenceToggle = (function () {
     l_122: "C",
     i_122: "C",
     l_123: "C",
+    f280_mode: "G",
     g_118: "C",
     l_118: "C",
     d_119: "C",

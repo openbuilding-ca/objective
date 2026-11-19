@@ -1602,12 +1602,11 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * G.4.3-G.4.10 for the current model: both dropdowns show the stored choice, and BASESIMP's inputs
-   * grey unless G.4.3 is BASESIMP - the house rule (Andy 2026-11-18, "grey out what does not apply").
-   * G.4.10 stays live under either method (greyed), so the two methods can be compared; when BASESIMP
-   * cannot run, its cell says why (the node's error) on hover.
+   * G.4.3-G.4.10 for the current model: both dropdowns show the stored choice. BASESIMP's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they always drive F280's sizing whatever G.4.3 chooses
+   * for the annual figures (two streams, Andy 2026-11-19; they greyed unless G.4.3 was BASESIMP). When
+   * BASESIMP cannot run, G.4.10 says why (the node's error) on hover.
    */
-  const GROUND_FIELDS = ["l_25", "d_26", "h_26", "l_26", "d_26b", "h_26b", "l_26b"];
   function updateGroundUI() {
     const method = getModeValue("h_25") || "OBJECTIVE";
     const config = String(getModeValue("l_25") || "1");
@@ -1615,9 +1614,6 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (methodSelect && methodSelect.value !== method) methodSelect.value = method;
     const configSelect = getElement(['[data-dropdown-id="dd_l_25"]']);
     if (configSelect && configSelect.value !== config) configSelect.value = config;
-
-    const off = method !== "BASESIMP";
-    GROUND_FIELDS.forEach(id => setFieldGhosted(id, off));
 
     const cell = document.querySelector('td[data-field-id="l_26b"]');
     const state = window.TEUI.ComputationIntegration?.getState?.();
@@ -1629,19 +1625,6 @@ window.TEUI.SectionModules.sect03 = (function () {
           ? `${r.configuration}; ${r.geometry.length.toFixed(2)} x ${r.geometry.width.toFixed(2)} m, ` +
             `height ${r.geometry.height.toFixed(2)} m; F280 weather: ${r.weather.city}`
           : "";
-    }
-  }
-
-  function setFieldGhosted(fieldId, ghosted) {
-    const cell = document.querySelector(`td[data-field-id="${fieldId}"]`);
-    if (!cell) return;
-    cell.classList.toggle("disabled-input", ghosted);
-    const input = cell.querySelector("input, select");
-    if (input) input.disabled = ghosted;
-    if (cell.classList.contains("editable")) cell.contentEditable = !ghosted;
-    const label = cell.previousElementSibling;
-    if (label && label.tagName === "TD" && !label.hasAttribute("data-field-id")) {
-      label.classList.toggle("disabled-input", ghosted);
     }
   }
 
