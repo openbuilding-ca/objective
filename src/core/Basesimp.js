@@ -139,10 +139,15 @@
     });
     const amp0 = -Math.sqrt(e * e + f * f) / 6;
     const ph0 = Math.atan(e / f);
+    // Not in the spreadsheet: the day of the year the same air harmonic is coldest (its maximum lies at
+    // atan2(E, F) on the month angle pi/6 x (m - 0.5), a day angle 2 pi / 365 from January 1).
+    const coldest = Math.atan2(e, f) + Math.PI;
+    const twoPi = 2 * Math.PI;
     return {
       tempS: sum / 12 + 0.0009189 * hdd - 1.438,
       amps: -(amp0 + 0.00197 * hdd - 7.8747),
       phs: ph0 + 0.00002128 * hdd - 0.0756,
+      coldestDay: (((coldest % twoPi) + twoPi) % twoPi) * (365 / twoPi),
     };
   }
 
@@ -225,6 +230,8 @@
     const uWalls = (g.height * perimeter) / (ins.interior + ins.exterior + wallRsi);
     const uFloor = (g.length * g.width) / (ins.slab + floorRsi);
     const radiantAlpha = p.heating.slab > 0 ? (out.sbgAvg * uFloor) / Math.max(uWalls + uFloor, 0.1) : 0;
+    // RadFloor's own split of the below-grade loss between floor and walls (its Alpha3 / Alpha2)
+    const floorShare = uFloor / Math.max(uWalls + uFloor, 0.1);
 
     // Loads!B49 and B54
     const H = p.heating, C = p.cooling;
@@ -248,6 +255,10 @@
       ...out,
       ground: h,
       fhl,
+      ca1,
+      ca2,
+      omega,
+      floorShare,
       exposedFraction,
       openingsFraction,
       heatingLoad,
@@ -255,5 +266,40 @@
     };
   }
 
-  window.TEUI.Basesimp = Object.freeze({ compute, config, DAYS });
+  /**
+   * The foundation's heat loss over a heating season, kWh - OBJECTIVE's annual figure under BASESIMP
+   * (Andy 2026-11-19). NOT the spreadsheet (BasementHLR gives a design hour and monthly means): the same
+   * three terms, integrated over `days` days centred on the coldest day of the year (the Moore air
+   * harmonic's minimum), the length OBJECTIVE's heating season already has (365 - Days Cooling):
+   *   above grade   Sag x K11 x (room - outdoorMean) x days         (outdoorMean: S03 L.3.3)
+   *   mean below    SbgAvg x (room - deepGround) x days
+   *   harmonic      the integral of the spreadsheet's own rate Ca1 x omega x sin(omega t + Ca2) (W, t in
+   *                 days from January 1; FHLmon is its monthly mean): Ca1 x (cos(omega t0 + Ca2) -
+   *                 cos(omega t1 + Ca2)), exactly
+   * all x the exposed fraction x 24 / 1000. The below-grade part splits floor : walls by floorShare
+   * (RadFloor's U-weighted share); the above-grade part is the walls'.
+   * @param r  a compute() result
+   * @param s  { room, outdoorMean, deepGround, days }
+   */
+  function seasonLoss(r, s) {
+    const t0 = r.ground.coldestDay - s.days / 2;
+    const t1 = t0 + s.days;
+    const k = r.exposedFraction * 24 / 1000;
+    const above = r.sag * r.openingsFraction * (s.room - s.outdoorMean) * s.days * k;
+    const mean = r.sbgAvg * (s.room - s.deepGround) * s.days * k;
+    const harmonic = r.ca1 * (Math.cos(r.omega * t0 + r.ca2) - Math.cos(r.omega * t1 + r.ca2)) * k;
+    const below = mean + harmonic;
+    return {
+      startDay: t0,
+      days: s.days,
+      above,
+      mean,
+      harmonic,
+      total: above + below,
+      slab: below * r.floorShare,
+      walls: above + below * (1 - r.floorShare),
+    };
+  }
+
+  window.TEUI.Basesimp = Object.freeze({ compute, seasonLoss, config, DAYS });
 })();

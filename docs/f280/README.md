@@ -14,7 +14,9 @@
 > interpolation path, F280-1's two basement rooms 791 + 593 W), 220 checks at 1e-9. In the app: S03 G.4.3 Ground
 > Heatloss Method (OBJECTIVE | BASESIMP (CSA F280)), G.4.4-G.4.8 its inputs (greyed unless BASESIMP), G.4.9 the deep
 > ground temperature, G.4.10 BASESIMP's load (shown under either method). It sets S15 T.6.4 (`d_137`) and so F280's
-> envelope; S11's ANNUAL figures still use U·A to 10 °C (open: which months make the heating season). F280-1 as one
+> envelope; and the ANNUAL figures (S11 rows 94-95, S12 `i_102` and so TEL / TEDI): the heating season's loss,
+> 365 − Days Cooling days centred on the coldest day, BASESIMP's harmonic integrated exactly (Andy 2026-11-19).
+> F280-1: ground 26 936 → 5777 kWh/yr, TEDI 144.29 → 71.11 kWh/m²·yr. F280-1 as one
 > foundation: an 18.47 x 4.89 m rectangle from the slab area and the exposed perimeter 46.72 m, 1387 W, against F280's
 > room-by-room 1384 W.
 

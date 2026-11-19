@@ -67,4 +67,34 @@ const colder = B.compute({ ...base.inputs, heating: { ...base.inputs.heating, de
 assert.ok(colder.heatingLoad > B.compute(base.inputs).heatingLoad, "a colder design day did not raise the loss");
 checks += 4;
 
+// --- the heating-season integral (seasonLoss): OBJECTIVE's annual figure under BASESIMP -----------
+// Not the spreadsheet's, so no Excel number to meet; witnessed against its own physics instead.
+{
+  const r = B.compute(base.inputs); // F280-1 room 1, Ottawa (Orleans)
+  const s = { room: 20, outdoorMean: -8, deepGround: base.inputs.deepGround };
+  // the coldest day of Orleans's air harmonic falls in January
+  assert.ok(r.ground.coldestDay > 0 && r.ground.coldestDay < 31, `coldest day ${r.ground.coldestDay}`);
+  // a whole year: the harmonic integrates to nothing
+  const year = B.seasonLoss(r, { ...s, days: 365 });
+  assert.ok(Math.abs(year.harmonic) < 1e-9 * Math.abs(r.ca1), `full-year harmonic ${year.harmonic}`);
+  // the closed form against a 1/1000-day midpoint sum of the spreadsheet's rate Ca1 x omega x sin(omega t + Ca2)
+  const season = B.seasonLoss(r, { ...s, days: 245 });
+  const n = 245000, dt = 245 / n;
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += r.ca1 * r.omega * Math.sin(r.omega * (season.startDay + (i + 0.5) * dt) + r.ca2) * dt;
+  close(season.harmonic, sum * r.exposedFraction * 24 / 1000, "season harmonic: closed form vs numeric");
+  // the same rate's monthly means ARE the spreadsheet's FHLmon (Excel-witnessed above)
+  let day = 0;
+  r.fhl.forEach((m, i) => {
+    let msum = 0; const k = 31000, h = B.DAYS[i] / k;
+    for (let j = 0; j < k; j++) msum += r.ca1 * r.omega * Math.sin(r.omega * (day + (j + 0.5) * h) + r.ca2) * h;
+    assert.ok(Math.abs(msum / B.DAYS[i] - m) < 1e-6 * Math.max(1, Math.abs(m)), `month ${i + 1}: rate mean ${msum / B.DAYS[i]} vs FHLmon ${m}`);
+    day += B.DAYS[i];
+  });
+  // a cold-centred season loses more per day than the year's mean; walls + slab = total
+  assert.ok(season.harmonic > 0, "the cold half of the harmonic adds loss");
+  close(season.walls + season.slab, season.total, "walls + slab = total");
+  checks += 16;
+}
+
 console.log(`\nbasesimp: ${cases.length} workbooks, ${checks} checks passed`);

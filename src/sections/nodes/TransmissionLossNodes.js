@@ -265,10 +265,19 @@
         dependencies: [
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
-          "climate.groundFacing.hdd"
+          "climate.groundFacing.hdd",
+          "ground.method",
+          "ground.basesimp"
         ],
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
+          // S03 G.4.3 = BASESIMP: the row's share of the foundation's heating-season loss
+          // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
+          if (inputs["ground.method"] === "BASESIMP") {
+            const bs = inputs["ground.basesimp"];
+            if (!bs || bs.error) return "Unavailable";
+            return id === "slabOnGrade" ? bs.annual.slab : bs.annual.walls;
+          }
           const groundHdd = inputs["climate.groundFacing.hdd"];
           if (isUnavailable(groundHdd)) return "Unavailable";
 
@@ -821,7 +830,11 @@
         "climate.heating.obcSetpoint",
         "climate.cooling.setpoint",
         "climate.temperature.coldest",
-        "climate.temperature.hottest"
+        "climate.temperature.hottest",
+        // the heating season (OBJECTIVE's annual figure): its length, set-point and outdoor mean
+        "climate.coolingDays",
+        "climate.heating.setpoint",
+        "climate.temperature.winterAverage"
       ],
       label: "BASESIMP foundation heat loss (F280 Cl. 5.2.2.1)",
       compute: (inputs) => basesimpFor(inputs)
@@ -938,7 +951,18 @@
         design: parseNum(inputs["climate.temperature.hottest"])
       }
     });
-    return { ...result, geometry: { length, width, height, depth, perimeter }, weather };
+    // OBJECTIVE's annual figure: the heating season's loss (Basesimp.seasonLoss) - 365 - Days Cooling
+    // days centred on the coldest day, at the ENERGY set-point, the above-grade strip against S03 L.3.3's
+    // winter average (Andy 2026-11-19, "that is what drives the heating season split")
+    const days = 365 - parseNum(inputs["climate.coolingDays"], 120);
+    const annual = B.seasonLoss(result, {
+      room: parseNum(inputs["climate.heating.setpoint"], 21),
+      outdoorMean: parseNum(inputs["climate.temperature.winterAverage"], NaN),
+      deepGround: weather.deepGround,
+      days
+    });
+    if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
+    return { ...result, geometry: { length, width, height, depth, perimeter }, weather, annual };
   }
 
   window.TEUI.ComputationNodes.TransmissionLoss = {

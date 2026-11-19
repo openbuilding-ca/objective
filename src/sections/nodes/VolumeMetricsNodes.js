@@ -204,9 +204,23 @@
       legacyId: "h_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.uValue", "climate.groundFacing.hdd"],
+      dependencies: [
+        "envelope.groundFacing.uValue",
+        "climate.groundFacing.hdd",
+        "ground.method",
+        "ground.basesimp",
+        "envelope.groundFacing.area"
+      ],
       label: "Heat Loss Rate (Ag) (kWh/m²/yr)",
       compute: (inputs) => {
+        // S03 G.4.3 = BASESIMP: the foundation's heating-season loss per m2 of ground-facing area, so
+        // i_102 = h_102 x d_102 is BASESIMP's (ground.basesimp.annual, S11 rows 94-95 the same split)
+        if (inputs["ground.method"] === "BASESIMP") {
+          const bs = inputs["ground.basesimp"];
+          const area = parseNum(inputs["envelope.groundFacing.area"]);
+          if (!bs || bs.error || !(area > 0)) return "Unavailable";
+          return bs.annual.total / area;
+        }
         const groundHdd = inputs["climate.groundFacing.hdd"];
         if (isUnavailable(groundHdd)) return "Unavailable";
         // h_102 = (g_102 × Ground HDD × 24) / 1000
@@ -242,9 +256,13 @@
       legacyId: "i_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area"],
+      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area", "ground.method"],
       label: "Total Heat Loss (Ag) (kWh/yr)",
       compute: (inputs) => {
+        // BASESIMP missing an input: Unavailable, never 0 kWh (the OBJECTIVE path keeps its old reading)
+        if (inputs["ground.method"] === "BASESIMP" && inputs["envelope.groundFacing.heatLossRate"] === "Unavailable") {
+          return "Unavailable";
+        }
         // i_102 = h_102 × d_102
         const rate = parseNum(inputs["envelope.groundFacing.heatLossRate"]);
         const area = parseNum(inputs["envelope.groundFacing.area"]);
@@ -501,6 +519,8 @@
       label: "Total Envelope Heat Loss (kWh/yr)",
       compute: (inputs) => {
         // i_104 = i_101 + i_102 + i_103
+        // i_102 is Unavailable only when BASESIMP cannot run (S03 G.4.3): then so is the total
+        if (inputs["envelope.groundFacing.totalHeatLoss"] === "Unavailable") return "Unavailable";
         // Use default 0 to handle "Unavailable" values gracefully
         const i101 = parseNum(inputs["envelope.airFacing.totalHeatLoss"], 0);
         const i102 = parseNum(inputs["envelope.groundFacing.totalHeatLoss"], 0);
