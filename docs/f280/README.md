@@ -142,7 +142,36 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    leakage rate from AIM-2, which also handles exhaust-only (unbalanced) ventilation. The 2015 workbook's
    AIM-2 results are the target; its inputs are in `AIM2-F280_Example.xls` (open in Excel).
 
-## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18)
+## F280 Mode as an ANNUAL model: what F280's gains do to TEUI (for Kieran; Andy 2026-11-19)
+
+**The rule (Andy):** *"F280 ON should use F280 gains, and F280 OFF should return to OBJECTIVE methods/defaults"*
+(OBJECTIVE's: plug load by standard and occupancy, equipment by occupancy, elevators and Regular / Efficient,
+lighting the user's). Under On, S09 holds Cl. 6.2.4's 70 W per person and Cl. 6.2.5's max(4 W/m² × A, 800 W) for
+lights, appliances and plug loads (lighting and equipment 0, the clause's one figure carries them); S21 uses the same
+figures at the design hour in either mode (`window.TEUI.F280Gains`).
+
+**What follows, and it is not a bug:** S09's gains do two jobs in the annual model. They are HEAT in the house (what
+F280 is about), and they are the house's plug, lighting and equipment ELECTRICITY, which TEUI counts. Cl. 6.2.5's
+4 W/m² is a design-hour heat allowance, not an energy figure, so under On it also becomes the house's plug
+electricity for the year. **TEUI under On therefore falls below the bills - the honest result of applying F280's
+design-hour allowance to a whole year.** Andy, 2026-11-19: *"it is imperative that [this] ends up in Kieran's
+analysis"*. Measured on the four Part 9 houses (the "CSA F280 Review Format" rows, `test/f280-review-results.json`):
+
+| House (TEUI, kWh/m²·yr) | Off (OBJECTIVE) | On, BASESIMP + AIM-2 only | On, + F280's gains | Bills |
+|---|---|---|---|---|
+| 03 Hemmingford | 57.1 | 57.9 | 56.7 | 56.3 |
+| 02 Collingwood | 103.4 | 99.6 | 84.7 | 103.5 |
+| 12 Hawkesbury | 63.4 | 64.0 | 46.6 | 57.8 |
+| 10 Port Credit | 13.2 | 13.3 | −12.1 (net of on-site PV) | 14.8 |
+
+The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation, air leakage): they move TEUI by
+−3.8 to +0.8. The gains move it by −1.2 to −25.4. For Annex J none of this matters: Annex J compares design W
+(above), never annual energy. It matters for any claim that "F280, annualized, predicts energy use".
+
+## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18) - SUPERSEDED 2026-11-19 for S21
+
+S21 now takes Cl. 6.2.4 / 6.2.5 directly (the section above); F280-1's gain 7040 → 5155 W (70.4 %). Kept for the
+overhang-to-shading mapping and the sources of OBJECTIVE's own gains, which Off still uses.
 
 Andy: *"Ideally we match gains NOT by inventing new methods, but by choosing standard OBJECTIVE input values,
 occupant activity levels, and lighting and plug loads and schedule (assumed 12hrs/day residential)."* And:
