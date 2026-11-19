@@ -1527,20 +1527,9 @@ Select a province and city to view weather data.</pre
           TEUI.ComponentBridge.initDualStateSync();
         } */
 
-        // Initialize Calculator
-        if (TEUI.Calculator) {
-          // console.log("🔍 DEBUG: About to initialize Calculator");
-          TEUI.Calculator.initialize();
-          // console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
-
-          // PERFORMANCE FIX: Use longer delay to prevent setTimeout violations (663ms)
-          // Heavy calculations need more time separation to avoid blocking
-          setTimeout(function () {
-            // console.log("🔍 DEBUG: About to run calculateAll");
-            TEUI.Calculator.calculateAll();
-            // console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
-          }, 300); // Longer delay prevents setTimeout performance violations
-        }
+        // TEUI.Calculator.initialize() was removed with the legacy calculator (45e52e7, 2026-03-03); its
+        // work - StateManager.initialize() and FieldManager.renderAllSections() - runs above. The call
+        // threw on every load, so the calculateAll() it guarded never ran; the graph computes on its own.
 
         console.log("TEUI Calculator 4.011 initialization complete");
 
