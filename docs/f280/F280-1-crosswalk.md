@@ -62,7 +62,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `h_77: Window West: Summer Shading %` | 1.08 | derived | Annex A: F 0.800 (lat 45.47), shaded 0.3 of 16.0 ft2 (W x H); shaded area at north's 93 W/m2 vs 285.0 -> 1.08 % of this row's solar removed |
 | `d_73: S10: Doors Area: m²` | 5.667 | derived | Table G.1.10 a): two entry doors, the WIC knee-wall door and three attic hatches |
 | `f_73: Door: SHGC` | 0 | standard | opaque doors |
-| `g_88: Doors: U-Value W/m²·K` | 0.9091 | derived | 1 / RSI 1.1 (Table 6I) |
+| `g_88: Doors: U-Value W/m²·K` | 0.9083 | derived | 1 / RSI 1.101 (Table 6I) |
 | `d_85: Roof: Area m²` | 118.386 | derived | Table G.1.9 a): ceilings summed |
 | `f_85: Roof: RSI Value K·m²/W` | 9.05 | standard | Table I.3 (2010s): ceilings |
 | `d_86: Walls Above Grade: Area m²` | 229.112 | equivalent | Table G.1.8 a) walls 248.24 m2 gross, less windows 36.04 and wall doors 4.55 = 207.65 net; plus G.1.7 rim joists 21.46 |

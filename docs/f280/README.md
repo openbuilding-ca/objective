@@ -1,5 +1,11 @@
 # F280 whole-house verification: start here
 
+> **2026-11-19, Annex J checked (pp. 171-176): every 8.3.4-8.3.8 variant and 8.3.2 c-f match the fixture** (Annex J's own
+> model: SHGC 0.47, RSI 0.511 - our window). Annex J prints the changes with NO consistent sign: compare magnitudes. 8.3.6 b now
+> modelled (154 W vs 165); exhaust-only +930 W vs 897. **HYPOTHESIS: Annex J's "gain" is the NOMINAL capacity, CSCn = 1.3 x the
+> sensible (Cl. 6.3.1)** - F280-1's sensible 5652 x 1.3 = 7348 W vs 7321 (100.4 %), the turns x 1.3 at 0.94-0.96 of Annex J.
+> Settled by the 8.3.9 a) page's header (p. 177+).
+>
 > **2026-11-19 late: F280-1's LOSS PASSES Cl. 8.4.1 - 11 570 W, 98.2 %** (Table 6F's window, RSI 0.51 / SHGC 0.47, and the
 > plans' floor area and volume, read from the PDF). Gain 5646 W, 77.1 %: H.3.14 confirms the window; next, Annex J's own pages against the fixture.
 >

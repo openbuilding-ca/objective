@@ -92,7 +92,7 @@ ASE_PCT = 76           # Table H.3.3 b), apparent sensible effectiveness
 # single low-e, no interior shading (read from Andy's screenshots 2026-11-19; the text extract's column shift had given 0.64 / 0.40, values
 # the double-glazed table does not contain)
 WINDOW_RSI, WINDOW_SHGC = 0.51, 0.47
-DOOR_RSI = 1.1         # Table 6I: insulated metal, polyurethane core, no storm door
+DOOR_RSI = 1.101       # Table 6I: insulated metal, polyurethane core, no storm door; Annex J 8.3.2 e) (p. 173): 1.101
 
 
 def m2(ft2):

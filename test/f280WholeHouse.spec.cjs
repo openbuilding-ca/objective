@@ -68,6 +68,10 @@ const VARIANTS = [
     note: "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair" },
   { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0", d_112e: "Exhaust only" },
     note: "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only" },
+  // Cl. 8.3.6 b: no external shading - the base case's G.1.11 overhangs are its Section 10 summer shading (Annex A,
+  // tools/f280/build_case.py), so the variant sets them to 0
+  { clause: "8.3.6 b", variant: "no external shading", set: { h_74: "0", h_75: "0", h_76: "0", h_77: "0" },
+    note: "the overhangs' summer shading (h_74-h_77) at 0" },
   // Cl. 8.3.8: the front door turns from S through each eighth; every window's Section 10
   // orientation dropdown (e_74-e_77) turns with the house. Doors stay "Average" (opaque, SHGC 0).
   ...["SE", "E", "NE", "N", "NW", "W", "SW"].map((d, k) => ({
@@ -77,7 +81,6 @@ const VARIANTS = [
 const NOT_MODELLED = [
   { clause: "8.3.4 b", reason: "a room test (Annex K); whole house unchanged" },
   { clause: "8.3.5 b, c", reason: "OBJECTIVE has no interior-shading input (blinds, reflective blinds)" },
-  { clause: "8.3.6 b", reason: "the base case's G.1 overhangs are not expressed yet (Annex A), so 'no shading' is not a change" },
 ];
 
 // The compass, clockwise. Turning the front door from S to SE (one eighth) turns every facade
@@ -333,7 +336,8 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
           case: name, clause: v.clause, variant: v.variant, note: v.note || "",
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },
           expected_change_W: Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W])),
-          sign_settled: false,
+          // Annex J prints these changes with no consistent sign (the fixture's sign_convention): compare magnitudes
+          magnitude_ratio: exp.length ? Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W ? +(Math.abs(change[x.quantity]) / Math.abs(x.expected_change_W)).toFixed(3) : null])) : null,
           parts_W: { loss: r.loss, envelope: r.envelope, infiltration: r.infiltration, ventilation: r.ventilation,
             nominalCooling: r.nominalCooling, latentLoadFactor: r.latentLoadFactor, ground: r.ground },
         });
