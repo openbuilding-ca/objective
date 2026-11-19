@@ -148,6 +148,12 @@ const READ = () => {
             groundMethod: state.getValueForModel(id, "ground.method"),
             basesimp_W: get("ground.basesimp.peakHeatLoss"),
             basesimpError: (state.getValueForModel(id, "ground.basesimp") || {}).error || null,
+            // S12 B.19.1: the infiltration method, and AIM-2's design rates (F280 Cl. 5.2.3 / 6.2.6) either way
+            infiltrationMethod: state.getValueForModel(id, "airTightness.infiltrationMethod"),
+            aim2_LRairh: get("aim2.heatingRate"),
+            aim2_LRairc: get("aim2.coolingRate"),
+            aim2Error: (state.getValueForModel(id, "airTightness.aim2") || {}).error || null,
+            annualInfiltration_kWh: get("airTightness.heatLoss"),
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
             peakCoolingKw: get("energy.peakCooling.totalKw"),

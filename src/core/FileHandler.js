@@ -1237,6 +1237,19 @@
           "d_105",
           "d_108",
           "g_109",
+          // B.19.1-B.19.12: the infiltration method and AIM-2's inputs (2026-11-19)
+          "d_111",
+          "g_111",
+          "d_112",
+          "g_112",
+          "d_112b",
+          "g_112b",
+          "d_112c",
+          "g_112c",
+          "d_112d",
+          "g_112d",
+          "d_112e",
+          "g_112e",
 
           // Section 13: Mechanical Loads
           "d_113",

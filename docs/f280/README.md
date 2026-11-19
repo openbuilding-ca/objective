@@ -1,18 +1,20 @@
 # F280 whole-house verification: start here
 
-> **Current state (2026-11-19).** F280-1 on **BASESIMP** (S03 G.4.3, the basement by F280 Cl. 5.2.2.1's own
-> BasementHLR.xls; see "BASESIMP" below): loss **10 302 W (87.4 %, under the 98–120 % band)** = envelope 8384
-> (above grade 6997 + basement 1387) + infiltration 1194 + ventilation 724; sensible gain **4705 W (64.3 %)**. On the
-> OBJECTIVE ground method (U·A to 10 °C) the same house reads 14 412 W (122.3 %): the slab's ~5 kW was hiding a
-> ~1.5 kW shortfall elsewhere - infiltration (AIM-2, 8.3.4 / 8.3.7) and ventilation are next. The gain still lacks a
-> design-hour solar term (Cl. 6.2.2.1: about 2150 W for F280-1's windows against OBJECTIVE's season-average 289 W).
-> The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 and §4.6.
+> **Current state (2026-11-19, evening).** F280-1 on **BASESIMP** (S03 G.4.3) and **AIM-2** (S12 B.19.1): loss
+> **10 845 W (92.0 %, under the 98–120 % band)** = envelope 8384 (above grade 6997 + basement 1387) + infiltration
+> 1737 (AIM-2, LRairh 0.14865 AC/H) + ventilation 724; sensible gain **4641 W (63.4 %)**. On the OBJECTIVE methods
+> (U·A to 10 °C, N-factor) the same house reads 14 412 W (122.3 %). Next: ventilation (Cl. 5.2.3.3, the HRV at ASE
+> 76 % reads 724 W) and the design-hour solar gain (Cl. 6.2.2.1: ~2150 W for F280-1's windows against the season
+> average 289 W). The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 and §4.6.
 >
-> **AIM-2** (2026-11-19, engine only): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables
-> `src/core/Aim2Data.js`; January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel
-> computed (`tools/f280/aim2_variants.py`) at 1e-9, NRCan's 2015 test cases to 4 decimals. F280-1 (HRV balanced):
-> LRairh **0.14865 AC/H** → ~1737 W by Cl. 5.2.3's 1.2 × Vb/3.6 × DTDh, against the N-factor's 1194 W. NOT WIRED:
-> S12's Infiltration Method dropdown is next (ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 HANDOFF 2026-11-19).
+> **AIM-2** (2026-11-19): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables `src/core/Aim2Data.js`;
+> January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel computed
+> (`tools/f280/aim2_variants.py`) at 1e-9, NRCan's 2015 test cases to 4 decimals. In the app: S12 B.19.1 Infiltration
+> Method (OBJECTIVE (N-factor) | AIM-2 (CSA F280)), B.19.2-B.19.12 its inputs (greyed unless AIM-2), B.19.13 / B.19.14
+> LRairh / LRairc shown either way. It sets F280's air-leakage loss (Cl. 5.2.3) and gain (Cl. 6.2.6) and the annual
+> `i_103` (Andy: "when you get to a fork in the road, take it"): AIM-2 per month on the climate station's mean
+> temperature and wind, HDD-weighted (F280-1: 2687 → 2859 kWh). ⚠ S12 B.18.4 "Ae10 or ELA10 (m²)" computes ACH50 ×
+> volume / 3600 - the 50 Pa FLOW (m³/s), not an area (F280-1: 0.304 against AIM-2's ELA 0.0394 m²); open for Andy.
 >
 > **BASESIMP** (2026-11-19): `src/core/Basesimp.js` is BasementHLR.xls cell for cell (coefficients
 > `src/core/BasesimpData.js` from FoundationCC.xls; weather `src/core/F280Weather.js` from F280_Weather.xls, 675 of

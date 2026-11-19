@@ -206,6 +206,90 @@
       message:
         "The foundation's January design heat loss by BASESIMP, W - shown whichever method G.4.3 selects, so the two can be compared; it enters S15 and F280 only under BASESIMP.",
     },
+    d_111: {
+      cell: "111",
+      title: "Infiltration Method",
+      message:
+        "OBJECTIVE (N-factor): the 50 Pa leakage / N - one seasonal average natural rate, used for the annual figure and (as before) F280's peak._x000a_AIM-2 (CSA F280): the Alberta Infiltration Model as F280-12 Cl. 5.2.3 requires (AIM2.xls) - stack and wind at the design temperatures and January / July wind, shielding, terrain, leakage split, flues, and the ventilation balance. It sets F280's air-leakage loss and gain (Cl. 5.2.3, 6.2.6) and the annual i_103, where AIM-2 runs month by month on the climate station (mean temperature and wind, HDD-weighted).",
+    },
+    g_111: {
+      cell: "111",
+      title: "Air Tightness (AIM-2)",
+      message:
+        "AIM-2 needs the blower door's ACH50 and ELA. Custom: B.18.2's ACH50 with the ELA at 10 Pa entered in B.19.3. Or one of AIM2.xls's prescribed types, each with its own ACH50 and ELA (from the volume).",
+    },
+    d_112: {
+      cell: "112",
+      title: "ELA at 10 Pa (Custom)",
+      message:
+        "Equivalent leakage area at 10 Pa from the blower-door test, cm2 (CGSB-149.10). Note B.18.4 shows ACH50 x volume / 3600, a 50 Pa flow, not this area.",
+    },
+    g_112: {
+      cell: "112",
+      title: "Highest Ceiling Above Grade",
+      message:
+        "The above-grade height of the highest ceiling, m - AIM-2's stack height.",
+    },
+    d_112b: {
+      cell: "112B",
+      title: "Building Site Terrain",
+      message:
+        "The terrain around the house (AIM2.xls's 8 classes, roughness length). F280's archetypes: Low crops, x/H > 20.",
+    },
+    g_112b: {
+      cell: "112B",
+      title: "Weather Station Terrain",
+      message:
+        "The terrain at the weather station's anemometer (10 m). Airports: Open flat terrain, grass.",
+    },
+    d_112c: {
+      cell: "112C",
+      title: "Wall Shielding",
+      message:
+        "Local shielding of the walls (AIM2.xls's 5 classes). F280's archetypes: Light local shielding.",
+    },
+    g_112c: {
+      cell: "112C",
+      title: "Flue Shielding",
+      message:
+        "Local shielding of the flue top. F280's archetypes: Light local shielding.",
+    },
+    d_112d: {
+      cell: "112D",
+      title: "House Type",
+      message:
+        "With the storeys (d_103) and foundation, sets AIM-2's ceiling / walls / floor leakage split (Lew 1993).",
+    },
+    g_112d: {
+      cell: "112D",
+      title: "Foundation Type",
+      message:
+        "With the house type and storeys, sets AIM-2's leakage split.",
+    },
+    d_112e: {
+      cell: "112E",
+      title: "Ventilation Balance",
+      message:
+        "How S13's ventilation (d_120, L/s) meets the envelope: Balanced (HRV/ERV), Exhaust only (lowers natural infiltration), Supply only.",
+    },
+    g_112e: {
+      cell: "112E",
+      title: "Flue Diameter",
+      message:
+        "A flue's diameter, mm (0: no flue; sealed combustion and electric have none).",
+    },
+    d_112f: {
+      cell: "112F",
+      title: "LRairh",
+      message:
+        "AIM-2's natural air-leakage rate at the heating design condition, AC/H (F280 Cl. 5.2.3). Shown under either method so they compare.",
+    },
+    g_112f: {
+      cell: "112F",
+      title: "LRairc",
+      message:
+        "AIM-2's natural air-leakage rate at the cooling design condition, AC/H (F280 Cl. 6.2.6).",
+    },
     i_21: {
       cell: "I21",
       title: "Capacitance Factor",

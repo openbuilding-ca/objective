@@ -197,10 +197,20 @@
         "envelope.airFacing.area",
         "airTightness.nFactor",
         "climate.heating.obcSetpoint", // the DESIGN set-point (F280 Cl. 4.2: 22 °C)
-        "climate.temperature.coldest"
+        "climate.temperature.coldest",
+        "airTightness.infiltrationMethod",
+        "airTightness.aim2",
+        "volume.conditioned"
       ],
       label: "F280 Peak Infiltration Heat Loss (W)",
       compute: (inputs) => {
+        // S12 B.19.1 = AIM-2: Cl. 5.2.3 itself, HLairb = LRairh x Vb / 3.6 x DTDh x 1.2 (LRairh = AIM2.xls's)
+        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (!r || r.error) return "Unavailable";
+          const dT = parseNum(inputs["climate.heating.obcSetpoint"], 22) - parseNum(inputs["climate.temperature.coldest"], -22);
+          return Math.round(r.design.heating.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, dT) * 1.2);
+        }
         const nrl50 = parseNum(inputs["airTightness.nrl50"]);
         const areaAir = parseNum(inputs["envelope.airFacing.area"]);
         const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
@@ -280,6 +290,7 @@
       label: "F280 Total Design Heat Loss (W)",
       compute: (inputs) => {
         if (inputs["f280.peakEnvelopeHeatLoss"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakInfiltrationHeatLoss"] === "Unavailable") return "Unavailable";
         const envelope = parseNum(inputs["f280.peakEnvelopeHeatLoss"]);
         const infiltration = parseNum(inputs["f280.peakInfiltrationHeatLoss"]);
         const ventilation = parseNum(inputs["f280.peakVentilationHeatLoss"]);
@@ -329,7 +340,11 @@
         "climate.temperature.hottest",
         "climate.cooling.setpoint",
         // Latent load factor
-        "cooling.latentLoadFactor"
+        "cooling.latentLoadFactor",
+        // S12 B.19.1 = AIM-2: Cl. 6.2.6's air-leakage gain from LRairc
+        "airTightness.infiltrationMethod",
+        "airTightness.aim2",
+        "volume.conditioned"
       ],
       label: "F280 Nominal Cooling Capacity (W)",
       compute: (inputs) => {
@@ -345,7 +360,12 @@
         const deltaT_cool = hottest - setpoint;
 
         let infGainKw = 0;
-        if (nFactor > 0 && deltaT_cool > 0) {
+        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+          // Cl. 6.2.6: HGsalb = LRairc x Vb / 3.6 x DTDc x 1.2
+          const r = inputs["airTightness.aim2"];
+          if (!r || r.error) return "Unavailable";
+          infGainKw = (r.design.cooling.natural * parseNum(inputs["volume.conditioned"]) / 3.6 * Math.max(0, deltaT_cool) * 1.2) / 1000;
+        } else if (nFactor > 0 && deltaT_cool > 0) {
           // 1.21 × NRL50 × Ae / N × deltaT / 1000 (W to kW)
           infGainKw = (AIR_HEAT_CAPACITY * nrl50 * areaAir / nFactor) * deltaT_cool / 1000;
         }

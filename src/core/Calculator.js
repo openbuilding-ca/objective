@@ -58,7 +58,7 @@ TEUI.Calculator = (function () {
 
       // Section postStamp hooks (display mirrors, key values)
       const modules = window.TEUI.SectionModules || {};
-      for (const key of ["sect01", "sect03", "sect13", "sect16", "sect21"]) {
+      for (const key of ["sect01", "sect03", "sect12", "sect13", "sect16", "sect21"]) {
         if (modules[key]?.postStamp) modules[key].postStamp();
       }
 

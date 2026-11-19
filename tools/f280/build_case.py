@@ -163,6 +163,22 @@ def build():
         "= 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593)")
     put("l_26", 0.85, "standard", "H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b))")
     put("d_26b", 8, "standard", "H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value")
+    # Cl. 5.2.3 / 6.2.6: air leakage by AIM2.xls (AIM-2), S12 B.19.1-B.19.12
+    put("d_111", "AIM2", "standard", "Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise")
+    put("g_111", "Energy Tight", "equivalent",
+        "H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 "
+        "at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50")
+    put("d_112", 0, "standard", "not used: the prescribed type carries its ELA")
+    put("g_112", 5.53, "derived", "highest ceiling above grade: basement wall above grade 2.36 - 2.06 = 0.30 (G.1.5) + main "
+        "2.77 + upper 2.46 (G.1.8) m")
+    put("d_112b", 4, "standard", "H.3.1 building site: 'Low crops x/H >20' (AIM2.xls class 4)")
+    put("g_112b", 3, "standard", "AIM2.xls's weather station default: open flat terrain, grass (an airport); F280 names none")
+    put("d_112c", 2, "standard", "H.3.1 walls: 'Light local shielding' (class 2)")
+    put("g_112c", 2, "standard", "H.3.1 flue: 'Light local shielding' (class 2)")
+    put("d_112d", "Detached", "standard", "Archetype 1: a detached two-storey house (d_103 = 2)")
+    put("g_112d", "Full", "standard", "a full basement (G.1.4 / G.1.5)")
+    put("d_112e", "Balanced", "standard", "H.3.3 HRV 51.91 L/s (balanced); exhaust-only is the 8.3.4 c) variant")
+    put("g_112e", 0, "standard", "no flue (electric heating, sealed combustion)")
     put("h_21", "Capacitance", "standard",
         "Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static)")
     put("h_15", round(floor_area, 2), "estimate",
@@ -245,6 +261,18 @@ NEW_COLUMNS = {
     "h_26": "Exposed Perimeter",
     "l_26": "Soil Conductivity",
     "d_26b": "Water Table Depth",
+    "d_111": "Infiltration Method",
+    "g_111": "Air Tightness (AIM-2)",
+    "d_112": "ELA at 10 Pa for Custom (cm²)",
+    "g_112": "Highest Ceiling Above Grade (m)",
+    "d_112b": "Building Site Terrain",
+    "g_112b": "Weather Station Terrain",
+    "d_112c": "Wall Shielding",
+    "g_112c": "Flue Shielding",
+    "d_112d": "House Type",
+    "g_112d": "Foundation Type",
+    "d_112e": "Ventilation Balance",
+    "g_112e": "Flue Diameter (mm)",
 }
 
 

@@ -58,6 +58,82 @@
     return 6;
   }
 
+  // AIM2.xls's selections from S12's dropdown codes (Aim2Data's names)
+  const AIM2_STOREYS = { 1: "One", 1.5: "One & Half", 2: "Two", 2.5: "Two & Half", 3: "Three" };
+  const AIM2_BALANCE = ["Balanced", "Exhaust only", "Supply only"];
+
+  /**
+   * AIM2.xls's inputs from the model (CSA F280-12 Cl. 5.2.3): the house's ACH50 (S12 B.18.2, d_109) and,
+   * for "Custom", its ELA at 10 Pa (B.19.3, cm2) - or one of AIM2's prescribed air-tightness types, which
+   * carry their own ACH50 and ELA; the volume d_105; storeys d_103 (AIM-2's table covers 1-3); the
+   * ventilation L/s (S13 d_120) as Balanced / Exhaust only / Supply only; the January / July design wind
+   * from F280's weather table (F280Weather.js); the design temperatures S03 B.1.2 (design set-point),
+   * B.1.3, L.3.1, L.3.2. The annual rate (Aim2.seasonalRate) runs the same house through the climate
+   * station's twelve months (mean temperature, mean wind, HDD weights) at the energy set-point; it is
+   * absent until the station has loaded (ClimateStation.request recalculates on arrival).
+   * Returns { design, seasonal, inputs } or { error } naming what is missing - never a substitute value.
+   */
+  function aim2For(inputs) {
+    const A = window.TEUI.Aim2;
+    const W = window.TEUI.F280Weather;
+    if (!A || !W) return { error: "AIM-2 is not loaded" };
+    const volume = parseNum(inputs["volume.conditioned"]);
+    if (!(volume > 0)) return { error: "no conditioned volume (S12 d_105)" };
+    const storeys = AIM2_STOREYS[parseNum(inputs["volume.numStoreys"])];
+    if (!storeys) return { error: `AIM-2 covers houses of 1 to 3 storeys (S12 d_103 = ${inputs["volume.numStoreys"]})` };
+    const height = parseNum(inputs["aim2.ceilingHeight"]);
+    if (!(height > 0)) return { error: "no highest-ceiling height above grade (S12 B.19.4)" };
+    const tightness = inputs["aim2.tightness"] || "Custom";
+    const ela = parseNum(inputs["aim2.ela"]);
+    if (tightness === "Custom" && !(ela > 0)) return { error: "no ELA at 10 Pa for Custom (S12 B.19.3)" };
+    const city = inputs["climate.location.city"];
+    const weather = W.lookup(inputs["climate.location.province"], city);
+    if (!weather) return { error: `F280's weather table does not list ${city}` };
+    const vent = parseNum(inputs["ventilation.volumetricRate"]);
+    const balance = inputs["aim2.ventilationBalance"] || "Balanced";
+    if (!AIM2_BALANCE.includes(balance)) return { error: `unknown ventilation balance "${balance}"` };
+    const p = {
+      indoorHeating: parseNum(inputs["climate.heating.obcSetpoint"], 22),
+      indoorCooling: parseNum(inputs["climate.cooling.setpoint"], 24),
+      designHeating: parseNum(inputs["climate.temperature.coldest"]),
+      designCooling: parseNum(inputs["climate.temperature.hottest"]),
+      janWind: weather.janWind,
+      julWind: weather.julWind,
+      stationTerrain: parseNum(inputs["aim2.stationTerrain"], 3),
+      anemometerHeight: 10,
+      siteTerrain: parseNum(inputs["aim2.siteTerrain"], 4),
+      wallShielding: parseNum(inputs["aim2.wallShielding"], 2),
+      flueShielding: parseNum(inputs["aim2.flueShielding"], 2),
+      buildingType: inputs["aim2.buildingType"] || "Detached",
+      storeys,
+      foundation: inputs["aim2.foundation"] || "Full",
+      tightness,
+      ach50: parseNum(inputs["airTightness.ach50Target"]),
+      ela,
+      elaPa: 10,
+      volume,
+      ceilingHeight: height,
+      flues: [parseNum(inputs["aim2.flueDiameter"])],
+      supplyLs: balance === "Exhaust only" ? 0 : vent,
+      exhaustLs: balance === "Supply only" ? 0 : vent,
+      furnaceFlueLs: 0
+    };
+    let design;
+    try {
+      design = A.compute(p);
+    } catch (e) {
+      return { error: e.message };
+    }
+    let seasonal = null;
+    const CS = window.TEUI.ClimateStation;
+    const station = CS && inputs["climate.station"] ? CS.request(inputs["climate.station"]) : null;
+    if (station?.months) {
+      const m = station.months;
+      seasonal = A.seasonalRate(p, parseNum(inputs["climate.heating.setpoint"], 21), m.t_mean, m.wind_mean, m.hdd18);
+    }
+    return { design, seasonal, inputs: p, weather };
+  }
+
   function register(graph) {
     const inputs = [
       // Volume inputs (from Section12.js field mappings)
@@ -71,6 +147,22 @@
 
       // Conditioned volume (user input or from S02)
       { id: "volume.conditioned", legacyId: "d_105", section: "S12", classification: "C", label: "Conditioned Volume (m³)", defaultValue: 0 },
+
+      // B.19.1-B.19.14: the infiltration method and AIM-2's inputs (CSA F280-12 Cl. 5.2.3, AIM2.xls;
+      // src/core/Aim2.js). Defaults: OBJECTIVE's N-factor; AIM-2's site as F280's archetypes (H.1-H.4:
+      // "Low crops x/H > 20", "Light local shielding" walls and flue), the station open flat (AIM2.xls's).
+      { id: "airTightness.infiltrationMethod", legacyId: "d_111", section: "S12", classification: "C", label: "Infiltration Method", defaultValue: "OBJECTIVE" },
+      { id: "aim2.tightness", legacyId: "g_111", section: "S12", classification: "C", label: "Air Tightness (AIM-2)", defaultValue: "Custom" },
+      { id: "aim2.ela", legacyId: "d_112", section: "S12", classification: "C", label: "ELA at 10 Pa for Custom (cm²)", defaultValue: 0 },
+      { id: "aim2.ceilingHeight", legacyId: "g_112", section: "S12", classification: "C", label: "Highest Ceiling Above Grade (m)", defaultValue: 0 },
+      { id: "aim2.siteTerrain", legacyId: "d_112b", section: "S12", classification: "C", label: "Building Site Terrain", defaultValue: 4 },
+      { id: "aim2.stationTerrain", legacyId: "g_112b", section: "S12", classification: "C", label: "Weather Station Terrain", defaultValue: 3 },
+      { id: "aim2.wallShielding", legacyId: "d_112c", section: "S12", classification: "C", label: "Wall Shielding", defaultValue: 2 },
+      { id: "aim2.flueShielding", legacyId: "g_112c", section: "S12", classification: "C", label: "Flue Shielding", defaultValue: 2 },
+      { id: "aim2.buildingType", legacyId: "d_112d", section: "S12", classification: "C", label: "House Type", defaultValue: "Detached" },
+      { id: "aim2.foundation", legacyId: "g_112d", section: "S12", classification: "C", label: "Foundation Type", defaultValue: "Full" },
+      { id: "aim2.ventilationBalance", legacyId: "d_112e", section: "S12", classification: "C", label: "Ventilation Balance", defaultValue: "Balanced" },
+      { id: "aim2.flueDiameter", legacyId: "g_112e", section: "S12", classification: "C", label: "Flue Diameter (mm)", defaultValue: 0 },
     ];
 
     graph.registerInputs(inputs);
@@ -454,6 +546,53 @@
       }
     });
 
+    // ========================================================================
+    // AIM-2 (S12 B.19.1-B.19.14): CSA F280-12 Cl. 5.2.3's air-leakage rate (AIM2.xls, src/core/Aim2.js)
+    // at the design condition, and the heating season's mean rate for the annual figure
+    // ========================================================================
+    graph.registerNode({
+      id: "airTightness.aim2",
+      section: "S12",
+      classification: "C",
+      dependencies: [
+        "aim2.tightness", "aim2.ela", "aim2.ceilingHeight", "aim2.siteTerrain", "aim2.stationTerrain",
+        "aim2.wallShielding", "aim2.flueShielding", "aim2.buildingType", "aim2.foundation",
+        "aim2.ventilationBalance", "aim2.flueDiameter",
+        "airTightness.ach50Target", "volume.conditioned", "volume.numStoreys", "ventilation.volumetricRate",
+        "climate.location.province", "climate.location.city", "climate.station",
+        "climate.heating.obcSetpoint", "climate.heating.setpoint", "climate.cooling.setpoint",
+        "climate.temperature.coldest", "climate.temperature.hottest"
+      ],
+      label: "AIM-2 air leakage (F280 Cl. 5.2.3)",
+      compute: (inputs) => aim2For(inputs)
+    });
+
+    graph.registerNode({
+      id: "aim2.heatingRate",
+      legacyId: "d_112f",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.aim2"],
+      label: "LRairh: Air Leakage, Heating Design (AC/H)",
+      compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        return r && !r.error ? r.design.heating.natural : "Unavailable";
+      }
+    });
+
+    graph.registerNode({
+      id: "aim2.coolingRate",
+      legacyId: "g_112f",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.aim2"],
+      label: "LRairc: Air Leakage, Cooling Design (AC/H)",
+      compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        return r && !r.error ? r.design.cooling.natural : "Unavailable";
+      }
+    });
+
     // i_103: Air Leakage Heat Loss
     // From Section12.js line 2564-2571:
     // baseLeakageCoefficient = (1.21 × NRL50 × area_air) / N_factor
@@ -467,19 +606,31 @@
         "airTightness.nrl50",
         "envelope.airFacing.area",
         "airTightness.nFactor",
-        "climate.heating.degreedays"
+        "climate.heating.degreedays",
+        "airTightness.infiltrationMethod",
+        "airTightness.aim2",
+        "volume.conditioned"
       ],
       label: "Air Leakage Heat Loss (kWh/yr)",
       compute: (inputs) => {
         const hdd = inputs["climate.heating.degreedays"];
         if (isUnavailable(hdd)) return "Unavailable";
+        const leakageFactor = 1.21;
+
+        // S12 B.19.1 = AIM-2: the same form with AIM-2's heating-season mean rate in place of the
+        // N-factor's (airTightness.aim2.seasonal, AC/H -> L/s = rate x volume / 3.6)
+        if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (!r || r.error || !r.seasonal) return "Unavailable";
+          const ls = (r.seasonal.rate * parseNum(inputs["volume.conditioned"])) / 3.6;
+          return (leakageFactor * ls * parseNum(hdd) * 24) / 1000;
+        }
 
         const nrl50 = parseNum(inputs["airTightness.nrl50"]);
         const areaAir = parseNum(inputs["envelope.airFacing.area"]);
         const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
 
         // Legacy formula: (1.21 × NRL50 × area / N_factor × HDD × 24) / 1000
-        const leakageFactor = 1.21;
         const baseLeakageCoefficient = nFactor > 0
           ? (leakageFactor * nrl50 * areaAir) / nFactor
           : 0;

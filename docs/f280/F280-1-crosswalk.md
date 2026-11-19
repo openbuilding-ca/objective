@@ -20,6 +20,18 @@ its code values except the fields below). Status: standard · derived · equival
 | `h_26: Exposed Perimeter` | 46.72 | derived | Table G.1.4 b): exposed perimeters 26.42 + 20.30 m; with d_95 a 18.47 x 4.89 m rectangle, height d_94 / 46.72 = 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593) |
 | `l_26: Soil Conductivity` | 0.85 | standard | H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b)) |
 | `d_26b: Water Table Depth` | 8 | standard | H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value |
+| `d_111: Infiltration Method` | AIM2 | standard | Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise |
+| `g_111: Air Tightness (AIM-2)` | Energy Tight | equivalent | H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50 |
+| `d_112: ELA at 10 Pa for Custom (cm²)` | 0 | standard | not used: the prescribed type carries its ELA |
+| `g_112: Highest Ceiling Above Grade (m)` | 5.53 | derived | highest ceiling above grade: basement wall above grade 2.36 - 2.06 = 0.30 (G.1.5) + main 2.77 + upper 2.46 (G.1.8) m |
+| `d_112b: Building Site Terrain` | 4 | standard | H.3.1 building site: 'Low crops x/H >20' (AIM2.xls class 4) |
+| `g_112b: Weather Station Terrain` | 3 | standard | AIM2.xls's weather station default: open flat terrain, grass (an airport); F280 names none |
+| `d_112c: Wall Shielding` | 2 | standard | H.3.1 walls: 'Light local shielding' (class 2) |
+| `g_112c: Flue Shielding` | 2 | standard | H.3.1 flue: 'Light local shielding' (class 2) |
+| `d_112d: House Type` | Detached | standard | Archetype 1: a detached two-storey house (d_103 = 2) |
+| `g_112d: Foundation Type` | Full | standard | a full basement (G.1.4 / G.1.5) |
+| `d_112e: Ventilation Balance` | Balanced | standard | H.3.3 HRV 51.91 L/s (balanced); exhaust-only is the 8.3.4 c) variant |
+| `g_112e: Flue Diameter (mm)` | 0 | standard | no flue (electric heating, sealed combustion) |
 | `h_21: Capacitance Method` | Capacitance | standard | Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static) |
 | `h_15: Conditioned Area: m²` | 289.14 | estimate | basement 90.31 (G.1.4) + main on the same footprint 90.31 + upper 108.52 (G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF |
 | `d_105: Total Conditioned Volume` | 730.3 | estimate | basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF |

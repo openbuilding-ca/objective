@@ -68,4 +68,17 @@ for (const row of legacy.set_2_exhaust_only.rows) {
 }
 console.log("ok  NRCan 2015 test cases (volume, exhaust-only), to their printed 4 decimals");
 
+// --- seasonalRate: OBJECTIVE's annual figure under AIM-2 (not the spreadsheet's; its own witnesses) ----
+{
+  const p = records.find(r => r.variant === "f280-1-hrv").inputs;
+  const flat = A.seasonalRate(p, p.indoorHeating, Array(12).fill(p.designHeating), Array(12).fill(p.janWind / 3.6), Array(12).fill(100));
+  close(flat.rate, A.compute(p).heating.natural, "seasonal rate at constant design weather = the design rate");
+  const one = A.seasonalRate(p, 20, [-10, -5, 0, 5, 10, 15, 18, 17, 12, 6, 0, -8], Array(12).fill(4), [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30]);
+  close(one.rate, one.monthly[11], "all the weight on December = December's rate");
+  const s = A.seasonalRate(p, 20, [-10, -5, 0, 5, 10, 15, 18, 17, 12, 6, 0, -8], Array(12).fill(4), [800, 650, 560, 390, 220, 80, 20, 40, 170, 360, 540, 720]);
+  assert.ok(s.monthly[0] > s.monthly[6], "January's stack effect drives more air than July's");
+  assert.ok(s.rate < A.compute(p).heating.natural, "the season's mean rate sits below the design hour's");
+  checks += 2;
+}
+
 console.log(`\naim2: ${records.length} workbooks + ${legacy.set_1_volume.rows.length + legacy.set_2_exhaust_only.rows.length} test cases, ${checks} checks passed`);

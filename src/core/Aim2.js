@@ -145,5 +145,30 @@
     };
   }
 
-  window.TEUI.Aim2 = Object.freeze({ compute });
+  /**
+   * The heating season's AVERAGE natural rate by AIM-2, AC/H - OBJECTIVE's annual figure under AIM-2
+   * (Andy 2026-11-19: "when you get to a fork in the road, take it"). NOT AIM2.xls (a design hour): the
+   * same model run once per month at that month's mean outdoor temperature and mean wind (the climate
+   * station's), the indoor at the ENERGY set-point, and the twelve rates averaged with the month's
+   * heating degree days as weights - so that rate x volume x HDD stands where OBJECTIVE's N-factor rate
+   * (NRL50 x area / N) stood. HOT2000 runs AIM-2 the same way, through the season rather than at one hour.
+   * @param p        compute()'s inputs (the house, site and ventilation)
+   * @param indoor   the energy set-point, C
+   * @param tMean    12 monthly mean outdoor temperatures, C
+   * @param windMs   12 monthly mean wind speeds, m/s (at the station's anemometer)
+   * @param hdd      12 monthly heating degree days (the weights)
+   */
+  function seasonalRate(p, indoor, tMean, windMs, hdd) {
+    let sumW = 0, sumWR = 0;
+    const monthly = tMean.map((t, i) => {
+      const r = compute({ ...p, indoorHeating: indoor, designHeating: t, janWind: windMs[i] * 3.6 });
+      sumW += hdd[i];
+      sumWR += hdd[i] * r.heating.natural;
+      return r.heating.natural;
+    });
+    if (!(sumW > 0)) throw new Error("Aim2: no heating degree days to weight the months");
+    return { monthly, rate: sumWR / sumW };
+  }
+
+  window.TEUI.Aim2 = Object.freeze({ compute, seasonalRate });
 })();
