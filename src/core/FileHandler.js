@@ -1277,8 +1277,19 @@
           "i_122",
           "l_123",
 
-          // Section 21: F280 Mode (Off hides the F280-only inputs; two streams, 2026-11-19)
+          // Section 21: F280 Mode (Off hides the F280-only inputs; two streams, 2026-11-19) and the F280
+          // form - project, capacities, designer (not exported before 2026-11-19: lost on every save)
           "f280_mode",
+          "f280_proj_num",
+          "f280_code_ref",
+          "f280_cap_heat",
+          "f280_cap_cool",
+          "f280_dsgn_name",
+          "f280_dsgn_co",
+          "f280_cert_type",
+          "f280_cert_num",
+          "f280_svc_org",
+          "f280_attest",
 
           // Section 15: Summary
           "d_142",
@@ -1306,9 +1317,11 @@
             return rawValue; // Return as-is if not numeric
           }
 
-          // U-values: 3dp minimum (e.g., "0.180", "0.250")
+          // U-values: 3dp MINIMUM (e.g., "0.180", "0.250") - never fewer than stored: toFixed(3) cut
+          // 0.9091 to 0.909 and 1.5625 to 1.563 on every round trip (found 2026-11-19, F280-1)
           if (uValueFields.includes(fieldId)) {
-            return numVal.toFixed(3);
+            const decimals = (String(rawValue).split(".")[1] || "").length;
+            return decimals > 3 ? String(rawValue) : numVal.toFixed(3);
           }
 
           // Coefficients: 2dp (e.g., "0.90", "2.66")
