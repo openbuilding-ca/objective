@@ -1,6 +1,6 @@
 # F280 whole-house verification: start here
 
-> **CURRENT STATE (2026-11-19 close, branch `f280-review-format`). F280-1 PASSES Cl. 8.4.1 ON BOTH COUNTS:**
+> **CURRENT STATE (2026-11-19 close; on `main` by PR #5, from `f280-review-format`). F280-1 PASSES Cl. 8.4.1 ON BOTH COUNTS:**
 > **loss 11 681 W vs Annex J 11 787 (99.1 %); gain 7347 W vs 7321 (100.4 %).** `ENFORCE_BAND` in the harness stays false until
 > the verification agent (Kieran) signs off.
 >
