@@ -219,6 +219,11 @@ Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 
   109.25 = 295.57 m2 (was 289.14: the main floor is not the basement's footprint), Vb 795.1 m3 (was 730.3) with the floors'
   0.23 m joist spaces, as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house volume ("including ... floors";
   closets are inside each floor's area). F280-1's LOSS PASSES Cl. 8.4.1.
+- ✅ F280's take-off measures as OBJECTIVE does (Andy 2026-11-19: interior dimensions, the rough opening the handoff
+  between wall and window, "a pure topology model"): G.1.8's wall lengths sum to the plans' perimeters (main + stair
+  156.62 ft vs 156.6; upper + stair 154.35 vs 154), the basement box is "INT." and the floors share its 35 ft 4.5 in;
+  wall heights are the ceiling heights and the rim joists their own 0.23 m row (G.1.7) - even the two-storey stair wall
+  is 2.77 + 2.46 = 5.23 m - so walls and rims tile the elevation once; windows are rough openings (Table 6F note 1).
 - ✅ Table G.1.8's wall areas are GROSS (area = length x height on every row; the PDF, 2026-11-19): the build's
   subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
   open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).
