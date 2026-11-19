@@ -43,6 +43,27 @@ for (const level of offered) {
   check(`${level} NRL50 ${NBC_2025_NLR50[level]}`, got === NBC_2025_NLR50[level], `got ${got}`);
 }
 
+// B.18.4 (d_110) is NLA10 in cm2/m2 (Andy 2026-11-19): the ELA in effect / the air-facing area; m_110's
+// basis is the level's NLA10 maximum, none for Measured or a PH preset.
+const NBC_2025_NLA10 = {
+  "AL-1A": 1.20, "AL-2A": 0.96, "AL-3A": 0.72, "AL-4A": 0.48, "AL-5A": 0.29,
+  "AL-1B": 1.92, "AL-2B": 1.6, "AL-3B": 1.28, "AL-4B": 0.96, "AL-5B": 0.64, "AL-6B": 0.38,
+};
+const limit = nodes.find(n => n.id === "airTightness.nla10Limit");
+for (const level of offered) {
+  const got = limit.compute({ "airTightness.method": level });
+  check(`${level} NLA10 maximum ${NBC_2025_NLA10[level]}`, got === NBC_2025_NLA10[level], `got ${got}`);
+}
+for (const m of ["MEASURED", "PH_CLASSIC", "PH_LOW", "PH_PLUS"]) {
+  check(`${m} names no NBC level`, limit.compute({ "airTightness.method": m }) === 0, "a limit");
+}
+const nla10 = nodes.find(n => n.id === "airTightness.nla10");
+// F280-1 under AIM-2: its Energy Tight ELA 394.3 cm2 (rounded in AIM2.xls's label) over 414.285 m2
+const aim2 = { design: { ela: 394.3 } };
+const f280 = nla10.compute({ "airTightness.infiltrationMethod": "AIM2", "airTightness.aim2": aim2, "envelope.airFacing.area": 414.285,
+  "airTightness.ach50Target": 1.5, "volume.conditioned": 730.3 });
+check("F280-1's NLA10 = 394.3 / 414.285 cm2/m2", f280 === 394.3 / 414.285, `got ${f280}`);
+
 let threw = false;
 try {
   nrl50.compute({ "airTightness.method": "AL-9Z" });

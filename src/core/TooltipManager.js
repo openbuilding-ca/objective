@@ -195,6 +195,12 @@
       title: "Water Table Depth",
       message: "Depth of the water table below grade, m (F280 Cl. 5.2.2.1 c)): 8 m for F280's \"Normal (7-10 m)\".",
     },
+    d_110: {
+      cell: "110",
+      title: "NLA10, Normalized Leakage Area at 10 Pa",
+      message:
+        "The equivalent leakage area at 10 Pa per m2 of air-facing envelope (D.101), cm2/m2 - NBC 9.36.5's third airtightness metric beside ACH50 and NLR50 (Tables 9.36.5.4.-A/-B). MEASURED only when B.19.1 is AIM-2 with a Custom ELA (B.19.3) from a multi-point test (9.36.5.3.(3)); otherwise derived from the ACH50 at the flow exponent of AIM-2's nearest air-tightness type, an estimate. M checks it against B.18.1's level's NLA10 maximum, or against the Reference when B.18.1 names no NBC level. A level is met by ANY one metric (9.36.5.4.(1)), and the three disagree for a house whose volume-to-area ratio differs from the table's reference house (about 1.27 m guarded, 1.40 m unguarded).",
+    },
     h_26b: {
       cell: "H26b",
       title: "Deep Ground Temperature (F280)",
@@ -222,7 +228,7 @@
       cell: "112",
       title: "ELA at 10 Pa (Custom)",
       message:
-        "Equivalent leakage area at 10 Pa from the blower-door test, cm2 (CGSB-149.10). B.18.4 shows the ELA in effect, in m2.",
+        "Equivalent leakage area at 10 Pa from the blower-door test, cm2 (CGSB-149.10). B.18.4 shows it per m2 of envelope, NBC's NLA10.",
     },
     g_112: {
       cell: "112",

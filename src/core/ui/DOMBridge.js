@@ -131,8 +131,8 @@
     // S08 Humidity guidance
     k_59: "raw",
 
-    // S12 Volume Metrics: WWR as percent, ELA10 as 3dp, compliance text and checkmarks
-    d_107: "percent-2dp", d_110: "number-4dp",
+    // S12 Volume Metrics: WWR as percent, NLA10 (cm2/m2) to 2dp as NBC's tables state it, compliance text and checkmarks
+    d_107: "percent-2dp", d_110: "number-2dp",
     // B.19.13 / B.19.14: AIM-2's air-leakage rates, AC/H (F280 Cl. 5.2.3, 6.2.6)
     d_112f: "number-4dp", g_112f: "number-4dp",
     i_110: "integer",

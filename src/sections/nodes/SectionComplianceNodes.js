@@ -43,7 +43,7 @@
 
     // S12: Volume Metrics (ACH50 and ELA10 reference for compliance)
     { id: "reference.airTightness.ach50Target", legacyId: "ref_d_109", defaultValue: 1.5, classification: "C", section: "S12", label: "Reference ACH50" },
-    { id: "reference.airTightness.ela10", legacyId: "ref_d_110", defaultValue: 0, classification: "C", section: "S12", label: "Reference ELA10 (m²)" },
+    { id: "reference.airTightness.nla10", legacyId: "ref_d_110", defaultValue: 0, classification: "C", section: "S12", label: "Reference NLA10 (cm²/m²)" },
 
     // S11: Envelope RSI reference values (for RSI components: higher is better)
     { id: "reference.transmissionLoss.roof.rsi", legacyId: "ref_f_85", defaultValue: 5, classification: "C", section: "S11", label: "Reference Roof RSI" },
@@ -440,35 +440,34 @@
       }
     },
 
-    // m_110: ELA compliance (d_110 / ref_d_110) — lower is better
+    // m_110 / n_110: NLA10 (d_110, cm2/m2) against the B.18.1 Airtightness Level's NLA10 maximum (NBC
+    // Tables 9.36.5.4.-A/-B) - lower is better; when B.18.1 names no NBC level (Measured, a PH preset),
+    // against the Reference's NLA10. Passes at or under 100 %, no slack (it allowed 0.5 %).
     {
-      id: "compliance.ela10.ratio",
+      id: "compliance.nla10.ratio",
       legacyId: "m_110",
       section: "S12",
       classification: "C",
-      dependencies: ["airTightness.ela10", "reference.airTightness.ela10"],
-      label: "ELA10 Compliance Ratio",
+      dependencies: ["airTightness.nla10", "airTightness.nla10Limit", "reference.airTightness.nla10"],
+      label: "NLA10 Ratio to the Airtightness Level (or the Reference)",
       compute: (inputs) => {
-        const target = parseNum(inputs["airTightness.ela10"]);
-        const ref = parseNum(inputs["reference.airTightness.ela10"]);
-        if (ref > 0) {
-          return Math.round((target / ref) * 100) + "%";
-        }
-        return "100%";
+        const target = parseNum(inputs["airTightness.nla10"]);
+        const basis = parseNum(inputs["airTightness.nla10Limit"]) || parseNum(inputs["reference.airTightness.nla10"]);
+        return basis > 0 ? Math.round((target / basis) * 100) + "%" : "N/A";
       }
     },
     {
-      id: "compliance.ela10.pass",
+      id: "compliance.nla10.pass",
       legacyId: "n_110",
       section: "S12",
       classification: "C",
-      dependencies: ["airTightness.ela10", "reference.airTightness.ela10"],
-      label: "ELA10 Compliance Status",
+      dependencies: ["airTightness.nla10", "airTightness.nla10Limit", "reference.airTightness.nla10"],
+      label: "NLA10 Compliance Status",
       compute: (inputs) => {
-        const target = parseNum(inputs["airTightness.ela10"]);
-        const ref = parseNum(inputs["reference.airTightness.ela10"]);
-        // Pass if target/ref <= 1.005 (0.5% tolerance)
-        return ref > 0 && (target / ref) <= 1.005 ? "✓" : "✗";
+        const target = parseNum(inputs["airTightness.nla10"]);
+        const basis = parseNum(inputs["airTightness.nla10Limit"]) || parseNum(inputs["reference.airTightness.nla10"]);
+        if (!(basis > 0)) return "";
+        return target <= basis ? "✓" : "✗";
       }
     },
 
@@ -532,9 +531,9 @@
     // S11: Thermal bridge penalty
     "transmissionLoss.thermalBridgePenalty":"reference.transmissionLoss.thermalBridgePenalty",
 
-    // S12: ACH50 and ELA10
+    // S12: ACH50 and NLA10
     "airTightness.ach50Target":  "reference.airTightness.ach50Target",
-    "airTightness.ela10":        "reference.airTightness.ela10",
+    "airTightness.nla10":        "reference.airTightness.nla10",
   };
 
   // ==========================================================================

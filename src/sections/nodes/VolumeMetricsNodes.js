@@ -782,36 +782,52 @@
     });
 
     // ========================================================================
-    // d_110: Equivalent Leakage Area at 10 Pa (ELA10)
-    // Formula: ACH50 × Volume / 3600
+    // d_110: NLA10, the Normalized Leakage Area at 10 Pa, cm2/m2 (NBC 2025 9.36.5.2.(1)(d), Tables
+    // 9.36.5.4.-A/-B; Andy 2026-11-19: "modify the B.18.4 to cm2/m2")
+    // = the ELA at 10 Pa (cm2) / the air-facing envelope area (d_101, the area NRL50 uses).
+    // History: it read ACH50 x volume / 3600, the 50 Pa FLOW in m3/s (to 2026-11-19, F280-1 0.304), then
+    // the ELA in m2 (e056780, F280-1 0.0394); the code states airtightness as NLA10, not a bare ELA.
+    // The ELA: under AIM-2 (B.19.1), AIM-2's in effect - the prescribed type's, or the Custom measured
+    // one (B.19.3, the only MEASURED NLA10: 9.36.5.3.(3) wants a multi-point test). Otherwise derived
+    // from the ACH50 at the flow exponent of AIM2.xls's nearest prescribed type (Aim2.typicalN).
     // ========================================================================
     graph.registerNode({
-      id: "airTightness.ela10",
+      id: "airTightness.nla10",
       legacyId: "d_110",
       section: "S12",
       classification: "C",
       dependencies: [
         "airTightness.ach50Target",
         "volume.conditioned",
+        "envelope.airFacing.area",
         "airTightness.infiltrationMethod",
         "airTightness.aim2"
       ],
-      label: "Equivalent Leakage Area at 10 Pa (m²)",
-      // A true ELA at 10 Pa (Andy 2026-11-19: "yes"). It read ACH50 x volume / 3600, the 50 Pa FLOW in m3/s
-      // (F280-1: 0.304 where its ELA is 0.0394 m2). Under AIM-2 (B.19.1): AIM-2's ELA in effect - the
-      // prescribed type's, or the Custom measured one (B.19.3). Otherwise: from the ACH50 at the flow
-      // exponent of AIM2.xls's nearest prescribed type (Aim2.typicalN), by AIM2's own relation.
+      label: "NLA10, Normalized Leakage Area at 10 Pa (cm²/m²)",
       compute: (inputs) => {
         const ach50 = parseNum(inputs["airTightness.ach50Target"]);
         const volume = parseNum(inputs["volume.conditioned"]);
+        const area = parseNum(inputs["envelope.airFacing.area"]);
+        if (!(area > 0)) return 0;
         if (inputs["airTightness.infiltrationMethod"] === "AIM2") {
           const r = inputs["airTightness.aim2"];
-          if (r && !r.error) return r.design.ela / 10000;
+          if (r && !r.error) return r.design.ela / area;
         }
         const A = window.TEUI.Aim2;
         if (!A || !(volume > 0) || !(ach50 > 0)) return 0;
-        return A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) / 10000;
+        return A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) / area;
       }
+    });
+
+    // The NLA10 maximum of B.18.1's Airtightness Level (NBC Tables 9.36.5.4.-A/-B), or 0 when B.18.1 is
+    // Measured or a PH preset (no NBC level): m_110 then compares against the Reference's NLA10
+    graph.registerNode({
+      id: "airTightness.nla10Limit",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.method"],
+      label: "NLA10 maximum of the B.18.1 Airtightness Level (cm²/m²)",
+      compute: (inputs) => AIRTIGHTNESS_LEVELS[inputs["airTightness.method"]]?.nla10 ?? 0
     });
 
     // ========================================================================
