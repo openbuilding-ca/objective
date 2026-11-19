@@ -432,16 +432,24 @@
     // From Section12.js calculateACH50Target and calculateAirLeakageHeatLoss
     // ========================================================================
 
-    // NRL50 preset lookup values (from Section12.js line 2076-2090)
-    const NRL50_PRESETS = {
-      "AL-1A": 0.89,
-      "AL-2A": 0.71,
-      "AL-3A": 0.53,
-      "AL-4A": 0.35,
-      "AL-1B": 1.17,
-      "AL-2B": 0.94,
-      "AL-3B": 0.70,
-      "AL-4B": 0.47
+    // The Airtightness Levels, NBC 2025 Tables 9.36.5.4.-A (single and attached zones, guarded) and
+    // 9.36.5.4.-B (attached zones, unguarded); the same values as NBC 2020 Tables 9.36.6.4.-A/-B. Each
+    // level's maximum ACH50, NLA10 (cm2/m2) and NLR50 (L/s.m2); a level is met by any one of the three
+    // (9.36.5.4.(1)). Read from the code 2026-11-19: the old NRL50-only table (from the legacy
+    // Section12.js) had AL-2B 0.94, AL-3B 0.70, AL-4B 0.47 (the code: 0.98, 0.78, 0.59), and no AL-5A,
+    // AL-5B or AL-6B, which the B.18.1 dropdown offers and which fell back to AL-1B's 1.17.
+    const AIRTIGHTNESS_LEVELS = {
+      "AL-1A": { ach50: 2.5, nla10: 1.20, nlr50: 0.89 },
+      "AL-2A": { ach50: 2.0, nla10: 0.96, nlr50: 0.71 },
+      "AL-3A": { ach50: 1.5, nla10: 0.72, nlr50: 0.53 },
+      "AL-4A": { ach50: 1.0, nla10: 0.48, nlr50: 0.35 },
+      "AL-5A": { ach50: 0.6, nla10: 0.29, nlr50: 0.21 },
+      "AL-1B": { ach50: 3.0, nla10: 1.92, nlr50: 1.17 },
+      "AL-2B": { ach50: 2.5, nla10: 1.6, nlr50: 0.98 },
+      "AL-3B": { ach50: 2.0, nla10: 1.28, nlr50: 0.78 },
+      "AL-4B": { ach50: 1.5, nla10: 0.96, nlr50: 0.59 },
+      "AL-5B": { ach50: 1.0, nla10: 0.64, nlr50: 0.39 },
+      "AL-6B": { ach50: 0.6, nla10: 0.38, nlr50: 0.23 },
     };
 
     // g_108: NRL50 Target (Normalized Leakage Rate at 50Pa in L/s/m²)
@@ -478,10 +486,10 @@
           return achToNrl(1.0);
         } else if (method === "PH_PLUS") {
           return 0.1;
-        } else {
-          // Use preset value from lookup table
-          return NRL50_PRESETS[method] || 1.17;
         }
+        const level = AIRTIGHTNESS_LEVELS[method];
+        if (!level) throw new Error(`S12 B.18.1: "${method}" is not an Airtightness Level (NBC 9.36.5.4.)`);
+        return level.nlr50;
       }
     });
 
