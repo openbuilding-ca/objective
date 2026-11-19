@@ -196,7 +196,7 @@ TEUI.ReferenceToggle = (function () {
     l_122: "C",
     i_122: "C",
     l_123: "C",
-    f280_mode: "G",
+    f280_mode: "A", // per model (Andy 2026-11-19); only All Inputs copies it
     g_118: "C",
     l_118: "C",
     d_119: "C",

@@ -438,13 +438,14 @@
           }
         }
 
-        // S21 F280 Mode (Andy 2026-11-19, two streams): a file without the column takes Off, unless it
-        // already chose an F280 method (S03 G.4.3 BASESIMP, S12 B.19.1 AIM-2 - possible only from
-        // 2026-11-19) - it opens On, so its annual figures read as they were saved.
+        // S21 F280 Mode (Andy 2026-11-19, two streams; per model): a file without the column takes Off,
+        // unless that model already chose an F280 method (S03 G.4.3 BASESIMP, S12 B.19.1 AIM-2 - possible
+        // only from 2026-11-19) - it opens On, so its annual figures read as they were saved.
         if (!("f280_mode" in importedData)) {
-          const f280 = importedData.h_25 === "BASESIMP" || importedData.d_111 === "AIM2";
-          importedData.f280_mode = f280 ? "On" : "Off";
-          importedData.ref_f280_mode = importedData.f280_mode;
+          for (const p of ["", "ref_"]) {
+            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
+            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
+          }
         }
 
         // Project notes (the last column) belong to Section 20, not the

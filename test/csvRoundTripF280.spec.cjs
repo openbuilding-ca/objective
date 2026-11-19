@@ -35,7 +35,7 @@ test.beforeAll(async () => {
 test.afterAll(() => server && server.kill());
 
 const SET = { // target value, reference value (null = same as target)
-  f280_mode: ["On", null], h_25: ["BASESIMP", "OBJECTIVE"], l_25: ["5", "7"], d_26: ["1.5", "1.25"], h_26: ["40", "41"], l_26: ["1.2", "1.3"], d_26b: ["5", "6"],
+  f280_mode: ["On", "Off"], h_25: ["BASESIMP", "OBJECTIVE"], l_25: ["5", "7"], d_26: ["1.5", "1.25"], h_26: ["40", "41"], l_26: ["1.2", "1.3"], d_26b: ["5", "6"],
   d_111: ["AIM2", "OBJECTIVE"], g_111: ["Custom", "Custom"], d_112: ["500", "450"], g_112: ["5.5", "6"], d_112b: ["3", "5"], g_112b: ["2", "4"], d_112c: ["3", "1"],
   g_112c: ["4", "5"], d_112d: ["Semi-Detached", "Detached"], g_112d: ["Crawl Space", "Shallow"], d_112e: ["Exhaust only", "Supply only"], g_112e: ["100", "150"],
   l_123: ["25", "10"], d_108: ["AL-3B", "AL-5A"], g_88: ["0.9091", "0.8333"],

@@ -205,7 +205,7 @@
       cell: "F.00",
       title: "F280 Mode",
       message:
-        "Two streams. OFF (the default): OBJECTIVE alone - every input that exists only for CSA F280 is hidden (S03 G.4.3-G.4.10, S12 B.19.1-B.19.14, S13 ATRE and the design latent load factor) and so is the rest of this section; their values are kept, and none of them moves a result. ON: they are shown; S03 G.4.3 and S12 B.19.1 then choose the annual figures' methods too (OBJECTIVE, or BASESIMP / AIM-2). This section's F280 sizing always uses F280's own methods (BASESIMP, AIM-2, the design-hour gains of Cl. 6.2), whichever mode.",
+        "Two streams, set per model (Target and Reference each have their own). OFF (the default): OBJECTIVE alone - every input that exists only for CSA F280 is hidden (S03 G.4.3-G.4.10, S12 B.19.1-B.19.14, S13 ATRE and the design latent load factor) and so is the rest of this section; their values are kept, and none of them moves a result. ON: they are shown; S03 G.4.3 and S12 B.19.1 then choose the annual figures' methods too (OBJECTIVE, or BASESIMP / AIM-2). This section's F280 sizing always uses F280's own methods (BASESIMP, AIM-2, the design-hour gains of Cl. 6.2), whichever mode.",
     },
     h_26b: {
       cell: "H26b",

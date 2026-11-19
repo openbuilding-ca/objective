@@ -139,13 +139,14 @@
       // F280 Mode (S21 F.00; Andy 2026-11-19): two streams. Off - the default - hides every F280-only
       // input and S21, and the annual stream runs on OBJECTIVE's methods whatever G.4.3 / B.19.1 hold
       // (their values are kept). On shows them, and those two selectors choose the ANNUAL method too.
-      // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). "G": one mode
-      // for Target and Reference.
+      // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). Per MODEL
+      // (Andy 2026-11-19: "S21 should allow Reference to be ON for F280, and Target OFF. As with ALL other
+      // settings in the app - Target and Reference models can be nearly 100% independent by design").
       {
         id: "f280.mode",
         legacyId: "f280_mode",
         section: "SF280",
-        classification: "G",
+        classification: "A",
         label: "F280 Mode",
         defaultValue: "Off"
       },

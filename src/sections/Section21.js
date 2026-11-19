@@ -1718,7 +1718,8 @@ window.TEUI.SectionModules.sect21 = (function () {
    * belong or form part of OBJECTIVE analysis"). Off hides them; their values are kept, and no hidden
    * field moves a result (the annual stream reads ground.methodInEffect / airTightness.infiltrationMethodInEffect,
    * OBJECTIVE's under Off). Rows go whole; a field sharing a row with OBJECTIVE fields goes with the
-   * label cells before it (labels = how many). h_122 (the DESIGN latent load factor, F280 sizing) hides
+   * label cells before it (labels = how many). The mode is per model: what shows follows the model on
+   * screen (Target or Reference). h_122 (the DESIGN latent load factor, F280 sizing) hides
    * its value only: its row label also heads i_122, the latent method, which the annual stream reads.
    */
   const F280_ONLY_ROWS = [
@@ -1732,7 +1733,7 @@ window.TEUI.SectionModules.sect21 = (function () {
     { id: "h_122", labels: 0 }, // S13 V.3.2 the design latent load factor
   ];
   function applyF280Mode() {
-    const on = (window.TEUI.StateManager?.getValue(FIELDS.f280Mode) || "Off") === "On";
+    const on = (getModeValue(FIELDS.f280Mode) || "Off") === "On";
     F280_ONLY_ROWS.forEach(id => {
       document.querySelectorAll(`tr[data-id="${id}"]`).forEach(tr => tr.classList.toggle("f280-hidden-row", !on));
     });
@@ -1899,9 +1900,8 @@ window.TEUI.SectionModules.sect21 = (function () {
     console.log('[S21] Dropdown changed: ' + fieldId + ' = "' + value + '"');
 
     if (fieldId === FIELDS.f280Mode) {
-      // one mode for the file: Target and Reference together (classification G)
-      window.TEUI.StateManager?.setValue(fieldId, value, "user-modified");
-      window.TEUI.StateManager?.setValue("ref_" + fieldId, value, "user-modified");
+      // per model, like every setting (Andy 2026-11-19): the model on screen
+      setModeValue(fieldId, value, "user-modified");
       applyF280Mode();
       return;
     }
@@ -2005,6 +2005,7 @@ window.TEUI.SectionModules.sect21 = (function () {
   function onModeSwitch(mode) {
     stampDisplayFields();
     updateServiceOrgVisibility();
+    applyF280Mode();
   }
 
   return {
