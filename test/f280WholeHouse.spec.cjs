@@ -163,12 +163,15 @@ const READ = () => {
             annualInfiltration_kWh: get("airTightness.heatLoss"),
             annualGround_kWh: get("envelope.groundFacing.totalHeatLoss"),
             sensibleGain: get("f280.totalSensibleHeatGain"),
+            // S15 T.6.12: the nominal gain Annex J compares, sensible x LM (Cl. 6.3.1), as the app shows it
+            latentMultiplier: get("f280.s15.latentMultiplier"),
+            nominalAnnexJ: get("f280.s15.nominalHeatGain"),
             infiltrationGain_W: get("f280.peakInfiltrationHeatGain"),
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
             atre: get("mechanical.ventilation.atre"),
             solarGain_W: get("f280.peakSolarHeatGain"),
             opaqueSolarCorrection_W: get("f280.opaqueSolarCorrection"),
-            s15Cells: ["d_140b", "h_140b"].map((f) => {
+            s15Cells: ["d_140b", "h_140b", "l_140b", "m_140b"].map((f) => {
               const td = document.querySelector(`td[data-field-id="${f}"]`);
               return td ? `${td.textContent.trim()}${td.closest("tr")?.classList.contains("f280-hidden-row") ? " (hidden)" : ""}` : null;
             }),
@@ -293,7 +296,11 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       // internal gains evenly moves the four occupied rooms -387 W and the other 14 +111 W, so the total is ~1995 W =
       // 1.3 x (5 x 70 + 4 x 295.57) = 1992 W. Our sensible gain (S21) is the HGsr sum; compare it x 1.3.
       const sensible = base.sensibleGain;
-      const gain = sensible * ANNEX_J_LM;
+      // S15 T.6.12 is that comparison in the app: LM 1.3 and the nominal = sensible x LM, shown to the user
+      expect(base.latentMultiplier).toBe(ANNEX_J_LM);
+      expect(Math.abs(base.nominalAnnexJ - sensible * ANNEX_J_LM)).toBeLessThanOrEqual(1e-9);
+      expect(base.s15Cells.slice(2).every((c) => c && !c.includes("(hidden)") && c !== "0"), `S15 T.6.12 shown: ${base.s15Cells}`).toBe(true);
+      const gain = base.nominalAnnexJ;
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
       // Units witness (always on): F280's ventilation loss is the clause's 1.2 W per (L/s·K) × the flow
       // in L/s × (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
@@ -337,9 +344,8 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
 
       for (const v of VARIANTS) {
         const r = await run(page, withOverrides(csvText, v.set, v.turn));
-        const g = r.sensibleGain;
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
-        const change = { loss: r.loss - base.loss, gain: (g - sensible) * ANNEX_J_LM };
+        const change = { loss: r.loss - base.loss, gain: r.nominalAnnexJ - gain }; // S15 T.6.12, the app's own nominal
         records.push({
           case: name, clause: v.clause, variant: v.variant, note: v.note || "",
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },

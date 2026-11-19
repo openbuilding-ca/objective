@@ -42,6 +42,11 @@
   // applied to the whole house" (lights, appliances and plug loads, one figure). The one source: S21's
   // design-hour gain below, and S09 under F280 Mode On (InternalGainsNodes.js).
   window.TEUI.F280Gains = Object.freeze({ personW: 70, laeWPerM2: 4, laeMinW: 800 });
+  // Cl. 6.3.1: "CSCn = LM x sum of HGsr ... In most applications a multiplier of 1.3 is appropriate." Annex J and K
+  // report the gain as this nominal (shown 2026-11-19 by Annex K 8.3.3), so S15 T.6.12 shows the chain sensible x LM =
+  // nominal at 1.3 (Andy 2026-11-19: "Both numbers, the gain, the multiplier, and the total. Full transparency since this
+  // messed us up all day"). S21's own nominal capacity takes Annex B's design latent instead (ruled; unchanged).
+  window.TEUI.F280LatentMultiplier = 1.3;
 
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
@@ -587,6 +592,28 @@
       dependencies: ["f280.totalSensibleHeatGain"],
       label: "F280 Sensible Heat Gain (W)",
       compute: (inputs) => inputs["f280.totalSensibleHeatGain"]
+    });
+    graph.registerNode({
+      id: "f280.s15.latentMultiplier",
+      legacyId: "l_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: [],
+      label: "F280 Latent Load Multiplier (Cl. 6.3.1)",
+      compute: () => window.TEUI.F280LatentMultiplier
+    });
+    graph.registerNode({
+      id: "f280.s15.nominalHeatGain",
+      legacyId: "m_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: ["f280.totalSensibleHeatGain", "f280.s15.latentMultiplier"],
+      label: "F280 Nominal Heat Gain, as Annex J reports it (W)",
+      compute: (inputs) => {
+        const sensible = inputs["f280.totalSensibleHeatGain"];
+        if (sensible === "Unavailable") return "Unavailable";
+        return parseNum(sensible) * parseNum(inputs["f280.s15.latentMultiplier"]);
+      }
     });
 
     // ========================================================================
