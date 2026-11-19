@@ -149,6 +149,8 @@
     const inputs = [
       // Volume inputs (from Section12.js field mappings)
       { id: "volume.floorToFloorHeight", legacyId: "g_106", section: "S12", classification: "C", label: "Floor-to-Floor Height (m)", defaultValue: 2.7 },
+      // S19 (Wombat) 19.1: the footprint's aspect ratio, the slider's own default (Section19.js d_154)
+      { id: "wombat.aspectRatio", legacyId: "d_154", section: "S19", classification: "C", label: "Footprint Aspect Ratio (L:W)", defaultValue: -2.0 },
       { id: "volume.numStoreys", legacyId: "d_103", section: "S12", classification: "C", label: "Number of Storeys", defaultValue: 1.5 },
       { id: "airTightness.shielding", legacyId: "g_103", section: "S12", classification: "C", label: "Shielding", defaultValue: "Normal" },
 
@@ -563,6 +565,43 @@
         return nFactor;
       }
     });
+
+    // ========================================================================
+    // WOMBAT'S FOOTPRINT (S19 19.1-19.2b; Andy 2026-11-19: "As for its perimeter: could we not add that as a
+    // field in Wombat? Then all a user needs to do is tweak the aspect ratio"). The rectangle Section19.js
+    // solves (solveGeometry): S11's slab area kept exactly (else the exposed floor's), the slider's L:W
+    // (0 = square; +k = 1 + k, -k = 1 / (1 + k)); width = sqrt(A / ratio), length = A / width. Its perimeter is
+    // S03 G.4.6's when G.4.6 is blank (BASESIMP; the whole outline exposed).
+    // ========================================================================
+    graph.registerNode({
+      id: "wombat.footprint",
+      section: "S19",
+      classification: "C",
+      dependencies: ["transmissionLoss.slabOnGrade.area", "transmissionLoss.exposedFloor.area", "wombat.aspectRatio"],
+      label: "Wombat Footprint",
+      compute: (inputs) => {
+        const slab = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
+        const area = slab > 0 ? slab : parseNum(inputs["transmissionLoss.exposedFloor.area"]);
+        if (!(area > 0)) return "Unavailable"; // no footprint: S11 has neither a slab nor an exposed floor
+        const raw = parseNum(inputs["wombat.aspectRatio"], -2.0);
+        const ratio = raw >= 0 ? 1 + raw : 1 / (1 - raw);
+        const width = Math.sqrt(area / ratio);
+        const length = area / width;
+        return { area, length, width, perimeter: 2 * (length + width) };
+      }
+    });
+    for (const [key, legacyId, label] of [["length", "h_157", "Footprint Length (m)"], ["width", "h_155", "Footprint Width (m)"],
+      ["perimeter", "h_155b", "Footprint Perimeter (m)"]]) {
+      graph.registerNode({
+        id: `wombat.footprint.${key}`,
+        legacyId,
+        section: "S19",
+        classification: "C",
+        dependencies: ["wombat.footprint"],
+        label,
+        compute: (inputs) => inputs["wombat.footprint"][key]
+      });
+    }
 
     // ========================================================================
     // AIM-2 (S12 B.19.2-B.19.14): CSA F280-12 Cl. 5.2.3's air-leakage rate (AIM2.xls, src/core/Aim2.js)

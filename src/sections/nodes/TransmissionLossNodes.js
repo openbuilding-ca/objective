@@ -819,6 +819,7 @@
         "ground.basesimp.configuration",
         "ground.basesimp.depth",
         "ground.basesimp.exposedPerimeter",
+        "wombat.footprint.perimeter",
         "ground.basesimp.soilConductivity",
         "ground.basesimp.waterTable",
         "transmissionLoss.slabOnGrade.area",
@@ -898,7 +899,9 @@
     if (!B || !W) return { error: "BASESIMP is not loaded" };
     const area = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
     const wallArea = parseNum(inputs["transmissionLoss.wallsBelowGrade.area"]);
-    const perimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
+    // G.4.6 blank: Wombat's footprint perimeter, the whole outline (S19 19.2b; Andy 2026-11-19)
+    const typedPerimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
+    const perimeter = typedPerimeter > 0 ? typedPerimeter : parseNum(inputs["wombat.footprint.perimeter"]);
     const configuration = parseNum(inputs["ground.basesimp.configuration"], 1);
     if (!window.TEUI.BasesimpData?.configs?.[configuration]) {
       return { error: `no BASESIMP configuration #${configuration}` };
@@ -914,7 +917,7 @@
     if (!slab && !(wallArea > 0)) {
       return { error: `S11 has no below-grade wall, so S03 G.4.4 (${name}, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)` };
     }
-    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6)" };
+    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6, or Wombat's footprint, S19 19.2b)" };
     const height = slab ? 0 : wallArea / perimeter;
     const depth = slab ? 0.05 : parseNum(inputs["ground.basesimp.depth"]);
     if (!slab && (!(depth > 0) || depth > height)) {
@@ -978,7 +981,7 @@
       days
     });
     if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
-    return { ...result, geometry: { length, width, height, depth, perimeter }, weather, annual };
+    return { ...result, geometry: { length, width, height, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
   }
 
   window.TEUI.ComputationNodes.TransmissionLoss = {

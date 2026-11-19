@@ -177,7 +177,7 @@
       cell: "H26",
       title: "Exposed Perimeter",
       message:
-        "The foundation's exposed perimeter, m (F280 Cl. 5.2.2.1 a), p)). With S11's slab area it sets the length and width: at least a square's perimeter = the outline of a rectangle, all exposed; less = a square with only this much exposed (an attached house). The wall height is S11's below-grade wall area / this perimeter.",
+        "The foundation's exposed perimeter, m (F280 Cl. 5.2.2.1 a), p)). With S11's slab area it sets the length and width: at least a square's perimeter = the outline of a rectangle, all exposed; less = a square with only this much exposed (an attached house). The wall height is S11's below-grade wall area / this perimeter. Blank (0): Wombat's footprint perimeter (S19 19.2b), the whole outline - set its shape with S19's aspect ratio.",
     },
     l_26: {
       cell: "L26",
