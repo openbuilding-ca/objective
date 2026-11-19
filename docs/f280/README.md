@@ -15,7 +15,7 @@
 > floor's area and ceiling height: 295.57 m2; Vb 795.1 m3 with the floors' joist spaces, as NRCan's F280_SpreadsheetHelp.doc
 > defines AIM-2's house volume); G.1.8 (walls, gross) and G.1.11 (windows); I.3 (the RSIs); all of Annex J (8.3.2 c-f, every
 > 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a), 8.3.10 c-d); Annex K 8.3.3. Details: "What needs the PDF" below and the fixture
-> `test/fixtures/f280-annex-j.json` (`verified_against_pdf`).
+> `test/fixtures/f280-annex-j.json` (`verified_against_pdf`), rebuilt and checked by `tools/f280/annex_j_fixture.py --check`.
 >
 > **The variants (x 1.3, magnitudes - Annex J prints them with no consistent sign):** the eight turns 0.94-0.96 of Annex J's
 > change; 3.0 ACH50 (8.3.7 b) 0.95 gain / 0.94 loss; exhaust-only (8.3.4 c) 0.98 gain / 1.04 loss; no external shading (8.3.6 b)
@@ -79,7 +79,7 @@ compares annual energy.
 | `docs/f280/F280-1-crosswalk.md` | Each of its 96 fields: value, status (standard · derived · equivalent · estimate · placeholder), source table |
 | `tools/f280/build_case.py` | Builds both from Annex G.1's plans and imperial take-offs, Annexes H.3 / I.3 and Tables 6F / 6I; each table marked with the PDF page it was checked against (2026-11-19) |
 | `test/fixtures/f280-annex-j.json` | Annex J's expected values: all 32 models of 8.3.9 (W and Btuh, each pair cross-checked) and the base case's variant changes |
-| `tools/f280/annex_j_fixture.py` | Built the first fixture from the text extract. ⛔ Do NOT rerun: the fixture is now verified against the PDF by hand (pages, `sign_convention`, `gain_is`, the erratum) and the script would overwrite that |
+| `tools/f280/annex_j_fixture.py` | Builds that fixture from two independent readings: the 8.3.9 a) table from the text extract, and a transcription of the printed pages (every Annex J table, each with its page). It fails unless the two agree on all 32 rows. `python3 tools/f280/annex_j_fixture.py <2421751-F280.txt>` rebuilds; `--check` confirms the committed fixture. To verify: open the PDF at the page given in the script, compare, rerun |
 | `test/f280WholeHouse.spec.cjs` | The harness: imports each F280 case, applies the variants, reads S21, records against Annex J and the 8.4.1 band → `test/f280-results.json` |
 | `test/f280ReviewCases.spec.cjs` · `tools/f280/review_case.py` | The "CSA F280 Review Format" rows: each Part 9 house Off / On / bills → `test/f280-review-results.json` |
 | `test/f280InternalGains.test.cjs` | Cl. 6.2.4 / 6.2.5 in S09 under Mode On and in S21 either way (`node`) |
