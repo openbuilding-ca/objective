@@ -1725,6 +1725,7 @@ window.TEUI.SectionModules.sect21 = (function () {
   const F280_ONLY_ROWS = [
     "G.4.5", "G.4.8", // S03: depth, perimeter, soil k; water table, deep ground, BASESIMP's load
     "B.19.1", "B.19.3", "B.19.5", "B.19.7", "B.19.9", "B.19.11", "B.19.13", // S12: AIM-2
+    "T.6.10", // S15: the F280 design loss and sensible gain
   ];
   const F280_ONLY_CELLS = [
     { id: "h_25", labels: 2 }, // S03 G.4.3 Ground Heatloss Method

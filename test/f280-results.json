@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T15:56:41.357Z",
+  "timestamp": "2026-11-19T16:12:28.828Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -59,6 +59,10 @@
         "atre": 0,
         "solarGain_W": 2157.6913164159996,
         "opaqueSolarCorrection_W": 157.44173284990651,
+        "s15Cells": [
+          "10,839",
+          "7,040"
+        ],
         "dtdc": 6,
         "f280Latitude": 45.48,
         "designLatent_W": 1375.450114413869,

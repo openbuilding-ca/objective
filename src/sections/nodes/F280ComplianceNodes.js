@@ -563,6 +563,27 @@
       }
     });
 
+    // S15 T.6.10 / T.6.11: the two figures Annex J compares (Cl. 8.4.1), read where the peak loads are
+    // (Andy 2026-11-19). Echoes, in W; the row hides with S21 when F280 Mode is Off.
+    graph.registerNode({
+      id: "f280.s15.designHeatLoss",
+      legacyId: "d_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: ["f280.totalDesignHeatLoss"],
+      label: "F280 Design Heat Loss (W)",
+      compute: (inputs) => inputs["f280.totalDesignHeatLoss"]
+    });
+    graph.registerNode({
+      id: "f280.s15.sensibleHeatGain",
+      legacyId: "h_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: ["f280.totalSensibleHeatGain"],
+      label: "F280 Sensible Heat Gain (W)",
+      compute: (inputs) => inputs["f280.totalSensibleHeatGain"]
+    });
+
     // ========================================================================
     // F280 NOMINAL COOLING CAPACITY (CSA F280-12 Cl. 6.3)
     // Parnas: docs/parnas-tables/f280/nominal-cooling-capacity.json

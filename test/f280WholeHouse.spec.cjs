@@ -162,6 +162,10 @@ const READ = () => {
             atre: get("mechanical.ventilation.atre"),
             solarGain_W: get("f280.peakSolarHeatGain"),
             opaqueSolarCorrection_W: get("f280.opaqueSolarCorrection"),
+            s15Cells: ["d_140b", "h_140b"].map((f) => {
+              const td = document.querySelector(`td[data-field-id="${f}"]`);
+              return td ? `${td.textContent.trim()}${td.closest("tr")?.classList.contains("f280-hidden-row") ? " (hidden)" : ""}` : null;
+            }),
             dtdc: get("climate.temperature.hottest") - get("climate.cooling.setpoint"),
             f280Latitude: (window.TEUI.F280Weather.lookup(state.getValueForModel(id, "climate.location.province"),
               state.getValueForModel(id, "climate.location.city")) || {}).lat,
