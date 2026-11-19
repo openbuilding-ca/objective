@@ -58,7 +58,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_95: Floor Slab: Area m²` | 90.311 | derived | Table G.1.4 a): basement slab |
 | `f_95: Floor Slab: RSI Value K·m²/W` | 0.216 | derived | the UNINSULATED assembly: Table I.3's 0 is the ADDED insulation; 102 mm concrete (H.3.9) x 0.00045 per mm (Table 7B, 2400 kg/m3) + OBJECTIVE's slab surface film 0.17 (TransmissionLossNodes.js). Never 0: OBJECTIVE reads RSI 0 as U 0, zero loss (the RSI-0 bug) |
 | `d_96: Interior Floors: Area m²` | 198.831 | estimate | interior floors: main + upper (estimate) |
-| `d_97: Thermal Bridge Penalty: Factor %` | 30 | objective | Andy 2026-11-18: 0 % is unrealistic, OBJECTIVE's default is ~30 % (Annex I's RSIs already include framing; this covers junctions) |
+| `d_97: Thermal Bridge Penalty: Factor %` | 0 | standard | Andy 2026-11-18, later: "remove the TB penalty" for F280-1. Annex I's RSIs are EFFECTIVE (framing included) and F280 has no thermal-bridge adder. (Earlier the same day: 30 %, OBJECTIVE's default for real buildings.) |
 | `d_108: NRL₅₀ Target Method` | MEASURED | standard | Table H.3.2 |
 | `g_109: ACH₅₀ Target (Converts B.18.1)` | 1.5 | standard | Table H.3.2: 1.5 ACH50 |
 | `g_118: Ventilation Method (Volume or Occupant Based)` | Volume Constant | equivalent | a constant principal ventilation rate (PVC) |

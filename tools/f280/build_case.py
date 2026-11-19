@@ -202,8 +202,9 @@ def build():
         "(Table 7B, 2400 kg/m3) + OBJECTIVE's slab surface film 0.17 (TransmissionLossNodes.js). Never 0: OBJECTIVE "
         "reads RSI 0 as U 0, zero loss (the RSI-0 bug)")
     put("d_96", round(slab + upper, 3), "estimate", "interior floors: main + upper (estimate)")
-    put("d_97", 30, "objective",
-        "Andy 2026-11-18: 0 % is unrealistic, OBJECTIVE's default is ~30 % (Annex I's RSIs already include framing; this covers junctions)")
+    put("d_97", 0, "standard",
+        "Andy 2026-11-18, later: \"remove the TB penalty\" for F280-1. Annex I's RSIs are EFFECTIVE (framing "
+        "included) and F280 has no thermal-bridge adder. (Earlier the same day: 30 %, OBJECTIVE's default for real buildings.)")
     put("d_108", "MEASURED", "standard", "Table H.3.2")
     put("g_109", ACH50, "standard", "Table H.3.2: 1.5 ACH50")
     put("g_118", "Volume Constant", "equivalent", "a constant principal ventilation rate (PVC)")
