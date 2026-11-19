@@ -1,5 +1,14 @@
 # F280 whole-house verification: start here
 
+> **2026-11-19 end (`f280-review-format`):** the **"CSA F280 Review Format"** rows in Sample Projects, one under each
+> Part 9 house (`tools/f280/review_case.py`; witness `test/f280ReviewCases.spec.cjs`, record `test/f280-review-results.json`):
+> the Target at F280 Mode On with the house's BASESIMP configuration and AIM-2 type, the Reference the case's own.
+> **F280's internal gains** (Cl. 6.2.4 70 W/person, Cl. 6.2.5 max(4 W/m², 800 W); `window.TEUI.F280Gains`): S21 takes
+> them at the design hour in either mode (F280-1 gain 7040 → **5155 W, 70.4 %**: the window-side gap, Table 6F /
+> G.1.9 / G.1.11), and S09 shows them, calculated, under Mode On - which the annual stream also reads, so On puts every
+> Part 9 house UNDER its bills (TEUI On / bills: 56.7 / 56.3, 84.7 / 103.5, 46.6 / 57.8, −12.1 / 14.8; before the S09
+> half 57.9, 99.6, 64.0, 13.3). ❓ Andy: S09's annual figures keep OBJECTIVE's gains under On (S21 alone F280's)?
+>
 > **Current state (2026-11-19, after the solar correction).** F280-1 (S21, F280 Mode On): loss **10 839 W (92.0 %; Cl. 8.4.1 needs
 > ≥ 11 551 W, −712 W)** = envelope 8384 (above grade 6997 + BASESIMP 1387) + AIM-2 1737 + HRV 718; the TB penalty is 0
 > and in effect, the basement agrees with F280's (1384), so the gap is above grade or the air terms (needs Annex J's
