@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T12:02:39.279Z",
+  "timestamp": "2026-11-19T12:06:30.953Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": false,
   "not_modelled": [
@@ -32,12 +32,12 @@
         "ratio": 0.9195724102825147
       },
       "gain": {
-        "result_W": 5014,
+        "result_W": 6882,
         "expected_W": 7321,
         "lowOk": false,
         "highOk": true,
         "pass": false,
-        "ratio": 0.6848847969401869
+        "ratio": 0.9400959417222667
       },
       "parts_W": {
         "loss": 10839,
@@ -52,13 +52,15 @@
         "aim2_LRairc": 0.0580331052463261,
         "aim2Error": null,
         "annualInfiltration_kWh": 2858.739692605512,
-        "sensibleGain": 5014.041598399108,
+        "sensibleGain": 6882.442389348715,
         "infiltrationGain_W": 84.7631535227839,
         "ventilationGain_W": 373.76753999999994,
         "atre": 0,
+        "solarGain_W": 2157.6913164159996,
+        "f280Latitude": 45.48,
         "designLatent_W": 1375.450114413869,
-        "nominalCooling": 6389,
-        "latentLoadFactor": 1.2743196456234078,
+        "nominalCooling": 8258,
+        "latentLoadFactor": 1.199849128638188,
         "peakCoolingKw": 4.555510904876324,
         "ventLs": 51.91215833333333,
         "ventEfficiency": 76,
@@ -159,7 +161,7 @@
       "note": "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair",
       "change_W": {
         "loss": 2059,
-        "gain": 109
+        "gain": 110
       },
       "expected_change_W": {
         "loss": 1925,
@@ -171,8 +173,8 @@
         "envelope": 8384,
         "infiltration": 3796,
         "ventilation": 718,
-        "nominalCooling": 6749,
-        "latentLoadFactor": 1.3172828443530293,
+        "nominalCooling": 8618,
+        "latentLoadFactor": 1.2324723814031782,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -204,8 +206,8 @@
         "envelope": 8384,
         "infiltration": 468,
         "ventilation": 2990,
-        "nominalCooling": 6143,
-        "latentLoadFactor": 1.243917035862391,
+        "nominalCooling": 8012,
+        "latentLoadFactor": 1.1769678074202585,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -225,7 +227,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 47
+        "gain": 1230
       },
       "expected_change_W": {
         "gain": 1995
@@ -236,8 +238,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6436,
-        "latentLoadFactor": 1.271794211836495,
+        "nominalCooling": 9488,
+        "latentLoadFactor": 1.1695544146265664,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -257,7 +259,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 88
+        "gain": 1537
       },
       "expected_change_W": {
         "gain": 2467
@@ -268,8 +270,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6478,
-        "latentLoadFactor": 1.269587065480014,
+        "nominalCooling": 9795,
+        "latentLoadFactor": 1.1633605165994512,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -289,7 +291,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 56
+        "gain": 1266
       },
       "expected_change_W": {
         "gain": 2014
@@ -300,8 +302,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6446,
-        "latentLoadFactor": 1.2712866248474493,
+        "nominalCooling": 9524,
+        "latentLoadFactor": 1.168794592523352,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -321,7 +323,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 11
+        "gain": 33
       },
       "expected_change_W": {
         "gain": 3
@@ -332,8 +334,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6400,
-        "latentLoadFactor": 1.2737275368420402,
+        "nominalCooling": 8291,
+        "latentLoadFactor": 1.1988872151906316,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -353,7 +355,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 61
+        "gain": 1300
       },
       "expected_change_W": {
         "gain": 2073
@@ -364,8 +366,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6450,
-        "latentLoadFactor": 1.2710450327022937,
+        "nominalCooling": 9558,
+        "latentLoadFactor": 1.16810175274429,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -385,7 +387,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 97
+        "gain": 1568
       },
       "expected_change_W": {
         "gain": 2529
@@ -396,8 +398,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6487,
-        "latentLoadFactor": 1.2691120164559402,
+        "nominalCooling": 9826,
+        "latentLoadFactor": 1.162760548015615,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,
@@ -417,7 +419,7 @@
       "note": "",
       "change_W": {
         "loss": 0,
-        "gain": 54
+        "gain": 1264
       },
       "expected_change_W": {
         "gain": 2054
@@ -428,8 +430,8 @@
         "envelope": 8384,
         "infiltration": 1737,
         "ventilation": 718,
-        "nominalCooling": 6444,
-        "latentLoadFactor": 1.271373811595406,
+        "nominalCooling": 9522,
+        "latentLoadFactor": 1.16884428295676,
         "ground": {
           "slabOnGrade.rsi": "0.216",
           "slabOnGrade.uValue": 4.62962962962963,

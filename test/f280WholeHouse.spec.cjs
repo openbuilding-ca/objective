@@ -159,6 +159,9 @@ const READ = () => {
             infiltrationGain_W: get("f280.peakInfiltrationHeatGain"),
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
             atre: get("mechanical.ventilation.atre"),
+            solarGain_W: get("f280.peakSolarHeatGain"),
+            f280Latitude: (window.TEUI.F280Weather.lookup(state.getValueForModel(id, "climate.location.province"),
+              state.getValueForModel(id, "climate.location.city")) || {}).lat,
             designLatent_W: get("cooling.designLatentW"),
             nominalCooling: get("f280.nominalCoolingCapacity"),
             latentLoadFactor: get("cooling.latentLoadFactor"),
@@ -197,6 +200,7 @@ const READ = () => {
                 densities_Wm2: { plug: dens[0], lighting: dens[1], equipment: dens[2] },
                 floorArea_m2: area,
                 internalDensity_W: (dens[0] + dens[1] + dens[2]) * area,
+                // not in F280's gain since 2026-11-19 (Cl. 6.2.2.1 replaces it: solarGain_W)
                 solarSeasonAverage_W: (1000 * get("radiantGains.subtotal.coolingGain")) / hours,
                 // not in F280's gain since 2026-11-19 (Cl. 6.2.7 replaces it: ventilationGain_W)
                 ventilationSeasonAverage_W: (1000 * (get("ventilation.heatGain") - (latent.vent || 0))) / hours,
@@ -280,6 +284,19 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       // And its gain, Cl. 6.2.7: 1.2 × PVC × DTDc × (1 − ATRE), ATRE S13 l_123 (F280-1: 0, Table H.3.3).
       const ventGainHand = 1.2 * base.ventLs * (base.hottest - base.coolingSetpoint) * (1 - base.atre / 100);
       expect(Math.abs(base.ventilationGain_W - ventGainHand)).toBeLessThanOrEqual(1e-9);
+      // The design solar, Cl. 6.2.2.1, by hand from the S10 rows: Σ A × SHGC × Solar0 × LFactor (S, SE,
+      // SW) × (1 − summer shading); F280-1's door row (Average) has SHGC 0.
+      const SOLAR0 = { North: 93, NorthEast: 194, East: 285, SouthEast: 252, South: 160, SouthWest: 252, West: 285, NorthWest: 194, Skylight: 534 };
+      const lf = Math.min(1.3, Math.max(0.7, 1 + (base.f280Latitude - 40) * 0.0375));
+      let solarHand = 0;
+      for (const r of [74, 75, 76, 77, 78]) {
+        if (!(Number(base.rows[`row${r}.area`]) > 0)) continue; // an empty row (F280-1's skylight)
+        const o = base.rows[`row${r}.orientation`];
+        const corr = ["South", "SouthEast", "SouthWest"].includes(o) ? lf : 1;
+        solarHand += Number(base.rows[`row${r}.area`]) * Number(base.rows[`row${r}.shgc`]) * SOLAR0[o] * corr *
+          (1 - Number(base.rows[`row${r}.summerShading`]) / 100);
+      }
+      expect(Math.abs(base.solarGain_W - solarHand)).toBeLessThanOrEqual(1e-9);
       // The nominal capacity is Annex B's HGb: the sensible + the design latent, the latent factor taken
       // over the same sensible (rounded to the W).
       expect(Math.abs(base.nominalCooling - (base.sensibleGain + base.designLatent_W))).toBeLessThanOrEqual(0.5);

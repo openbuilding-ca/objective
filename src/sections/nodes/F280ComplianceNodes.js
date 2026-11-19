@@ -392,13 +392,71 @@
     });
 
     // ========================================================================
+    // F280 PEAK SOLAR HEAT GAIN THROUGH GLAZING (CSA F280-12 Cl. 6.2.2.1)
+    //
+    // HGct = A × (SHGC × Solar + DTDc / RSI): the DTDc / RSI half is the enclosure term (d_138's U·A·ΔT
+    // carries the windows), so this is Σ A × SHGC × Solar over S10's glazing rows 73-78, each row's
+    // summer shading (h_) taken off (Andy 2026-11-18: shading is each row's slider; F280-1's sliders
+    // carry Annex A's shaded area treated as north). Solar = Solar0 by the row's facing (the clause's
+    // table, W/m²) × LFactor = 1 + (latitude − 40) × 0.0375, held to 0.7-1.3, on S, SE and SW only.
+    // The latitude is F280's own for S03's city (F280Weather.js; a city F280 does not list takes its
+    // nearest's). OBJECTIVE's "Average" facing has no Solar0: it takes the mean of the eight compass
+    // points' Solar (2026-11-19, for Andy's review). It replaces S15's season-average solar
+    // (the glazing rows' ISO 52016 share ÷ cooling-season hours, F280-1 289 W).
+    // ========================================================================
+
+    const F280_SOLAR0 = {
+      North: 93, NorthEast: 194, East: 285, SouthEast: 252, South: 160, SouthWest: 252, West: 285, NorthWest: 194,
+      Skylight: 534 // the clause's "Horizontal"
+    };
+    const LATITUDE_CORRECTED = new Set(["South", "SouthEast", "SouthWest"]);
+    const f280Solar = (facing, lFactor) => {
+      if (facing === "Average") {
+        const compass = Object.keys(F280_SOLAR0).filter((k) => k !== "Skylight");
+        return compass.reduce((sum, k) => sum + f280Solar(k, lFactor), 0) / compass.length;
+      }
+      const solar0 = F280_SOLAR0[facing];
+      if (solar0 === undefined) return undefined;
+      return solar0 * (LATITUDE_CORRECTED.has(facing) ? lFactor : 1);
+    };
+    const GLAZING_ROWS = [73, 74, 75, 76, 77, 78];
+
+    graph.registerNode({
+      id: "f280.peakSolarHeatGain",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "climate.location.province",
+        "climate.location.city",
+        ...GLAZING_ROWS.flatMap((r) => ["area", "orientation", "shgc", "summerShading"].map((k) => `radiantGains.row${r}.${k}`))
+      ],
+      label: "F280 Peak Solar Heat Gain through Glazing (W)",
+      compute: (inputs) => {
+        const weather = window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"]);
+        if (!weather) return "Unavailable"; // no F280 latitude for the city (an NBC group heading)
+        const lFactor = Math.min(1.3, Math.max(0.7, 1 + (weather.lat - 40) * 0.0375));
+        let total = 0;
+        for (const r of GLAZING_ROWS) {
+          const area = parseNum(inputs[`radiantGains.row${r}.area`]);
+          const shgc = parseNum(inputs[`radiantGains.row${r}.shgc`]);
+          if (!(area > 0) || !(shgc > 0)) continue;
+          const solar = f280Solar(inputs[`radiantGains.row${r}.orientation`], lFactor);
+          if (solar === undefined) return "Unavailable"; // a facing the clause's table has no row for
+          const shading = parseNum(inputs[`radiantGains.row${r}.summerShading`]) / 100;
+          total += area * shgc * solar * (1 - shading);
+        }
+        return total;
+      }
+    });
+
+    // ========================================================================
     // F280 TOTAL SENSIBLE HEAT GAIN (CSA F280-12 Cl. 6.2.9)
     //
     // S15's d_139 terms by OBJECTIVE's own inputs (Andy 2026-11-18: match gains by OBJECTIVE's
-    // inputs) - the enclosure (d_138), internal gains (plug + lighting + equipment × area), the glazing
-    // rows' cooling gain and the occupants' sensible gain as season averages (÷ cooling days × 24) -
-    // with d_139's season-average ventilation replaced by Cl. 6.2.7's design-condition term, plus the
-    // air leakage (Cl. 6.2.6). ⚠ The solar is still the season average, not Cl. 6.2.2.1's design hour.
+    // inputs) - the enclosure (d_138), internal gains (plug + lighting + equipment × area), the
+    // occupants' sensible gain as a season average (÷ cooling days × 24) - with d_139's season-average
+    // ventilation and solar replaced by the design-condition terms, Cl. 6.2.7 and Cl. 6.2.2.1, plus the
+    // air leakage (Cl. 6.2.6).
     // ========================================================================
 
     graph.registerNode({
@@ -411,10 +469,10 @@
         "internal.lightingDensity",
         "internal.equipmentDensity",
         "building.conditionedFloorArea",
-        "radiantGains.subtotal.coolingGain",
         "internal.occupants.coolingGain",
         "cooling.iso52016",
         "climate.coolingDays",
+        "f280.peakSolarHeatGain",
         "f280.peakInfiltrationHeatGain",
         "f280.peakVentilationHeatGain"
       ],
@@ -422,6 +480,7 @@
       compute: (inputs) => {
         if (inputs["f280.peakInfiltrationHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.peakVentilationHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.peakSolarHeatGain"] === "Unavailable") return "Unavailable";
         const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
         const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
           parseNum(inputs["internal.equipmentDensity"]);
@@ -429,8 +488,8 @@
         const latent = inputs["cooling.iso52016"]?.latent;
         const occupantsKwh = parseNum(inputs["internal.occupants.coolingGain"]) - (latent?.people ?? 0);
         const hours = parseNum(inputs["climate.coolingDays"], 120) * 24;
-        const seasonAverage = hours > 0 ? (parseNum(inputs["radiantGains.subtotal.coolingGain"]) + occupantsKwh) / hours * 1000 : 0;
-        return enclosure + internal + seasonAverage +
+        const occupants = hours > 0 ? (occupantsKwh / hours) * 1000 : 0;
+        return enclosure + internal + occupants + parseNum(inputs["f280.peakSolarHeatGain"]) +
           parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]);
       }
     });
