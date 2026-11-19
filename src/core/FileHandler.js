@@ -8,6 +8,9 @@
 (function (window) {
   "use strict";
 
+  // Keys the house CSV carries that have no field on the page: d_21o, the CDD override (2026-11-19)
+  const STORED_KEYS_WITHOUT_FIELD = ["d_21o"];
+
   const SAMPLE_PROJECTS = [
     // Part 9 Residences
     { id: "03", file: "03-residence-phi-classic.csv", name: "Part 9: Residence: <strong>PHI Classic</strong>", type: "C-Residential", location: "QC, Hemmingford" },
@@ -761,6 +764,13 @@
           const baseFieldId = isReferenceField ? fieldId.substring(4) : fieldId;
           const fieldDef = this.fieldManager.getField(baseFieldId);
 
+          // Stored keys with no field on the page (2026-11-19): d_21o, the CDD override (S03 d_21 shows the
+          // computed CDD; ComputationIntegration routes a typed CDD here)
+          if (!fieldDef && !isReferenceField && STORED_KEYS_WITHOUT_FIELD.includes(fieldId)) {
+            this.stateManager.setValue(fieldId, value, "imported");
+            updatedCount++;
+            return;
+          }
           if (!fieldDef && !isReferenceField) {
             console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
             skippedValidationCount++;
@@ -1136,6 +1146,10 @@
           "d_26b",
           // l_20 / l_21 are read from the climate station now, not exported
           "l_24",
+          // d_21o: the user's CDD OVERRIDE only, empty when the city's value stands (2026-11-19, Andy:
+          // "yes"; d_21 itself is the computed CDD - exported, it would pin the city's value). l_22
+          // elevation is not exported: no node reads it and none takes an override (display only).
+          "d_21o",
 
           // Section 04: Actual Energy
           "d_27",
@@ -1148,6 +1162,7 @@
           "l_30",
           "l_31", // l_27 removed (calculated field)
           "h_35",
+          "l_33", // the nuclear-waste factor (not exported before 2026-11-19)
 
           // Section 05: Emissions
           "d_39",
@@ -1247,6 +1262,7 @@
           "d_105",
           "d_108",
           "g_109",
+          "g_106", // floor-to-floor height (not exported before 2026-11-19)
           // B.19.1-B.19.12: the infiltration method and AIM-2's inputs (2026-11-19)
           "d_111",
           "g_111",
@@ -1294,6 +1310,12 @@
 
           // Section 15: Summary
           "d_142",
+
+          // Section 19: Wombat's own settings (not exported before 2026-11-19; d_150 / d_151 mirror S12)
+          "d_154",
+          "d_158",
+          "d_159",
+          "d_160",
         ];
 
         const targetValues = [];

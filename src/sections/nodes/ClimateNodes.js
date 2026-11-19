@@ -215,9 +215,16 @@
     },
     // Editable-computed override: CDD is computed from climate lookup but
     // user can type a value (many Canadian cities have CDD24=666=unavailable).
-    // No legacyId — routing from d_21 is handled in recomputeForInput.
+    // Typing into d_21 routes here (recomputeForInput). Its own StateManager key
+    // d_21o (2026-11-19): with none, every full recompute (an import, a mirror)
+    // cleared the graph state and dropped the override, and the house CSV could
+    // not carry it; d_21 itself holds the COMPUTED CDD, so syncing that back
+    // would pin the city's value.
     {
       id: "climate.cooling.degreedays.userOverride",
+      legacyId: "d_21o",
+      // an empty Reference override is "none", never the Target's (populateReferenceModel)
+      copyToReference: false,
       defaultValue: null,
       classification: "C",
       section: "S03",
