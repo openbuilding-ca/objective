@@ -8,6 +8,12 @@
 > design-hour solar term (Cl. 6.2.2.1: about 2150 W for F280-1's windows against OBJECTIVE's season-average 289 W).
 > The plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 and §4.6.
 >
+> **AIM-2** (2026-11-19, engine only): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables
+> `src/core/Aim2Data.js`; January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel
+> computed (`tools/f280/aim2_variants.py`) at 1e-9, NRCan's 2015 test cases to 4 decimals. F280-1 (HRV balanced):
+> LRairh **0.14865 AC/H** → ~1737 W by Cl. 5.2.3's 1.2 × Vb/3.6 × DTDh, against the N-factor's 1194 W. NOT WIRED:
+> S12's Infiltration Method dropdown is next (ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0 HANDOFF 2026-11-19).
+>
 > **BASESIMP** (2026-11-19): `src/core/Basesimp.js` is BasementHLR.xls cell for cell (coefficients
 > `src/core/BasesimpData.js` from FoundationCC.xls; weather `src/core/F280Weather.js` from F280_Weather.xls, 675 of
 > S03's 679 cities). Witness `test/basesimp.test.cjs`: 6 workbooks EXCEL computed (NRCan's BWEB_2/3/4, the
