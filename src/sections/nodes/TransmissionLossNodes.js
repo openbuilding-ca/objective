@@ -271,7 +271,7 @@
         ],
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
-          // S03 G.4.3 = BASESIMP: the row's share of the foundation's heating-season loss
+          // F280 Mode On (BASESIMP): the row's share of the foundation's heating-season loss
           // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
           if (inputs["ground.methodInEffect"] === "BASESIMP") {
             const bs = inputs["ground.basesimp"];
@@ -809,7 +809,7 @@
     });
 
     // ========================================================================
-    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.3-G.4.10)
+    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.4-G.4.10)
     // ========================================================================
     graph.registerNode({
       id: "ground.basesimp",
@@ -819,6 +819,7 @@
         "ground.basesimp.configuration",
         "ground.basesimp.depth",
         "ground.basesimp.exposedPerimeter",
+        "wombat.footprint.perimeter",
         "ground.basesimp.soilConductivity",
         "ground.basesimp.waterTable",
         "transmissionLoss.slabOnGrade.area",
@@ -878,6 +879,8 @@
    *      (L + W = P / 2, L x W = A); a shorter P is a square of area A with only P exposed - the
    *      workbook's own attached-house case (Input!G7). The height is S11's below-grade wall area / P;
    *      the depth below grade is G.4.5. F280 Archetype 1 this way: 1387 W, F280's room-by-room 1384 W.
+   *      A SLAB configuration (G.4.4 SCN / SCB / SCA) is NRCan's SlabOnGradeHLR.xls instead: height 0,
+   *      depth 0.05 m (its Input!B11:B12), no below-grade wall, S11's slab RSI the one added insulation.
    *   b) c) d) soil, water table and configuration: G.4.7, G.4.8, G.4.4.
    *   e) f) the ADDED insulation: S11's below-grade wall RSI (all as interior: BasementHLR reads the
    *      walls' insulation only as max(interior, exterior) or their sum, so the split never changes a
@@ -896,13 +899,28 @@
     if (!B || !W) return { error: "BASESIMP is not loaded" };
     const area = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
     const wallArea = parseNum(inputs["transmissionLoss.wallsBelowGrade.area"]);
-    const perimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
-    const depth = parseNum(inputs["ground.basesimp.depth"]);
+    // G.4.6 blank: Wombat's footprint perimeter, the whole outline (S19 19.2b; Andy 2026-11-19)
+    const typedPerimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
+    const perimeter = typedPerimeter > 0 ? typedPerimeter : parseNum(inputs["wombat.footprint.perimeter"]);
+    const configuration = parseNum(inputs["ground.basesimp.configuration"], 1);
+    if (!window.TEUI.BasesimpData?.configs?.[configuration]) {
+      return { error: `no BASESIMP configuration #${configuration}` };
+    }
+    const name = window.TEUI.BasesimpData.configs[configuration].name;
+    // FoundationCC's SC* configurations are slabs on grade: NRCan's SlabOnGradeHLR.xls, height 0 and its
+    // depth 0.05 m (its Input!B11:B12); every other is a basement by BasementHLR.xls
+    const slab = B.isSlab(configuration);
     if (!(area > 0)) return { error: "no slab area (S11 D.4.11)" };
-    if (!(wallArea > 0)) return { error: "no below-grade wall area (S11)" };
-    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6)" };
-    const height = wallArea / perimeter;
-    if (!(depth > 0) || depth > height) {
+    if (slab && wallArea > 0) {
+      return { error: `S03 G.4.4 is ${name}, a slab on grade, but S11 has ${wallArea} m2 of below-grade wall: choose a basement configuration` };
+    }
+    if (!slab && !(wallArea > 0)) {
+      return { error: `S11 has no below-grade wall, so S03 G.4.4 (${name}, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)` };
+    }
+    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6, or Wombat's footprint, S19 19.2b)" };
+    const height = slab ? 0 : wallArea / perimeter;
+    const depth = slab ? 0.05 : parseNum(inputs["ground.basesimp.depth"]);
+    if (!slab && (!(depth > 0) || depth > height)) {
       return { error: `depth below grade ${depth} m must be above 0 and at most the wall height ${height.toFixed(2)} m` };
     }
     const province = inputs["climate.location.province"];
@@ -921,10 +939,6 @@
     } else {
       length = width = side;
       exposedPerimeter = perimeter;
-    }
-    const configuration = parseNum(inputs["ground.basesimp.configuration"], 1);
-    if (!window.TEUI.BasesimpData?.configs?.[configuration]) {
-      return { error: `no BASESIMP configuration #${configuration}` };
     }
     const result = B.compute({
       configuration,
@@ -967,7 +981,7 @@
       days
     });
     if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
-    return { ...result, geometry: { length, width, height, depth, perimeter }, weather, annual };
+    return { ...result, geometry: { length, width, height, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
   }
 
   window.TEUI.ComputationNodes.TransmissionLoss = {

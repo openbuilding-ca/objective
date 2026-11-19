@@ -33,7 +33,8 @@ OUT_MD = os.path.join(ROOT, "docs/f280/F280-1-crosswalk.md")
 FT2 = 0.09290304
 
 # ---- Annex G.1 take-offs, Archetype 1 (imperial) -------------------------------------------
-# Table G.1.11 a) windows: (room, facing, width ft, height ft, overhang ft, drop ft, area ft2)
+# Table G.1.11 a) windows: (room, facing, width ft, height ft, overhang ft, drop ft, area ft2). CHECKED row for row
+# against the PDF (pp. 95-96, Andy's screenshots 2026-11-19); G.1.11 b) agrees with it.
 WINDOWS = [
     ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6), ("Base area 1", "N", 4.50, 1.33, 1.33, 9.85, 6),
     ("Family", "N", 3.33, 6.33, 1.33, 8.85, 21), ("Family", "N", 3.33, 6.33, 1.33, 1.00, 21),
@@ -54,7 +55,9 @@ LATITUDE = 45.47   # Ottawa (Orleans): ESTIMATE, Kieran confirms F280's latitude
 # Table G.1.10 a) doors: (room, facing, area ft2); "Up" = attic hatches in the ceiling
 DOORS = [("Entry", "E", 20), ("Entry", "S", 20), ("WIC", "N", 9), ("WIC", "Up", 4),
          ("Laundry", "Up", 4), ("Laundry", "Up", 4)]
-# Table G.1.8 a) above-grade walls: area ft2 per row (gross; see the crosswalk's note)
+# Table G.1.8 a) above-grade walls: area ft2 per row. CHECKED against the PDF (pp. 91-92, Andy's screenshots
+# 2026-11-19): GROSS - every row's area is its length x height, nothing deducted. Use the imperial table: G.1.8 b)'s
+# SI rows do not line up with their labels (b's Living S 2.37 m vs a's 12.78 ft = 3.90 m; its lengths are a's shifted).
 WALLS = [140, 175, 11, 132, 81, 40, 29, 7, 34, 49, 80, 71, 169, 116, 139, 100, 116, 73, 49,
          162, 142, 64, 148, 102, 89, 102, 47, 26, 99, 80]
 # Table G.1.7 a) rim joists: lengths ft, all at height 0.77 ft
@@ -72,15 +75,24 @@ BASEMENT_WALLS = [(86.69, 7.75, 6.75), (66.63, 7.75, 6.75)]
 # Table G.1.4 a) basement slab ft2
 SLAB = [546.8, 425.3]
 BEDROOMS = ["Master", "Bed 2", "Bed 3", "Bed 4"]
+# Figures G.1.1 b) - G.1.3 b) (pp. 83, 85, 87; Andy's screenshots 2026-11-19), each floor's own box: area m2 (the
+# basement's "INT."), ceiling height m. The main floor is NOT the basement's footprint (96.02 vs 90.30).
+FLOORS = {"basement": (90.30, 2.36), "main": (96.02, 2.77), "upper": (109.25, 2.46)}
+JOIST = 0.23  # the plans' JOIST SPACE, basement and main boxes (m)
 
 # ---- Annex H.3 (2010s vintage) and Annex I.3 (2010s effective RSI, SI) ------------------------
+# Table I.3 b) (2010s, p. 167): CHECKED against the PDF (Andy's screenshot 2026-11-19), all eight values.
 RSI = {"ceiling": 9.050, "exposed_floor": 5.348, "basement_wall": 2.760, "slab": 0.0,
        "wall_brick": 3.429, "house_garage_wall": 3.364, "rim": 3.587, "house_garage_header": 3.362}
 ACH50 = 1.5            # Table H.3.2
 PVC_LS = 51.91         # Table H.3.3 b), HRV-simplified
 ASE_PCT = 76           # Table H.3.3 b), apparent sensible effectiveness
-WINDOW_RSI, WINDOW_SHGC = 0.64, 0.40   # Table 6F: operable vinyl, insulating spacer, low-e, 13 mm argon
-DOOR_RSI = 1.1         # Table 6I: insulated metal, polyurethane core, no storm door
+# Table 6F (p. 40, double glazed): Operable - Wood/Vinyl, Insulating spacer, Low-E, 13 mm Argon -> RSIw 0.51,
+# SHGC 0.47 - the window Table H.3.14 (p. 159) specifies: vinyl operable, double, 13 mm, insulated spacer, argon,
+# single low-e, no interior shading (read from Andy's screenshots 2026-11-19; the text extract's column shift had given 0.64 / 0.40, values
+# the double-glazed table does not contain)
+WINDOW_RSI, WINDOW_SHGC = 0.51, 0.47
+DOOR_RSI = 1.101       # Table 6I: insulated metal, polyurethane core, no storm door; Annex J 8.3.2 e) (p. 173): 1.101
 
 
 def m2(ft2):
@@ -140,8 +152,12 @@ def build():
     bsmt_wall = m2(sum(l * h for l, h, _ in BASEMENT_WALLS))
     slab = m2(sum(SLAB))
     upper = m2(sum(v for k, v in CEILINGS.items() if k not in ("Family", "Nook")))
-    floor_area = slab + slab + upper        # basement + main (on the basement's footprint) + upper
-    volume = slab * 2.36 + slab * 2.77 + upper * 2.46   # storey heights from G.1.5 / G.1.8
+    floor_area = sum(a for a, _ in FLOORS.values())
+    # Vb, "measured on the inside dimensions" (Cl. 5.2.3.1), as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house
+    # volume: "the entire heated volume of the house including ... basement; ... and floors" (not attic or garage). So
+    # each floor's area x its ceiling height, plus the 0.23 m joist space under the main and upper floors (the plans'
+    # "JOIST SPACE"), each on its floor's area; closets are inside each floor's area
+    volume = sum(a * h for a, h in FLOORS.values()) + JOIST * (FLOORS["main"][0] + FLOORS["upper"][0])
     occupants = len(BEDROOMS) + 1           # Cl. 6.2.4: bedrooms + 1 when unknown
 
     put("h_14", "F280-1 Archetype 1 / 2010s / Ottawa (Orleans)", "standard", "Cl. 8.3.1 base case")
@@ -152,8 +168,7 @@ def build():
     put("d_19", "ON", "standard", "Cl. 8.3.1 Ottawa (Orleans)")
     put("h_19", "Ottawa (Orléans)", "standard", "Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1)")
     put("d_39", "Pt.9 Res. Stick Frame", "standard", "Annex H.3: 2x6 wood frame")
-    # Cl. 5.2.2.1: foundation elements in contact with soil by BasementHLR.xls (BASESIMP), S03 G.4.3-G.4.8
-    put("h_25", "BASESIMP", "standard", "Cl. 5.2.2.1: BasementHLR.xls for every foundation element in contact with soil")
+    # Cl. 5.2.2.1: foundation elements in contact with soil by BasementHLR.xls (BASESIMP, F280 Mode On), S03 G.4.4-G.4.8
     put("l_25", 1, "equivalent",
         "BCIN_1 (FoundationCC #1): concrete walls and floor, interior insulation full height (Table H.3.8: 203 mm "
         "concrete, 2x6 @ 16 in w/R20 batt; H.3.9 slab uninsulated); the walls' 2.760 (f_94, Table I.3) is the added RSI")
@@ -163,8 +178,7 @@ def build():
         "= 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593)")
     put("l_26", 0.85, "standard", "H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b))")
     put("d_26b", 8, "standard", "H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value")
-    # Cl. 5.2.3 / 6.2.6: air leakage by AIM2.xls (AIM-2), S12 B.19.1-B.19.12
-    put("d_111", "AIM2", "standard", "Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise")
+    # Cl. 5.2.3 / 6.2.6: air leakage by AIM2.xls (AIM-2, F280 Mode On), S12 B.19.2-B.19.12
     put("g_111", "Energy Tight", "equivalent",
         "H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 "
         "at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50")
@@ -181,12 +195,12 @@ def build():
     put("g_112e", 0, "standard", "no flue (electric heating, sealed combustion)")
     put("h_21", "Capacitance", "standard",
         "Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static)")
-    put("h_15", round(floor_area, 2), "estimate",
-        f"basement {slab:.2f} (G.1.4) + main on the same footprint {slab:.2f} + upper {upper:.2f} "
-        "(G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF")
-    put("d_105", round(volume, 1), "estimate",
-        "basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); "
-        "inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF")
+    put("h_15", round(floor_area, 2), "standard",
+        "Figures G.1.1 b) - G.1.3 b): basement 90.30 (int.) + main 96.02 + upper 109.25 m2")
+    put("d_105", round(volume, 1), "standard",
+        "Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x (0.23 + 2.77) + 109.25 x (0.23 + 2.46) m3 - inside "
+        "dimensions (Cl. 5.2.3.1 Vb), the floors' joist spaces included as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's "
+        "house volume ('including ... floors')")
     put("d_63", occupants, "derived", f"Cl. 6.2.4: bedrooms ({len(BEDROOMS)}) + 1")
     put("g_63", 12, "objective", "OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18)")
     put("d_64", "Normal", "objective", "OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person)")
@@ -257,7 +271,6 @@ def build():
 
 
 NEW_COLUMNS = {
-    "h_25": "Ground Heatloss Method",
     "l_25": "Foundation Configuration (BASESIMP)",
     "d_26": "Depth Below Grade",
     "h_26": "Exposed Perimeter",
@@ -265,7 +278,6 @@ NEW_COLUMNS = {
     "d_26b": "Water Table Depth",
     "l_123": "ATRE (F280)",
     "f280_mode": "F280 Mode",
-    "d_111": "Infiltration Method",
     "g_111": "Air Tightness (AIM-2)",
     "d_112": "ELA at 10 Pa for Custom (cm²)",
     "g_112": "Highest Ceiling Above Grade (m)",

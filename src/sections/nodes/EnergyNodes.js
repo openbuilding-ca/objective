@@ -493,7 +493,7 @@
     //   = (G101×D101 × (H23−D23) + D102×G102 × (H23−10)) / 1000
     // Ground-facing surfaces see the ground at 10 °C, as the annual method does (climate.groundFacing.hdd);
     // they used to take the outdoor design temperature, as if a slab sat in January air (Andy 2026-11-18).
-    // S03 G.4.3 = BASESIMP (Andy 2026-11-19): the ground-facing term is instead the foundation's January
+    // F280 Mode On, BASESIMP (Andy 2026-11-19): the ground-facing term is instead the foundation's January
     // design load by CSA F280-12 Cl. 5.2.2.1 (ground.basesimp, BasementHLR.xls's Loads!B49), which
     // covers the whole below-grade wall (its above-grade strip included) and the slab - S11 rows 94-95,
     // the same surfaces as D102. When BASESIMP cannot run (a missing input), so does this: Unavailable.
@@ -580,7 +580,7 @@
       dependencies: [
         "energy.peakCooling.enclosureKw",
         "internal.plugLoadDensity",
-        "internal.lightingDensity",
+        "internal.lightingDensity.inEffect",
         "internal.equipmentDensity",
         "building.conditionedFloorArea",
         "radiantGains.subtotal.coolingGain",
@@ -597,7 +597,7 @@
         const enclosureKw = parseNum(inputs["energy.peakCooling.enclosureKw"], 0);
         // Internal gains density (W/m²) × area → kW
         const d65 = parseNum(inputs["internal.plugLoadDensity"], 0);
-        const d66 = parseNum(inputs["internal.lightingDensity"], 0);
+        const d66 = parseNum(inputs["internal.lightingDensity.inEffect"], 0);
         const d67 = parseNum(inputs["internal.equipmentDensity"], 0);
         const area = parseNum(inputs["building.conditionedFloorArea"], 1);
         const internalGainsKw = (d65 + d66 + d67) * area / 1000;

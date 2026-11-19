@@ -3,8 +3,8 @@
  *
  *   node test/f280Mode.test.cjs
  *
- * The annual stream reads ground.methodInEffect / airTightness.infiltrationMethodInEffect: S03 G.4.3 /
- * S12 B.19.1's choice under F280 Mode On, OBJECTIVE's under Off whatever the hidden selector holds. The
+ * The annual stream reads ground.methodInEffect / airTightness.infiltrationMethodInEffect: BASESIMP and
+ * AIM-2 under F280 Mode On, OBJECTIVE's under Off (the selectors G.4.3 / B.19.1 retired 2026-11-19). The
  * F280 stream's air-leakage nodes read no selector at all. (The browser half - Off moves the annual
  * figures and not S21 - is in test/f280WholeHouse.spec.cjs.)
  */
@@ -29,16 +29,15 @@ const check = (what, got, want) => {
 
 const ground = node("ground.methodInEffect");
 const leak = node("airTightness.infiltrationMethodInEffect");
-for (const [mode, chosen, want] of [
-  ["Off", "BASESIMP", "OBJECTIVE"], ["On", "BASESIMP", "BASESIMP"], ["On", "OBJECTIVE", "OBJECTIVE"], [undefined, "BASESIMP", "OBJECTIVE"],
-]) {
-  check(`ground: mode ${mode}, G.4.3 ${chosen}`, ground.compute({ "f280.mode": mode, "ground.method": chosen }), want);
+// F280 Mode alone chooses the annual methods (Andy 2026-11-19: the master toggle activates every F280
+// option); the per-method selectors G.4.3 / B.19.1 are retired, so the nodes read only the mode.
+for (const [mode, want] of [["Off", "OBJECTIVE"], ["On", "BASESIMP"], [undefined, "OBJECTIVE"]]) {
+  check(`ground: mode ${mode}`, ground.compute({ "f280.mode": mode }), want);
 }
-for (const [mode, chosen, want] of [
-  ["Off", "AIM2", "OBJECTIVE"], ["On", "AIM2", "AIM2"], ["On", "OBJECTIVE", "OBJECTIVE"], [undefined, "AIM2", "OBJECTIVE"],
-]) {
-  check(`infiltration: mode ${mode}, B.19.1 ${chosen}`, leak.compute({ "f280.mode": mode, "airTightness.infiltrationMethod": chosen }), want);
+for (const [mode, want] of [["Off", "OBJECTIVE"], ["On", "AIM2"], [undefined, "OBJECTIVE"]]) {
+  check(`infiltration: mode ${mode}`, leak.compute({ "f280.mode": mode }), want);
 }
+check("the annual methods read the mode alone", [ground, leak].every(n => n.dependencies.join() === "f280.mode"), true);
 for (const id of ["f280.peakInfiltrationHeatLoss", "f280.peakInfiltrationHeatGain", "f280.peakEnvelopeHeatLoss"]) {
   const deps = node(id).dependencies;
   check(`${id} reads no selector`, deps.some(d => /method/i.test(d)), false);

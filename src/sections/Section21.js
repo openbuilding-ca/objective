@@ -1724,10 +1724,10 @@ window.TEUI.SectionModules.sect21 = (function () {
    */
   const F280_ONLY_ROWS = [
     "G.4.5", "G.4.8", // S03: depth, perimeter, soil k; water table, deep ground, BASESIMP's load
-    "B.19.1", "B.19.3", "B.19.5", "B.19.7", "B.19.9", "B.19.11", "B.19.13", // S12: AIM-2
+    "B.19.2", "B.19.3", "B.19.5", "B.19.7", "B.19.9", "B.19.11", "B.19.13", // S12: AIM-2
+    "T.6.10", // S15: the F280 design loss and sensible gain
   ];
   const F280_ONLY_CELLS = [
-    { id: "h_25", labels: 2 }, // S03 G.4.3 Ground Heatloss Method
     { id: "l_25", labels: 2 }, // S03 G.4.4 Foundation Config.
     { id: "l_123", labels: 2 }, // S13 ATRE (F280)
     { id: "h_122", labels: 0 }, // S13 V.3.2 the design latent load factor
@@ -1743,6 +1743,7 @@ window.TEUI.SectionModules.sect21 = (function () {
         td.classList.toggle("f280-hidden-cell", !on);
       }
     });
+    applyF280Gains(on);
     // S21: everything below the mode row
     const s21 = document.getElementById("f280Compliance");
     s21?.querySelectorAll("tr[data-id]").forEach(tr => {
@@ -1751,6 +1752,28 @@ window.TEUI.SectionModules.sect21 = (function () {
     });
     const select = s21?.querySelector(`select[data-field-id="${FIELDS.f280Mode}"]`);
     if (select && select.value !== (on ? "On" : "Off")) select.value = on ? "On" : "Off";
+  }
+
+  /**
+   * S09 under F280 Mode On holds F280's internal gains, calculated (Andy 2026-11-19: "as hardcodes (not user
+   * editable), so it is clear these are calculated (black, not blue text)"): G.1.4 70 W per person (Cl.
+   * 6.2.4), plug loads max(4 W/m2, 800 W) (Cl. 6.2.5), equipment 0 - the graph's (InternalGainsNodes
+   * F280_GAINS). Lighting is an input: under On it shows its value in effect, 0, locked; the user's value is
+   * kept for Off. The inputs F280's figures do not read go grey (the house rule, 2026-11-18): occupant
+   * activity, the equipment spec, elevators.
+   */
+  function applyF280Gains(on) {
+    const cell = document.querySelector('td[data-field-id="d_66"]');
+    if (cell) {
+      cell.classList.toggle("user-input", !on);
+      if (on) cell.classList.remove("user-modified");
+      cell.setAttribute("contenteditable", on ? "false" : "true");
+      const value = on ? 0 : window.TEUI.parseNumeric(getModeValue("d_66"), NaN);
+      if (!isNaN(value)) cell.textContent = window.TEUI.formatNumber(value, "number-2dp");
+    }
+    ["d_64", "g_67", "d_68"].forEach(id => setFieldGhosted(id, on));
+    const label = document.querySelector('td[data-field-id="g_64"]')?.previousElementSibling;
+    if (label) label.textContent = on ? "Watts/pp (F280, S)" : "Watts/pp (S+L)";
   }
 
   function updateServiceOrgVisibility() {

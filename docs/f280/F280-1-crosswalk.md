@@ -14,13 +14,11 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_19: Province` | ON | standard | Cl. 8.3.1 Ottawa (Orleans) |
 | `h_19: City` | Ottawa (Orléans) | standard | Cl. 8.3.1; OBJECTIVE's station 6106001, NBC Note A-9.36.6.5.(1) |
 | `d_39: Typology Selection` | Pt.9 Res. Stick Frame | standard | Annex H.3: 2x6 wood frame |
-| `h_25: Ground Heatloss Method` | BASESIMP | standard | Cl. 5.2.2.1: BasementHLR.xls for every foundation element in contact with soil |
 | `l_25: Foundation Configuration (BASESIMP)` | 1 | equivalent | BCIN_1 (FoundationCC #1): concrete walls and floor, interior insulation full height (Table H.3.8: 203 mm concrete, 2x6 @ 16 in w/R20 batt; H.3.9 slab uninsulated); the walls' 2.760 (f_94, Table I.3) is the added RSI |
 | `d_26: Depth Below Grade` | 2.06 | standard | Table G.1.4/G.1.5 b): depth below grade 2.06 m, both base areas |
 | `h_26: Exposed Perimeter` | 46.72 | derived | Table G.1.4 b): exposed perimeters 26.42 + 20.30 m; with d_95 a 18.47 x 4.89 m rectangle, height d_94 / 46.72 = 2.363 m (G.1.5: 2.36); one foundation reads 1387 W against F280's two rooms 1384 W (791 + 593) |
 | `l_26: Soil Conductivity` | 0.85 | standard | H.3.1 'Dry sand, loam, clay': BasementHLR.xls's suggested value (Cl. 5.2.2.1 b)) |
 | `d_26b: Water Table Depth` | 8 | standard | H.3.1 'Normal (23-33 ft, 7-10 m)': BasementHLR.xls's suggested value |
-| `d_111: Infiltration Method` | AIM2 | standard | Cl. 5.2.3: LRairh is the output of AIM2.xls; Cl. 6.2.6 LRairc likewise |
 | `g_111: Air Tightness (AIM-2)` | Energy Tight | equivalent | H.3.2 1.5 ACH50 = AIM2.xls's prescribed 'Energy Tight' type (ACH50 1.5, its ELA from the volume: ~394 cm2 at 730.3 m3); Table G.1.3 lists ELA only for 9.1 / 6.8 / 3.0 ACH50 |
 | `d_112: ELA at 10 Pa for Custom (cm²)` | 0 | standard | not used: the prescribed type carries its ELA |
 | `g_112: Highest Ceiling Above Grade (m)` | 5.53 | derived | highest ceiling above grade: basement wall above grade 2.36 - 2.06 = 0.30 (G.1.5) + main 2.77 + upper 2.46 (G.1.8) m |
@@ -33,8 +31,8 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_112e: Ventilation Balance` | Balanced | standard | H.3.3 HRV 51.91 L/s (balanced); exhaust-only is the 8.3.4 c) variant |
 | `g_112e: Flue Diameter (mm)` | 0 | standard | no flue (electric heating, sealed combustion) |
 | `h_21: Capacitance Method` | Capacitance | standard | Andy 2026-11-18: OBJECTIVE ground-couples through the Capacitance setting (the template had Static) |
-| `h_15: Conditioned Area: m²` | 289.14 | estimate | basement 90.31 (G.1.4) + main on the same footprint 90.31 + upper 108.52 (G.1.9 ceilings less Family/Nook) m2; take the plans G.1.1-G.1.3 off the PDF |
-| `d_105: Total Conditioned Volume` | 730.3 | estimate | basement x 2.36 m + main x 2.77 m + upper x 2.46 m (heights from G.1.5 / G.1.8); inside dimensions per Cl. 5.2.3.1's Vb; take off the PDF |
+| `h_15: Conditioned Area: m²` | 295.57 | standard | Figures G.1.1 b) - G.1.3 b): basement 90.30 (int.) + main 96.02 + upper 109.25 m2 |
+| `d_105: Total Conditioned Volume` | 795.1 | standard | Figures G.1.1 b) - G.1.3 b): 90.30 x 2.36 + 96.02 x (0.23 + 2.77) + 109.25 x (0.23 + 2.46) m3 - inside dimensions (Cl. 5.2.3.1 Vb), the floors' joist spaces included as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house volume ('including ... floors') |
 | `d_63: Occupant Count` | 5 | derived | Cl. 6.2.4: bedrooms (4) + 1 |
 | `g_63: Occupied Hours/Day` | 12 | objective | OBJECTIVE's standard residential schedule, 12 h/day (Andy 2026-11-18) |
 | `d_64: Occupant Activity Level` | Normal | objective | OBJECTIVE's standard activity level (F280 Cl. 6.2.4 counts 70 W sensible a person) |
@@ -46,14 +44,14 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_76: S10: Window Area South: m²` | 16.592 | derived | Table G.1.11 a): S-facing windows summed, ft2 -> m2 |
 | `d_77: S10: Window Area West: m²` | 1.486 | derived | Table G.1.11 a): W-facing windows summed, ft2 -> m2 |
 | `d_78: S10: Skylights: m²` | 0 | standard | no skylights in G.1.11 |
-| `f_74: Window North: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_75: Window East: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_76: Window South: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `f_77: Window West: SHGC` | 0.4 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
-| `g_89: Window Area North: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_90: Window Area East: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_91: Window Area South: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
-| `g_92: Window Area West: U-Value W/m²·K` | 1.5625 | derived | 1 / RSI 0.64 (Table 6F) |
+| `f_74: Window North: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_75: Window East: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_76: Window South: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `f_77: Window West: SHGC` | 0.47 | standard | Table 6F (H.3: operable vinyl, double, 13 mm argon, low-e, insulating spacer) |
+| `g_89: Window Area North: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_90: Window Area East: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_91: Window Area South: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
+| `g_92: Window Area West: U-Value W/m²·K` | 1.9608 | derived | 1 / RSI 0.51 (Table 6F) |
 | `g_74: Window North: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_75: Window East: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
 | `g_76: Window South: Winter Shading %` | 0 | standard | no winter shading in the heating calculation |
@@ -64,7 +62,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `h_77: Window West: Summer Shading %` | 1.08 | derived | Annex A: F 0.800 (lat 45.47), shaded 0.3 of 16.0 ft2 (W x H); shaded area at north's 93 W/m2 vs 285.0 -> 1.08 % of this row's solar removed |
 | `d_73: S10: Doors Area: m²` | 5.667 | derived | Table G.1.10 a): two entry doors, the WIC knee-wall door and three attic hatches |
 | `f_73: Door: SHGC` | 0 | standard | opaque doors |
-| `g_88: Doors: U-Value W/m²·K` | 0.9091 | derived | 1 / RSI 1.1 (Table 6I) |
+| `g_88: Doors: U-Value W/m²·K` | 0.9083 | derived | 1 / RSI 1.101 (Table 6I) |
 | `d_85: Roof: Area m²` | 118.386 | derived | Table G.1.9 a): ceilings summed |
 | `f_85: Roof: RSI Value K·m²/W` | 9.05 | standard | Table I.3 (2010s): ceilings |
 | `d_86: Walls Above Grade: Area m²` | 229.112 | equivalent | Table G.1.8 a) walls 248.24 m2 gross, less windows 36.04 and wall doors 4.55 = 207.65 net; plus G.1.7 rim joists 21.46 |
@@ -80,7 +78,7 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_108: NRL₅₀ Target Method` | MEASURED | standard | Table H.3.2 |
 | `g_109: ACH₅₀ Target (Converts B.18.1)` | 1.5 | standard | Table H.3.2: 1.5 ACH50 |
 | `g_118: Ventilation Method (Volume or Occupant Based)` | Volume Constant | equivalent | a constant principal ventilation rate (PVC) |
-| `l_118: ACH (Air Changes per Hour) for Volume-Based Ventilation` | 0.2559 | equivalent | PVC 51.91 L/s (Table H.3.3 b) x 3.6 / volume; moves with the volume estimate |
+| `l_118: ACH (Air Changes per Hour) for Volume-Based Ventilation` | 0.235 | equivalent | PVC 51.91 L/s (Table H.3.3 b) x 3.6 / volume; moves with the volume estimate |
 | `l_119: Summer Boost Multiplier` | None | standard | no summer boost in F280 |
 | `d_118: HRV/ERV/MVHR Sensible Recovery Efficiency (SRE): %` | 76 | standard | Table H.3.3 b): ASE 76 % (OBJECTIVE's field is labelled SRE) |
 | `e_118: Heat Recovery Type (HRV: sensible only; ERV: sensible + latent)` | HRV | standard | Table H.3.3: HRV-simplified, ATRE 0 % |

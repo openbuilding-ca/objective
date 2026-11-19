@@ -61,6 +61,9 @@ const CASES = {
 
 // The Cl. 8.3.4-8.3.8 variants OBJECTIVE can express today, as field overrides on F280-1's Target
 // row. The others are listed with the reason they are not modelled yet.
+// Cl. 6.3.1's latent load multiplier as Annex J's reference applies it (see the base comparison below)
+const ANNEX_J_LM = 1.3;
+
 const VARIANTS = [
   // Each reaches AIM-2 (S12 B.19, the base case's infiltration method): until 2026-11-19 the 8.3.7 b
   // variant set only B.18.2, which AIM-2 does not read (it runs on B.19.2's type), so it changed nothing.
@@ -68,6 +71,10 @@ const VARIANTS = [
     note: "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair" },
   { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0", d_112e: "Exhaust only" },
     note: "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only" },
+  // Cl. 8.3.6 b: no external shading - the base case's G.1.11 overhangs are its Section 10 summer shading (Annex A,
+  // tools/f280/build_case.py), so the variant sets them to 0
+  { clause: "8.3.6 b", variant: "no external shading", set: { h_74: "0", h_75: "0", h_76: "0", h_77: "0" },
+    note: "the overhangs' summer shading (h_74-h_77) at 0" },
   // Cl. 8.3.8: the front door turns from S through each eighth; every window's Section 10
   // orientation dropdown (e_74-e_77) turns with the house. Doors stay "Average" (opaque, SHGC 0).
   ...["SE", "E", "NE", "N", "NW", "W", "SW"].map((d, k) => ({
@@ -77,7 +84,6 @@ const VARIANTS = [
 const NOT_MODELLED = [
   { clause: "8.3.4 b", reason: "a room test (Annex K); whole house unchanged" },
   { clause: "8.3.5 b, c", reason: "OBJECTIVE has no interior-shading input (blinds, reflective blinds)" },
-  { clause: "8.3.6 b", reason: "the base case's G.1 overhangs are not expressed yet (Annex A), so 'no shading' is not a change" },
 ];
 
 // The compass, clockwise. Turning the front door from S to SE (one eighth) turns every facade
@@ -145,12 +151,12 @@ const READ = () => {
             envelope: get("f280.peakEnvelopeHeatLoss"),
             infiltration: get("f280.peakInfiltrationHeatLoss"),
             ventilation: get("f280.peakVentilationHeatLoss"),
-            // S03 G.4.3: the ground method, and BASESIMP's foundation load (F280 Cl. 5.2.2.1) either way
-            groundMethod: state.getValueForModel(id, "ground.method"),
+            // the annual ground method (F280 Mode's), and BASESIMP's foundation load (F280 Cl. 5.2.2.1) either way
+            groundMethod: state.getValueForModel(id, "ground.methodInEffect"),
             basesimp_W: get("ground.basesimp.peakHeatLoss"),
             basesimpError: (state.getValueForModel(id, "ground.basesimp") || {}).error || null,
             // S12 B.19.1: the infiltration method, and AIM-2's design rates (F280 Cl. 5.2.3 / 6.2.6) either way
-            infiltrationMethod: state.getValueForModel(id, "airTightness.infiltrationMethod"),
+            infiltrationMethod: state.getValueForModel(id, "airTightness.infiltrationMethodInEffect"),
             aim2_LRairh: get("aim2.heatingRate"),
             aim2_LRairc: get("aim2.coolingRate"),
             aim2Error: (state.getValueForModel(id, "airTightness.aim2") || {}).error || null,
@@ -161,6 +167,12 @@ const READ = () => {
             ventilationGain_W: get("f280.peakVentilationHeatGain"),
             atre: get("mechanical.ventilation.atre"),
             solarGain_W: get("f280.peakSolarHeatGain"),
+            opaqueSolarCorrection_W: get("f280.opaqueSolarCorrection"),
+            s15Cells: ["d_140b", "h_140b"].map((f) => {
+              const td = document.querySelector(`td[data-field-id="${f}"]`);
+              return td ? `${td.textContent.trim()}${td.closest("tr")?.classList.contains("f280-hidden-row") ? " (hidden)" : ""}` : null;
+            }),
+            dtdc: get("climate.temperature.hottest") - get("climate.cooling.setpoint"),
             f280Latitude: (window.TEUI.F280Weather.lookup(state.getValueForModel(id, "climate.location.province"),
               state.getValueForModel(id, "climate.location.city")) || {}).lat,
             designLatent_W: get("cooling.designLatentW"),
@@ -276,7 +288,12 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       const csvText = fs.readFileSync(path.join(CASES_DIR, file), "utf8");
       const base = await run(page, csvText);
       expect(base.iso52016.present, "cooling.iso52016 missing: is the app served?").toBe(true);
-      const gain = base.sensibleGain;
+      // What Annex J (and K) call "gain" is the NOMINAL capacity, Cl. 6.3.1 CSCn = LM x the sum of HGsr, at its LM 1.3 ("In
+      // most applications a multiplier of 1.3 is appropriate"). Shown by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's
+      // internal gains evenly moves the four occupied rooms -387 W and the other 14 +111 W, so the total is ~1995 W =
+      // 1.3 x (5 x 70 + 4 x 295.57) = 1992 W. Our sensible gain (S21) is the HGsr sum; compare it x 1.3.
+      const sensible = base.sensibleGain;
+      const gain = sensible * ANNEX_J_LM;
       for (const v of [base.loss, gain]) expect(Number.isFinite(v) && v > 0).toBe(true);
       // Units witness (always on): F280's ventilation loss is the clause's 1.2 W per (L/s·K) × the flow
       // in L/s × (1 − E) × the design ΔT, Cl. 5.2.3.2. It once read the flow in m³/h (3.6× high).
@@ -304,7 +321,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       records.push({
         case: name, clause: "8.3.9", ...where,
         loss: { result_W: Math.round(base.loss), expected_W: expected.loss_W, ...band(base.loss, expected.loss_W) },
-        gain: { result_W: Math.round(gain), expected_W: expected.gain_W, ...band(gain, expected.gain_W) },
+        gain: { result_W: Math.round(gain), sensible_W: Math.round(sensible), lm: ANNEX_J_LM, expected_W: expected.gain_W, ...band(gain, expected.gain_W) },
         parts_W: base,
       });
 
@@ -322,12 +339,13 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
         const r = await run(page, withOverrides(csvText, v.set, v.turn));
         const g = r.sensibleGain;
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
-        const change = { loss: r.loss - base.loss, gain: g - gain };
+        const change = { loss: r.loss - base.loss, gain: (g - sensible) * ANNEX_J_LM };
         records.push({
           case: name, clause: v.clause, variant: v.variant, note: v.note || "",
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },
           expected_change_W: Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W])),
-          sign_settled: false,
+          // Annex J prints these changes with no consistent sign (the fixture's sign_convention): compare magnitudes
+          magnitude_ratio: exp.length ? Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W ? +(Math.abs(change[x.quantity]) / Math.abs(x.expected_change_W)).toFixed(3) : null])) : null,
           parts_W: { loss: r.loss, envelope: r.envelope, infiltration: r.infiltration, ventilation: r.ventilation,
             nominalCooling: r.nominalCooling, latentLoadFactor: r.latentLoadFactor, ground: r.ground },
         });
@@ -345,7 +363,7 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
     for (const r of records.filter((x) => x.clause === "8.3.9")) {
       console.log(
         `${r.case}: loss ${r.loss.result_W} W vs ${r.loss.expected_W} (${(100 * r.loss.ratio).toFixed(1)} %, ${r.loss.pass ? "PASS" : "FAIL"}) · ` +
-          `gain ${r.gain.result_W} W vs ${r.gain.expected_W} (${(100 * r.gain.ratio).toFixed(1)} %, ${r.gain.pass ? "PASS" : "FAIL"})`
+          `gain ${r.gain.result_W} W (sensible ${r.gain.sensible_W} x ${r.gain.lm}) vs ${r.gain.expected_W} (${(100 * r.gain.ratio).toFixed(1)} %, ${r.gain.pass ? "PASS" : "FAIL"})`
       );
       if (ENFORCE_BAND) {
         expect(r.loss.pass, `${r.case} loss outside Cl. 8.4.1`).toBe(true);

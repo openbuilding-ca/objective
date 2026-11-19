@@ -56,9 +56,8 @@ TEUI.ReferenceToggle = (function () {
     h_20: "G",
     h_21: "G",
     i_21: "G",
-    // G.4.3-G.4.8 (2026-11-19): the method, site and geometry are the building's; where the
-    // insulation sits (the BASESIMP configuration) is construction
-    h_25: "G",
+    // G.4.4-G.4.8 (2026-11-19): the site and geometry are the building's; where the insulation sits
+    // (the BASESIMP configuration) is construction. G.4.3's method is F280 Mode's.
     l_25: "C",
     d_26: "G",
     h_26: "G",
@@ -172,8 +171,8 @@ TEUI.ReferenceToggle = (function () {
     d_105: "G",
     d_108: "C",
     g_109: "C",
-    // B.19.1-B.19.12 (2026-11-19): method, site and house G; air tightness, ventilation and flue C
-    d_111: "G",
+    // B.19.2-B.19.12 (2026-11-19): site and house G; air tightness, ventilation and flue C. B.19.1's
+    // method is F280 Mode's.
     g_111: "C",
     d_112: "C",
     g_112: "G",

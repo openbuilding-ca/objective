@@ -39,6 +39,7 @@
     d_23: "integer", h_23: "integer",
     d_24: "integer", h_24: "integer",
     d_25: "integer", l_22: "integer", l_24: "integer",
+    d_140b: "integer", h_140b: "integer", // S15 T.6.10 / T.6.11: F280's loss and sensible gain, W
     e_23: "integer-nocomma", i_23: "integer-nocomma",
     e_24: "integer-nocomma", i_24: "integer-nocomma",
     e_25: "integer-nocomma",

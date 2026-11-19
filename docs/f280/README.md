@@ -1,26 +1,47 @@
 # F280 whole-house verification: start here
 
-> **Current state (2026-11-19, late night).** F280-1 (S21, F280 Mode On): loss **10 839 W (92.0 %; Cl. 8.4.1 needs
-> ≥ 11 551 W, −712 W)** = envelope 8384 (above grade 6997 + BASESIMP 1387) + AIM-2 1737 + HRV 718; the TB penalty is 0
-> and in effect, the basement agrees with F280's (1384), so the gap is above grade or the air terms (needs Annex J's
-> parts). Sensible gain **6882 W (94.0 %; needs ≥ 7175 W, −293 W)** = enclosure + internal + occupants (OBJECTIVE's own
-> inputs) + design-hour solar 2158 (Cl. 6.2.2.1) + AIM-2 85 (Cl. 6.2.6) + ventilation 374 (Cl. 6.2.7, ATRE `l_123`);
-> nominal 8258 W = sensible + the design latent (Annex B).
-> **Shipped 2026-11-19:** BASESIMP; AIM-2; S12 B.18.4 = NLA10 (cm²/m²); B.18.1's levels = NBC 2025; S03 G.4.9 for any
-> city (nearest F280 location for Boiestown); ATRE; the F280 gain by clause (ventilation, design-hour solar, the
-> latent split); **S21 F280 Mode** - TWO STREAMS: Off hides every F280-only input and S21 (values kept; the annual
-> figures on OBJECTIVE's methods), On shows them; S21 always computes F280's way. The house CSV carries every F280
-> input and S21's form (`test/csvRoundTripF280.spec.cjs`).
-> **Next:** Cl. 6.2.1's solar correction SC on opaque walls and roofs (Table 3, not in the enclosure term) - likely the
-> gain's −293 W; the loss's −712 W part by part (Kieran / the PDF); exhaust-only (8.3.4 c); the F280 Reference
-> (ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §4.7, pending). The Parnas tables in `docs/parnas-tables/f280/` are stale.
-> Plan and handoff: ABCD.EARTH `ABCD-OBJECTIVE-PRO.md` §0.
+> **CURRENT STATE (2026-11-19 close; on `main` by PR #5, from `f280-review-format`). F280-1 PASSES Cl. 8.4.1 ON BOTH COUNTS:**
+> **loss 11 681 W vs Annex J 11 787 (99.1 %); gain 7347 W vs 7321 (100.4 %).** `ENFORCE_BAND` in the harness stays false until
+> the verification agent (Kieran) signs off.
+>
+> **How the gain is compared.** Annex J's (and K's) "gain" is the NOMINAL capacity, Cl. 6.3.1 CSCn = LM x the sum of HGsr at
+> LM 1.3, not the sensible sum. Shown by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's internal gains over its 18 rooms
+> moves the four occupied rooms -387 W and the other 14 +111 W, an internal total of ~1995 W = 1.3 x (5 x 70 + 4 x 295.57) =
+> 1992 W; no floor area explains it without the 1.3. The harness compares S21's sensible sum (5652 W) x 1.3 (`ANNEX_J_LM`).
+> The app's own nominal capacity (the sensible + Annex B's design latent) is unchanged.
+>
+> **Read from the PDF (Andy's screenshots, 2026-11-19), every value checked against the build and the fixture:** Table 6F and
+> H.3.14 (the window: RSI 0.51, SHGC 0.47 - the text extract had given 0.64 / 0.40, the largest single error); G.1.1-G.1.3 (each
+> floor's area and ceiling height: 295.57 m2; Vb 795.1 m3 with the floors' joist spaces, as NRCan's F280_SpreadsheetHelp.doc
+> defines AIM-2's house volume); G.1.8 (walls, gross) and G.1.11 (windows); I.3 (the RSIs); all of Annex J (8.3.2 c-f, every
+> 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a), 8.3.10 c-d); Annex K 8.3.3. Details: "What needs the PDF" below and the fixture
+> `test/fixtures/f280-annex-j.json` (`verified_against_pdf`).
+>
+> **The variants (x 1.3, magnitudes - Annex J prints them with no consistent sign):** the eight turns 0.94-0.96 of Annex J's
+> change; 3.0 ACH50 (8.3.7 b) 0.95 gain / 0.94 loss; exhaust-only (8.3.4 c) 0.98 gain / 1.04 loss; no external shading (8.3.6 b)
+> 1.21. Not modelled: 8.3.4 b and 8.3.3 (room tests), 8.3.5 b-c (no interior-shading input).
+>
+> **Open, for Kieran:** (1) the turns' last ~5 %: walls take Table 3's solar correction on the compass mean (OBJECTIVE gives them
+> no facing), so they do not turn; by facing they would. (2) 8.3.6 b over by 35 W: Annex A's shading as summer shading per row.
+> (3) Vb with or without the joist spaces (+47.2 m3; we include them, NRCan's definition). (4) A suspected ERRATUM in F280-12:
+> 8.3.9 a)'s Vancouver 1960s Archetype 2 row repeats Vancouver 1980s Archetype 1 digit for digit. (5) The other 31 cases of
+> 8.3.9 are not built (F280-1 is Archetype 1 / 2010s / Ottawa).
+>
+> **What the app does (all shipped 2026-11-18/19):** S21 F280 Mode is the master switch, per model (Target and Reference
+> independent): On puts BASESIMP and AIM-2 in the annual stream and holds F280's internal gains in S09 (70 W per person, Cl.
+> 6.2.4; 4 W/m2, 800 W floor, Cl. 6.2.5); Off hides every F280-only input and S21 and runs OBJECTIVE's methods. S21 computes F280's
+> way in either mode: BASESIMP (Cl. 5.2.2.1), AIM-2 (Cl. 5.2.3, 6.2.6), ventilation (Cl. 5.2.3.2, 6.2.7 with ATRE), design-hour
+> solar (Cl. 6.2.2.1), Table 3's opaque solar correction (Cl. 6.2.1), the gains of Cl. 6.2.4 / 6.2.5. An input a method cannot give
+> makes its readers Unavailable, never 0. The house CSV carries every F280 input (`test/csvRoundTripF280.spec.cjs`). Sample
+> Projects carries a "CSA F280 Review Format" row under each Part 9 house (`tools/f280/review_case.py`,
+> `test/f280ReviewCases.spec.cjs`): under Mode On every house reads below its bills, because F280's design-hour gains also become
+> the house's plug electricity for the year ("F280 Mode as an ANNUAL model", below).
 >
 > **AIM-2** (2026-11-19): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables `src/core/Aim2Data.js`;
 > January / July winds in `F280Weather.js`). Witness `test/aim2.test.cjs`: six inputs Excel computed
-> (`tools/f280/aim2_variants.py`) at 1e-9, NRCan's 2015 test cases to 4 decimals. In the app: S12 B.19.1 Infiltration
-> Method (OBJECTIVE (N-factor) | AIM-2 (CSA F280)), B.19.2-B.19.12 its inputs (greyed unless AIM-2), B.19.13 / B.19.14
-> LRairh / LRairc shown either way. It sets F280's air-leakage loss (Cl. 5.2.3) and gain (Cl. 6.2.6) and the annual
+> (`tools/f280/aim2_variants.py`) at 1e-9, NRCan's 2015 test cases to 4 decimals. In the app: S12 B.19.2-B.19.12 its inputs
+> (shown under S21 F280 Mode On; the B.19.1 selector retired 2026-11-19 - the mode chooses), B.19.13 / B.19.14
+> LRairh / LRairc shown either way. It sets F280's air-leakage loss (Cl. 5.2.3) and gain (Cl. 6.2.6) and, under Mode On, the annual
 > `i_103` (Andy: "when you get to a fork in the road, take it"): AIM-2 per month on the climate station's mean
 > temperature and wind, HDD-weighted (F280-1: 2687 → 2859 kWh). ✅ S12 B.18.4 is now a true ELA at 10 Pa (it computed
 > ACH50 × volume / 3600, the 50 Pa flow): AIM-2's ELA in effect, else from the ACH50 at AIM2's nearest type's n (F280-1: 0.304 → 0.0394 m²).
@@ -28,10 +49,11 @@
 > **BASESIMP** (2026-11-19): `src/core/Basesimp.js` is BasementHLR.xls cell for cell (coefficients
 > `src/core/BasesimpData.js` from FoundationCC.xls; weather `src/core/F280Weather.js` from F280_Weather.xls, 675 of
 > S03's 679 cities). Witness `test/basesimp.test.cjs`: 6 workbooks EXCEL computed (NRCan's BWEB_2/3/4, the
-> interpolation path, F280-1's two basement rooms 791 + 593 W), 220 checks at 1e-9. In the app: S03 G.4.3 Ground
-> Heatloss Method (OBJECTIVE | BASESIMP (CSA F280)), G.4.4-G.4.8 its inputs (greyed unless BASESIMP), G.4.9 the deep
+> interpolation path, F280-1's two basement rooms 791 + 593 W), 220 checks at 1e-9. In the app: S03 G.4.4-G.4.8 its inputs
+> (shown under S21 F280 Mode On; the G.4.3 selector retired 2026-11-19 - the mode chooses; a slab-on-grade configuration runs
+> NRCan's SlabOnGradeHLR.xls, `test/basesimpSlab.test.cjs`, 186 checks against Excel), G.4.9 the deep
 > ground temperature, G.4.10 BASESIMP's load (shown under either method). It sets S15 T.6.4 (`d_137`) and so F280's
-> envelope; and the ANNUAL figures (S11 rows 94-95, S12 `i_102` and so TEL / TEDI): the heating season's loss,
+> envelope; and, under Mode On, the ANNUAL figures (S11 rows 94-95, S12 `i_102` and so TEL / TEDI): the heating season's loss,
 > 365 − Days Cooling days centred on the coldest day, BASESIMP's harmonic integrated exactly (Andy 2026-11-19).
 > F280-1: ground 26 936 → 5777 kWh/yr, TEDI 144.29 → 71.11 kWh/m²·yr. F280-1 as one
 > foundation: an 18.47 x 4.89 m rectangle from the slab area and the exposed perimeter 46.72 m, 1387 W, against F280's
@@ -54,15 +76,18 @@ compares annual energy.
 | File | What |
 |---|---|
 | `test/computation/case-studies/F280-1-Archetype1-2010s-Ottawa.csv` | The base case (Cl. 8.3.1) as an OBJECTIVE case CSV |
-| `docs/f280/F280-1-crosswalk.md` | Each of its 68 fields: value, status (standard · derived · equivalent · estimate · placeholder), source table |
-| `tools/f280/build_case.py` | Builds both from Annex G.1's imperial take-offs, Annexes H.3 / I.3 and Tables 6F / 6I |
+| `docs/f280/F280-1-crosswalk.md` | Each of its 96 fields: value, status (standard · derived · equivalent · estimate · placeholder), source table |
+| `tools/f280/build_case.py` | Builds both from Annex G.1's plans and imperial take-offs, Annexes H.3 / I.3 and Tables 6F / 6I; each table marked with the PDF page it was checked against (2026-11-19) |
 | `test/fixtures/f280-annex-j.json` | Annex J's expected values: all 32 models of 8.3.9 (W and Btuh, each pair cross-checked) and the base case's variant changes |
-| `tools/f280/annex_j_fixture.py` | Builds that fixture from the text extract of the standard |
+| `tools/f280/annex_j_fixture.py` | Built the first fixture from the text extract. ⛔ Do NOT rerun: the fixture is now verified against the PDF by hand (pages, `sign_convention`, `gain_is`, the erratum) and the script would overwrite that |
 | `test/f280WholeHouse.spec.cjs` | The harness: imports each F280 case, applies the variants, reads S21, records against Annex J and the 8.4.1 band → `test/f280-results.json` |
+| `test/f280ReviewCases.spec.cjs` · `tools/f280/review_case.py` | The "CSA F280 Review Format" rows: each Part 9 house Off / On / bills → `test/f280-review-results.json` |
+| `test/f280InternalGains.test.cjs` | Cl. 6.2.4 / 6.2.5 in S09 under Mode On and in S21 either way (`node`) |
 | `test/fixtures/f280-aim2-workbook.json` | The 2015 workbook's AIM-2 results (natural ACH vs volume, vs exhaust-only flow): AIM-2's first witness |
 
 Run it with `npx playwright test test/f280WholeHouse.spec.cjs --config=playwright.config.cjs`. The band
-is recorded, not enforced (`ENFORCE_BAND = false`), until the base case is signed off as modelled.
+is recorded, not enforced (`ENFORCE_BAND = false`), until the base case is signed off as modelled. The gain is compared
+as sensible x 1.3 (`ANNEX_J_LM`, Cl. 6.3.1; see the current state above).
 
 Note: running the old parity spec (`caseStudyValidation.spec.cjs`) now includes F280-1 (13 of 13 match) and
 re-records `test/case-study-results.json`. That file dates from March, so don't commit the refresh with
@@ -85,7 +110,7 @@ Loss parts: envelope 8917 W, infiltration 1194 W, ventilation 2605 W. Variants: 
 loss and +95 W gain (Annex J: +1925 and +118). Turning the house (each window's Section 10 orientation
 dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000–2500).
 
-## Findings to check first
+## Findings to check first (2026-11-18, ALL RESOLVED - kept as the record of the first run)
 
 1. **The F280 ventilation loss reads 3.6× high.** `f280.peakVentilationHeatLoss` multiplies
    `ventilation.volumeRate` (labelled m³/h, L/s × 3.6 in `VentilationNodes.js`) by 1.21, which is the
@@ -119,7 +144,37 @@ dropdown, all eight points) moves the gain by 171–343 W (Annex J: about 2000�
    leakage rate from AIM-2, which also handles exhaust-only (unbalanced) ventilation. The 2015 workbook's
    AIM-2 results are the target; its inputs are in `AIM2-F280_Example.xls` (open in Excel).
 
-## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18)
+## F280 Mode as an ANNUAL model: what F280's gains do to TEUI (for Kieran; Andy 2026-11-19)
+
+**The rule (Andy):** *"F280 ON should use F280 gains, and F280 OFF should return to OBJECTIVE methods/defaults"*
+(OBJECTIVE's: plug load by standard and occupancy, equipment by occupancy, elevators and Regular / Efficient,
+lighting the user's). Under On, S09 holds Cl. 6.2.4's 70 W per person and Cl. 6.2.5's max(4 W/m² × A, 800 W) for
+lights, appliances and plug loads (lighting and equipment 0, the clause's one figure carries them); S21 uses the same
+figures at the design hour in either mode (`window.TEUI.F280Gains`).
+
+**What follows, and it is not a bug:** S09's gains do two jobs in the annual model. They are HEAT in the house (what
+F280 is about), and they are the house's plug, lighting and equipment ELECTRICITY, which TEUI counts. Cl. 6.2.5's
+4 W/m² is a design-hour heat allowance, not an energy figure, so under On it also becomes the house's plug
+electricity for the year. **TEUI under On therefore falls below the bills - the honest result of applying F280's
+design-hour allowance to a whole year.** Andy, 2026-11-19: *"it is imperative that [this] ends up in Kieran's
+analysis"*. Measured on the four Part 9 houses (the "CSA F280 Review Format" rows, `test/f280-review-results.json`):
+
+| House (TEUI, kWh/m²·yr) | Off (OBJECTIVE) | On, BASESIMP + AIM-2 only | On, + F280's gains | Bills |
+|---|---|---|---|---|
+| 03 Hemmingford | 57.1 | 57.9 | 56.7 | 56.3 |
+| 02 Collingwood | 103.4 | 99.6 | 84.7 | 103.5 |
+| 12 Hawkesbury | 63.4 | 64.0 | 46.6 | 57.8 |
+| 10 Port Credit | 13.2 | 13.3 | −12.1 (net of on-site PV) | 14.8 |
+
+The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation, air leakage): they move TEUI by
+−3.8 to +0.8. The gains move it by −1.2 to −25.4. For Annex J none of this matters: Annex J compares design W
+(above), never annual energy. It matters for any claim that "F280, annualized, predicts energy use".
+
+## Matching the gains by OBJECTIVE's own inputs (Andy 2026-11-18) - SUPERSEDED 2026-11-19 for S21
+
+S21 now takes Cl. 6.2.4 / 6.2.5 directly (the section above); F280-1's sensible gain 7040 → 5155 W (70.4 % read as sensible;
+compared as Annex J's nominal, 1.3 x, the gain now passes: 100.4 %, the current state above). Kept for the
+overhang-to-shading mapping and the sources of OBJECTIVE's own gains, which Off still uses.
 
 Andy: *"Ideally we match gains NOT by inventing new methods, but by choosing standard OBJECTIVE input values,
 occupant activity levels, and lighting and plug loads and schedule (assumed 12hrs/day residential)."* And:
@@ -157,14 +212,29 @@ S13, the NBC water method, DWHR 0 % (NBC 9.36), no EV charging (the template had
 41 481 W (352 %) and sensible gain 8500 W (116 %), the loss dominated by the slab at the outdoor ΔT (finding 3).
 Before the slab change (RSI 0, the bug's 0 W): loss 15 391 W (131 %), gain 5900 W (81 %).
 
-## What needs the PDF (the text extract cannot settle these)
+## What needed the PDF (the text extract could not settle these) - read 2026-11-19
 
-- The conditioned floor area and volume: the plans G.1.1–G.1.3 are images, so `h_15` and `d_105` are estimates.
-- Whether Table G.1.8's wall areas are gross. The build subtracts windows and doors, and does not split out
-  the house/garage walls (I.3 gives RSI 3.364 for those).
-- Table 6F's column order: the 13 mm argon row was read as RSI 0.64, SHGC 0.40.
-- Annex I.3's 2010s values: the extract interleaves the vintages, and the assignment was made by matching
-  H.3's layers.
+- ✅ The floor area and volume from the plans (Figures G.1.1 b) - G.1.3 b), the PDF 2026-11-19): 90.30 + 96.02 +
+  109.25 = 295.57 m2 (was 289.14: the main floor is not the basement's footprint), Vb 795.1 m3 (was 730.3) with the floors'
+  0.23 m joist spaces, as NRCan's F280_SpreadsheetHelp.doc defines AIM-2's house volume ("including ... floors";
+  closets are inside each floor's area). F280-1's LOSS PASSES Cl. 8.4.1.
+- ✅ F280's take-off measures as OBJECTIVE does (Andy 2026-11-19: interior dimensions, the rough opening the handoff
+  between wall and window, "a pure topology model"): G.1.8's wall lengths sum to the plans' perimeters (main + stair
+  156.62 ft vs 156.6; upper + stair 154.35 vs 154), the basement box is "INT." and the floors share its 35 ft 4.5 in;
+  wall heights are the ceiling heights and the rim joists their own 0.23 m row (G.1.7) - even the two-storey stair wall
+  is 2.77 + 2.46 = 5.23 m - so walls and rims tile the elevation once; windows are rough openings (Table 6F note 1).
+- ✅ Table G.1.8's wall areas are GROSS (area = length x height on every row; the PDF, 2026-11-19): the build's
+  subtraction of windows and doors is right. G.1.8 b)'s SI rows are misaligned with their labels: use a). Still
+  open: the house/garage walls are not split out (I.3 gives RSI 3.364 for those).
+- ✅ Table 6F (p. 40, the PDF 2026-11-19): operable vinyl, insulating spacer, low-E, 13 mm argon is RSI 0.51,
+  SHGC 0.47 - the extract had given 0.64 / 0.40. Loss 10 839 -> 11 528 W (97.8 %), sensible gain 5155 -> 5619 W; with the plans and Annex J's nominal (x 1.3)
+  that became the PASS on both (99.1 % / 100.4 %).
+  ⚠ The turns (8.3.8) now change by 0.72-0.74 of Annex J's on every facing (0.615 at SHGC 0.40): Annex J
+  behaves as if SHGC ~0.65 (Table 6F's CLEAR double glazing). ✅ Table H.3.14 (p. 159) CONFIRMS the build's window
+  (vinyl operable, double, 13 mm, insulated spacer, argon, single low-e, no interior shading): SHGC 0.47 is the
+  standard's. So the turn ratio is NOT the window. Suspect: `test/fixtures/f280-annex-j.json` itself, read from the
+  same column-shifting extract (`verified_against_pdf: false`) - check its base case and variants against Annex J.
+- ✅ Annex I.3 b)'s 2010s values (p. 167, the PDF 2026-11-19): the build's eight RSIs are right.
 - Annex J's variant tables (8.3.4–8.3.8) come through column-shifted, and the SIGN of each expected change is
   not settled (`sign_settled: false`). 8.3.4 c) reads −897 W loss for exhaust-only, which looks backwards.
 - G.1.11's overhangs and drops shade the base case (Annex A). OBJECTIVE's summer shading is 0 % for now,

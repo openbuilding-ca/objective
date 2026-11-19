@@ -750,7 +750,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
   };
 
-  // Rows 111-112f, B.19.1-B.19.14: the infiltration method and AIM-2's inputs (CSA F280-12 Cl. 5.2.3,
+  // Rows 111-112f, B.19.2-B.19.14: AIM-2's inputs (B.19.1, the method, retired: F280 Mode chooses it) (CSA F280-12 Cl. 5.2.3,
   // AIM2.xls; Andy 2026-11-19). Two label / value pairs a row (C-E, F-H); greyed unless AIM-2 (the house
   // rule). The node side: VolumeMetricsNodes (airTightness.aim2), F280ComplianceNodes.
   const AIM2_ROWS = (function () {
@@ -786,12 +786,13 @@ window.TEUI.SectionModules.sect12 = (function () {
       },
     ];
     return Object.fromEntries([
+      // B.19.1, the infiltration method, retired 2026-11-19: S21 F280 Mode chooses it (AIM-2 On, the
+      // N-factor Off; airTightness.infiltrationMethodInEffect).
       row(111,
-        ["B.19.1", "Infiltration Method", field("d_111", "airLeakage.infiltrationMethod", "dropdown", "OBJECTIVE", {
-          options: [{ value: "OBJECTIVE", name: "OBJECTIVE (N-factor)" }, { value: "AIM2", name: "AIM-2 (CSA F280)" }] })],
         ["B.19.2", "Air Tightness (AIM-2)", field("g_111", "aim2.tightness", "dropdown", "Custom", {
           getOptions: () => [...A().tightness.map(t => ({ value: t.name, name: `${t.name} (${t.ach50} ACH50)` })),
-            { value: "Custom", name: "Custom: B.18.2's ACH50 + this ELA" }] })]),
+            { value: "Custom", name: "Custom: B.18.2's ACH50 + this ELA" }] })],
+        ["", "", {}, ""]),
       row(112,
         ["B.19.3", "ELA₁₀ for Custom", field("d_112", "aim2.ela", "editable", "0"), "cm²"],
         ["B.19.4", "Highest Ceiling Above Grade", field("g_112", "aim2.ceilingHeight", "editable", "0"), "m"]),
@@ -970,9 +971,9 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   /**
-   * B.19.1-B.19.14 for the current model: each dropdown shows its stored choice. AIM-2's inputs are never
-   * greyed: shown only under F280 Mode (S21), where they always drive F280's sizing whatever B.19.1 chooses
-   * for the annual figure (two streams, Andy 2026-11-19; they greyed unless B.19.1 was AIM-2). When AIM-2
+   * B.19.2-B.19.14 for the current model: each dropdown shows its stored choice. AIM-2's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they drive F280's sizing and, On, the annual figure
+   * (Andy 2026-11-19). When AIM-2
    * cannot run, B.19.13 says why on hover.
    */
   const AIM2_FIELDS = ["g_111", "d_112", "g_112", "d_112b", "g_112b", "d_112c", "g_112c", "d_112d",
@@ -980,7 +981,7 @@ window.TEUI.SectionModules.sect12 = (function () {
   function updateAim2UI() {
     const sectionElement = document.getElementById("volumeSurfaceMetrics");
     if (!sectionElement) return;
-    ["d_111", ...AIM2_FIELDS].forEach(id => {
+    AIM2_FIELDS.forEach(id => {
       const select = sectionElement.querySelector(`select[data-field-id="${id}"]`);
       const v = getModeValue(id);
       if (select && v !== undefined && v !== null && v !== "" && select.value !== String(v)) select.value = String(v);

@@ -13,14 +13,14 @@
  *
  * F280 additions (this module):
  * TWO STREAMS (Andy 2026-11-19): these nodes are the F280 stream - always F280's methods (BASESIMP,
- * AIM-2, Cl. 6.2's design-hour gains), whatever S03 G.4.3 / S12 B.19.1 say; those choose the ANNUAL
+ * AIM-2, Cl. 6.2's design-hour gains), in either mode; F280 Mode On also puts BASESIMP and AIM-2 in the ANNUAL
  * stream's methods, and only under F280 Mode (ground.methodInEffect, airTightness.infiltrationMethodInEffect).
  *   - Peak envelope heat loss:      U·A × DTDh above grade + BASESIMP below (Cl. 5.2.1, 5.2.2.1)
  *   - Peak infiltration heat loss:  AIM-2, Cl. 5.2.3
  *   - Peak ventilation heat loss:   Cl. 5.2.3.2, HLvairb = PVC × DTDh × 1.2 × (1 − E)
  *   - F280 total design heat loss:  Q_total = envelope + Q_inf + Q_vent
- *   - Sensible heat gain, Cl. 6.2.9: enclosure + internal + solar + occupants + air leakage (Cl. 6.2.6)
- *     + ventilation (Cl. 6.2.7, HGsvb = PVC × DTDc × 1.2 × (1 − ATRE)); the nominal cooling
+ *   - Sensible heat gain, Cl. 6.2.9: enclosure + Table 3's solar correction on opaque assemblies
+ *     (Cl. 6.2.1) + internal + solar + occupants + air leakage (Cl. 6.2.6) + ventilation (Cl. 6.2.7, HGsvb = PVC × DTDc × 1.2 × (1 − ATRE)); the nominal cooling
  *     capacity is that × the latent load factor (Cl. 6.3)
  *   - Equipment sizing compliance:  heating >= 100%, cooling 80-125%
  *   - Designer certification validation (NRCan EA, TECA, P.Eng, OAA, BCIN)
@@ -36,6 +36,12 @@
 
   window.TEUI = window.TEUI || {};
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
+
+  // Cl. 6.2.4: "A sensible heat gain, HGsp, of 70 W for each person normally expected to occupy the house".
+  // Cl. 6.2.5: "A sensible heat gain, HGlae, of 4 W/m2 of gross floor area, but not lower that 800 W, shall be
+  // applied to the whole house" (lights, appliances and plug loads, one figure). The one source: S21's
+  // design-hour gain below, and S09 under F280 Mode On (InternalGainsNodes.js).
+  window.TEUI.F280Gains = Object.freeze({ personW: 70, laeWPerM2: 4, laeMinW: 800 });
 
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
@@ -136,9 +142,9 @@
         defaultValue: false
       },
 
-      // F280 Mode (S21 F.00; Andy 2026-11-19): two streams. Off - the default - hides every F280-only
-      // input and S21, and the annual stream runs on OBJECTIVE's methods whatever G.4.3 / B.19.1 hold
-      // (their values are kept). On shows them, and those two selectors choose the ANNUAL method too.
+      // F280 Mode (S21 F.00; Andy 2026-11-19). Off - the default - hides every F280-only input and S21
+      // (their values are kept), and the annual stream runs on OBJECTIVE's methods. On shows them and puts
+      // F280's methods (BASESIMP, AIM-2) in the ANNUAL stream: OBJECTIVE as an F280 model.
       // S21 computes F280's way either way (BASESIMP, AIM-2, Cl. 6.2's design-hour gains). Per MODEL
       // (Andy 2026-11-19: "S21 should allow Reference to be ON for F280, and Target OFF. As with ALL other
       // settings in the app - Target and Reference models can be nearly 100% independent by design").
@@ -181,27 +187,30 @@
     graph.registerInputs(inputs);
 
     // ========================================================================
-    // THE ANNUAL STREAM'S METHODS (Andy 2026-11-19, two streams): S03 G.4.3 and S12 B.19.1 choose the
-    // annual figures' ground and air-leakage methods only under F280 Mode; Off, OBJECTIVE's, whatever
-    // the hidden selectors hold. Every annual consumer reads these, never the selectors.
+    // THE ANNUAL STREAM'S METHODS: S21 F280 Mode alone chooses them (Andy 2026-11-19: "When the master
+    // toggle is set in S21, all input values and F280 options should activate"; and "I'd like to actually
+    // see what F280 gives us if run as an annual model like OBJECTIVE"). On: BASESIMP and AIM-2, F280's
+    // own (Cl. 5.2.2.1, 5.2.3). Off: OBJECTIVE's. The per-method selectors S03 G.4.3 and S12 B.19.1 are
+    // retired (FileHandler maps an older file's BASESIMP / AIM-2 choice to Mode On). Every annual
+    // consumer reads these.
     // ========================================================================
 
     graph.registerNode({
       id: "ground.methodInEffect",
       section: "S03",
       classification: "C",
-      dependencies: ["f280.mode", "ground.method"],
+      dependencies: ["f280.mode"],
       label: "Ground Heat-Loss Method in Effect (annual)",
-      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["ground.method"] === "BASESIMP" ? "BASESIMP" : "OBJECTIVE")
+      compute: (inputs) => (inputs["f280.mode"] === "On" ? "BASESIMP" : "OBJECTIVE")
     });
 
     graph.registerNode({
       id: "airTightness.infiltrationMethodInEffect",
       section: "S12",
       classification: "C",
-      dependencies: ["f280.mode", "airTightness.infiltrationMethod"],
+      dependencies: ["f280.mode"],
       label: "Infiltration Method in Effect (annual)",
-      compute: (inputs) => (inputs["f280.mode"] === "On" && inputs["airTightness.infiltrationMethod"] === "AIM2" ? "AIM2" : "OBJECTIVE")
+      compute: (inputs) => (inputs["f280.mode"] === "On" ? "AIM2" : "OBJECTIVE")
     });
 
     // ========================================================================
@@ -210,7 +219,7 @@
     //
     // The F280 stream's own: above grade U·A × DTDh (S15 d_137's air-facing half) + BELOW grade by
     // BASESIMP, Cl. 5.2.2.1 ("the spreadsheet calculation called BasementHLR.xls shall be used"),
-    // whatever S03 G.4.3 says (it read d_137, which followed G.4.3 - 2026-11-19, two streams).
+    // in either F280 Mode (it read d_137, which followed the annual method, to 2026-11-19).
     // ========================================================================
 
     graph.registerNode({
@@ -238,8 +247,8 @@
 
     // ========================================================================
     // F280 PEAK AIR-LEAKAGE HEAT LOSS (CSA F280-12 Cl. 5.2.3): HLairb = LRairh × Vb / 3.6 × DTDh × 1.2,
-    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, whatever S12 B.19.1
-    // says (2026-11-19, two streams; it took OBJECTIVE's N-factor unless B.19.1 was AIM-2). AIM-2 missing
+    // LRairh = AIM2.xls's ("the output from the spreadsheet"). The F280 stream's own, in either F280 Mode
+    // (2026-11-19; it took OBJECTIVE's N-factor unless the annual method was AIM-2). AIM-2 missing
     // an input: Unavailable.
     // ========================================================================
 
@@ -355,7 +364,7 @@
 
     // ========================================================================
     // F280 PEAK AIR-LEAKAGE HEAT GAIN (CSA F280-12 Cl. 6.2.6): HGsalb = LRairc × Vb / 3.6 × DTDc × 1.2 -
-    // AIM-2's, whatever S12 B.19.1 says (two streams, as the loss).
+    // AIM-2's, in either F280 Mode (as the loss).
     // ========================================================================
 
     graph.registerNode({
@@ -461,6 +470,61 @@
     });
 
     // ========================================================================
+    // F280 SOLAR CORRECTION ON OPAQUE ASSEMBLIES (CSA F280-12 Cl. 6.2.1, Table 3)
+    //
+    // HGcop = A / RSI × (DTDc + SC) on each above-grade opaque assembly; S15's enclosure term (d_138)
+    // carries the A / RSI × DTDc half, so this is the SC half: Σ A × U × (DTDc + SC) − A × U × DTDc over
+    // S11's roof, walls, exposed floor and doors (windows take no SC, Cl. 6.2.2; below grade takes no
+    // gain). Each assembly's DTDc + SC is held at 0 or above, as d_138 holds DTDc: a negative would credit
+    // the gain (over, never under). U carries S11's thermal-bridge factor, as d_138's g_101 does.
+    // Table 3's column is the location's summer daily range (F280Weather's summerRange): up to and
+    // including 14 °C, or over. OBJECTIVE's walls and doors have no facing: they take the mean of the
+    // eight compass points (as the "Average" facing takes for Solar0, Andy 2026-11-19). The exposed floor
+    // reads −3.3 / −6.1 whether it lies over a non-conditioned room or is fully shaded (Table 3's two rows).
+    // ========================================================================
+
+    const F280_SC_WALLS = { // °C: [daily range ≤ 14 °C, > 14 °C]
+      North: [-3.8, -6.7], NorthEast: [-0.6, -3.3], East: [1.7, -1.1], SouthEast: [0.6, -2.2],
+      South: [-2.2, -5.0], SouthWest: [0.6, -2.2], West: [1.7, -1.1], NorthWest: [-0.6, -3.3]
+    };
+    const scWallsAverage = (col) =>
+      Object.values(F280_SC_WALLS).reduce((sum, v) => sum + v[col], 0) / Object.keys(F280_SC_WALLS).length;
+    const F280_SC_OPAQUE = {
+      roof: (col) => [15.0, 12.2][col], // roofs and top storey ceilings
+      walls: scWallsAverage,
+      doors: scWallsAverage,
+      exposedFloor: (col) => [-3.3, -6.1][col] // floors over non-conditioned rooms; fully shaded
+    };
+
+    graph.registerNode({
+      id: "f280.opaqueSolarCorrection",
+      section: "SF280",
+      classification: "C",
+      dependencies: [
+        "climate.location.province",
+        "climate.location.city",
+        "climate.temperature.hottest",
+        "climate.cooling.setpoint",
+        "transmissionLoss.thermalBridgePenalty",
+        ...Object.keys(F280_SC_OPAQUE).flatMap((id) => [`transmissionLoss.${id}.area`, `transmissionLoss.${id}.uValue`])
+      ],
+      label: "F280 Solar Correction on Opaque Assemblies (W)",
+      compute: (inputs) => {
+        const weather = window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"]);
+        if (!weather || !(weather.summerRange >= 0)) return "Unavailable"; // no F280 row for the city
+        const col = weather.summerRange <= 14 ? 0 : 1;
+        const dtdc = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
+        const tbFactor = 1 + parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5) / 100;
+        let total = 0;
+        for (const [id, sc] of Object.entries(F280_SC_OPAQUE)) {
+          const ua = parseNum(inputs[`transmissionLoss.${id}.area`]) * parseNum(inputs[`transmissionLoss.${id}.uValue`]) * tbFactor;
+          total += ua * (Math.max(0, dtdc + sc(col)) - Math.max(0, dtdc));
+        }
+        return total;
+      }
+    });
+
+    // ========================================================================
     // F280 TOTAL SENSIBLE HEAT GAIN (CSA F280-12 Cl. 6.2.9)
     //
     // S15's d_139 terms by OBJECTIVE's own inputs (Andy 2026-11-18: match gains by OBJECTIVE's
@@ -476,33 +540,53 @@
       classification: "C",
       dependencies: [
         "energy.peakCooling.enclosureKw",
-        "internal.plugLoadDensity",
-        "internal.lightingDensity",
-        "internal.equipmentDensity",
         "building.conditionedFloorArea",
-        "internal.occupants.coolingGain",
-        "cooling.iso52016",
-        "climate.coolingDays",
+        "occupancy.occupants",
         "f280.peakSolarHeatGain",
         "f280.peakInfiltrationHeatGain",
-        "f280.peakVentilationHeatGain"
+        "f280.peakVentilationHeatGain",
+        "f280.opaqueSolarCorrection"
       ],
       label: "F280 Total Sensible Heat Gain (W)",
       compute: (inputs) => {
         if (inputs["f280.peakInfiltrationHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.peakVentilationHeatGain"] === "Unavailable") return "Unavailable";
         if (inputs["f280.peakSolarHeatGain"] === "Unavailable") return "Unavailable";
+        if (inputs["f280.opaqueSolarCorrection"] === "Unavailable") return "Unavailable";
         const enclosure = parseNum(inputs["energy.peakCooling.enclosureKw"]) * 1000;
-        const density = parseNum(inputs["internal.plugLoadDensity"]) + parseNum(inputs["internal.lightingDensity"]) +
-          parseNum(inputs["internal.equipmentDensity"]);
-        const internal = density * parseNum(inputs["building.conditionedFloorArea"], 1);
-        const latent = inputs["cooling.iso52016"]?.latent;
-        const occupantsKwh = parseNum(inputs["internal.occupants.coolingGain"]) - (latent?.people ?? 0);
-        const hours = parseNum(inputs["climate.coolingDays"], 120) * 24;
-        const occupants = hours > 0 ? (occupantsKwh / hours) * 1000 : 0;
+        // Cl. 6.2.4 and 6.2.5 at the design hour, whatever the mode (S21 computes F280's way; Andy 2026-11-19
+        // ruled F280's gains over OBJECTIVE's, which this read until then): 70 W per person, and lights,
+        // appliances and plug loads max(4 W/m2 x A, 800 W) - the same figures S09 shows under Mode On
+        const G = window.TEUI.F280Gains;
+        const area = parseNum(inputs["building.conditionedFloorArea"]);
+        const internal = Math.max(G.laeWPerM2 * area, G.laeMinW);
+        const occupants = G.personW * parseNum(inputs["occupancy.occupants"]);
         return enclosure + internal + occupants + parseNum(inputs["f280.peakSolarHeatGain"]) +
-          parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]);
+          parseNum(inputs["f280.peakInfiltrationHeatGain"]) + parseNum(inputs["f280.peakVentilationHeatGain"]) +
+          parseNum(inputs["f280.opaqueSolarCorrection"]);
       }
+    });
+
+    // S15 T.6.10 / T.6.11: the design loss (Annex J compares it as is) and the SENSIBLE gain sum (Annex J compares 1.3 x it,
+    // the nominal capacity of Cl. 6.3.1 - shown 2026-11-19 by Annex K 8.3.3; test/f280WholeHouse.spec.cjs ANNEX_J_LM), read
+    // where the peak loads are (Andy 2026-11-19). Echoes, in W; the row hides with S21 when F280 Mode is Off.
+    graph.registerNode({
+      id: "f280.s15.designHeatLoss",
+      legacyId: "d_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: ["f280.totalDesignHeatLoss"],
+      label: "F280 Design Heat Loss (W)",
+      compute: (inputs) => inputs["f280.totalDesignHeatLoss"]
+    });
+    graph.registerNode({
+      id: "f280.s15.sensibleHeatGain",
+      legacyId: "h_140b",
+      section: "S15",
+      classification: "C",
+      dependencies: ["f280.totalSensibleHeatGain"],
+      label: "F280 Sensible Heat Gain (W)",
+      compute: (inputs) => inputs["f280.totalSensibleHeatGain"]
     });
 
     // ========================================================================

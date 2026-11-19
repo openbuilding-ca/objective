@@ -26,12 +26,24 @@
  *   - The Moore phase is ATAN(E/F), not ATAN2.
  *   - The cooling load omits the openings fraction K11 that the heating load applies.
  * Witness: test/basesimp.test.cjs against the workbooks' own cached values.
+ *
+ * SLAB-ON-GRADE (2026-11-19): a slab configuration (FoundationCC's SC*: SCN, SCB, SCA) is NRCan's twin
+ * workbook SlabOnGradeHLR_2014.xls (SlabOnGradeHLR.doc), the same BASESIMP sheets with its own front end:
+ *   - Input: height 0 and a depth of 0.05 m (the caller's), ONE "Added insulation" (p.slab), no above-grade
+ *     wall, openings or overlap;
+ *   - Loads: rsi1 IS that added insulation (Loads!B12, no Inflag), WRSI 1.77 "For Slab-on-Grade only"
+ *     (Loads!B21); the heating load (B48) takes the floor at MAX(main floor, radiant slab) (Input!C58) for
+ *     both terms, with no openings fraction and no RadFloor share;
+ *   - BS2: rsi1c 0.01 (BS2!B18; BasementHLR's is 0.001).
+ * (Its BS1/BS2 A12:A13 corner tests differ, but only for CCF 99, which no slab configuration has.)
+ * Witness: test/basesimpSlab.test.cjs against Excel's own SlabOnGradeHLR results.
  */
 (function () {
   window.TEUI = window.TEUI || {};
 
   const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   const WRSI = 2.29; // Loads!B22, "For Basements only"
+  const WRSI_SLAB = 1.77; // SlabOnGradeHLR Loads!B21, "For Slab-on-Grade only"
   // RadFloor!B5:E5 - the structure's own RSI: concrete walls, concrete floors, wood walls, wood floors
   const STRUCTURE_RSI = { concreteWall: 0.116, concreteFloor: 0.0578, woodWall: 0.417, woodFloor: 0.833 };
 
@@ -167,8 +179,14 @@
    *   heating: {month, room, design, slab}   slab 0 = no radiant floor
    *   cooling: {month, room, design}
    */
+  // FoundationCC's slab-on-grade configurations (SCN_, SCB_, SCA_): SlabOnGradeHLR.xls, not BasementHLR.xls
+  function isSlab(n) {
+    return /^SC/.test(config(n).name);
+  }
+
   function compute(p) {
     const c = config(p.configuration);
+    const slab = isSlab(p.configuration);
     const twin = config(c.iUnInsul > 0 ? c.iUnInsul : p.configuration);
     const g = {
       length: Math.max(p.length, p.width),
@@ -180,8 +198,9 @@
       overlap: p.overlap || 0,
     };
     const ins = { interior: p.interior, exterior: p.exterior, slab: p.slab };
-    const flag = inflag(c);
-    const rsi1 = representativeRsi(flag, ins);
+    // SlabOnGradeHLR Loads!B12: rsi1 = the one added insulation; BasementHLR's Inflag picks it otherwise
+    const flag = slab ? null : inflag(c);
+    const rsi1 = slab ? ins.slab : representativeRsi(flag, ins);
     const rsi2 = rsi1 > 1.5 ? rsi1 : 1.5;
 
     // BS1!B34:B40 and BS2!B34:B40 - each tab has its own corner column (its configuration's CCF) and
@@ -196,9 +215,9 @@
       };
     };
     const set1 = shapeFactors(c, g, rsi2, true, corner(c.CCF, Math.min(rsi2, 5)));
-    const set2 = shapeFactors(twin, g, 0.001, false, corner(twin.CCF, 0));
+    const set2 = shapeFactors(twin, g, slab ? 0.01 : 0.001, false, corner(twin.CCF, 0)); // BS2!B18
     const interpolate = rsi1 > 0.01 && rsi1 < 1.501;
-    const denom = Math.exp(WRSI * rsi1);
+    const denom = Math.exp((slab ? WRSI_SLAB : WRSI) * rsi1);
     const pick = k => (interpolate ? set1[k] + (set2[k] - set1[k]) / denom : set1[k]);
     const out = { sag: pick("sag"), sbgAvg: pick("sbgAvg"), sbgVar: pick("sbgVar"), phase: pick("phase") };
 
@@ -221,31 +240,37 @@
     const perimeter = 2 * (g.length + g.width);
     const exposed = p.exposedPerimeter > 0 ? p.exposedPerimeter : perimeter;
     const exposedFraction = Math.min(1, Math.max(exposed / perimeter, 0));
+    // A slab has no above-grade foundation wall (SlabOnGradeHLR has no Abwag / K11): fraction 1
     const aboveGradeWall = (g.height - g.depth) * perimeter;
-    const openingsFraction = (aboveGradeWall - (p.windowArea || 0) - (p.doorArea || 0)) / aboveGradeWall;
+    const openingsFraction = slab ? 1 : (aboveGradeWall - (p.windowArea || 0) - (p.doorArea || 0)) / aboveGradeWall;
 
     // RadFloor - the radiant slab's share of the mean below-grade loss
     const wallRsi = c.iFndFlag4 > 0 ? STRUCTURE_RSI.woodWall : STRUCTURE_RSI.concreteWall;
     const floorRsi = c.iFndFlag5 > 0 ? STRUCTURE_RSI.woodFloor : STRUCTURE_RSI.concreteFloor;
     const uWalls = (g.height * perimeter) / (ins.interior + ins.exterior + wallRsi);
     const uFloor = (g.length * g.width) / (ins.slab + floorRsi);
-    const radiantAlpha = p.heating.slab > 0 ? (out.sbgAvg * uFloor) / Math.max(uWalls + uFloor, 0.1) : 0;
-    // RadFloor's own split of the below-grade loss between floor and walls (its Alpha3 / Alpha2)
-    const floorShare = uFloor / Math.max(uWalls + uFloor, 0.1);
+    const radiantAlpha = !slab && p.heating.slab > 0 ? (out.sbgAvg * uFloor) / Math.max(uWalls + uFloor, 0.1) : 0;
+    // RadFloor's own split of the below-grade loss between floor and walls (its Alpha3 / Alpha2); a slab's
+    // loss is all floor
+    const floorShare = slab ? 1 : uFloor / Math.max(uWalls + uFloor, 0.1);
 
     // Loads!B49 and B54
     const H = p.heating, C = p.cooling;
-    const heatingLoad =
-      (out.sag * openingsFraction * (H.room - H.design) +
-        fhl[H.month - 1] +
-        out.sbgAvg * (H.room - p.deepGround) +
-        radiantAlpha * (H.slab - p.deepGround)) *
-      exposedFraction;
+    // SlabOnGradeHLR Loads!B48: the floor at MAX(main floor, radiant slab) (Input!C58) in both terms
+    const slabRoom = Math.max(H.room, H.slab || 0);
+    const heatingLoad = slab
+      ? (out.sag * (slabRoom - H.design) + fhl[H.month - 1] + out.sbgAvg * (slabRoom - p.deepGround)) * exposedFraction
+      : (out.sag * openingsFraction * (H.room - H.design) +
+          fhl[H.month - 1] +
+          out.sbgAvg * (H.room - p.deepGround) +
+          radiantAlpha * (H.slab - p.deepGround)) *
+        exposedFraction;
     const coolingLoad =
       (out.sag * (C.room - C.design) + fhl[C.month - 1] + out.sbgAvg * (C.room - p.deepGround)) * exposedFraction;
 
     return {
       configuration: c.name,
+      slab,
       inflag: flag,
       rsi1,
       rsi2,
@@ -289,6 +314,7 @@
     const mean = r.sbgAvg * (s.room - s.deepGround) * s.days * k;
     const harmonic = r.ca1 * (Math.cos(r.omega * t0 + r.ca2) - Math.cos(r.omega * t1 + r.ca2)) * k;
     const below = mean + harmonic;
+    // A slab on grade has no foundation wall: its edge loss (above) is the slab's too
     return {
       startDay: t0,
       days: s.days,
@@ -296,10 +322,10 @@
       mean,
       harmonic,
       total: above + below,
-      slab: below * r.floorShare,
-      walls: above + below * (1 - r.floorShare),
+      slab: r.slab ? above + below : below * r.floorShare,
+      walls: r.slab ? 0 : above + below * (1 - r.floorShare),
     };
   }
 
-  window.TEUI.Basesimp = Object.freeze({ compute, seasonLoss, config, DAYS });
+  window.TEUI.Basesimp = Object.freeze({ compute, seasonLoss, config, isSlab, DAYS });
 })();

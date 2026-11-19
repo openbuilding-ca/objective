@@ -239,6 +239,29 @@ window.TEUI.SectionModules.sect19 = (function () {
       },
     },
 
+    // 19.2b: the footprint's perimeter (Andy 2026-11-19), the graph's wombat.footprint.perimeter; S03 G.4.6
+    // (BASESIMP's exposed perimeter) takes it when left blank
+    row155b: {
+      id: "19.2b",
+      rowId: "19.2b",
+      label: "Footprint Perimeter",
+      cells: {
+        a: {},
+        b: {},
+        c: { label: "Footprint Perimeter" },
+        d: {},
+        e: {},
+        f: {},
+        g: {},
+        h: {
+          fieldId: "h_155b",
+          type: "calculated",
+          value: "0.00",
+          label: "Footprint Perimeter (m)",
+        },
+      },
+    },
+
     row156: {
       id: "19.3",
       rowId: "19.3",
@@ -458,6 +481,7 @@ window.TEUI.SectionModules.sect19 = (function () {
       "row153",
       "row154",
       "row155",
+      "row155b", // footprint perimeter (2026-11-19)
       "row156",
       //"row157",   //Reserved for future use
       "row158", //footprint width to be added
@@ -2151,18 +2175,10 @@ window.TEUI.SectionModules.sect19 = (function () {
 
   function calculateTargetModel() {
     const geometry = solveGeometry(false); // isReferenceCalculation = false
+    // h_157 / h_155 (and 19.2b's h_155b) are the graph's wombat.footprint.* since 2026-11-19; only the
+    // storey height, which this solve alone owns, is published here
 
     // Publish calculated dimensions to StateManager (unprefixed for Target)
-    window.TEUI.StateManager.setValue(
-      "h_157",
-      geometry.footprint.length.toFixed(2),
-      "calculated"
-    );
-    window.TEUI.StateManager.setValue(
-      "h_155",
-      geometry.footprint.width.toFixed(2),
-      "calculated"
-    );
     window.TEUI.StateManager.setValue(
       "h_156",
       geometry.storyHeight.toFixed(2),
@@ -2176,16 +2192,6 @@ window.TEUI.SectionModules.sect19 = (function () {
     const geometry = solveGeometry(true); // isReferenceCalculation = true
 
     // Publish calculated dimensions to StateManager (ref_ prefixed for Reference)
-    window.TEUI.StateManager.setValue(
-      "ref_h_157",
-      geometry.footprint.length.toFixed(2),
-      "calculated"
-    );
-    window.TEUI.StateManager.setValue(
-      "ref_h_155",
-      geometry.footprint.width.toFixed(2),
-      "calculated"
-    );
     window.TEUI.StateManager.setValue(
       "ref_h_156",
       geometry.storyHeight.toFixed(2),

@@ -251,6 +251,14 @@
           inputs[dep] = currentState.get(dep);
         }
 
+        // An Unavailable input makes the node Unavailable (as MultiModelEngine.computeNode: never a 0
+        // passed on as a figure), unless the node declares acceptsUnavailable
+        if (!node.acceptsUnavailable && node.dependencies.some(d => inputs[d] === "Unavailable")) {
+          currentState.set(nodeId, "Unavailable");
+          lastComputeCount++;
+          return;
+        }
+
         // Compute new value
         try {
           const result = node.compute(inputs);
