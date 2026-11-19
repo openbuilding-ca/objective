@@ -19,6 +19,12 @@
       message:
         "Select a Major Occupancy (NBC Reference) from the Drop-Down_x000a_Affects: Tset Heating and Equipment Loads",
     },
+    e_12: {
+      cell: "E12",
+      title: "Space Type (ASHRAE 62.1)",
+      message:
+        "The space type within the Major Occupancy that sets the outdoor air the code requires (V.1.4). OBC 2024 / NBC 2025 Art. 6.3.1.1.(2) require outdoor air per ANSI/ASHRAE 62.1-2016: Required = Rp x occupants + Ra x floor area, Rp and Ra from its Table 6.2.2.1 for this space type._x000a_Choose the space that governs the building, or the one most like it (62.1 Note 6). B2 and B3 offer stand-ins: 62.1 lists no health-care spaces, which ASHRAE 170 governs.",
+    },
     h_12: {
       cell: "H12",
       title: "Year Data Entered",
@@ -140,9 +146,9 @@
     },
     l_20: {
       cell: "L20",
-      title: "Cooling Season Mean Overnight °C",
+      title: "Summer Night Mean °C",
       message:
-        "Night-Time Temp Outside in °C (≈ Summer Mean Jun-Aug) USER DEFINED or from Weather File",
+        "The climate station's mean daily minimum temperature, June-August (CWEC 2020 typical year; NASA POWER where no station matches). Read from the data, not editable. Shown for reference: the cooling calculation reads the station's monthly and hourly climate directly.",
     },
     d_21: {
       cell: "D21",
@@ -164,9 +170,9 @@
     },
     l_21: {
       cell: "L21",
-      title: "Cooling Outdoor Mean RH%",
+      title: "Summer Mean RH%",
       message:
-        "Cooling Season Mean RH in % at 15h00 LST (Jun-Sept) USER DEFINED or from Weather File",
+        "The climate station's mean relative humidity, June-August (CWEC 2020 typical year; NASA POWER where no station matches). Read from the data, not editable. Shown for reference: the latent load reads the station's monthly humidity directly.",
     },
     l_22: {
       cell: "L22",
@@ -195,7 +201,7 @@
       cell: "L24",
       title: "Cooling Override °C",
       message:
-        "24°C as Default for design, you may enter a higher value to reduce cooling system loads.You may set a value lower than 24ºC to test the increase on cooling system loads ",
+        "24°C as Default for design. Target model only: enter a higher value to reduce cooling system loads, or a lower one (down to 18°C, where systems commonly cap) to model occupants who set cooling colder than the code assumes. The Reference model always uses the code's 24°C.",
     },
     m_24: {
       cell: "M24",
@@ -346,11 +352,17 @@
       message:
         "Enter the Interior Heating Season Average RH% when available. This presently has no impact on OBJECTIVE calculations.",
     },
+    g_59: {
+      cell: "G59",
+      title: "Indoor State for the Latent Cooling Load",
+      message:
+        "The humidity the cooling system is CONTROLLED to - a setpoint, not a sensor reading. F280 50%: CSA F280's 9.3 g/kg (24 °C, 50% RH), the default. Target RH: the setpoint at the cooling season RH slider. Sets the latent load and which hours count as drier for free cooling. Rooms that run wetter than the target (kitchens, bathrooms) are a moisture and air-quality issue, not extra cooling energy.",
+    },
     i_59: {
       cell: "I59",
       title: "Interior Cooling Season RH% Average",
       message:
-        "Enter the Interior Cooling Season Average RH% when available. OBJECTIVE uses this in its dual Tetens formula calculations to determine the latent load on the Cooling system.",
+        "The RH% the cooling system is controlled to in the cooling season. With the latent basis (G59) set to Target RH it sets the latent cooling load (CSA F280 Annex B, on the climate station's monthly humidity) and which hours count as drier for free cooling; with F280 50% those use 9.3 g/kg instead. It always feeds the RH air-quality check.",
     },
     d_60: {
       cell: "D60",
@@ -364,6 +376,18 @@
       title: "Occupants",
       message:
         "Enter the number of declared Occupants (ie. per OBC) but consider full Occupant loads rarely occur. If Occupant loads are known, enter the typical average. ",
+    },
+    l_63: {
+      cell: "L63",
+      title: "Bedrooms per Dwelling Unit (Part 9)",
+      message:
+        "Bedrooms in each dwelling unit. A Part 9 building - C-Residential, 3 storeys or less, footprint (area / storeys) 600 m2 or less, not modelled under SB-10, NECB or CaGBC (OBC Div. A 1.3.3.3.(1)) - is ventilated per OBC Table 9.32.3.3: each unit's principal fan by bedrooms, minimum-maximum L/s: 1: 16-24, 2: 18-28, 3: 22-32, 4: 26-38, 5: 30-45. V.1.4 checks the units x the minimum._x000a_From occupants: occupants per unit - 1, at least 1 (ASHRAE 62.1's 2 people for a studio or 1-bedroom unit, +1 per bedroom). More than 5: ASHRAE 62.1 (9.32.3.1.(1)).",
+    },
+    m_63: {
+      cell: "M63",
+      title: "Dwelling Units",
+      message:
+        "The dwelling units in the building (a duplex: 2). In a Part 9 building each has its own principal ventilation fan (OBC Table 9.32.3.3), so V.1.4 requires the units x each one's minimum. Blank: 1.",
     },
     g_63: {
       cell: "G63",
@@ -641,12 +665,13 @@
       cell: "D116",
       title: "Select Cooling System",
       message:
-        "No: No Cooling Provided_x000a_Yes: Cooling by Primary M.1.0 System if Heatpump otherwise;_x000a_Yes: Dedicated Cooling System (When Electricity/Gas/Oil) ",
+        "Heatpump Heats & Cools: the M.1.0 heat pump also cools, at M.1.3 COPcool derived from its HSPF (offered only when M.1.0 is Heatpump)._x000a_Separate Cooling: a cooling unit of its own, at M.3.3 COPcool - beside any heating system, including a heat pump that only heats. M.3.3 starts at the Reference Standard's minimum; enter the unit's nameplate COPcool._x000a_No Cooling: no cooling provided - the cooling load stands, unmet.",
     },
     d_118: {
       cell: "D118",
-      title: "Typ. Range 50-90%",
-      message: "Refer to Reference Standard Requirements",
+      title: "Sensible Recovery Efficiency (SRE) - Typ. Range 50-90%",
+      message:
+        "The HRV/ERV's SENSIBLE heat-recovery efficiency from the CAN/CSA-C439 low-temperature test, as published in the manufacturer's literature or HVI's Certified Home Ventilating Products Directory - the figure Canadian codes regulate (NBC 2025 9.36.3.9.(3): at least 60% at 0°C, and also at least 55% at -25°C where the January 2.5% design temperature is below -10°C). Enter the listing at the test temperature your climate requires, at the design ventilation rate. Not a Passive House 'heat recovery rate' (a different test), and not the ERV's moisture recovery (the LRE, row V.3.1). Refer to Reference Standard Requirements.",
     },
     g_118: {
       cell: "G118",
@@ -665,11 +690,35 @@
       title: "Ventilation Guidance",
       message: "8.33 l/s is Default, 12.5 l/s is considered best practice",
     },
+    m_119: {
+      cell: "M119",
+      title: "Outdoor Air: Delivered / Required",
+      message:
+        "The outdoor air the system delivers while the building is occupied, against what the code requires of this building - OBC 2024 / NBC 2025 Art. 6.3.1.1.(2), ANSI/ASHRAE 62.1-2016 Ventilation Rate Procedure: Rp x occupants + Ra x floor area, for the S02 Space Type._x000a_Delivered: ACH x volume / 3.6 for the Volume methods, l/s per person x occupants for the Occupant methods. A schedule does not enter - the minimum applies while occupied._x000a_A Part 9 building (C-Residential, 3 storeys or less, footprint 600 m2 or less, not under SB-10, NECB or CaGBC) is checked against its own rule instead: OBC Table 9.32.3.3 - the dwelling units x each one's fan minimum for its bedrooms (G.1.1)._x000a_100% or more passes.",
+    },
+    e_118: {
+      cell: "E118",
+      title: "Heat Recovery Type",
+      message:
+        "HRV: recovers sensible heat only (the SRE). ERV: also recovers moisture - enter its rated Latent Recovery Efficiency in the ERV LRE field (row V.3.1, beside the Latent Load Factor), from the unit's HVI / CSA C439 data sheet. Only an ERV reduces the latent cooling load.",
+    },
+    i_122: {
+      cell: "I122",
+      title: "Latent Load Method",
+      message:
+        "F280: CSA F280 Annex B as written - the design latent gives an ERV no credit. OBJECTIVE: our own method - the design latent credits the ERV's LRE and uses the S08 indoor state. ASHRAE 140: Class II extracts no latent heat (Section 12.2.1.13), so the latent load is zero and cooling is sensible only. ASHRAE 140 is for validation tests only - do not use it for real building design. The annual latent credits an ERV under F280 and OBJECTIVE alike, so the two give the same TEUI and differ only in the design latent (equipment sizing).",
+    },
+    l_122: {
+      cell: "L122",
+      title: "ERV Latent Recovery Efficiency (LRE)",
+      message:
+        "The ERV's rated latent recovery (moisture transfer) at the cooling test condition, from its HVI / CSA C439 data sheet. Reduces the ventilation's latent load by this share. Active only when the recovery type is ERV. A MOISTURE figure for the cooling season: not the SRE (sensible heat, rated at the 0°C / -25°C heating tests), and not a winter moisture-transfer rating.",
+    },
     l_119: {
       cell: "L119",
       title: "Summer Boost",
       message:
-        "Multiply Cooling Season Ventilation to test effects of increased ventilation on reducing cooling loads - does it help?",
+        'Multiplies the mechanical ventilation rate in the cooling season, on the hours when outdoor air is cooler and drier than indoors, as an automated economiser would. This is free cooling: it reduces the cooling need and never adds load. It has no effect on heating. "None" means no free cooling beyond ordinary ventilation. Passive and stack venting, whether controlled by users or Building Automation Systems (BAS) such as clerestory-window exhaust, is not modelled here.',
     },
     k_120: {
       cell: "K120",

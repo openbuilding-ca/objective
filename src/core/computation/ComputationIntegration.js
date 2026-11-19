@@ -806,6 +806,12 @@
       }
     }
 
+    // The Reference model knows it is one, and its standard's minimum COPc
+    // (MechanicalNodes: a reference heat pump cools at that minimum)
+    state.setValueForModel(refModelId, "model.isReference", true);
+    state.setValueForModel(targetId, "model.isReference", false);
+    state.setValueForModel(refModelId, "model.referenceCopCool", standardValues?.j_116 ?? null);
+
     log(`Reference model populated: ${gFieldsCopied} G-fields copied, ${cFieldsLoaded} C-fields from standard`);
     log(`  - C-fields from StateManager: ${debug.cFieldsFromStateManager.length}`);
     log(`  - C-fields copied from Target: ${debug.cFieldsCopiedFromTarget.length}`);
@@ -1152,7 +1158,7 @@
 
       // Section supplementary display stamps
       const modules = window.TEUI.SectionModules || {};
-      for (const key of ["sect01", "sect16", "sect21"]) {
+      for (const key of ["sect01", "sect13", "sect16", "sect21"]) {
         if (modules[key]?.postStamp) modules[key].postStamp();
       }
 

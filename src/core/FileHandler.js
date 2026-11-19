@@ -438,6 +438,14 @@
           }
         }
 
+        // Project notes (the last column) belong to Section 20, not the
+        // StateManager. A file without the column clears them, as a new
+        // building clears the Capital Budget below.
+        const notes = importedData.s18_notes ?? "";
+        delete importedData.s18_notes;
+        delete importedData.ref_s18_notes;
+        window.TEUI.SectionModules.sect20?.setNotes(notes);
+
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
             "No valid data found in standardized CSV.",
@@ -590,6 +598,40 @@
         "d_116",
         "ref_d_116",
       ];
+
+      // The cooling choice read as the app now names it (Andy 2026-11-18,
+      // window.TEUI.CoolingSystem): an old file's "Cooling" is the heat pump
+      // cooling on a heat pump, a separate unit otherwise - before PASS 1, whose
+      // dropdown check would reject the old name.
+      const CS = window.TEUI.CoolingSystem;
+      if (CS) {
+        for (const prefix of ["", "ref_"]) {
+          const key = `${prefix}d_116`;
+          if (importedData[key] === undefined || importedData[key] === "")
+            continue;
+          const heating =
+            importedData[`${prefix}d_113`] ??
+            this.stateManager.getValue(`${prefix}d_113`);
+          importedData[key] = CS.normalize(importedData[key], heating);
+        }
+      }
+
+      // Fields added 2026-11-18 that older files lack: the file's own default
+      // ("" - VentilationRates resolves it), never the previous project's
+      // value. e_12, the 62.1 space type (beside d_12, the occupancy); l_63
+      // and m_63, the bedrooms and dwelling units (beside d_63, the occupants).
+      const addedBeside = { e_12: "d_12", l_63: "d_63", m_63: "d_63" };
+      for (const [added, beside] of Object.entries(addedBeside)) {
+        for (const prefix of ["", "ref_"]) {
+          if (
+            importedData[`${prefix}${beside}`] !== undefined &&
+            importedData[`${prefix}${added}`] === undefined
+          ) {
+            this.stateManager.setValue(`${prefix}${added}`, "", "imported");
+          }
+        }
+      }
+
       const allEntries = Object.entries(importedData);
 
       // PASS 1: Control fields
@@ -722,19 +764,13 @@
             // ✅ Reference fields: Store directly in StateManager without validation
             // Validation was already done by ExcelMapper normalization
             if (isReferenceField) {
-              // 🔒 CONDITIONAL IMPORT: Skip j_116 when heating system is Heatpump/Electric
-              // In these modes, j_116 (COPc) is CALCULATED from f_113 (HSPF), not user-editable
-              if (fieldId === "ref_j_116") {
-                const refD113Value = this.stateManager.getValue("ref_d_113");
-                if (
-                  refD113Value === "Heatpump" ||
-                  refD113Value === "Electric"
-                ) {
-                  console.log(
-                    `[FileHandler] ⏭️  Skipping ref_j_116 import (ref_d_113="${refD113Value}", calculated field)`
-                  );
-                  return; // Skip import - will be calculated by Section13
-                }
+              // 🔒 CONDITIONAL IMPORT: Skip j_116 while the heat pump cools -
+              // M.3.3 then shows M.1.3 (from HSPF), not the file's to set
+              if (fieldId === "ref_j_116" && this.heatpumpCools("ref_")) {
+                console.log(
+                  "[FileHandler] ⏭️  Skipping ref_j_116 import (the heat pump cools)"
+                );
+                return;
               }
 
               this.stateManager.setValue(fieldId, parsedValue, "imported");
@@ -743,14 +779,11 @@
             }
 
             // 🔒 CONDITIONAL IMPORT: Same check for Target mode j_116
-            if (fieldId === "j_116") {
-              const d113Value = this.stateManager.getValue("d_113");
-              if (d113Value === "Heatpump" || d113Value === "Electric") {
-                console.log(
-                  `[FileHandler] ⏭️  Skipping j_116 import (d_113="${d113Value}", calculated field)`
-                );
-                return; // Skip import - will be calculated by Section13
-              }
+            if (fieldId === "j_116" && this.heatpumpCools("")) {
+              console.log(
+                "[FileHandler] ⏭️  Skipping j_116 import (the heat pump cools)"
+              );
+              return;
             }
 
             // Target fields: Validate and update DOM
@@ -864,6 +897,19 @@
     }
 
     /**
+     * True while the model's heat pump cools ("Heatpump Heats & Cools", or an
+     * old "Cooling" on a heat pump): M.3.3 is then M.1.3's to show, and a file
+     * neither reads nor writes it. prefix: "" Target, "ref_" Reference.
+     */
+    heatpumpCools(prefix) {
+      const cooling = this.stateManager.getValue(`${prefix}d_116`);
+      const heating = this.stateManager.getValue(`${prefix}d_113`);
+      const CS = window.TEUI.CoolingSystem;
+      if (!CS) return heating === "Heatpump" && cooling !== "No Cooling";
+      return CS.normalize(cooling, heating) === CS.HEATPUMP;
+    }
+
+    /**
      * Post-import UI fixups: repopulate dropdowns and update field lock states.
      * Calculator.calculateAll() after import handles: graph compute → syncToSM → stampAll.
      */
@@ -873,6 +919,12 @@
       const sect03 = window.TEUI?.SectionModules?.sect03;
       if (sect03?.syncLocationDropdowns) {
         sect03.syncLocationDropdowns();
+      }
+
+      // S02's 62.1 space type follows the imported occupancy
+      const sect02 = window.TEUI?.SectionModules?.sect02;
+      if (sect02?.syncSpaceTypeDropdown) {
+        sect02.syncSpaceTypeDropdown();
       }
 
       // Update field lock states after import — import sets d_113/d_51 via
@@ -1042,6 +1094,7 @@
         const userEditableFieldIds = [
           // Section 02: Building Information
           "d_12",
+          "e_12",
           "d_13",
           "d_14",
           "d_15",
@@ -1064,8 +1117,7 @@
           "h_21",
           "i_21",
           "m_19",
-          "l_20",
-          "l_21",
+          // l_20 / l_21 are read from the climate station now, not exported
           "l_24",
 
           // Section 04: Actual Energy
@@ -1107,9 +1159,12 @@
           "d_58",
           "d_59",
           "i_59",
+          "g_59",
 
           // Section 09: Occupant Gains
           "d_63",
+          "l_63",
+          "m_63",
           "g_63",
           "d_64",
           "d_66",
@@ -1183,11 +1238,14 @@
           "j_116",
           "d_116",
           "d_118",
+          "e_118",
           "g_118",
           "l_118",
           "d_119",
           "l_119",
           "k_120",
+          "l_122",
+          "i_122",
 
           // Section 15: Summary
           "d_142",
@@ -1231,16 +1289,11 @@
 
         // Get values for each field in the explicit list
         userEditableFieldIds.forEach(fieldId => {
-          // ✅ CONDITIONAL EXPORT: Skip j_116 when d_113="Heatpump"
-          // When Heatpump, j_116 is calculated from j_113, not user-editable
-          // Exporting empty string ensures import won't overwrite calculated value
+          // ✅ CONDITIONAL EXPORT: j_116 empty while the heat pump cools - M.3.3
+          // then shows M.1.3, so an import must not overwrite it
           if (fieldId === "j_116") {
-            const d113Value = this.stateManager.getValue("d_113");
-            if (d113Value === "Heatpump") {
-              targetValues.push(""); // Export empty - j_116 is calculated
-              console.log(
-                "[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)"
-              );
+            if (this.heatpumpCools("")) {
+              targetValues.push("");
             } else {
               const targetValue = this.stateManager.getValue(fieldId) ?? "";
               const formattedTarget = formatExportValue(fieldId, targetValue);
@@ -1248,12 +1301,8 @@
             }
 
             // Same logic for Reference mode
-            const refD113Value = this.stateManager.getValue("ref_d_113");
-            if (refD113Value === "Heatpump") {
-              referenceValues.push(""); // Export empty - ref_j_116 is calculated
-              console.log(
-                "[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)"
-              );
+            if (this.heatpumpCools("ref_")) {
+              referenceValues.push("");
             } else {
               const refFieldId = `ref_${fieldId}`;
               const referenceValue =
@@ -1301,9 +1350,18 @@
             return escapeCSV(combinedHeader);
           })
           .join(",");
-        const targetRow = targetValues.join(",");
-        const referenceRow = referenceValues.join(",");
-        const csvContent = headerRow + "\n" + targetRow + "\n" + referenceRow;
+        // Project notes ride as the last column, Target row only (import
+        // splits rows on newlines, so a note's line breaks become spaces)
+        const notes = window.TEUI.SectionModules.sect20?.getNotes() || "";
+        const notesHeader = escapeCSV("s18_notes: Project Notes");
+        const notesCell = escapeCSV(notes.replace(/\r?\n/g, " "));
+        const targetRow = [...targetValues, notesCell].join(",");
+        const referenceRow = [...referenceValues, ""].join(",");
+        const csvContent = [
+          `${headerRow},${notesHeader}`,
+          targetRow,
+          referenceRow,
+        ].join("\n");
 
         // Future: Add OBC Matrix export here as additional rows (Row 4+)
         // const obcHeaderRow = "# OBC Matrix Data";

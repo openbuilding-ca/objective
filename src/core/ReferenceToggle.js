@@ -35,6 +35,7 @@ TEUI.ReferenceToggle = (function () {
   const FIELD_CLASSIFICATION = {
     // Row 1-10
     d_12: "C",
+    e_12: "C", // the 62.1 space type travels with its occupancy
     d_13: "C",
     d_14: "A",
     d_15: "C",
@@ -94,7 +95,10 @@ TEUI.ReferenceToggle = (function () {
     d_58: "C",
     d_59: "C",
     i_59: "C",
+    g_59: "C",
     d_63: "C",
+    l_63: "C", // bedrooms travel with the occupants (Part 9 ventilation)
+    m_63: "C", // dwelling units, likewise
     g_63: "G",
     d_64: "G",
     d_66: "G",
@@ -167,6 +171,9 @@ TEUI.ReferenceToggle = (function () {
     d_116: "C",
     // Row 121-127
     d_118: "C",
+    e_118: "C",
+    l_122: "C",
+    i_122: "C",
     g_118: "C",
     l_118: "C",
     d_119: "C",

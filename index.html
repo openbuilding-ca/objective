@@ -75,6 +75,7 @@
     <script src="src/core/QCMonitor.js"></script>
     <!-- QC Monitor instruments StateManager for debugging -->
     <script src="src/core/ReferenceValues.js"></script>
+    <script src="src/core/VentilationRates.js"></script>
     <script src="src/core/ReferenceManager.js"></script>
     <script src="src/core/ToggleUISync.js"></script>
     <!-- Centralized utility for Reference/Target toggle UI synchronization -->
@@ -103,6 +104,10 @@
 
     <!-- Climate Data for S03 DualState Architecture -->
     <script src="src/core/ClimateValues.js"></script>
+    <!-- Climate stations: C-2 location -> CWEC/NASA POWER station; monthly table + hourly year fetched on demand -->
+    <script src="src/core/ClimateStations.js"></script>
+    <script src="src/core/ClimateStation.js"></script>
+    <script src="src/core/CoolingISO52016.js"></script>
 
     <!-- Cooling Calculations - Restored ARCHIVE chassis for S13 simplification -->
     <script src="src/core/Cooling.js"></script>
@@ -790,8 +795,8 @@
             </div>
           </div>
 
-          <!-- Section 20: Notes & Debug (formerly Section 19) - hidden -->
-          <div id="notes" class="section" style="display: none;">
+          <!-- Section 20: Notes & Debug (formerly Section 19) - horizontal tab only (styles.css) -->
+          <div id="notes" class="section">
             <div class="section-header">
               <span class="section-icon"
                 ><i class="bi bi-info-square"></i

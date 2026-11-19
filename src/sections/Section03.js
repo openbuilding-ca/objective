@@ -168,6 +168,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_d_19",
           value: "ON",
           section: "climateCalculations",
+          span: 2, // spans the empty E: "Newfoundland and Labrador" shows whole
           tooltip: true, // Select a Province
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {
@@ -271,13 +272,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_20",
           semanticPath: "climate.cooling.nightTemp",
-          type: "editable",
+          type: "calculated",
           label: "Summer Night (Seasonal Mean) ºC",
-          value: "20.43", // Default: Alexandria, ON summer night temp
           section: "climateCalculations",
-          tooltip: true, // Night-time outdoor temp (cooling season mean)
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
+          dependencies: ["h_19"],
+          tooltip: true, // the station's Jun-Aug mean daily minimum (ClimateNodes)
         },
         m: { content: "ºC", classes: ["unit-label"] },
       },
@@ -343,13 +342,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_21",
           semanticPath: "climate.cooling.seasonMeanRH",
-          type: "editable",
+          type: "calculated",
           label: "Summer Mean RH%",
-          value: "55.85", // Default: Alexandria, ON cooling season mean RH at 15h00 LST
           section: "climateCalculations",
-          tooltip: true, // Cooling season mean RH at 15h00 LST
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
+          dependencies: ["h_19"],
+          tooltip: true, // the station's Jun-Aug mean RH (ClimateNodes)
         },
         m: { content: "%", classes: ["unit-label"] },
       },

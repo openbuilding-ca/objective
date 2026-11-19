@@ -78,7 +78,28 @@ window.TEUI.SectionModules.sect02 = (function () {
             { value: "F-Industrial", name: "F-Industrial" },
           ],
         },
-        e: { content: "" }, // Empty but needed for alignment
+        // The ASHRAE 62.1 space type within the Major Occupancy: its Rp and Ra
+        // set the outdoor air V.1.4 checks (Andy 2026-11-18; VentilationRates.js).
+        // The options follow B.1 (syncSpaceTypeDropdown); with no parent value
+        // getOptions offers every space type, so an import validates any of them.
+        e: {
+          fieldId: "e_12",
+          semanticPath: "building.ventilationSpaceType",
+          type: "dropdown",
+          dropdownId: "dd_e_12",
+          label: "Space Type (ASHRAE 62.1)",
+          value: "Auditorium seating area",
+          section: "buildingInfo",
+          tooltip: true,
+          getOptions: function (occupancy) {
+            const rates = window.TEUI.VentilationRates;
+            if (!rates) return [];
+            const types = occupancy
+              ? rates.optionsFor(occupancy)
+              : Object.keys(rates.spaceTypes);
+            return types.map(t => ({ value: t, name: t }));
+          },
+        },
         f: {
           content: "D.1",
           classes: ["label-prefix", "text-right", "no-wrap"],
@@ -801,7 +822,43 @@ window.TEUI.SectionModules.sect02 = (function () {
         "ref_d_12",
         updateCriticalOccupancyFlag
       );
+      // The 62.1 space types follow the occupancy, in either model
+      window.TEUI.StateManager.addListener("d_12", syncSpaceTypeDropdown);
+      window.TEUI.StateManager.addListener("ref_d_12", syncSpaceTypeDropdown);
     }
+  }
+
+  /**
+   * The 62.1 space type dropdown (e_12) for the current mode: the occupancy's
+   * space types, the stored one selected - or, when the occupancy does not
+   * offer it (a new occupancy, an older file), the occupancy's default,
+   * stored. The engine reads the same default (VentilationRates.resolve), so
+   * the state only follows what is already in effect.
+   */
+  function syncSpaceTypeDropdown() {
+    const rates = window.TEUI.VentilationRates;
+    const select = document.querySelector('select[data-field-id="e_12"]');
+    if (!rates || !select) return;
+
+    const occupancy = getModeValue("d_12") || getFieldDefault("d_12");
+    const stored = getModeValue("e_12");
+    const inEffect = rates.resolve(occupancy, stored);
+
+    select.innerHTML = "";
+    for (const type of rates.optionsFor(occupancy)) {
+      const option = document.createElement("option");
+      option.value = type;
+      option.textContent = type;
+      select.appendChild(option);
+    }
+    select.value = inEffect;
+
+    if (stored !== inEffect) setModeValue("e_12", inEffect, "default");
+  }
+
+  /** Called by ReferenceToggle when the mode switches. */
+  function onModeSwitch() {
+    syncSpaceTypeDropdown();
   }
 
   /**
@@ -816,6 +873,9 @@ window.TEUI.SectionModules.sect02 = (function () {
     switch (fieldId) {
       case "d_12":
         handleMajorOccupancyChange(e);
+        break;
+      case "e_12":
+        setModeValue("e_12", e.target.value, "user-modified");
         break;
       case "d_13":
         handleBuildingCodeChange(e);
@@ -914,6 +974,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Initialize critical occupancy flag
     updateCriticalOccupancyFlag();
+
+    // The 62.1 space types for the occupancy in this mode
+    syncSpaceTypeDropdown();
 
     // Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
@@ -1103,5 +1166,10 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Public API for cost field formatting
     syncCostFieldDisplays: syncCostFieldDisplays,
+
+    // The 62.1 space type dropdown follows the occupancy (FileHandler calls
+    // it after an import; ReferenceToggle calls onModeSwitch)
+    syncSpaceTypeDropdown: syncSpaceTypeDropdown,
+    onModeSwitch: onModeSwitch,
   };
 })();

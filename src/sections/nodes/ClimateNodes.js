@@ -36,6 +36,25 @@
   }
 
   /**
+   * A station's June-August mean of a monthly field, weighted by the months'
+   * days (30, 31, 31); null until the station has loaded (ClimateStation
+   * .request recalculates on arrival) or where the city has no station.
+   */
+  const SUMMER_MONTHS = [
+    [5, 30],
+    [6, 31],
+    [7, 31],
+  ];
+  function summerMean(stationId, field) {
+    const station = window.TEUI?.ClimateStation?.request(stationId);
+    const values = station?.months?.[field];
+    if (!values) return null;
+    const days = SUMMER_MONTHS.reduce((sum, [, d]) => sum + d, 0);
+    const total = SUMMER_MONTHS.reduce((sum, [m, d]) => sum + values[m] * d, 0);
+    return +(total / days).toFixed(2);
+  }
+
+  /**
    * Check if value is unavailable
    */
   function isUnavailable(value) {
@@ -149,8 +168,8 @@
     },
     // d_12, d_13: canonical inputs live in BuildingInfoNodes
     // (building.majorOccupancy, building.referenceStandard)
-    // l_20, l_21: canonical inputs live in CoolingNodes
-    // (climate.cooling.nightTemp, climate.cooling.seasonMeanRH)
+    // l_20, l_21: computed from the climate station (below, after
+    // climate.station) - no longer inputs
   ];
 
   // ============================================================================
@@ -158,6 +177,56 @@
   // ============================================================================
 
   const ClimateNodes = [
+    // ========================================================================
+    // CLIMATE STATION - the CWEC 2020 (else NASA POWER) station the cooling
+    // reads (ClimateStation.js, ClimateStations.js). The id only; the station
+    // itself loads on demand and the cooling node reads it from the cache.
+    // ========================================================================
+    {
+      id: "climate.station",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Climate Station",
+      compute: (inputs) => {
+        const CS = window.TEUI?.ClimateStation;
+        const province = String(inputs["climate.location.province"] || "").trim().toUpperCase();
+        const city = String(inputs["climate.location.city"] || "").trim();
+        return CS ? CS.stationFor(province, city) : null;
+      }
+    },
+
+    // ========================================================================
+    // SUMMER NIGHT MEAN (l_20) + SUMMER MEAN RH (l_21) - the station's own
+    // June-August, day-weighted: the mean daily MINIMUM and the mean RH.
+    // Were user inputs defaulting to 20.43 °C / 55.85 % (a GTA summer, Andy
+    // 2026-10-30: "I did not have the resources to dig in to every single
+    // climate location"); Andy 2026-11-04: "allow the Summer Night Mean and
+    // Summer Mean RH fields to reflect the data ... They can cease to be
+    // user-editable". Shown in S03 only - the cooling reads the station's
+    // months itself (CoolingISO52016), so neither moves an energy number.
+    // ========================================================================
+    {
+      id: "climate.cooling.nightTemp",
+      legacyId: "l_20",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Night Mean (mean daily minimum, Jun-Aug)",
+      unit: "°C",
+      compute: (inputs) => summerMean(inputs["climate.station"], "t_min")
+    },
+    {
+      id: "climate.cooling.seasonMeanRH",
+      legacyId: "l_21",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Mean RH (Jun-Aug)",
+      unit: "%",
+      compute: (inputs) => summerMean(inputs["climate.station"], "rh_mean")
+    },
+
     // ========================================================================
     // CLIMATE DATA LOOKUP NODES
     // ========================================================================
@@ -271,6 +340,23 @@
         const data = getClimateData(province, city);
 
         return data?.July_2_5_Tdb || 34;
+      }
+    },
+    // The wet bulb coincident with d_24 (NBC C-2's July 2.5 %) - F280's Ho
+    // for the design latent gain (cooling.latentLoadFactor)
+    {
+      id: "climate.temperature.hottestWetBulb",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Hottest Day Coincident Wet Bulb",
+      unit: "°C",
+      compute: (inputs) => {
+        const data = getClimateData(
+          inputs["climate.location.province"],
+          inputs["climate.location.city"]
+        );
+        return data?.July_2_5_Twb ?? 23;
       }
     },
     {
@@ -391,16 +477,26 @@
     {
       id: "climate.cooling.setpoint",
       legacyId: "h_24",
-      dependencies: ["building.majorOccupancy", "climate.cooling.override"],
+      dependencies: [
+        "building.majorOccupancy",
+        "climate.cooling.override",
+        "model.isReference",
+      ],
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint",
       unit: "°C",
+      // Andy 2026-11-04: "users ROUTINELY crank cooling down by dragging Tset
+      // for Cooling lower, resulting in higher ACTUAL cooling loads. The
+      // over-ride is the best way to model this 'bad user' behaviour. It
+      // should be allowed for the Target model, but the Reference model should
+      // still use the hard-coded code-established value. I think a lower bound
+      // of 18ºC is reasonable as that is what actual systems often cap at."
+      // Was Excel H24=IF(L24>24, L24, 24): an override could only raise it.
       compute: (inputs) => {
+        if (inputs["model.isReference"] === true) return 24;
         const override = parseNum(inputs["climate.cooling.override"], 24);
-
-        // Excel Formula: H24=IF(L24>24, L24, 24)
-        return override > 24 ? override : 24;
+        return Math.max(18, override);
       }
     },
     {
