@@ -329,9 +329,9 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Row 140b: T.6.10 the F280 design loads Annex J compares (Cl. 8.4.1; Andy 2026-11-19: "one cell for Losses,
     // one for Gains, the two values we're trying to narrow"). Echoes of S21's F280 stream, in W: the total design
-    // heat loss (Cl. 5.2.7), as Annex J reports it, and the total SENSIBLE heat gain (Cl. 6.2.9). Annex J's gain is
-    // the NOMINAL capacity, 1.3 x this (Cl. 6.3.1; Annex K 8.3.3, 2026-11-19); S21's own nominal takes Annex B's
-    // latent instead. Hidden with S21 when F280 Mode is Off.
+    // heat loss (Cl. 5.2.7), as Annex J reports it, and the total SENSIBLE heat gain (Cl. 6.2.9); then T.6.12 the
+    // chain to Annex J's gain, the NOMINAL capacity: sensible x LM 1.3 = nominal (Cl. 6.3.1; Annex K 8.3.3,
+    // 2026-11-19). S21's own nominal takes Annex B's latent instead. Hidden with S21 when F280 Mode is Off.
     "140b": {
       id: "T.6.10",
       rowId: "T.6.10",
@@ -366,11 +366,28 @@ window.TEUI.SectionModules.sect15 = (function () {
           section: "teuiSummary",
         },
         i: { content: "W" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
+        // T.6.12: the chain to what Annex J compares - the sensible gain x Cl. 6.3.1's LM 1.3 = the nominal
+        j: { content: "T.6.12", classes: ["label-prefix", "text-right", "no-wrap"] },
+        k: { content: "x LM = Nominal, W (Cl. 6.3.1)", classes: ["label-main", "text-left"] },
+        l: {
+          fieldId: "l_140b",
+          semanticPath: "f280.s15.latentMultiplier",
+          type: "calculated",
+          value: "1.30",
+          label: "F280 Latent Load Multiplier (Cl. 6.3.1)",
+          classes: ["calculated-value"],
+          section: "teuiSummary",
+        },
+        m: {
+          fieldId: "m_140b",
+          semanticPath: "f280.s15.nominalHeatGain",
+          type: "calculated",
+          value: "0",
+          label: "F280 Nominal Heat Gain (Annex J): W",
+          classes: ["calculated-value"],
+          section: "teuiSummary",
+        },
+        n: { content: "" }, // col-n is the compliance-indicator column (bold, large): no text
       },
     },
 

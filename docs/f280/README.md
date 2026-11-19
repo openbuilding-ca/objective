@@ -7,8 +7,10 @@
 > **How the gain is compared.** Annex J's (and K's) "gain" is the NOMINAL capacity, Cl. 6.3.1 CSCn = LM x the sum of HGsr at
 > LM 1.3, not the sensible sum. Shown by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's internal gains over its 18 rooms
 > moves the four occupied rooms -387 W and the other 14 +111 W, an internal total of ~1995 W = 1.3 x (5 x 70 + 4 x 295.57) =
-> 1992 W; no floor area explains it without the 1.3. The harness compares S21's sensible sum (5652 W) x 1.3 (`ANNEX_J_LM`).
-> The app's own nominal capacity (the sensible + Annex B's design latent) is unchanged.
+> 1992 W; no floor area explains it without the 1.3. **The app shows the whole chain in S15** (Andy: *"Both numbers, the gain, the
+> multiplier, and the total. Full transparency since this messed us up all day"*): T.6.10 loss 11 681 W · T.6.11 sensible 5652 W ·
+> T.6.12 x LM 1.30 = 7347 W nominal (`f280.s15.nominalHeatGain`). The harness compares that cell and checks it equals sensible x 1.3
+> (`ANNEX_J_LM`). S21's own nominal capacity (the sensible + Annex B's design latent) is unchanged.
 >
 > **Read from the PDF (Andy's screenshots, 2026-11-19), every value checked against the build and the fixture:** Table 6F and
 > H.3.14 (the window: RSI 0.51, SHGC 0.47 - the text extract had given 0.64 / 0.40, the largest single error); G.1.1-G.1.3 (each
