@@ -6,6 +6,15 @@
 > parts). Sensible gain **7040 W (96.2 %; needs ≥ 7175 W, −135 W)** = enclosure + Table 3's solar correction on opaque
 > assemblies +157 (Cl. 6.2.1) + internal + occupants (OBJECTIVE's own inputs) + design-hour solar 2158 (Cl. 6.2.2.1) +
 > AIM-2 85 (Cl. 6.2.6) + ventilation 374 (Cl. 6.2.7, ATRE `l_123`); nominal 8415 W = sensible + the design latent (Annex B).
+> **Shipped 2026-11-19 (night) - F280 as an ANNUAL model** (Andy: *"I'd like to actually see what F280 gives us if
+> run as an annual model like OBJECTIVE ... but we need it to work first (not 'unavailable')"*): S21 F280 Mode is the master
+> switch - On puts BASESIMP and AIM-2 in the annual stream; the selectors S03 G.4.3 / S12 B.19.1 are retired. AIM-2 with B.19.4
+> blank takes storeys x S12's Typ. F2F Ht.; a Custom B.19.3 blank takes the ELA from the ACH50. BASESIMP covers SLABS ON GRADE
+> (NRCan's SlabOnGradeHLR.xls, `test/basesimpSlab.test.cjs`, 186 checks against Excel). An input a method cannot give makes its
+> readers Unavailable in the engine, never 0 (it was: Hemmingford TEUI 53.8 -> 1.6). S15 T.6.10 / T.6.11 show the loss and the
+> sensible gain Annex J compares. A house still needs two FACTS for BASESIMP: S03 G.4.4 its foundation configuration and G.4.6
+> its exposed perimeter (no case study carries either). Hemmingford with SCB_25 and 41.3 m (illustrative): TEUI Off 53.8,
+> On 59.5, bills 56.3.
 > **Shipped 2026-11-19 (late):** `f280.opaqueSolarCorrection` (Cl. 6.2.1, Table 3): the SC half of HGcop = A / RSI × (DTDc + SC)
 > on S11's roof (+15.0 / +12.2), walls and doors (the mean of the eight compass points: OBJECTIVE gives them no facing),
 > exposed floor (−3.3 / −6.1); the column by F280's summer daily range (`summerRange`, new in F280Weather.js; ≤ 14 °C or
