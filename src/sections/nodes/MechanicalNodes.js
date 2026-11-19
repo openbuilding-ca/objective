@@ -439,8 +439,12 @@
       // gas or another heating system is selected (Non-heat-pump) then a user
       // can set whatever COPc matches the equipment's nameplate efficiency."
       // No cooling: 0 - the load stands, unmet. The heat pump heats and cools:
-      // Target at its COPc from HSPF (M.1.3), Reference at the standard's
-      // minimum (model.referenceCopCool). Separate cooling (Andy 2026-11-18):
+      // Target at its COPc from HSPF (M.1.3); Reference at ITS M.3.3, which
+      // holds the standard's minimum by default (ReferenceValues j_116) and
+      // takes a value typed on the Reference or mirrored from the Target (Andy
+      // 2026-11-19, "Yes": a default, not a lock - it returned the standard's
+      // minimum whatever was set; model.referenceCopCool remains the fallback
+      // when the Reference has no M.3.3 at all). Separate cooling (Andy 2026-11-18):
       // M.3.3, the unit's own COPc, in either model and beside any heating -
       // a heat pump that only heats keeps its HSPF for heating alone.
       compute: (inputs) => {
@@ -453,7 +457,11 @@
 
         if (coolingType === COOLING.NONE) return 0;
         if (coolingType === COOLING.HEATPUMP) {
-          if (isReference && copStandard > 0) return copStandard;
+          if (isReference) {
+            const copReference = parseNum(inputs["mechanical.cooling.copDedicated"], 0);
+            if (copReference > 0) return copReference;
+            if (copStandard > 0) return copStandard;
+          }
           return copFromHeatpump;
         }
         return copDedicated;

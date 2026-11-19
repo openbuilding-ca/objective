@@ -1146,6 +1146,17 @@ TEUI.ReferenceToggle = (function () {
           }
         });
 
+        // The Target's heat pump cools at M.1.3, from its HSPF - computed, so not copied above. The
+        // Reference's heat pump cools at its own M.3.3 (the standard's minimum by default): a clone
+        // carries the Target's COPc there (Andy 2026-11-19: it left the Reference at 3.30 against the
+        // Target's 2.66, TEUI 90.0 vs 93.1 on the sample)
+        if (window.TEUI.FileHandler?.heatpumpCools?.("")) {
+          const copCool = window.TEUI.StateManager.getValue("j_113");
+          if (copCool !== null && copCool !== undefined && copCool !== "") {
+            window.TEUI.StateManager.setValue("ref_j_116", copCool, "mirror");
+          }
+        }
+
         console.log(
           `[ReferenceToggle] ✅ Perfect clone: ${copiedCount} fields copied to Reference state via StateManager`
         );

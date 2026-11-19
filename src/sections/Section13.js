@@ -1593,8 +1593,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /**
    * M.3.3 shows the COP the heat pump cools at while it cools - M.1.3 in the
-   * Target, the standard's minimum in the Reference (Andy 2026-10-31) - and its
-   * own value otherwise.
+   * Target; in the Reference its OWN M.3.3, the standard's minimum by default
+   * (Andy 2026-10-31) and editable there (Andy 2026-11-19: a default, not a
+   * lock) - and its own value otherwise.
    */
   function refreshCopCoolDisplay(cooling) {
     const CS = window.TEUI.CoolingSystem;
@@ -1603,7 +1604,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
     let shown = getModeValue("j_116");
     if (cooling === CS.HEATPUMP) {
-      shown = isRef ? standardMinimumCopCool() : getModeValue("j_113");
+      shown = isRef ? (getModeValue("j_116") || standardMinimumCopCool()) : getModeValue("j_113");
     }
     const value = window.TEUI.parseNumeric(shown, NaN);
     if (!isNaN(value)) {
@@ -1618,7 +1619,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     const heating = heatingSystem || getModeValue("d_113");
     const cooling = CS.normalize(getModeValue("d_116"), heating);
     updateCoolingOptions(heating === "Heatpump", cooling);
-    setFieldGhosted("j_116", cooling !== CS.SEPARATE);
+    // M.3.3 is live for Separate Cooling, and on the Reference while its heat pump cools (its COPc,
+    // the standard's minimum by default - Andy 2026-11-19)
+    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    setFieldGhosted("j_116", !(cooling === CS.SEPARATE || (cooling === CS.HEATPUMP && isRef)));
     setFieldGhosted("l_116", cooling !== CS.SEPARATE);
     setFieldGhosted("m_116", cooling === CS.NONE);
     refreshCopCoolDisplay(cooling);

@@ -208,6 +208,9 @@
       id: "climate.cooling.override",
       legacyId: "l_24",
       defaultValue: 24,
+      // the Reference's own, 24 by default - never the Target's (Andy 2026-11-19: the code's 24 is the
+      // Reference's default, not a lock; a value set on the Reference, or mirrored, wins)
+      copyToReference: false,
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint Override",
@@ -552,7 +555,6 @@
       dependencies: [
         "building.majorOccupancy",
         "climate.cooling.override",
-        "model.isReference",
       ],
       classification: "C",
       section: "S03",
@@ -565,8 +567,10 @@
       // still use the hard-coded code-established value. I think a lower bound
       // of 18ºC is reasonable as that is what actual systems often cap at."
       // Was Excel H24=IF(L24>24, L24, 24): an override could only raise it.
+      // Andy 2026-11-19 ("Yes"): the Reference's 24 is a DEFAULT, not a lock - the Reference reads its OWN
+      // override (climate.cooling.override, 24 unless set on the Reference or mirrored from the Target:
+      // copyToReference false). It returned 24 for the Reference whatever was set.
       compute: (inputs) => {
-        if (inputs["model.isReference"] === true) return 24;
         const override = parseNum(inputs["climate.cooling.override"], 24);
         return Math.max(18, override);
       }

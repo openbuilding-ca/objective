@@ -84,9 +84,17 @@ check(
   4.25
 );
 check("no cooling: 0", cop({ "mechanical.cooling.systemType": NONE }), 0);
+// Andy 2026-11-19 ("Yes"): the Reference heat pump's standard minimum is a DEFAULT, not a lock - it cools
+// at its own M.3.3 (ReferenceValues j_116 by default; a typed or mirrored value wins); the standard's
+// minimum (model.referenceCopCool) only when the Reference has no M.3.3. (It was 3.3 whatever M.3.3 held.)
 check(
-  "reference, HP cools: the standard's minimum",
+  "reference, HP cools: its M.3.3",
   cop({ "mechanical.cooling.systemType": HP, "model.isReference": true }),
+  4.25
+);
+check(
+  "reference, HP cools, no M.3.3: the standard's minimum",
+  cop({ "mechanical.cooling.systemType": HP, "model.isReference": true, "mechanical.cooling.copDedicated": "" }),
   3.3
 );
 check(

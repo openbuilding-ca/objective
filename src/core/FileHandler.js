@@ -784,14 +784,8 @@
             // ✅ Reference fields: Store directly in StateManager without validation
             // Validation was already done by ExcelMapper normalization
             if (isReferenceField) {
-              // 🔒 CONDITIONAL IMPORT: Skip j_116 while the heat pump cools -
-              // M.3.3 then shows M.1.3 (from HSPF), not the file's to set
-              if (fieldId === "ref_j_116" && this.heatpumpCools("ref_")) {
-                console.log(
-                  "[FileHandler] ⏭️  Skipping ref_j_116 import (the heat pump cools)"
-                );
-                return;
-              }
+              // ref_j_116 imports whatever the cooling: while the Reference's heat pump cools it is the
+              // Reference's COPc (Andy 2026-11-19, a default, not a lock)
 
               this.stateManager.setValue(fieldId, parsedValue, "imported");
               updatedCount++;
@@ -1369,19 +1363,10 @@
               targetValues.push(escapeCSV(formattedTarget));
             }
 
-            // Same logic for Reference mode
-            if (this.heatpumpCools("ref_")) {
-              referenceValues.push("");
-            } else {
-              const refFieldId = `ref_${fieldId}`;
-              const referenceValue =
-                this.stateManager.getValue(refFieldId) ?? "";
-              const formattedReference = formatExportValue(
-                fieldId,
-                referenceValue
-              );
-              referenceValues.push(escapeCSV(formattedReference));
-            }
+            // The Reference's M.3.3 always: while its heat pump cools it is the Reference's COPc (the
+            // standard's minimum by default, or the user's - Andy 2026-11-19; it was blanked)
+            const referenceValue = this.stateManager.getValue(`ref_${fieldId}`) ?? "";
+            referenceValues.push(escapeCSV(formatExportValue(fieldId, referenceValue)));
             return; // Skip normal export logic for j_116
           }
 
