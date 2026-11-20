@@ -319,6 +319,10 @@
         return hdd;
       }
     },
+    // Shown in S03 only (ghosted): no node reads CDD since the cooling need
+    // became ISO 52016-1 on the climate station (CoolingNodes
+    // ISO_DEPENDENCIES), so neither the future CDD nor the user override
+    // below moves an energy number.
     {
       id: "climate.cooling.degreedays",
       legacyId: "d_21",

@@ -142,7 +142,7 @@
       cell: "H20",
       title: "Weather Data Range",
       message:
-        "Present: Historical to Current Values Used (2025)_x000a_Future: 2021-2050 Projected Values Used",
+        "Present: Historical to Current Values Used (2025)_x000a_Future: 2021-2050 Projected Values Used_x000a_Applies to Heating Degree Days (HDD) and the Climate Zone they set. Cooling is calculated from the climate station's typical year (CWEC 2020; NASA POWER where no station matches) under either setting: no future summer is modelled.",
     },
     l_20: {
       cell: "L20",
@@ -154,7 +154,7 @@
       cell: "D21",
       title: "Cooling Degree Days",
       message:
-        "If Unavailable, you can enter a custom value here. Click the CDD link left to find values from ClimateAtlas.ca.",
+        "Shown for reference, not editable: CDD is no longer used in the calculation. Cooling is calculated from the climate station's monthly climate (CWEC 2020 typical year; NASA POWER where no station matches). Click the CDD link left to find values from ClimateAtlas.ca.",
     },
     h_21: {
       cell: "H21",

@@ -302,7 +302,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           value: "196",
           section: "climateCalculations",
           classes: ["user-input", "editable"], // ✅ Add styling for editable field
-          tooltip: true, // ✅ Shows help with Climate Atlas link when unavailable
+          tooltip: true, // Shown for reference only: ghosted by ghostUnusedCDD()
         },
         f: { content: "G.4.2", classes: ["label-prefix"] },
         g: { content: "Capacitance", classes: ["label-main"] },
@@ -1419,6 +1419,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
 
+    // After the loop above, which makes every editable field editable
+    ghostUnusedCDD();
+
     // ✅ INITIALIZE SLIDERS VIA FIELDMANAGER (Standard Architecture)
     if (window.TEUI?.FieldManager?.initializeSliders) {
       window.TEUI.FieldManager.initializeSliders("climateCalculations");
@@ -1429,6 +1432,19 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Graph handles cross-section computation via wildcard listener.
     // No per-section StateManager listeners needed.
+  }
+
+  /**
+   * Ghost CDD (d_21): no calculation reads it since the cooling need became
+   * ISO 52016-1 on the climate station (CoolingNodes ISO_DEPENDENCIES).
+   * Still looked up and shown for reference; typing a value would change
+   * nothing, so the cell is not editable.
+   */
+  function ghostUnusedCDD() {
+    const cddCell = document.querySelector('td[data-field-id="d_21"]');
+    if (!cddCell) return;
+    cddCell.classList.add("disabled-input");
+    cddCell.contentEditable = false;
   }
 
   /**
