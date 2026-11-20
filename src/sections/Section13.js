@@ -1455,6 +1455,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       dropdown.removeEventListener("change", handleDropdownChange);
       dropdown.addEventListener("change", handleDropdownChange);
     });
+
+    // Capture phase: runs before any listener on the dropdown itself
+    sectionElement.removeEventListener("change", noteCoolingBeforeChange, true);
+    sectionElement.addEventListener("change", noteCoolingBeforeChange, true);
   }
 
   /**
@@ -1480,18 +1484,19 @@ window.TEUI.SectionModules.sect13 = (function () {
         cooling !== CS.SEPARATE &&
         newValue !== "Heatpump"
       ) {
-        enterSeparateCooling();
+        enterSeparateCooling(cooling);
       }
       handleHeatingSystemChangeForGhosting(newValue);
     }
 
     // Choosing Separate Cooling fills M.3.3 with the standard's minimum; the
-    // user then types the unit's own COPc over it (Andy 2026-11-18).
+    // user then types the unit's own COPc over it (Andy 2026-11-18) - and
+    // back from No Cooling that COPc stays (enterSeparateCooling).
     if (
       fieldId === "d_116" &&
       newValue === window.TEUI.CoolingSystem?.SEPARATE
     ) {
-      enterSeparateCooling();
+      enterSeparateCooling(coolingBeforeChange);
     }
 
     // Special handling for cooling system (d_116) and recovery type (e_118) changes
@@ -1532,18 +1537,45 @@ window.TEUI.SectionModules.sect13 = (function () {
     return values?.j_116 ?? null;
   }
 
+  // The current mode's cooling choice as the dropdown's change event found it
+  let coolingBeforeChange = null;
+
   /**
-   * The current mode becomes Separate Cooling with M.3.3 at the standard's
-   * minimum - on a user's choice only (an import carries its own M.3.3).
+   * Reads the choice being left, in the capture phase: the listeners on the
+   * dropdown itself (FieldManager's, then handleDropdownChange) have stored
+   * the new choice before enterSeparateCooling can ask.
    */
-  function enterSeparateCooling() {
+  function noteCoolingBeforeChange(e) {
+    if (e.target?.getAttribute?.("data-field-id") === "d_116") {
+      coolingBeforeChange = getModeValue("d_116");
+    }
+  }
+
+  /**
+   * The current mode becomes Separate Cooling - on a user's choice only (an
+   * import carries its own M.3.3). M.3.3 is filled with the standard's
+   * minimum unless it holds the unit's own COPc (CoolingSystem.seedsCopCool):
+   * - leaving the heat pump option: always filled (M.3.3 showed M.1.3);
+   * - back from No Cooling: a positive COPc the user typed, a file brought or
+   *   an earlier fill left stays; an untouched default, a blank or a zero is
+   *   filled.
+   * So a look at No Cooling and back leaves M.3.3, and the cooling
+   * electricity it sets, as they were.
+   * @param {string} [leaving] the cooling choice being left; unknown fills
+   */
+  function enterSeparateCooling(leaving) {
     const CS = window.TEUI.CoolingSystem;
     if (!CS) return;
     if (getModeValue("d_116") !== CS.SEPARATE) {
       setModeValue("d_116", CS.SEPARATE, "user-modified");
     }
     const minimum = standardMinimumCopCool();
-    if (minimum !== null) {
+    if (minimum === null) return;
+    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    const source = window.TEUI.StateManager?.getDebugInfo?.(
+      isRef ? "ref_j_116" : "j_116"
+    )?.state;
+    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source)) {
       setModeValue("j_116", String(minimum), "user-modified");
     }
   }
