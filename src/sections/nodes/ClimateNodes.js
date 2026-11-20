@@ -38,7 +38,8 @@
   /**
    * A station's June-August mean of a monthly field, weighted by the months'
    * days (30, 31, 31); null until the station has loaded (ClimateStation
-   * .request recalculates on arrival) or where the city has no station.
+   * .request recalculates on arrival) or where the city has no station;
+   * "Unavailable" where the station's files did not load.
    */
   const SUMMER_MONTHS = [
     [5, 30],
@@ -46,7 +47,9 @@
     [7, 31],
   ];
   function summerMean(stationId, field) {
-    const station = window.TEUI?.ClimateStation?.request(stationId);
+    const CS = window.TEUI?.ClimateStation;
+    const station = CS?.request(stationId);
+    if (!station && CS?.failure(stationId)) return "Unavailable";
     const values = station?.months?.[field];
     if (!values) return null;
     const days = SUMMER_MONTHS.reduce((sum, [, d]) => sum + d, 0);
