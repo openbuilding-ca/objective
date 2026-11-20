@@ -505,6 +505,16 @@ window.TEUI.SectionModules.sect19 = (function () {
    * - Target mode: reads unprefixed values (h_15, d_85, d_86)
    * - Reference mode: reads ref_ prefixed values (ref_h_15, ref_d_85, ref_d_86)
    */
+  // S11's opaque elements are ROWS, each with its own type (Openings.js); Wombat's sacred areas are the
+  // TYPE SUMS over every row of the type, not the first row's own field (d_85 / d_87 / d_94 / d_95).
+  // The adapter reads a semantic path for either model (ref_ = the Reference's own value).
+  const TYPE_SUM = {
+    roof: "transmissionLoss.roof.area",
+    exposedFloor: "transmissionLoss.exposedFloor.area",
+    wallsBelowGrade: "transmissionLoss.wallsBelowGrade.area",
+    slabOnGrade: "transmissionLoss.slabOnGrade.area",
+  };
+
   function getModeAwareValue(fieldId, isReferenceCalculation) {
     if (!window.TEUI?.StateManager) return null;
 
@@ -1171,17 +1181,19 @@ window.TEUI.SectionModules.sect19 = (function () {
     const roofTypeRequested = (roofTypeRaw || "flat").toLowerCase(); // biplanar, monoplane, flat, multiplanar
 
     // Get roof area (d_85) - SACRED constraint
-    const d_85_raw = getModeAwareValue("d_85", isReferenceCalculation);
+    const d_85_raw = getModeAwareValue(TYPE_SUM.roof, isReferenceCalculation);
     const roofArea = parseFloat(d_85_raw) || 1100;
 
     // Get footprint area from d_95 (slab on grade) - SACRED constraint
     let footprintArea = parseFloat(
-      getModeAwareValue("d_95", isReferenceCalculation)
+      getModeAwareValue(TYPE_SUM.slabOnGrade, isReferenceCalculation)
     );
     if (!footprintArea || footprintArea <= 0) {
       // Fallback to raised floor (d_87)
       footprintArea =
-        parseFloat(getModeAwareValue("d_87", isReferenceCalculation)) || 1100;
+        parseFloat(
+          getModeAwareValue(TYPE_SUM.exposedFloor, isReferenceCalculation)
+        ) || 1100;
     }
 
     // ========================================================================
@@ -1279,11 +1291,17 @@ window.TEUI.SectionModules.sect19 = (function () {
     // Basement is part of conditioned space, but below grade
 
     const basementWallArea =
-      parseFloat(getModeAwareValue("d_94", isReferenceCalculation)) || 0;
+      parseFloat(
+        getModeAwareValue(TYPE_SUM.wallsBelowGrade, isReferenceCalculation)
+      ) || 0;
     const slabArea =
-      parseFloat(getModeAwareValue("d_95", isReferenceCalculation)) || 0;
+      parseFloat(
+        getModeAwareValue(TYPE_SUM.slabOnGrade, isReferenceCalculation)
+      ) || 0;
     const floorExposedToAir =
-      parseFloat(getModeAwareValue("d_87", isReferenceCalculation)) || 0;
+      parseFloat(
+        getModeAwareValue(TYPE_SUM.exposedFloor, isReferenceCalculation)
+      ) || 0;
 
     const hasBasement = basementWallArea > 0;
     const hasSlab = slabArea > 0;
@@ -1545,16 +1563,16 @@ window.TEUI.SectionModules.sect19 = (function () {
     const volumeDifference = calculatedVolume - targetVolume;
 
     // Calculate window geometries (Phase 1: Facade windows only)
-    const windowData = window.TEUI.WombatWindows?.calculateWindows({
-      width,
-      length,
-      wallHeight,
-      nodes3D,
-    });
+    const windowData = window.TEUI.WombatWindows?.calculateWindows(
+      { width, length, wallHeight, nodes3D },
+      isReferenceCalculation
+    );
 
     // Return complete geometry
     return {
       footprint: { width, length },
+      footprintArea, // the slabs' type sum, or the exposed floors' (SACRED)
+      roofArea, // the roofs' type sum (SACRED when > footprint)
       width, // For window calculations
       length, // For window calculations
       wallHeight, // For window calculations

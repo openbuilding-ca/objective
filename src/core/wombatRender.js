@@ -913,8 +913,11 @@ window.TEUI.WombatRender = (function () {
     svg.appendChild(storeyText);
     yOffset += lineHeight;
 
-    // 3. Floorplate Area (from d_95 or d_87)
-    const floorplateArea = getValue("d_95") || getValue("d_87") || "0.00";
+    // 3. Floorplate Area: the slabs' type sum, or the exposed floors' (every S11 row of the type)
+    const floorplateArea =
+      parseFloat(getValue("transmissionLoss.slabOnGrade.area")) ||
+      parseFloat(getValue("transmissionLoss.exposedFloor.area")) ||
+      "0.00";
     const floorplateText = createText(
       xOffset,
       yOffset,
@@ -925,8 +928,8 @@ window.TEUI.WombatRender = (function () {
     svg.appendChild(floorplateText);
     yOffset += lineHeight;
 
-    // 4. Roof Area (from d_85)
-    const roofArea = getValue("d_85") || "0.00";
+    // 4. Roof Area: the roofs' type sum
+    const roofArea = getValue("transmissionLoss.roof.area") || "0.00";
     const roofText = createText(
       xOffset,
       yOffset,
