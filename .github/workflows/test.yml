@@ -1,8 +1,13 @@
 name: Tests
 
-# On demand only (Andy 2026-10-31): Actions > Tests > Run workflow, or `gh workflow run test.yml`.
+# Runs on pull requests to main, and on demand: Actions > Tests > Run workflow, or `gh workflow run test.yml`.
+# Pushes do not start a run. This was on demand only from 2026-10-31 (Andy); the pull request
+# run is back so that what merges to main has been checked. To return to on demand only,
+# delete the pull_request block.
 # Run the suite locally before a PR: npm test (the unit tests, then Playwright).
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
