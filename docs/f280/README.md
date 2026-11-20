@@ -192,6 +192,52 @@ The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation
 −3.8 to +0.8. The gains move it by −1.2 to −25.4. For Annex J none of this matters: Annex J compares design W
 (above), never annual energy. It matters for any claim that "F280, annualized, predicts energy use".
 
+## BASESIMP and the footprint's shape: why a longer slab can read LESS loss (2026-11-20)
+
+**The question (Andy):** a 12 × 12 m footprint has 48 m of perimeter; the same 144 m² as 6 × 24 m has 60 m, so
+arguably more heat loss, more slab edge. Yet giving Hemmingford's slab a longer outline LOWERED its F280 ground loss
+(perimeter 44.14 → 47.65 m: 1064 → 1002 kWh).
+
+**What F280 assumes.** Cl. 5.2.2.1 sends every foundation element through NRCan's BasementHLR / SlabOnGradeHLR
+(BASESIMP). BASESIMP sees a RECTANGLE, outside length × width; the exposed fraction of the perimeter only scales the
+loss of an attached foundation. There is no perimeter method in F280. OBJECTIVE turns S11's area and S03 G.4.6 (or
+Wombat's outline) into that rectangle (L + W = P/2, L × W = A), so the perimeter matters only through the WIDTH it
+implies.
+
+**BASESIMP splits the loss in two, and they answer shape in opposite directions** (BaseSimp REPORT §2.2–2.3):
+- the EDGE, above grade: `Sag = SUMUO × 2(L + W)`, proportional to perimeter. It behaves like a floor header: more
+  perimeter, more loss.
+- the CORE, below grade to the deep ground: `Sbg,avg = SUMUR × {2(L − W) + 4·W·Fcs}`, where SUMUR rises with the slab's
+  WIDTH, `(q2 + r2·width) / wtable^(s2 + t2·width)`: heat under the middle of a wide slab has nowhere to go but down.
+
+At ordinary insulation the two balance and the core follows AREA, as physics expects. At high insulation the core's
+insulation-dependent part fades, the width term is left, and a narrow slab's core reads far smaller than a square
+one's (`Basesimp.compute`, the Ottawa SCB_31 fixture's ground and weather):
+
+| Slab (A = 144 m²) | P | Edge `Sag` | Core `Sbg,avg` | Area / RSI, the most the board can pass |
+|---|---|---|---|---|
+| RSI 1.76, 12 × 12 | 48 m | 1.93 W/K | 33.65 W/K | 81.82 W/K |
+| RSI 1.76, 24 × 6 | 60 m | 2.41 W/K | 34.09 W/K | 81.82 W/K |
+| RSI 8.75, 12 × 12 | 48 m | 2.26 W/K | **18.75 W/K** | 16.46 W/K |
+| RSI 8.75, 24 × 6 | 60 m | 2.83 W/K | 10.49 W/K | 16.46 W/K |
+
+Hemmingford (106.45 m², slab RSI 8.75, SCB_31): edge 321 → 343 → 370 kWh as the outline lengthens (square, −1.10,
+−2.0), core 855 → 615 → 515 kWh; the core wins.
+
+**The square RSI 8.75 slab breaks a physical bound.** All heat leaving downward passes through the sub-slab board
+(SCB_31: "bottom fully insulated", under the footings too), so the core conductance cannot exceed area / RSI unless
+the soil beneath is colder than the ground temperature BASESIMP uses. BASESIMP gives 14 % over that bound for 12 × 12
+(Hemmingford's square shape: 13.23 vs 12.17 W/K, 9 % over); at RSI 1.76 and 5 every shape is well under it. All of
+these inputs are inside the report's fitted range (width 5–12 m, width ≤ length, RSI 1.5–9.0), so this is the
+correlation's own error near the top of its RSI range, not an extrapolation and not a port error (`Basesimp.js`
+matches SlabOnGradeHLR to 1e-9, `test/basesimpSlab.test.cjs`). The reading: **the edge behaves as intuition says; the
+"longer loses less" result comes from the correlation over-reading a wide, heavily insulated slab's core.** F280
+requires BASESIMP, so its figures carry this.
+
+**What follows for inputs:** BASESIMP should get each foundation's true outside L × W. A jogged or L-shaped plan's
+true perimeter, turned into an equivalent rectangle, makes that rectangle NARROWER than the house, and for a
+well-insulated slab the width BASESIMP sees moves the result more than the perimeter does.
+
 ## Peak loads: OBJECTIVE vs F280 on the four Part 9 houses (measured 2026-11-19)
 
 Each house loaded as its case study (OBJECTIVE, F280 Mode Off) and as its "CSA F280 Review Format" case (Mode On; since
