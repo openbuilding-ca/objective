@@ -320,7 +320,7 @@
       );
     }
 
-    processImportedCSV(csvString) {
+    processImportedCSV(csvString, { replaceNotes = false } = {}) {
       this.showStatus("Parsing standardized CSV data...", "info");
       const importedData = {};
       let message = "";
@@ -460,12 +460,12 @@
         }
 
         // Project notes (the last column) belong to Section 20, not the
-        // StateManager. A file without the column clears them, as a new
-        // building clears the Capital Budget below.
+        // StateManager. Every cell under a header is kept above, an empty
+        // one as "", so the key is there exactly when the file has the column.
+        const fileHasNotes = "s18_notes" in importedData;
         const notes = importedData.s18_notes ?? "";
         delete importedData.s18_notes;
         delete importedData.ref_s18_notes;
-        window.TEUI.SectionModules.sect20?.setNotes(notes);
 
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
@@ -473,6 +473,16 @@
             "warning"
           );
           return;
+        }
+
+        // A file with the column replaces the notes, an empty cell clearing
+        // them as a new building clears the Capital Budget below. A file
+        // without it was saved before notes travelled in the CSV and could
+        // not carry them: the notes on screen stay, unless the caller says
+        // the file is the whole project (a bundled sample). Below the check
+        // above, so a file that imports nothing changes nothing.
+        if (fileHasNotes || replaceNotes) {
+          window.TEUI.SectionModules.sect20?.setNotes(notes);
         }
 
         const targetCount = fieldIds.length;
@@ -1077,7 +1087,9 @@
           throw new Error(`Failed to fetch ${project.file}: ${response.status}`);
         }
         const csvContent = await response.text();
-        this.processImportedCSV(csvContent);
+        // Most bundled samples have no notes column; the confirm above said
+        // all current data is replaced, so the notes go with it.
+        this.processImportedCSV(csvContent, { replaceNotes: true });
         this.showStatus(`Sample project "${plainName}" loaded successfully.`, "success");
       } catch (error) {
         console.error("[FileHandler] Error loading sample project:", error);
