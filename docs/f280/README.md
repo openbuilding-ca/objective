@@ -85,6 +85,79 @@ each result to Annex J and writes the verification report. The whole-house claim
 temperature (Cl. 5.2.7) and the total sensible gain at the cooling design condition (Cl. 6.2.9). It never
 compares annual energy.
 
+## Note to Kieran: the validation proposal, Rev. 4
+
+*From Andy and Claude, 2026-11-20, on "Proposal: OBJECTIVE Standards Validation" (Rev. 4, 2026-11-19), before it goes to
+the OpenBuilding directors.* The proposal is clear and the methodology is sound. Most of what follows comes from the F280
+work already in this README and is there to make your requirements matrix concrete.
+
+**Must fix**
+
+1. **Schedule order, Phase 2.** 2.1 (ASHRAE 140 requirements matrix, due 26 Dec) falls after 2.2 (assessment, due 23
+   Dec). The matrix must come first.
+2. **Roles under Cl. 8.2.** F280 separates the *qualified operator*, who builds the base case and runs the software,
+   from the *verification agent*. As set up, Andy is the operator and you are the verification agent: you check the
+   base case, make the variants, compare to Annex J and write the report. Objective 2 currently says you run OBJECTIVE.
+   State the split, since the independence is what makes the report credible.
+3. **Name the claim and the base case.** The whole-house claim is Cl. 8.1.2 b): 8.3.2, 8.3.4–8.3.9 and the 8.4.1 band.
+   Add Cl. 8.3.1, the base case (F280-1, Archetype 1 / 2010s / Ottawa), to the scope list: everything else is a
+   variant of it.
+
+**Should add**
+
+4. **State the acceptance criterion now.** Cl. 8.4.1 prescribes it, so "standard-defined tolerance" can be replaced
+   with the actual band. A result passes if it is at least 98 % of Annex J's value or no more than 146.5 W below it,
+   and at most 120 % or no more than 146.5 W above it.
+5. **The gain comparison basis.** Annex J's "gain" is the *nominal* cooling capacity: Cl. 6.3.1, LM 1.3 × the sensible
+   gain, not the sensible sum. Compared against the sensible figure, a correct result looks like a 30 % fail. Put the
+   basis in the matrix explicitly. The current results are loss 11 680 W against 11 787 (99.1 %) and nominal gain
+   7347 W against 7321 (100.4 %).
+6. **Pre-declared exclusions, with reasons.** These are not modelled in a single-zone tool:
+   - 8.3.3 and 8.3.4 b (room-by-room tests);
+   - 8.3.5 b–c (no interior-shading input).
+
+   Also confirm whether 8.3.10 (foundation, c–d) is in scope: Annex J values for it exist in the fixture.
+7. **Known open items, to carry as "Investigation required":**
+   - the eight orientation turns land 85–142 W short of Annex J's change (about 5 %);
+   - 8.3.6 b (no external shading) reads 35 W over;
+   - house volume Vb with or without the joist spaces (+47.2 m³; we follow NRCan's definition);
+   - a suspected erratum in 8.3.9 a): the Vancouver 1960s Archetype 2 row repeats Vancouver 1980s Archetype 1 digit
+     for digit.
+8. **The 31 other 8.3.9 cases.** Only F280-1 is built. Say who builds the remaining 31 location/vintage cases
+   (operator work) and whether that fits the fixed fee and the 30 Nov date.
+9. **Base-case input review.** `docs/f280/F280-1-crosswalk.md` lists all 96 inputs with a status: standard, derived,
+   equivalent, estimate or placeholder. Your review should give every "estimate" and "placeholder" row a disposition.
+10. **Use, or independently check, the existing harness.** `test/f280WholeHouse.spec.cjs` already runs the base case and
+    variants against Annex J and records the 8.4.1 band, but the band is not enforced (`ENFORCE_BAND = false`) until
+    the verification agent signs off. Say whether you will rerun the comparisons yourself or audit the harness. Your
+    sign-off can be the concrete act that turns that gate on.
+11. **Reference-data provenance.** Annex J's values in `test/fixtures/f280-annex-j.json` were transcribed twice
+    independently and checked against the printed pages. As verifier you should confirm them against the PDF yourself.
+
+**Scope statements the directors will need**
+
+12. **F280 verifies design loads, not energy.** Annex J compares design-condition capacity in watts only. Nothing in
+    this phase validates OBJECTIVE's annual TEUI. The "CSA F280 Review Format" comparisons on the four case-study houses
+    are diagnostic, not F280 tests.
+13. **ASHRAE 140 acceptance.** 140 is a method of test. Confirm whether the Class II reference ranges are normative
+    acceptance criteria or informative. If informative, report "within the reference range" rather than "pass".
+14. **ASHRAE 140 settings.** Class II §12.2.1.13 requires no latent heat extraction; OBJECTIVE has an ASHRAE 140 setting
+    for that (S13 latent method). Also check which Class II cases need hourly behaviour a static single-zone tool can't
+    represent, and list them as not applicable.
+
+**Consider**
+
+15. **Re-test loop.** If a Fail is fixed during the engagement, how many re-tests does the fixed fee cover? Each one
+    needs a build hash recorded (A.3).
+16. **Version identifier.** For the web app this is the git commit hash (`src/build-info.js`) plus the repository it
+    was run from (andy-rnd or the live objective).
+17. **Distribution.** The evidence package contains CSA's and ASHRAE's reference values. Keep it internal; the F280
+    cases are deliberately sandboxed in andy-rnd.
+18. **A signed statement.** A brief statement of qualifications and independence, and a signed conformance statement
+    limited to the defined scope in each report.
+
+Points 13 and 14 rest on our reading of ASHRAE 140's structure, not on its text: please check them against the standard.
+
 ## The files
 
 | File | What |
