@@ -22,25 +22,30 @@ window.TEUI.WombatWindows = (function () {
   //==========================================================================
 
   /**
-   * Map window orientation to facade distribution
-   * Diagonal orientations (NE, SE, SW, NW) split 50/50 between two facades
+   * Map window orientation to facade distribution (S10's orientation values).
+   * Diagonal orientations split 50/50 between two facades; Average spreads over all four;
+   * Skylight is not on a facade (Phase 2).
    */
   const ORIENTATION_MAP = {
     North: { north: 1.0 },
     East: { east: 1.0 },
     South: { south: 1.0 },
     West: { west: 1.0 },
-    Northeast: { north: 0.5, east: 0.5 },
-    Southeast: { south: 0.5, east: 0.5 },
-    Southwest: { south: 0.5, west: 0.5 },
-    Northwest: { north: 0.5, west: 0.5 },
+    NorthEast: { north: 0.5, east: 0.5 },
+    SouthEast: { south: 0.5, east: 0.5 },
+    SouthWest: { south: 0.5, west: 0.5 },
+    NorthWest: { north: 0.5, west: 0.5 },
+    Average: { north: 0.25, east: 0.25, south: 0.25, west: 0.25 },
+    Skylight: {},
   };
 
   /**
-   * Read window areas from Section10 and map to facades
+   * Read window areas from Section10 and map to facades: every window row (G.8.1 onward, Openings.js),
+   * each with its own orientation, in the model being drawn. Doors are not drawn.
+   * @param {boolean} isReference - read the Reference model's rows (ref_)
    * @returns {Object} windowsByFacade - Accumulated window area per facade
    */
-  function mapWindowsToFacades() {
+  function mapWindowsToFacades(isReference = false) {
     const windowsByFacade = {
       north: 0,
       east: 0,
@@ -48,20 +53,17 @@ window.TEUI.WombatWindows = (function () {
       west: 0,
     };
 
-    // Read window fields d_74 through d_77 (skip d_73 doors, d_78 skylights)
-    const windowFields = [
-      { areaField: "d_74", orientationField: "e_74" }, // North
-      { areaField: "d_75", orientationField: "e_75" }, // East
-      { areaField: "d_76", orientationField: "e_76" }, // South
-      { areaField: "d_77", orientationField: "e_77" }, // West
-    ];
+    const SM = window.TEUI?.StateManager;
+    const rows = (window.TEUI?.Openings?.ALL || []).filter(
+      o => o.kind !== "door"
+    );
+    const prefix = isReference ? "ref_" : "";
 
-    windowFields.forEach(({ areaField, orientationField }) => {
+    rows.forEach(o => {
       const area = parseFloat(
-        window.TEUI?.StateManager?.getValue(areaField) || "0"
+        String(SM?.getValue(`${prefix}d_${o.s10}`) ?? "0").replace(/,/g, "")
       );
-      const orientation =
-        window.TEUI?.StateManager?.getValue(orientationField) || "North";
+      const orientation = SM?.getValue(`${prefix}e_${o.s10}`) || "Average";
 
       if (area > 0) {
         addWindowToFacade(windowsByFacade, area, orientation);
@@ -78,7 +80,8 @@ window.TEUI.WombatWindows = (function () {
    * @param {string} orientation - Cardinal or diagonal orientation
    */
   function addWindowToFacade(windowsByFacade, area, orientation) {
-    const distribution = ORIENTATION_MAP[orientation] || { north: 1.0 };
+    const distribution =
+      ORIENTATION_MAP[orientation] || ORIENTATION_MAP.Average;
 
     for (const [facade, ratio] of Object.entries(distribution)) {
       windowsByFacade[facade] += area * ratio;
@@ -396,7 +399,7 @@ window.TEUI.WombatWindows = (function () {
    * @param {Object} geometry - Geometry object from Section19
    * @returns {Object} { windows: Array, warnings: Array }
    */
-  function calculateWindows(geometry) {
+  function calculateWindows(geometry, isReference = false) {
     // Skip if geometry is invalid
     if (
       !geometry ||
@@ -408,7 +411,7 @@ window.TEUI.WombatWindows = (function () {
     }
 
     // Step 1: Map window areas to facades
-    const windowsByFacade = mapWindowsToFacades();
+    const windowsByFacade = mapWindowsToFacades(isReference);
 
     // Step 2: Calculate facade areas
     const facadeAreas = calculateFacadeAreas(geometry);
@@ -450,5 +453,6 @@ window.TEUI.WombatWindows = (function () {
 
   return {
     calculateWindows: calculateWindows,
+    mapWindowsToFacades: mapWindowsToFacades,
   };
 })();
