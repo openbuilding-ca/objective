@@ -1,7 +1,7 @@
 name: Tests
 
 # On demand only (Andy 2026-10-31): Actions > Tests > Run workflow, or `gh workflow run test.yml`.
-# Run the suite locally before a PR: npx playwright test --config=playwright.config.cjs
+# Run the suite locally before a PR: npm test (the unit tests, then Playwright).
 on:
   workflow_dispatch:
 
@@ -24,11 +24,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # test/*.test.cjs, plain node, no browser. They require() the src/ files,
+      # which are ES modules here: that needs Node 20.19+ or 22.12+.
+      # test/climateStation.test.cjs is not in this set - it reads CWEC EPW
+      # files that are not in the repo (npm run test:unit:climate).
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps webkit
 
-      - name: Run tests
-        run: npm test
+      - name: Run Playwright tests
+        run: npm run test:e2e
 
       - name: Upload test results
         if: failure()
