@@ -647,18 +647,28 @@
         }
       }
 
-      // Fields added 2026-11-18 that older files lack: the file's own default
-      // ("" - VentilationRates resolves it), never the previous project's
-      // value. e_12, the 62.1 space type (beside d_12, the occupancy); l_63
-      // and m_63, the bedrooms and dwelling units (beside d_63, the occupants).
-      const addedBeside = { e_12: "d_12", l_63: "d_63", m_63: "d_63" };
-      for (const [added, beside] of Object.entries(addedBeside)) {
-        for (const prefix of ["", "ref_"]) {
-          if (
-            importedData[`${prefix}${beside}`] !== undefined &&
-            importedData[`${prefix}${added}`] === undefined
-          ) {
-            this.stateManager.setValue(`${prefix}${added}`, "", "imported");
+      // Fields added 2026-11-18 that older files lack: the field's own default,
+      // in either model, never the previous project's value. e_12, the 62.1
+      // space type ("" - VentilationRates resolves the occupancy's); l_63 and
+      // m_63, the bedrooms ("" - from the occupants) and dwelling units; g_59,
+      // the latent load's indoor state; e_118, HRV or ERV; l_122, the ERV's
+      // latent recovery; i_122, the latent method. A project file is known by
+      // d_12, its occupancy, which no standard's values carry
+      // (applyReferenceValuesFromStandard comes through here too).
+      const addedDefaults = {
+        e_12: "",
+        l_63: "",
+        m_63: "1",
+        g_59: "F280",
+        e_118: "HRV",
+        l_122: "0",
+        i_122: "F280",
+      };
+      for (const prefix of ["", "ref_"]) {
+        if (importedData[`${prefix}d_12`] === undefined) continue;
+        for (const [added, value] of Object.entries(addedDefaults)) {
+          if (importedData[`${prefix}${added}`] === undefined) {
+            this.stateManager.setValue(`${prefix}${added}`, value, "imported");
           }
         }
       }
