@@ -45,7 +45,7 @@ function withoutAddedColumns(csv) {
 }
 
 test.describe("Import of a file without the fields added 2026-11-18", () => {
-  test("each takes its default in both models, not the previous project's value", async ({
+  test("each takes and shows its default in both models, not the previous project's value", async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -72,7 +72,10 @@ test.describe("Import of a file without the fields added 2026-11-18", () => {
     const olderCsv = withoutAddedColumns(csv);
     expect(olderCsv).not.toContain("e_118");
 
-    /** Each added field: StateManager and graph, Target and Reference. */
+    /**
+     * Each added field: StateManager and graph, Target and Reference, and
+     * what its cell shows (a number as the number: "1.00" is 1).
+     */
     const read = () =>
       page.evaluate(added => {
         const SM = window.TEUI.StateManager;
@@ -86,61 +89,75 @@ test.describe("Import of a file without the fields added 2026-11-18", () => {
           const id = input.legacyId;
           const model = modelId =>
             String(state.getValueForModel(modelId, inputId));
+          const cell = document.querySelector(`[data-field-id="${id}"]`);
+          const select =
+            cell.tagName === "SELECT" ? cell : cell.querySelector("select");
           out[id] = {
             default: String(input.defaultValue),
             target: String(SM.getValue(id)),
             reference: String(SM.getValue(`ref_${id}`)),
             targetGraph: model(state.getActiveModelId()),
             referenceGraph: model(CI.getRefModelId()),
+            shown: select
+              ? select.value
+              : String(parseFloat(cell.textContent)),
           };
         }
         return out;
       }, ADDED);
 
-    // The previous project: a full file, then every added field off its
-    // default in both models
-    await page.evaluate(
-      ({ csv, previous }) => {
-        window.TEUI.FileHandler.processImportedCSV(csv);
-        const SM = window.TEUI.StateManager;
-        for (const [id, value] of Object.entries(previous)) {
-          SM.setValue(id, value, "user-modified");
-          SM.setValue(`ref_${id}`, value, "user-modified");
-        }
-        window.TEUI.Calculator.calculateAll();
-      },
-      { csv, previous: PREVIOUS }
-    );
-    await page.waitForTimeout(500);
+    // In whichever model is on screen
+    for (const mode of ["target", "reference"]) {
+      // The previous project: a full file, then every added field off its
+      // default in both models, and shown
+      await page.evaluate(
+        ({ csv, previous, mode }) => {
+          window.TEUI.ReferenceToggle.switchMode("target");
+          window.TEUI.FileHandler.processImportedCSV(csv);
+          const SM = window.TEUI.StateManager;
+          for (const [id, value] of Object.entries(previous)) {
+            SM.setValue(id, value, "user-modified");
+            SM.setValue(`ref_${id}`, value, "user-modified");
+          }
+          window.TEUI.Calculator.calculateAll();
+          window.TEUI.ReferenceToggle.switchMode(mode);
+          window.TEUI.DOMBridge.stampInputsForMode();
+        },
+        { csv, previous: PREVIOUS, mode }
+      );
+      await page.waitForTimeout(500);
 
-    const before = await read();
-    expect(Object.keys(before).sort()).toEqual([...ADDED].sort());
-    for (const id of ADDED) {
-      expect(before[id], `${id} before`).toMatchObject({
-        target: PREVIOUS[id],
-        reference: PREVIOUS[id],
-        targetGraph: PREVIOUS[id],
-        referenceGraph: PREVIOUS[id],
-      });
-      expect(before[id].default, `${id} default`).not.toBe(PREVIOUS[id]);
-    }
+      const before = await read();
+      expect(Object.keys(before).sort()).toEqual([...ADDED].sort());
+      for (const id of ADDED) {
+        expect(before[id], `${id} before, ${mode} on screen`).toMatchObject({
+          target: PREVIOUS[id],
+          reference: PREVIOUS[id],
+          targetGraph: PREVIOUS[id],
+          referenceGraph: PREVIOUS[id],
+          shown: PREVIOUS[id],
+        });
+        expect(before[id].default, `${id} default`).not.toBe(PREVIOUS[id]);
+      }
 
-    // The older file
-    await page.evaluate(
-      older => window.TEUI.FileHandler.processImportedCSV(older),
-      olderCsv
-    );
-    await page.waitForTimeout(500);
+      // The older file
+      await page.evaluate(
+        older => window.TEUI.FileHandler.processImportedCSV(older),
+        olderCsv
+      );
+      await page.waitForTimeout(500);
 
-    const after = await read();
-    for (const id of ADDED) {
-      const want = after[id].default;
-      expect(after[id], `${id} after`).toMatchObject({
-        target: want,
-        reference: want,
-        targetGraph: want,
-        referenceGraph: want,
-      });
+      const after = await read();
+      for (const id of ADDED) {
+        const want = after[id].default;
+        expect(after[id], `${id} after, ${mode} on screen`).toMatchObject({
+          target: want,
+          reference: want,
+          targetGraph: want,
+          referenceGraph: want,
+          shown: want,
+        });
+      }
     }
   });
 });
