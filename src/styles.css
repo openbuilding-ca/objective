@@ -1064,6 +1064,63 @@ table.data-table select.form-select:disabled {
   opacity: 0.8;
 }
 
+/* Row +/- (Andy 2026-11-20: S10/S11's opening rows, Openings.js) - the OBC Matrix's controls
+   (src/obc/OBC-ExpandableRows.js addExpandableRowsCSS), so the two apps add rows alike */
+.expandable-row-trigger {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 2px !important;
+}
+.expandable-controls {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+}
+.expandable-add-btn,
+.expandable-remove-btn {
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 14px;
+  font-weight: bold;
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: white;
+  margin: 0;
+  cursor: pointer;
+}
+.expandable-add-btn:hover,
+.expandable-remove-btn:hover {
+  transform: scale(1.05);
+}
+.expandable-add-btn:active,
+.expandable-remove-btn:active {
+  transform: scale(0.95);
+}
+.expandable-add-btn {
+  border-color: #28a745;
+  color: #28a745;
+}
+.expandable-add-btn:hover {
+  background-color: #d4edda;
+  border-color: #1e7e34;
+  color: #1e7e34;
+}
+.expandable-remove-btn {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+.expandable-remove-btn:hover {
+  background-color: #f8d7da;
+  border-color: #bd2130;
+  color: #bd2130;
+}
+
 /* Ensure the cell itself doesn't interfere */
 .data-table td.dropdown-cell {
   padding: 2px 8px !important;
