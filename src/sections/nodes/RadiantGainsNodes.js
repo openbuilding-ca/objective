@@ -47,22 +47,22 @@
     // ========================================================================
     // INPUTS - Glazing properties by orientation (rows 73-78)
     // ========================================================================
-    const rows = [
-      { row: 73, label: "Average/Doors" },
-      { row: 74, label: "North" },
-      { row: 75, label: "East" },
-      { row: 76, label: "South" },
-      { row: 77, label: "West" },
-      { row: 78, label: "Skylight" }
-    ];
+    // Every opening row (Openings.js: doors G.7.1-G.7.4, windows G.8.1-G.8.12). The first six keep
+    // their labels and default orientations; a row after them starts North (a window) or Average (a door).
+    const FIRST = { 73: "Average/Doors", 74: "North", 75: "East", 76: "South", 77: "West", 78: "Skylight" };
+    const rows = window.TEUI.Openings.ALL.map(o => ({
+      row: o.s10,
+      label: FIRST[o.s10] || window.TEUI.Openings.s10RowId(o),
+      orientation: FIRST[o.s10] || (o.kind === "door" ? "Average" : "North")
+    }));
 
     const inputs = [];
 
     // Register inputs for each glazing row
-    rows.forEach(({ row, label }) => {
+    rows.forEach(({ row, label, orientation }) => {
       inputs.push(
         { id: `radiantGains.row${row}.area`, legacyId: `d_${row}`, section: "S10", classification: "C", label: `${label} Area (m²)`, defaultValue: 0 },
-        { id: `radiantGains.row${row}.orientation`, legacyId: `e_${row}`, section: "S10", classification: "C", label: `${label} Orientation`, defaultValue: label === "Skylight" ? "Skylight" : label },
+        { id: `radiantGains.row${row}.orientation`, legacyId: `e_${row}`, section: "S10", classification: "C", label: `${label} Orientation`, defaultValue: orientation },
         { id: `radiantGains.row${row}.shgc`, legacyId: `f_${row}`, section: "S10", classification: "C", label: `${label} SHGC`, defaultValue: 0.35 },
         { id: `radiantGains.row${row}.winterShading`, legacyId: `g_${row}`, section: "S10", classification: "C", label: `${label} Winter Shading (%)`, defaultValue: 0 },
         { id: `radiantGains.row${row}.summerShading`, legacyId: `h_${row}`, section: "S10", classification: "C", label: `${label} Summer Shading (%)`, defaultValue: 0 }

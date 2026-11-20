@@ -26,7 +26,15 @@
     { row: 90, id: "windowEast", label: "Window East", input: "uvalue" },
     { row: 91, id: "windowSouth", label: "Window South", input: "uvalue" },
     { row: 92, id: "windowWest", label: "Window West", input: "uvalue" },
-    { row: 93, id: "skylights", label: "Skylights", input: "uvalue" }
+    { row: 93, id: "skylights", label: "Skylights", input: "uvalue" },
+    // The opening rows after the first (Openings.js): each S10 door / window row's S11 twin, its area
+    // from S10 (AREA_BRIDGE), its own U-value
+    ...window.TEUI.Openings.SLOTS.map(o => ({
+      row: o.s11,
+      id: o.id,
+      label: o.kind === "door" ? `Door ${window.TEUI.Openings.s11RowId(o)}` : `Window ${window.TEUI.Openings.s11RowId(o)}`,
+      input: "uvalue"
+    }))
   ];
 
   const GROUND_FACING_COMPONENTS = [
@@ -50,7 +58,9 @@
     windowWest: 0.13,     // horizontal
     skylights: 0.10,      // upward
     wallsBelowGrade: 0.13, // horizontal
-    slabOnGrade: 0.17     // downward
+    slabOnGrade: 0.17,    // downward
+    // the opening rows after the first: doors and windows in a wall, horizontal
+    ...Object.fromEntries(window.TEUI.Openings.SLOTS.map(o => [o.id, 0.13]))
   };
 
   function parseNum(value, defaultVal = 0) {
@@ -64,15 +74,8 @@
     return value === "Unavailable" || value === "N/A";
   }
 
-  // S10→S11 area bridge: rows 88-93 in S11 mirror rows 73-78 from S10
-  const AREA_BRIDGE = {
-    88: 73,  // doors
-    89: 74,  // window north
-    90: 75,  // window east
-    91: 76,  // window south
-    92: 77,  // window west
-    93: 78   // skylights
-  };
+  // S10→S11 area bridge: every opening's S11 row mirrors its S10 row (88-93 ← 73-78, 88a ← 73a ...)
+  const AREA_BRIDGE = Object.fromEntries(window.TEUI.Openings.ALL.map(o => [o.s11, o.s10]));
 
   function register(graph) {
     const inputs = [];

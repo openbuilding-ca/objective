@@ -1999,6 +1999,39 @@ window.TEUI.SectionModules.sect16 = (function () {
    * Mode-aware getValue helper - reads ref_ prefixed values when in Reference mode
    * Uses global ReferenceToggle as the single source of truth for mode state.
    */
+  /**
+   * The openings, ONE NODE PER ROW (Andy 2026-11-20: "we can identify windows with gains that are too
+   * high, or losses that are too low and track them"), each named with its row and its orientation as
+   * set in S10 ("G.8.1 Window · N", "B.8.1 Window · N"). The first rows keep the template's nodes,
+   * renamed; a row after them that shows (Openings.js) brings a gain node and a loss node of its own.
+   */
+  const OPENING_GAIN_NODE = { 73: 8, 74: 4, 75: 5, 76: 6, 77: 7, 78: 32 };
+  const OPENING_LOSS_NODE = { 73: 15, 74: 16, 75: 17, 76: 18, 77: 19, 78: 31 };
+  function openingNodeName(o, s11) {
+    const O = window.TEUI.Openings;
+    const id = s11 ? O.s11RowId(o) : O.s10RowId(o);
+    if (o.kind === "skylight") return `${id} Skylights`;
+    const orientation = getModeAwareValue(`e_${o.s10}`);
+    const facing = O.SHORT[orientation] || orientation || "";
+    return `${id} ${o.kind === "door" ? "Door" : "Window"}${facing ? ` · ${facing}` : ""}`;
+  }
+  function addOpeningNodes(sankeyData) {
+    const O = window.TEUI.Openings;
+    const value = fieldId => Math.max(0.0001, parseFloat(getModeAwareValue(fieldId)) || 0.0001);
+    O.ALL.forEach(o => {
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[OPENING_GAIN_NODE[o.s10]].name = openingNodeName(o, false);
+        sankeyData.nodes[OPENING_LOSS_NODE[o.s10]].name = openingNodeName(o, true);
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const gain = sankeyData.nodes.push({ name: openingNodeName(o, false), color: "#F9DF4B" }) - 1;
+      sankeyData.links.push({ source: gain, target: 0, value: value(`i_${o.s10}`), id: `OpeningGains${o.s10}` });
+      const loss = sankeyData.nodes.push({ name: openingNodeName(o, true), color: o.kind === "door" ? "#8FAFA6" : "#F9DF4B" }) - 1;
+      sankeyData.links.push({ source: 28, target: loss, value: value(`i_${o.s11}`), id: `TELToOpening${o.s11}` });
+    });
+  }
+
   function getModeAwareValue(fieldId) {
     if (!window.TEUI?.StateManager) return null;
 
@@ -2122,6 +2155,8 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Log for debugging
       // console.warn(`S16 LINK LOG: ID: ${link.id}, TEUI Field: ${teuiFieldId || 'N/A'}, Raw State Value: '${rawValueFromState}', Assigned Link Value: ${link.value}`);
     });
+
+    addOpeningNodes(sankeyData);
 
     // Now ensure all nodes and links have the correct structure
     // This converts node references to indexes for D3 to process properly
@@ -2248,6 +2283,8 @@ window.TEUI.SectionModules.sect16 = (function () {
     getLayout: getLayout,
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+    // The heating Sankey's nodes and links as drawn (test/openings.spec.cjs reads the opening nodes)
+    buildSankeyData: buildSankeyDataFromStateManager,
     activateAndRender: function () {
       if (!document.getElementById("s16ControlsContainer")) {
         if (!setupSection16DOM()) return;

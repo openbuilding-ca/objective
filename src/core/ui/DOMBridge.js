@@ -170,6 +170,21 @@
     d_145: "number-2dp-comma",
   };
 
+  // The opening rows after the first (Openings.js) format as their group's first row: S10's j/l, S11's
+  // g/h/j/l/m/n/o
+  window.TEUI.Openings.SLOTS.forEach(o => {
+    FORMAT[`j_${o.s10}`] = FORMAT[`l_${o.s10}`] = "percent-2dp";
+    Object.assign(FORMAT, {
+      [`g_${o.s11}`]: "number-3dp",
+      [`h_${o.s11}`]: "percent-2dp",
+      [`j_${o.s11}`]: "percent-2dp",
+      [`l_${o.s11}`]: "percent-2dp",
+      [`m_${o.s11}`]: "raw",
+      [`n_${o.s11}`]: "raw",
+      [`o_${o.s11}`]: "condensation",
+    });
+  });
+
   // S01 fields always read from Target model (S01 renders all 3 columns itself)
   const S01_FIELDS = new Set([
     "e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10",
@@ -188,7 +203,8 @@
   const CONDENSATION_FIELDS = [
     "o_85", "o_86", "o_87", "o_88", "o_89",
     "o_90", "o_91", "o_92", "o_93", "o_94", "o_95",
-    "o_101", "o_102"
+    "o_101", "o_102",
+    ...window.TEUI.Openings.SLOTS.map(o => `o_${o.s11}`),
   ];
 
   // ==========================================================================
@@ -432,7 +448,7 @@
   /** The sections' postStamp hooks (display mirrors, key values, the rules that ghost or lock an input). */
   function runPostStamp() {
     const modules = window.TEUI.SectionModules || {};
-    for (const key of ["sect01", "sect03", "sect12", "sect13", "sect16", "sect21"]) {
+    for (const key of ["sect01", "sect03", "sect10", "sect11", "sect12", "sect13", "sect16", "sect21"]) {
       if (modules[key]?.postStamp) modules[key].postStamp();
     }
   }
@@ -500,16 +516,16 @@
       setIndicator(`l_${row}`, coolingGainClass(lPct), "gain-indicator");
     }
 
-    // S10: Radiant Gains (rows 73-78)
-    for (const row of [73, 74, 75, 76, 77, 78]) {
+    // S10: Radiant Gains (the opening rows, Openings.js)
+    for (const row of window.TEUI.Openings.ALL.map(o => o.s10)) {
       const jPct = readPct(`j_${row}`);
       const lPct = readPct(`l_${row}`);
       setIndicator(`j_${row}`, heatingGainClassS10(jPct), "gain-indicator");
       setIndicator(`l_${row}`, coolingGainClass(lPct), "gain-indicator");
     }
 
-    // S11: Transmission Losses (rows 85-95, 97)
-    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97]) {
+    // S11: Transmission Losses (rows 85-95, 97, and the openings' twins after the first)
+    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, ...window.TEUI.Openings.SLOTS.map(o => o.s11)]) {
       const jPct = readPct(`j_${row}`);
       const lPct = readPct(`l_${row}`);
       setIndicator(`j_${row}`, lossContribClass(jPct), "loss-indicator");

@@ -383,8 +383,21 @@
     // ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js) - the sum
     // of its S11 components' shares, opaque solar included; the j column is
     // that per m².
+    const OPENINGS = window.TEUI.Openings;
     const AIR_KEYS = ["roof", "walls", "exposedFloor", "doors", "windowNorth", "windowEast",
-      "windowSouth", "windowWest", "skylights"];
+      "windowSouth", "windowWest", "skylights", ...OPENINGS.SLOTS.map(o => o.id)];
+
+    // The openings in the WALLS (d_107 WWR, g_107 wall area, i_107 window & door loss): every door and
+    // window row but the skylights - row 78 (G.8.5), and a later window row its S10 row faces Skylight
+    const WALL_OPENINGS = OPENINGS.ALL.filter(o => o.kind !== "skylight");
+    const wallOpeningDeps = (suffix) => WALL_OPENINGS.flatMap(o => [
+      `transmissionLoss.${o.id}.${suffix}`,
+      ...(OPENINGS.isSlot(o) ? [`radiantGains.row${o.s10}.orientation`] : [])
+    ]);
+    const sumWallOpenings = (inputs, suffix) => WALL_OPENINGS.reduce((sum, o) =>
+      OPENINGS.isSlot(o) && inputs[`radiantGains.row${o.s10}.orientation`] === "Skylight"
+        ? sum
+        : sum + parseNum(inputs[`transmissionLoss.${o.id}.${suffix}`]), 0);
     const GROUND_KEYS = ["wallsBelowGrade", "slabOnGrade"];
     const share = (inputs, keys) =>
       keys.reduce((s, k) => s + (inputs["cooling.iso52016"]?.rows?.[k] ?? 0), 0);
@@ -809,23 +822,11 @@
       legacyId: "d_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.walls.area",
-        "transmissionLoss.doors.area",
-        "transmissionLoss.windowNorth.area",
-        "transmissionLoss.windowEast.area",
-        "transmissionLoss.windowSouth.area",
-        "transmissionLoss.windowWest.area"
-      ],
+      dependencies: ["transmissionLoss.walls.area", ...wallOpeningDeps("area")],
       label: "Window-to-Wall Ratio",
       compute: (inputs) => {
         const d86 = parseNum(inputs["transmissionLoss.walls.area"]);
-        const d88 = parseNum(inputs["transmissionLoss.doors.area"]);
-        const d89 = parseNum(inputs["transmissionLoss.windowNorth.area"]);
-        const d90 = parseNum(inputs["transmissionLoss.windowEast.area"]);
-        const d91 = parseNum(inputs["transmissionLoss.windowSouth.area"]);
-        const d92 = parseNum(inputs["transmissionLoss.windowWest.area"]);
-        const windowArea = d88 + d89 + d90 + d91 + d92;
+        const windowArea = sumWallOpenings(inputs, "area");
         const totalWallArea = d86 + windowArea;
         return totalWallArea > 0 ? windowArea / totalWallArea : 0;
       }
@@ -941,22 +942,10 @@
       legacyId: "g_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.walls.area",
-        "transmissionLoss.doors.area",
-        "transmissionLoss.windowNorth.area",
-        "transmissionLoss.windowEast.area",
-        "transmissionLoss.windowSouth.area",
-        "transmissionLoss.windowWest.area"
-      ],
+      dependencies: ["transmissionLoss.walls.area", ...wallOpeningDeps("area")],
       label: "Total Wall Area (m²)",
       compute: (inputs) => {
-        return parseNum(inputs["transmissionLoss.walls.area"])
-          + parseNum(inputs["transmissionLoss.doors.area"])
-          + parseNum(inputs["transmissionLoss.windowNorth.area"])
-          + parseNum(inputs["transmissionLoss.windowEast.area"])
-          + parseNum(inputs["transmissionLoss.windowSouth.area"])
-          + parseNum(inputs["transmissionLoss.windowWest.area"]);
+        return parseNum(inputs["transmissionLoss.walls.area"]) + sumWallOpenings(inputs, "area");
       },
     });
 
@@ -966,21 +955,9 @@
       legacyId: "i_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.doors.heatLoss",
-        "transmissionLoss.windowNorth.heatLoss",
-        "transmissionLoss.windowEast.heatLoss",
-        "transmissionLoss.windowSouth.heatLoss",
-        "transmissionLoss.windowWest.heatLoss"
-      ],
+      dependencies: wallOpeningDeps("heatLoss"),
       label: "Window/Door Heat Loss (kWh/yr)",
-      compute: (inputs) => {
-        return parseNum(inputs["transmissionLoss.doors.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowNorth.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowEast.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowSouth.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowWest.heatLoss"]);
-      },
+      compute: (inputs) => sumWallOpenings(inputs, "heatLoss"),
     });
 
     // i_110: Air Leakage Climate Zone Number (1/2/3 from climate zone)

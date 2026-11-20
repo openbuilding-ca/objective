@@ -44,10 +44,13 @@
     ["windowEast", "wall", false],
     ["windowSouth", "wall", false],
     ["windowWest", "wall", false],
-    ["skylights", "roof", false]
+    ["skylights", "roof", false],
+    // the opening rows after the first (Openings.js): in a wall, or the roof when its S10 row's
+    // orientation is Skylight (the fourth entry: that S10 row)
+    ...window.TEUI.Openings.SLOTS.map(o => [o.id, "wall", false, o.s10])
   ];
   const GROUND_COMPONENTS = ["wallsBelowGrade", "slabOnGrade"];
-  const GLAZING_ROWS = [73, 74, 75, 76, 77, 78];
+  const GLAZING_ROWS = window.TEUI.Openings.ALL.map(o => o.s10);
   const ISO_DEPENDENCIES = [
     "climate.station",
     "climate.cooling.setpoint",
@@ -245,9 +248,9 @@
         if (!station) return null;
         const setpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
         const indoorRH = parseNum(inputs["building.indoorRH"], 45);
-        const component = ([key, tilt, opaque]) => ({
+        const component = ([key, tilt, opaque, s10]) => ({
           key,
-          tilt,
+          tilt: s10 && inputs[`radiantGains.row${s10}.orientation`] === "Skylight" ? "roof" : tilt,
           opaque,
           A: parseNum(inputs[`transmissionLoss.${key}.area`]),
           U: parseNum(inputs[`transmissionLoss.${key}.uValue`])

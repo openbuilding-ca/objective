@@ -365,6 +365,40 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
+    // The openings, ONE NODE PER ROW, named with the row's orientation as set in S10 (Andy 2026-11-20;
+    // as the heating Sankey, Section16.js addOpeningNodes): the first rows rename the template's nodes
+    // (G.8.5's solar gets its own, off B.8.5's), a row after them that shows brings its solar node
+    // (k of its S10 row) and its transmission node (k of its S11 twin).
+    const O = window.TEUI.Openings;
+    const isRef = window.TEUI?.ReferenceToggle?.isReferenceMode();
+    const facingOf = o => {
+      const orientation = teuiState.getValue(`${isRef ? "ref_" : ""}e_${o.s10}`);
+      return O.SHORT[orientation] || orientation || "";
+    };
+    const openingName = (o, s11) => {
+      const id = s11 ? O.s11RowId(o) : O.s10RowId(o);
+      if (o.kind === "skylight") return `${id} Skylights`;
+      const facing = facingOf(o);
+      return `${id} ${o.kind === "door" ? "Door" : "Window"}${facing ? ` · ${facing}` : ""}`;
+    };
+    const SOLAR_NODE = { 73: 11, 74: 12, 75: 13, 76: 14, 77: 15 };
+    const TRANSMISSION_NODE = { 73: 3, 74: 4, 75: 5, 76: 6, 77: 7, 78: 8 };
+    const skylightSolar = sankeyData.nodes.push({ name: "", color: "#FFCC99" }) - 1;
+    energyGainedLinks.find(l => l.id === "SkylightsSolarGain").source = skylightSolar;
+    SOLAR_NODE[78] = skylightSolar;
+    O.ALL.forEach(o => {
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[SOLAR_NODE[o.s10]].name = openingName(o, false);
+        sankeyData.nodes[TRANSMISSION_NODE[o.s10]].name = openingName(o, true);
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const solar = sankeyData.nodes.push({ name: openingName(o, false), color: "#FFCC99" }) - 1;
+      energyGainedLinks.push({ source: solar, target: 0, value: getStateValue(`k_${o.s10}`), id: `OpeningSolar${o.s10}` });
+      const transmission = sankeyData.nodes.push({ name: openingName(o, true), color: o.kind === "door" ? "#FFB6A3" : "#FFCC99" }) - 1;
+      energyGainedLinks.push({ source: transmission, target: 0, value: getStateValue(`k_${o.s11}`), id: `OpeningGain${o.s11}` });
+    });
+
     // Combine all links (DO NOT FILTER - show all values including zeros)
     const allLinks = [...energyGainedLinks, ...energyRemovedLinks];
 
