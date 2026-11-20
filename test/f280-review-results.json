@@ -1,0 +1,230 @@
+{
+  "03-residence-phi-classic": {
+    "off": {
+      "teui": 57.1,
+      "tedi": 15.42,
+      "groundMethod": "OBJECTIVE",
+      "infiltrationMethod": "OBJECTIVE",
+      "annualGround_kWh": 751.1112,
+      "annualInfiltration_kWh": 575.0441676646706,
+      "basesimp_W": null,
+      "basesimpError": "S11 has no below-grade wall, so S03 G.4.4 (BCIN_1, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)",
+      "basesimpConfig": null,
+      "perimeter_m": 47.65431075289342,
+      "aim2Error": null,
+      "aim2_LRairh": 0.04366395461568773,
+      "aim2_LRairc": 0.012312280590004776,
+      "internalAnnual_kWh": 6277.892325000001,
+      "loss_W": null,
+      "sensibleGain_W": 8436.272790473939
+    },
+    "on": {
+      "teui": 56.7,
+      "tedi": 21.16,
+      "groundMethod": "BASESIMP",
+      "infiltrationMethod": "AIM2",
+      "annualGround_kWh": 1002.4930333036008,
+      "annualInfiltration_kWh": 497.95202786960436,
+      "basesimp_W": 253.68762839139683,
+      "basesimpError": null,
+      "basesimpConfig": "SCB_31",
+      "perimeter_m": 47.65431075289342,
+      "aim2Error": null,
+      "aim2_LRairh": 0.04494976341048734,
+      "aim2_LRairc": 0.012118293238077671,
+      "internalAnnual_kWh": 4781.728125000001,
+      "loss_W": 3934,
+      "sensibleGain_W": 8436.097037933092
+    },
+    "bills": 56.3,
+    "refOffTeui": 57.1,
+    "s09On": {
+      "d_65": "5.3",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
+    },
+    "after": {
+      "mode": "Off",
+      "refMode": "Off",
+      "teui": 57.1,
+      "s09": {
+        "d_65": "2.1",
+        "d_66": "1.50 (editable)",
+        "d_67": "3.0",
+        "g_64": "117.23"
+      }
+    }
+  },
+  "02-residence-sb12-net-zero": {
+    "off": {
+      "teui": 103.4,
+      "tedi": 44.78,
+      "groundMethod": "OBJECTIVE",
+      "infiltrationMethod": "OBJECTIVE",
+      "annualGround_kWh": 4832.132393617021,
+      "annualInfiltration_kWh": 782.772102933333,
+      "basesimp_W": null,
+      "basesimpError": "S11 has no below-grade wall, so S03 G.4.4 (BCIN_1, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)",
+      "basesimpConfig": null,
+      "perimeter_m": 75.71032514349237,
+      "aim2Error": null,
+      "aim2_LRairh": 0.03412926931851866,
+      "aim2_LRairc": 0.011386700326045121,
+      "internalAnnual_kWh": 13674.0023,
+      "loss_W": null,
+      "sensibleGain_W": 3236.3589785066006
+    },
+    "on": {
+      "teui": 84.7,
+      "tedi": 53.12,
+      "groundMethod": "BASESIMP",
+      "infiltrationMethod": "AIM2",
+      "annualGround_kWh": 3836.8533973824883,
+      "annualInfiltration_kWh": 635.7521875632408,
+      "basesimp_W": 834.9480983306742,
+      "basesimpError": null,
+      "basesimpConfig": "SCB_33",
+      "perimeter_m": 75.71032514349237,
+      "aim2Error": null,
+      "aim2_LRairh": 0.0341976685905792,
+      "aim2_LRairc": 0.01083227429395188,
+      "internalAnnual_kWh": 6181.421,
+      "loss_W": 7383,
+      "sensibleGain_W": 3235.5928541345866
+    },
+    "bills": 103.5,
+    "refOffTeui": 103.4,
+    "s09On": {
+      "d_65": "4.0",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
+    },
+    "after": {
+      "mode": "Off",
+      "refMode": "Off",
+      "teui": 103.4,
+      "s09": {
+        "d_65": "5.0",
+        "d_66": "1.50 (editable)",
+        "d_67": "3.0",
+        "g_64": "117.23"
+      }
+    }
+  },
+  "12-residence-phi-low-energy": {
+    "off": {
+      "teui": 63.4,
+      "tedi": 20.58,
+      "groundMethod": "OBJECTIVE",
+      "infiltrationMethod": "OBJECTIVE",
+      "annualGround_kWh": 670.675446,
+      "annualInfiltration_kWh": 347.3497945945946,
+      "basesimp_W": null,
+      "basesimpError": "S11 has no below-grade wall, so S03 G.4.4 (BCIN_1, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)",
+      "basesimpConfig": null,
+      "perimeter_m": 44.8903850135713,
+      "aim2Error": null,
+      "aim2_LRairh": 0.03282905089884919,
+      "aim2_LRairc": 0.009373787508155318,
+      "internalAnnual_kWh": 6908.062999999999,
+      "loss_W": null,
+      "sensibleGain_W": 3348.3372868812635
+    },
+    "on": {
+      "teui": 46.6,
+      "tedi": 32.77,
+      "groundMethod": "BASESIMP",
+      "infiltrationMethod": "AIM2",
+      "annualGround_kWh": 898.5984458463739,
+      "annualInfiltration_kWh": 312.234411168554,
+      "basesimp_W": 232.5376902567856,
+      "basesimpError": null,
+      "basesimpConfig": "SCB_31",
+      "perimeter_m": 44.8903850135713,
+      "aim2Error": null,
+      "aim2_LRairh": 0.03373498226988253,
+      "aim2_LRairc": 0.009660787421870987,
+      "internalAnnual_kWh": 4376.8171999999995,
+      "loss_W": 3540,
+      "sensibleGain_W": 3348.557702814997
+    },
+    "bills": 57.8,
+    "refOffTeui": 63.4,
+    "s09On": {
+      "d_65": "5.9",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
+    },
+    "after": {
+      "mode": "Off",
+      "refMode": "Off",
+      "teui": 63.4,
+      "s09": {
+        "d_65": "5.0",
+        "d_66": "1.50 (editable)",
+        "d_67": "3.0",
+        "g_64": "117.23"
+      }
+    }
+  },
+  "10-residence-sb12-duplex": {
+    "off": {
+      "teui": 13.2,
+      "tedi": 44.16,
+      "groundMethod": "OBJECTIVE",
+      "infiltrationMethod": "OBJECTIVE",
+      "annualGround_kWh": 5598.636324324325,
+      "annualInfiltration_kWh": 4560.727585135134,
+      "basesimp_W": 1545.7070758745913,
+      "basesimpError": null,
+      "basesimpConfig": "BCIN_1",
+      "perimeter_m": 58.20790324345999,
+      "aim2Error": null,
+      "aim2_LRairh": 0.1833472263783143,
+      "aim2_LRairc": 0.056094082089817476,
+      "internalAnnual_kWh": 21698.3667,
+      "loss_W": 13017,
+      "sensibleGain_W": 5235.076617303128
+    },
+    "on": {
+      "teui": -12.1,
+      "tedi": 51.41,
+      "groundMethod": "BASESIMP",
+      "infiltrationMethod": "AIM2",
+      "annualGround_kWh": 4128.651981661265,
+      "annualInfiltration_kWh": 5349.2197680656745,
+      "basesimp_W": 990.5912425892705,
+      "basesimpError": null,
+      "basesimpConfig": "BCIB_4",
+      "perimeter_m": 58.20790324345999,
+      "aim2Error": null,
+      "aim2_LRairh": 0.18533209378732318,
+      "aim2_LRairc": 0.05639546084919317,
+      "internalAnnual_kWh": 9497.7672,
+      "loss_W": 12501,
+      "sensibleGain_W": 5235.817893522668
+    },
+    "bills": 14.8,
+    "refOffTeui": 13.2,
+    "s09On": {
+      "d_65": "4.0",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
+    },
+    "after": {
+      "mode": "Off",
+      "refMode": "Off",
+      "teui": 13.2,
+      "s09": {
+        "d_65": "5.0",
+        "d_66": "1.50 (editable)",
+        "d_67": "3.0",
+        "g_64": "117.23"
+      }
+    }
+  }
+}

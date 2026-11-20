@@ -8,12 +8,22 @@
 (function (window) {
   "use strict";
 
+  // Keys the house CSV carries that have no field on the page: d_21o, the CDD override (2026-11-19)
+  const STORED_KEYS_WITHOUT_FIELD = ["d_21o"];
+
+  // A "CSA F280 Review Format" row (reviewOf) sits indented under its Part 9 house: the same case with the
+  // Target run as an F280 annual model (S21 F280 Mode On, BASESIMP + AIM-2, the house's foundation and AIM-2
+  // facts), the Reference the case's own; written by tools/f280/review_case.py (Andy 2026-11-19)
   const SAMPLE_PROJECTS = [
     // Part 9 Residences
     { id: "03", file: "03-residence-phi-classic.csv", name: "Part 9: Residence: <strong>PHI Classic</strong>", type: "C-Residential", location: "QC, Hemmingford" },
+    { id: "03-f280", file: "03-residence-phi-classic-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "QC, Hemmingford", reviewOf: "03" },
     { id: "12", file: "12-residence-phi-low-energy.csv", name: "Part 9: Residence: <strong>PHI Low Energy</strong>", type: "C-Residential", location: "ON, Hawkesbury" },
+    { id: "12-f280", file: "12-residence-phi-low-energy-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Hawkesbury", reviewOf: "12" },
     { id: "02", file: "02-residence-sb12-net-zero.csv", name: "Part 9: Residence: <strong>SB12 Net-Zero</strong>", type: "C-Residential", location: "ON, Collingwood" },
+    { id: "02-f280", file: "02-residence-sb12-net-zero-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Collingwood", reviewOf: "02" },
     { id: "10", file: "10-residence-sb12-duplex.csv", name: "Part 9: Residence: <strong>SB12 Net Zero Duplex</strong>", type: "C-Residential", location: "ON, Mississauga" },
+    { id: "10-f280", file: "10-residence-sb12-duplex-f280.csv", name: "CSA F280 Review Format", type: "C-Residential", location: "ON, Mississauga", reviewOf: "10" },
     // Part 3 MURBs (C-Occupancy)
     { id: "04", file: "04-apartment-necb-small.csv", name: "Part 3: <strong>MURB</strong> (C-Occupancy): <strong>NECB PHIUS</strong> Small", type: "C-Residential", location: "ON, Hamilton" },
     { id: "06", file: "06-apartment-necb-mid-rise.csv", name: "Part 3: <strong>MURB</strong>: (C-Occupancy) <strong>NECB PHIUS</strong> Mid-Rise", type: "C-Residential", location: "ON, Woodstock" },
@@ -76,8 +86,9 @@
           const link = document.createElement("a");
           link.href = "#";
           link.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+          if (project.reviewOf) link.classList.add("ps-5", "py-1", "small");
           link.innerHTML =
-            `<span>${project.name}</span>` +
+            `<span>${project.reviewOf ? "&#8627; " : ""}${project.name}</span>` +
             `<small class="text-muted">${project.location}</small>`;
           link.addEventListener("click", e => {
             e.preventDefault();
@@ -309,7 +320,7 @@
       );
     }
 
-    processImportedCSV(csvString) {
+    processImportedCSV(csvString, { replaceNotes = false } = {}) {
       this.showStatus("Parsing standardized CSV data...", "info");
       const importedData = {};
       let message = "";
@@ -438,12 +449,42 @@
           }
         }
 
+        // Project notes (the last column) belong to Section 20, not the
+        // StateManager. Every cell under a header is kept above, an empty
+        // one as "", so the key is there exactly when the file has the column.
+        const fileHasNotes = "s18_notes" in importedData;
+        const notes = importedData.s18_notes ?? "";
+        delete importedData.s18_notes;
+        delete importedData.ref_s18_notes;
+
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
             "No valid data found in standardized CSV.",
             "warning"
           );
           return;
+        }
+
+        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
+        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
+        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On. After the
+        // check above: a value this supplies is not the file's, so a file with no data still changes
+        // nothing (Mark's #127 witness, a notes-only file)
+        if (!("f280_mode" in importedData)) {
+          for (const p of ["", "ref_"]) {
+            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
+            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
+          }
+        }
+
+        // A file with the column replaces the notes, an empty cell clearing
+        // them as a new building clears the Capital Budget below. A file
+        // without it was saved before notes travelled in the CSV and could
+        // not carry them: the notes on screen stay, unless the caller says
+        // the file is the whole project (a bundled sample). Below the check
+        // above, so a file that imports nothing changes nothing.
+        if (fileHasNotes || replaceNotes) {
+          window.TEUI.SectionModules.sect20?.setNotes(notes);
         }
 
         const targetCount = fieldIds.length;
@@ -590,6 +631,74 @@
         "d_116",
         "ref_d_116",
       ];
+
+      // The cooling choice read as the app now names it (Andy 2026-11-18,
+      // window.TEUI.CoolingSystem): an old file's "Cooling" is the heat pump
+      // cooling on a heat pump, a separate unit otherwise - before PASS 1, whose
+      // dropdown check would reject the old name.
+      const CS = window.TEUI.CoolingSystem;
+      if (CS) {
+        for (const prefix of ["", "ref_"]) {
+          const key = `${prefix}d_116`;
+          if (importedData[key] === undefined || importedData[key] === "")
+            continue;
+          const heating =
+            importedData[`${prefix}d_113`] ??
+            this.stateManager.getValue(`${prefix}d_113`);
+          importedData[key] = CS.normalize(importedData[key], heating);
+        }
+      }
+
+      // Fields added 2026-11-18 that older files lack: the field's own default,
+      // in either model, never the previous project's value. e_12, the 62.1
+      // space type ("" - VentilationRates resolves the occupancy's); l_63 and
+      // m_63, the bedrooms ("" - from the occupants) and dwelling units; g_59,
+      // the latent load's indoor state; e_118, HRV or ERV; l_122, the ERV's
+      // latent recovery; i_122, the latent method. A project file is known by
+      // d_12, its occupancy, which no standard's values carry
+      // (applyReferenceValuesFromStandard comes through here too).
+      const addedDefaults = {
+        e_12: "",
+        l_63: "",
+        m_63: "1",
+        g_59: "F280",
+        e_118: "HRV",
+        l_122: "0",
+        i_122: "F280",
+        // The opening rows after the first (added 2026-11-20, Openings.js), every column at its row's
+        // own default: a file without them has none (area 0), and a row + shows later starts clean -
+        // its orientation, SHGC, shading and U-value never the previous project's
+        ...Object.fromEntries(
+          window.TEUI.Openings.SLOTS.flatMap(o => [
+            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
+            `g_${o.s11}`,
+          ]).map(id => [id, String(this.fieldManager.getField(id)?.defaultValue ?? "")])
+        ),
+      };
+      // The display follows in the model on screen, as an imported value's
+      // does below: stampAll leaves a dropdown and a "" as they were.
+      const onScreen = window.TEUI.ReferenceToggle?.isReferenceMode?.()
+        ? "ref_"
+        : "";
+      for (const prefix of ["", "ref_"]) {
+        if (importedData[`${prefix}d_12`] === undefined) continue;
+        for (const [added, value] of Object.entries(addedDefaults)) {
+          if (importedData[`${prefix}${added}`] !== undefined) continue;
+          this.stateManager.setValue(`${prefix}${added}`, value, "imported");
+          if (prefix === onScreen) {
+            this.fieldManager.updateFieldDisplay(
+              added,
+              value,
+              this.fieldManager.getField(added)
+            );
+          }
+        }
+      }
+
+      // A project file: the opening rows shown are its own (those with an area), not those + showed
+      // before. "Set Values" (no d_12) leaves the rows as they are.
+      if (importedData.d_12 !== undefined) window.TEUI.Openings.resetShown();
+
       const allEntries = Object.entries(importedData);
 
       // PASS 1: Control fields
@@ -709,6 +818,13 @@
           const baseFieldId = isReferenceField ? fieldId.substring(4) : fieldId;
           const fieldDef = this.fieldManager.getField(baseFieldId);
 
+          // Stored keys with no field on the page (2026-11-19): d_21o, the CDD override (S03 d_21 shows the
+          // computed CDD; ComputationIntegration routes a typed CDD here)
+          if (!fieldDef && !isReferenceField && STORED_KEYS_WITHOUT_FIELD.includes(fieldId)) {
+            this.stateManager.setValue(fieldId, value, "imported");
+            updatedCount++;
+            return;
+          }
           if (!fieldDef && !isReferenceField) {
             console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
             skippedValidationCount++;
@@ -722,20 +838,8 @@
             // ✅ Reference fields: Store directly in StateManager without validation
             // Validation was already done by ExcelMapper normalization
             if (isReferenceField) {
-              // 🔒 CONDITIONAL IMPORT: Skip j_116 when heating system is Heatpump/Electric
-              // In these modes, j_116 (COPc) is CALCULATED from f_113 (HSPF), not user-editable
-              if (fieldId === "ref_j_116") {
-                const refD113Value = this.stateManager.getValue("ref_d_113");
-                if (
-                  refD113Value === "Heatpump" ||
-                  refD113Value === "Electric"
-                ) {
-                  console.log(
-                    `[FileHandler] ⏭️  Skipping ref_j_116 import (ref_d_113="${refD113Value}", calculated field)`
-                  );
-                  return; // Skip import - will be calculated by Section13
-                }
-              }
+              // ref_j_116 imports whatever the cooling: while the Reference's heat pump cools it is the
+              // Reference's COPc (Andy 2026-11-19, a default, not a lock)
 
               this.stateManager.setValue(fieldId, parsedValue, "imported");
               updatedCount++;
@@ -743,14 +847,11 @@
             }
 
             // 🔒 CONDITIONAL IMPORT: Same check for Target mode j_116
-            if (fieldId === "j_116") {
-              const d113Value = this.stateManager.getValue("d_113");
-              if (d113Value === "Heatpump" || d113Value === "Electric") {
-                console.log(
-                  `[FileHandler] ⏭️  Skipping j_116 import (d_113="${d113Value}", calculated field)`
-                );
-                return; // Skip import - will be calculated by Section13
-              }
+            if (fieldId === "j_116" && this.heatpumpCools("")) {
+              console.log(
+                "[FileHandler] ⏭️  Skipping j_116 import (the heat pump cools)"
+              );
+              return;
             }
 
             // Target fields: Validate and update DOM
@@ -864,6 +965,19 @@
     }
 
     /**
+     * True while the model's heat pump cools ("Heatpump Heats & Cools", or an
+     * old "Cooling" on a heat pump): M.3.3 is then M.1.3's to show, and a file
+     * neither reads nor writes it. prefix: "" Target, "ref_" Reference.
+     */
+    heatpumpCools(prefix) {
+      const cooling = this.stateManager.getValue(`${prefix}d_116`);
+      const heating = this.stateManager.getValue(`${prefix}d_113`);
+      const CS = window.TEUI.CoolingSystem;
+      if (!CS) return heating === "Heatpump" && cooling !== "No Cooling";
+      return CS.normalize(cooling, heating) === CS.HEATPUMP;
+    }
+
+    /**
      * Post-import UI fixups: repopulate dropdowns and update field lock states.
      * Calculator.calculateAll() after import handles: graph compute → syncToSM → stampAll.
      */
@@ -873,6 +987,12 @@
       const sect03 = window.TEUI?.SectionModules?.sect03;
       if (sect03?.syncLocationDropdowns) {
         sect03.syncLocationDropdowns();
+      }
+
+      // S02's 62.1 space type follows the imported occupancy
+      const sect02 = window.TEUI?.SectionModules?.sect02;
+      if (sect02?.syncSpaceTypeDropdown) {
+        sect02.syncSpaceTypeDropdown();
       }
 
       // Update field lock states after import — import sets d_113/d_51 via
@@ -992,7 +1112,9 @@
           throw new Error(`Failed to fetch ${project.file}: ${response.status}`);
         }
         const csvContent = await response.text();
-        this.processImportedCSV(csvContent);
+        // Most bundled samples have no notes column; the confirm above said
+        // all current data is replaced, so the notes go with it.
+        this.processImportedCSV(csvContent, { replaceNotes: true });
         this.showStatus(`Sample project "${plainName}" loaded successfully.`, "success");
       } catch (error) {
         console.error("[FileHandler] Error loading sample project:", error);
@@ -1042,6 +1164,7 @@
         const userEditableFieldIds = [
           // Section 02: Building Information
           "d_12",
+          "e_12",
           "d_13",
           "d_14",
           "d_15",
@@ -1064,9 +1187,18 @@
           "h_21",
           "i_21",
           "m_19",
-          "l_20",
-          "l_21",
+          // G.4.4-G.4.8: BASESIMP's inputs (2026-11-19; G.4.3's method is F280 Mode's)
+          "l_25",
+          "d_26",
+          "h_26",
+          "l_26",
+          "d_26b",
+          // l_20 / l_21 are read from the climate station now, not exported
           "l_24",
+          // d_21o: the user's CDD OVERRIDE only, empty when the city's value stands (2026-11-19, Andy:
+          // "yes"; d_21 itself is the computed CDD - exported, it would pin the city's value). l_22
+          // elevation is not exported: no node reads it and none takes an override (display only).
+          "d_21o",
 
           // Section 04: Actual Energy
           "d_27",
@@ -1079,6 +1211,7 @@
           "l_30",
           "l_31", // l_27 removed (calculated field)
           "h_35",
+          "l_33", // the nuclear-waste factor (not exported before 2026-11-19)
 
           // Section 05: Emissions
           "d_39",
@@ -1107,9 +1240,12 @@
           "d_58",
           "d_59",
           "i_59",
+          "g_59",
 
           // Section 09: Occupant Gains
           "d_63",
+          "l_63",
+          "m_63",
           "g_63",
           "d_64",
           "d_66",
@@ -1169,12 +1305,32 @@
           "d_96",
           "d_97",
 
+          // The opening rows after the first (Openings.js): S10's area, orientation, SHGC, shading;
+          // S11's U-value (its area is S10's)
+          ...window.TEUI.Openings.SLOTS.flatMap(o => [
+            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
+            `g_${o.s11}`,
+          ]),
+
           // Section 12: Volume Metrics
           "d_103",
           "g_103",
           "d_105",
           "d_108",
           "g_109",
+          "g_106", // floor-to-floor height (not exported before 2026-11-19)
+          // B.19.2-B.19.12: AIM-2's inputs (2026-11-19; B.19.1's method is F280 Mode's)
+          "g_111",
+          "d_112",
+          "g_112",
+          "d_112b",
+          "g_112b",
+          "d_112c",
+          "g_112c",
+          "d_112d",
+          "g_112d",
+          "d_112e",
+          "g_112e",
 
           // Section 13: Mechanical Loads
           "d_113",
@@ -1183,14 +1339,38 @@
           "j_116",
           "d_116",
           "d_118",
+          "e_118",
           "g_118",
           "l_118",
           "d_119",
           "l_119",
           "k_120",
+          "l_122",
+          "i_122",
+          "l_123",
+
+          // Section 21: F280 Mode (Off hides the F280-only inputs; two streams, 2026-11-19) and the F280
+          // form - project, capacities, designer (not exported before 2026-11-19: lost on every save)
+          "f280_mode",
+          "f280_proj_num",
+          "f280_code_ref",
+          "f280_cap_heat",
+          "f280_cap_cool",
+          "f280_dsgn_name",
+          "f280_dsgn_co",
+          "f280_cert_type",
+          "f280_cert_num",
+          "f280_svc_org",
+          "f280_attest",
 
           // Section 15: Summary
           "d_142",
+
+          // Section 19: Wombat's own settings (not exported before 2026-11-19; d_150 / d_151 mirror S12)
+          "d_154",
+          "d_158",
+          "d_159",
+          "d_160",
         ];
 
         const targetValues = [];
@@ -1198,7 +1378,7 @@
 
         // ✅ FIELD PRECISION FORMATTING: Apply specific decimal precision during export
         // U-values (g_88-g_93): Minimum 3dp for thermal accuracy
-        const uValueFields = ["g_88", "g_89", "g_90", "g_91", "g_92", "g_93"];
+        const uValueFields = ["g_88", "g_89", "g_90", "g_91", "g_92", "g_93", ...window.TEUI.Openings.SLOTS.map(o => `g_${o.s11}`)];
 
         // Coefficient fields that need 2dp precision
         const coefficient2dpFields = ["j_115", "j_116"];
@@ -1215,9 +1395,11 @@
             return rawValue; // Return as-is if not numeric
           }
 
-          // U-values: 3dp minimum (e.g., "0.180", "0.250")
+          // U-values: 3dp MINIMUM (e.g., "0.180", "0.250") - never fewer than stored: toFixed(3) cut
+          // 0.9091 to 0.909 and 1.5625 to 1.563 on every round trip (found 2026-11-19, F280-1)
           if (uValueFields.includes(fieldId)) {
-            return numVal.toFixed(3);
+            const decimals = (String(rawValue).split(".")[1] || "").length;
+            return decimals > 3 ? String(rawValue) : numVal.toFixed(3);
           }
 
           // Coefficients: 2dp (e.g., "0.90", "2.66")
@@ -1231,39 +1413,21 @@
 
         // Get values for each field in the explicit list
         userEditableFieldIds.forEach(fieldId => {
-          // ✅ CONDITIONAL EXPORT: Skip j_116 when d_113="Heatpump"
-          // When Heatpump, j_116 is calculated from j_113, not user-editable
-          // Exporting empty string ensures import won't overwrite calculated value
+          // ✅ CONDITIONAL EXPORT: j_116 empty while the heat pump cools - M.3.3
+          // then shows M.1.3, so an import must not overwrite it
           if (fieldId === "j_116") {
-            const d113Value = this.stateManager.getValue("d_113");
-            if (d113Value === "Heatpump") {
-              targetValues.push(""); // Export empty - j_116 is calculated
-              console.log(
-                "[FileHandler] j_116 export skipped (d_113=Heatpump, calculated field)"
-              );
+            if (this.heatpumpCools("")) {
+              targetValues.push("");
             } else {
               const targetValue = this.stateManager.getValue(fieldId) ?? "";
               const formattedTarget = formatExportValue(fieldId, targetValue);
               targetValues.push(escapeCSV(formattedTarget));
             }
 
-            // Same logic for Reference mode
-            const refD113Value = this.stateManager.getValue("ref_d_113");
-            if (refD113Value === "Heatpump") {
-              referenceValues.push(""); // Export empty - ref_j_116 is calculated
-              console.log(
-                "[FileHandler] ref_j_116 export skipped (ref_d_113=Heatpump, calculated field)"
-              );
-            } else {
-              const refFieldId = `ref_${fieldId}`;
-              const referenceValue =
-                this.stateManager.getValue(refFieldId) ?? "";
-              const formattedReference = formatExportValue(
-                fieldId,
-                referenceValue
-              );
-              referenceValues.push(escapeCSV(formattedReference));
-            }
+            // The Reference's M.3.3 always: while its heat pump cools it is the Reference's COPc (the
+            // standard's minimum by default, or the user's - Andy 2026-11-19; it was blanked)
+            const referenceValue = this.stateManager.getValue(`ref_${fieldId}`) ?? "";
+            referenceValues.push(escapeCSV(formatExportValue(fieldId, referenceValue)));
             return; // Skip normal export logic for j_116
           }
 
@@ -1301,9 +1465,18 @@
             return escapeCSV(combinedHeader);
           })
           .join(",");
-        const targetRow = targetValues.join(",");
-        const referenceRow = referenceValues.join(",");
-        const csvContent = headerRow + "\n" + targetRow + "\n" + referenceRow;
+        // Project notes ride as the last column, Target row only (import
+        // splits rows on newlines, so a note's line breaks become spaces)
+        const notes = window.TEUI.SectionModules.sect20?.getNotes() || "";
+        const notesHeader = escapeCSV("s18_notes: Project Notes");
+        const notesCell = escapeCSV(notes.replace(/\r?\n/g, " "));
+        const targetRow = [...targetValues, notesCell].join(",");
+        const referenceRow = [...referenceValues, ""].join(",");
+        const csvContent = [
+          `${headerRow},${notesHeader}`,
+          targetRow,
+          referenceRow,
+        ].join("\n");
 
         // Future: Add OBC Matrix export here as additional rows (Row 4+)
         // const obcHeaderRow = "# OBC Matrix Data";

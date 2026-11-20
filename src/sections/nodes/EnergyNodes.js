@@ -489,7 +489,14 @@
     // S15: PEAK LOADS + COSTS + TEUI COMPARISON
     // ========================================================================
 
-    // d_137: Peak Heating Load (Enclosure Only) = (G101×D101 + D102×G102) × (H23−D23) / 1000
+    // d_137: Peak Heating Load (Enclosure Only)
+    //   = (G101×D101 × (H23−D23) + D102×G102 × (H23−10)) / 1000
+    // Ground-facing surfaces see the ground at 10 °C, as the annual method does (climate.groundFacing.hdd);
+    // they used to take the outdoor design temperature, as if a slab sat in January air (Andy 2026-11-18).
+    // F280 Mode On, BASESIMP (Andy 2026-11-19): the ground-facing term is instead the foundation's January
+    // design load by CSA F280-12 Cl. 5.2.2.1 (ground.basesimp, BasementHLR.xls's Loads!B49), which
+    // covers the whole below-grade wall (its above-grade strip included) and the slab - S11 rows 94-95,
+    // the same surfaces as D102. When BASESIMP cannot run (a missing input), so does this: Unavailable.
     {
       id: "energy.peakHeating.enclosureKw",
       legacyId: "d_137",
@@ -498,8 +505,10 @@
         "envelope.airFacing.area",
         "envelope.groundFacing.uValue",
         "envelope.groundFacing.area",
-        "climate.heating.setpoint",
-        "climate.temperature.coldest"
+        "climate.heating.obcSetpoint", // the DESIGN set-point (sizing), not the energy one
+        "climate.temperature.coldest",
+        "ground.methodInEffect",
+        "ground.basesimp"
       ],
       classification: "C",
       section: "S15",
@@ -509,15 +518,26 @@
         const d101 = parseNum(inputs["envelope.airFacing.area"], 0);
         const g102 = parseNum(inputs["envelope.groundFacing.uValue"], 0);
         const d102 = parseNum(inputs["envelope.groundFacing.area"], 0);
-        const setpoint = parseNum(inputs["climate.heating.setpoint"], 22);
+        const setpoint = parseNum(inputs["climate.heating.obcSetpoint"], 22);
         const coldest = parseNum(inputs["climate.temperature.coldest"], -22);
-        const deltaT = setpoint - coldest;
-        if (deltaT <= 0) return 0;
-        return (g101 * d101 + d102 * g102) * deltaT / 1000;
+        const groundTemp = 10; // OBJECTIVE's ground (ClimateNodes, TransmissionLossNodes, VolumeMetricsNodes)
+        const airDeltaT = Math.max(0, setpoint - coldest);
+        const air = g101 * d101 * airDeltaT;
+        if (inputs["ground.methodInEffect"] === "BASESIMP") {
+          const bs = inputs["ground.basesimp"];
+          if (!bs || bs.error) return "Unavailable";
+          return (air + bs.heatingLoad) / 1000;
+        }
+        const groundDeltaT = Math.max(0, setpoint - groundTemp);
+        return (air + d102 * g102 * groundDeltaT) / 1000;
       }
     },
 
-    // d_138: Peak Cooling Load (Enclosure Only) = (G101×D101 + D102×G102) × (D24−H24) / 1000
+    // d_138: Peak Cooling Load (Enclosure Only)
+    //   = (G101×D101 × (D24−H24) + D102×G102 × MAX(0, 10−H24)) / 1000
+    // Ground-facing surfaces see the ground at 10 °C, below the cooling setpoint: no gain at the design
+    // hour, and no credit either - a credit would undersize the cooling (Andy: over, never under; F280
+    // takes no below-grade gain). They used to take the outdoor design temperature, a gain.
     {
       id: "energy.peakCooling.enclosureKw",
       legacyId: "d_138",
@@ -539,28 +559,34 @@
         const d102 = parseNum(inputs["envelope.groundFacing.area"], 0);
         const hottest = parseNum(inputs["climate.temperature.hottest"], 34);
         const coolSetpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
-        const deltaT = hottest - coolSetpoint;
-        if (deltaT <= 0) return 0;
-        return (g101 * d101 + d102 * g102) * deltaT / 1000;
+        const groundTemp = 10; // OBJECTIVE's ground, as above
+        const airDeltaT = Math.max(0, hottest - coolSetpoint);
+        const groundDeltaT = Math.max(0, groundTemp - coolSetpoint);
+        return (g101 * d101 * airDeltaT + d102 * g102 * groundDeltaT) / 1000;
       }
     },
 
     // d_139: Peak Cooling Load (Enclosure + Gains)
-    // = ((G101×D101+D102×G102)×(D24−H24) + (D65+D66+D67)×H15) / 1000
-    //   + (K79 + D122 + K64 − H124) / (M19×24)
+    // = d_138 (the enclosure, ground-facing at 10 °C) + (D65+D66+D67)×H15 / 1000
+    //   + (K79 + D122 + K64) / (M19×24)
+    // Free cooling (h_124) is no longer subtracted (Andy 2026-10-30): at the
+    // design hour there is none. The peak is SENSIBLE: D122 and K64 carry
+    // the annual latent load (F280 Annex B), taken back out here - the
+    // latent enters the sizing once, at F280's design conditions
+    // (cooling.latentLoadFactor).
     {
       id: "energy.peakCooling.totalKw",
       legacyId: "d_139",
       dependencies: [
         "energy.peakCooling.enclosureKw",
         "internal.plugLoadDensity",
-        "internal.lightingDensity",
+        "internal.lightingDensity.inEffect",
         "internal.equipmentDensity",
         "building.conditionedFloorArea",
         "radiantGains.subtotal.coolingGain",
         "ventilation.heatGain",
         "internal.occupants.coolingGain",
-        "cooling.freeCoolingLimit",
+        "cooling.iso52016",
         "climate.coolingDays"
       ],
       classification: "C",
@@ -571,19 +597,19 @@
         const enclosureKw = parseNum(inputs["energy.peakCooling.enclosureKw"], 0);
         // Internal gains density (W/m²) × area → kW
         const d65 = parseNum(inputs["internal.plugLoadDensity"], 0);
-        const d66 = parseNum(inputs["internal.lightingDensity"], 0);
+        const d66 = parseNum(inputs["internal.lightingDensity.inEffect"], 0);
         const d67 = parseNum(inputs["internal.equipmentDensity"], 0);
         const area = parseNum(inputs["building.conditionedFloorArea"], 1);
         const internalGainsKw = (d65 + d66 + d67) * area / 1000;
         // Annual kWh gains → average kW during cooling season
         const k79 = parseNum(inputs["radiantGains.subtotal.coolingGain"], 0);
-        const d122 = parseNum(inputs["ventilation.heatGain"], 0);
-        const k64 = parseNum(inputs["internal.occupants.coolingGain"], 0);
-        const h124 = parseNum(inputs["cooling.freeCoolingLimit"], 0);
+        const latent = inputs["cooling.iso52016"]?.latent;
+        const d122 = parseNum(inputs["ventilation.heatGain"], 0) - (latent?.vent ?? 0);
+        const k64 = parseNum(inputs["internal.occupants.coolingGain"], 0) - (latent?.people ?? 0);
         const coolingDays = parseNum(inputs["climate.coolingDays"], 120);
         let result = enclosureKw + internalGainsKw;
         if (coolingDays > 0) {
-          result += (k79 + d122 + k64 - h124) / (coolingDays * 24);
+          result += (k79 + d122 + k64) / (coolingDays * 24);
         }
         return result;
       }

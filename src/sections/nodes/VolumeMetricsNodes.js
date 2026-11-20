@@ -58,10 +58,99 @@
     return 6;
   }
 
+  // AIM2.xls's selections from S12's dropdown codes (Aim2Data's names)
+  const AIM2_STOREYS = { 1: "One", 1.5: "One & Half", 2: "Two", 2.5: "Two & Half", 3: "Three" };
+  const AIM2_BALANCE = ["Balanced", "Exhaust only", "Supply only"];
+
+  /**
+   * AIM2.xls's inputs from the model (CSA F280-12 Cl. 5.2.3): the house's ACH50 (S12 B.18.2, d_109) and,
+   * for "Custom", its ELA at 10 Pa (B.19.3, cm2) - or one of AIM2's prescribed air-tightness types, which
+   * carry their own ACH50 and ELA; the volume d_105; storeys d_103 (AIM-2's table covers 1-3); the
+   * ventilation L/s (S13 d_120) as Balanced / Exhaust only / Supply only; the January / July design wind
+   * from F280's weather table (F280Weather.js); the design temperatures S03 B.1.2 (design set-point),
+   * B.1.3, L.3.1, L.3.2. The annual rate (Aim2.seasonalRate) runs the same house through the climate
+   * station's twelve months (mean temperature, mean wind, HDD weights) at the energy set-point; it is
+   * absent until the station has loaded (ClimateStation.request recalculates on arrival).
+   * Returns { design, seasonal, inputs } or { error } naming what is missing - never a substitute value.
+   */
+  function aim2For(inputs) {
+    const A = window.TEUI.Aim2;
+    const W = window.TEUI.F280Weather;
+    if (!A || !W) return { error: "AIM-2 is not loaded" };
+    const volume = parseNum(inputs["volume.conditioned"]);
+    if (!(volume > 0)) return { error: "no conditioned volume (S12 d_105)" };
+    const storeys = AIM2_STOREYS[parseNum(inputs["volume.numStoreys"])];
+    if (!storeys) return { error: `AIM-2 covers houses of 1 to 3 storeys (S12 d_103 = ${inputs["volume.numStoreys"]})` };
+    // B.19.4 blank: the storeys x S12's Typ. F2F Ht. (g_106; Andy 2026-11-19: "It's Typ. F2F Ht. in S12").
+    // F280-1's Annex-derived 5.53 m over 2 storeys is 2.77 m a storey.
+    const typedHeight = parseNum(inputs["aim2.ceilingHeight"]);
+    const height = typedHeight > 0
+      ? typedHeight
+      : parseNum(inputs["volume.numStoreys"]) * parseNum(inputs["volume.floorToFloorHeight"]);
+    if (!(height > 0)) return { error: "no highest-ceiling height above grade (S12 B.19.4, or d_103 x g_106)" };
+    const tightness = inputs["aim2.tightness"] || "Custom";
+    const ach50 = parseNum(inputs["airTightness.ach50Target"]);
+    // B.19.3 blank for Custom: the ELA from B.18.2's ACH50 at AIM2's nearest prescribed type's flow
+    // exponent - the ELA S12 B.18.4 (NLA10) already takes without a measured one.
+    const typedEla = parseNum(inputs["aim2.ela"]);
+    const ela = tightness !== "Custom" || typedEla > 0
+      ? typedEla
+      : ach50 > 0 ? A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) : 0;
+    if (tightness === "Custom" && !(ela > 0)) return { error: "no ELA at 10 Pa for Custom (S12 B.19.3), and no ACH50 (B.18.2) to derive one" };
+    const city = inputs["climate.location.city"];
+    const weather = W.lookup(inputs["climate.location.province"], city);
+    if (!weather) return { error: `F280's weather table does not list ${city}` };
+    const vent = parseNum(inputs["ventilation.volumetricRate"]);
+    const balance = inputs["aim2.ventilationBalance"] || "Balanced";
+    if (!AIM2_BALANCE.includes(balance)) return { error: `unknown ventilation balance "${balance}"` };
+    const p = {
+      indoorHeating: parseNum(inputs["climate.heating.obcSetpoint"], 22),
+      indoorCooling: parseNum(inputs["climate.cooling.setpoint"], 24),
+      designHeating: parseNum(inputs["climate.temperature.coldest"]),
+      designCooling: parseNum(inputs["climate.temperature.hottest"]),
+      janWind: weather.janWind,
+      julWind: weather.julWind,
+      stationTerrain: parseNum(inputs["aim2.stationTerrain"], 3),
+      anemometerHeight: 10,
+      siteTerrain: parseNum(inputs["aim2.siteTerrain"], 4),
+      wallShielding: parseNum(inputs["aim2.wallShielding"], 2),
+      flueShielding: parseNum(inputs["aim2.flueShielding"], 2),
+      buildingType: inputs["aim2.buildingType"] || "Detached",
+      storeys,
+      foundation: inputs["aim2.foundation"] || "Full",
+      tightness,
+      ach50,
+      ela,
+      elaPa: 10,
+      volume,
+      ceilingHeight: height,
+      flues: [parseNum(inputs["aim2.flueDiameter"])],
+      supplyLs: balance === "Exhaust only" ? 0 : vent,
+      exhaustLs: balance === "Supply only" ? 0 : vent,
+      furnaceFlueLs: 0
+    };
+    let design;
+    try {
+      design = A.compute(p);
+    } catch (e) {
+      return { error: e.message };
+    }
+    let seasonal = null;
+    const CS = window.TEUI.ClimateStation;
+    const station = CS && inputs["climate.station"] ? CS.request(inputs["climate.station"]) : null;
+    if (station?.months) {
+      const m = station.months;
+      seasonal = A.seasonalRate(p, parseNum(inputs["climate.heating.setpoint"], 21), m.t_mean, m.wind_mean, m.hdd18);
+    }
+    return { design, seasonal, inputs: p, weather, derived: { ceilingHeight: !(typedHeight > 0), ela: tightness === "Custom" && !(typedEla > 0) } };
+  }
+
   function register(graph) {
     const inputs = [
       // Volume inputs (from Section12.js field mappings)
       { id: "volume.floorToFloorHeight", legacyId: "g_106", section: "S12", classification: "C", label: "Floor-to-Floor Height (m)", defaultValue: 2.7 },
+      // S19 (Wombat) 19.1: the footprint's aspect ratio, the slider's own default (Section19.js d_154)
+      { id: "wombat.aspectRatio", legacyId: "d_154", section: "S19", classification: "C", label: "Footprint Aspect Ratio (L:W)", defaultValue: -2.0 },
       { id: "volume.numStoreys", legacyId: "d_103", section: "S12", classification: "C", label: "Number of Storeys", defaultValue: 1.5 },
       { id: "airTightness.shielding", legacyId: "g_103", section: "S12", classification: "C", label: "Shielding", defaultValue: "Normal" },
 
@@ -71,6 +160,21 @@
 
       // Conditioned volume (user input or from S02)
       { id: "volume.conditioned", legacyId: "d_105", section: "S12", classification: "C", label: "Conditioned Volume (m³)", defaultValue: 0 },
+
+      // B.19.2-B.19.14: AIM-2's inputs (F280 Mode picks the method) (CSA F280-12 Cl. 5.2.3, AIM2.xls;
+      // src/core/Aim2.js). Defaults: OBJECTIVE's N-factor; AIM-2's site as F280's archetypes (H.1-H.4:
+      // "Low crops x/H > 20", "Light local shielding" walls and flue), the station open flat (AIM2.xls's).
+      { id: "aim2.tightness", legacyId: "g_111", section: "S12", classification: "C", label: "Air Tightness (AIM-2)", defaultValue: "Custom" },
+      { id: "aim2.ela", legacyId: "d_112", section: "S12", classification: "C", label: "ELA at 10 Pa for Custom (cm²)", defaultValue: 0 },
+      { id: "aim2.ceilingHeight", legacyId: "g_112", section: "S12", classification: "C", label: "Highest Ceiling Above Grade (m)", defaultValue: 0 },
+      { id: "aim2.siteTerrain", legacyId: "d_112b", section: "S12", classification: "C", label: "Building Site Terrain", defaultValue: 4 },
+      { id: "aim2.stationTerrain", legacyId: "g_112b", section: "S12", classification: "C", label: "Weather Station Terrain", defaultValue: 3 },
+      { id: "aim2.wallShielding", legacyId: "d_112c", section: "S12", classification: "C", label: "Wall Shielding", defaultValue: 2 },
+      { id: "aim2.flueShielding", legacyId: "g_112c", section: "S12", classification: "C", label: "Flue Shielding", defaultValue: 2 },
+      { id: "aim2.buildingType", legacyId: "d_112d", section: "S12", classification: "C", label: "House Type", defaultValue: "Detached" },
+      { id: "aim2.foundation", legacyId: "g_112d", section: "S12", classification: "C", label: "Foundation Type", defaultValue: "Full" },
+      { id: "aim2.ventilationBalance", legacyId: "d_112e", section: "S12", classification: "C", label: "Ventilation Balance", defaultValue: "Balanced" },
+      { id: "aim2.flueDiameter", legacyId: "g_112e", section: "S12", classification: "C", label: "Flue Diameter (mm)", defaultValue: 0 },
     ];
 
     graph.registerInputs(inputs);
@@ -204,9 +308,23 @@
       legacyId: "h_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.uValue", "climate.groundFacing.hdd"],
+      dependencies: [
+        "envelope.groundFacing.uValue",
+        "climate.groundFacing.hdd",
+        "ground.methodInEffect",
+        "ground.basesimp",
+        "envelope.groundFacing.area"
+      ],
       label: "Heat Loss Rate (Ag) (kWh/m²/yr)",
       compute: (inputs) => {
+        // F280 Mode On (BASESIMP): the foundation's heating-season loss per m2 of ground-facing area, so
+        // i_102 = h_102 x d_102 is BASESIMP's (ground.basesimp.annual, S11 rows 94-95 the same split)
+        if (inputs["ground.methodInEffect"] === "BASESIMP") {
+          const bs = inputs["ground.basesimp"];
+          const area = parseNum(inputs["envelope.groundFacing.area"]);
+          if (!bs || bs.error || !(area > 0)) return "Unavailable";
+          return bs.annual.total / area;
+        }
         const groundHdd = inputs["climate.groundFacing.hdd"];
         if (isUnavailable(groundHdd)) return "Unavailable";
         // h_102 = (g_102 × Ground HDD × 24) / 1000
@@ -242,9 +360,13 @@
       legacyId: "i_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area"],
+      dependencies: ["envelope.groundFacing.heatLossRate", "envelope.groundFacing.area", "ground.methodInEffect"],
       label: "Total Heat Loss (Ag) (kWh/yr)",
       compute: (inputs) => {
+        // BASESIMP missing an input: Unavailable, never 0 kWh (the OBJECTIVE path keeps its old reading)
+        if (inputs["ground.methodInEffect"] === "BASESIMP" && inputs["envelope.groundFacing.heatLossRate"] === "Unavailable") {
+          return "Unavailable";
+        }
         // i_102 = h_102 × d_102
         const rate = parseNum(inputs["envelope.groundFacing.heatLossRate"]);
         const area = parseNum(inputs["envelope.groundFacing.area"]);
@@ -257,24 +379,28 @@
     // Migrated from EnvelopeNodes.js during consolidation
     // ========================================================================
 
-    // j_101: Heat Gain Rate (Air-Facing)
-    graph.registerNode({
-      id: "envelope.airFacing.heatGainRate",
-      legacyId: "j_101",
-      section: "S12",
-      classification: "C",
-      dependencies: ["envelope.airFacing.uValue", "climate.cooling.degreedays"],
-      label: "Heat Gain Rate (Ae) (kWh/m²)",
-      compute: (inputs) => {
-        const cdd = inputs["climate.cooling.degreedays"];
-        // Legacy returns 0 when CDD unavailable
-        if (isUnavailable(cdd)) return 0;
+    // Heat gains (rows 101-102): each envelope's share of the unmitigated
+    // ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js) - the sum
+    // of its S11 components' shares, opaque solar included; the j column is
+    // that per m².
+    const OPENINGS = window.TEUI.Openings;
+    const AIR_KEYS = ["roof", "walls", "exposedFloor", "doors", "windowNorth", "windowEast",
+      "windowSouth", "windowWest", "skylights", ...OPENINGS.SLOTS.map(o => o.id)];
 
-        const u = parseNum(inputs["envelope.airFacing.uValue"], 0);
-        // Heat gain = U × CDD × 24 / 1000
-        return (u * parseNum(cdd) * 24) / 1000;
-      }
-    });
+    // The openings in the WALLS (d_107 WWR, g_107 wall area, i_107 window & door loss): every door and
+    // window row but the skylights - row 78 (G.8.5), and a later window row its S10 row faces Skylight
+    const WALL_OPENINGS = OPENINGS.ALL.filter(o => o.kind !== "skylight");
+    const wallOpeningDeps = (suffix) => WALL_OPENINGS.flatMap(o => [
+      `transmissionLoss.${o.id}.${suffix}`,
+      ...(OPENINGS.isSlot(o) ? [`radiantGains.row${o.s10}.orientation`] : [])
+    ]);
+    const sumWallOpenings = (inputs, suffix) => WALL_OPENINGS.reduce((sum, o) =>
+      OPENINGS.isSlot(o) && inputs[`radiantGains.row${o.s10}.orientation`] === "Skylight"
+        ? sum
+        : sum + parseNum(inputs[`transmissionLoss.${o.id}.${suffix}`]), 0);
+    const GROUND_KEYS = ["wallsBelowGrade", "slabOnGrade"];
+    const share = (inputs, keys) =>
+      keys.reduce((s, k) => s + (inputs["cooling.iso52016"]?.rows?.[k] ?? 0), 0);
 
     // k_101: Total Heat Gain (Air-Facing)
     graph.registerNode({
@@ -282,28 +408,22 @@
       legacyId: "k_101",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.airFacing.heatGainRate", "envelope.airFacing.area"],
+      dependencies: ["cooling.iso52016"],
       label: "Total Heat Gain (Ae) (kWh/yr)",
-      compute: (inputs) => {
-        const rate = parseNum(inputs["envelope.airFacing.heatGainRate"], 0);
-        const area = parseNum(inputs["envelope.airFacing.area"], 0);
-        return rate * area;
-      }
+      compute: (inputs) => share(inputs, AIR_KEYS)
     });
 
-    // j_102: Heat Gain Rate (Ground-Facing)
+    // j_101: Heat Gain Rate (Air-Facing)
     graph.registerNode({
-      id: "envelope.groundFacing.heatGainRate",
-      legacyId: "j_102",
+      id: "envelope.airFacing.heatGainRate",
+      legacyId: "j_101",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.uValue", "climate.groundFacing.cdd"],
-      label: "Heat Gain Rate (Ag) (kWh/m²)",
+      dependencies: ["envelope.airFacing.totalHeatGain", "envelope.airFacing.area"],
+      label: "Heat Gain Rate (Ae) (kWh/m²)",
       compute: (inputs) => {
-        const gfcdd = inputs["climate.groundFacing.cdd"];
-        const u = parseNum(inputs["envelope.groundFacing.uValue"], 0);
-        // Heat gain = U × GF_CDD × 24 / 1000
-        return (u * parseNum(gfcdd, 0) * 24) / 1000;
+        const area = parseNum(inputs["envelope.airFacing.area"], 0);
+        return area > 0 ? parseNum(inputs["envelope.airFacing.totalHeatGain"]) / area : 0;
       }
     });
 
@@ -313,12 +433,22 @@
       legacyId: "k_102",
       section: "S12",
       classification: "C",
-      dependencies: ["envelope.groundFacing.heatGainRate", "envelope.groundFacing.area"],
+      dependencies: ["cooling.iso52016"],
       label: "Total Heat Gain (Ag) (kWh/yr)",
+      compute: (inputs) => share(inputs, GROUND_KEYS)
+    });
+
+    // j_102: Heat Gain Rate (Ground-Facing)
+    graph.registerNode({
+      id: "envelope.groundFacing.heatGainRate",
+      legacyId: "j_102",
+      section: "S12",
+      classification: "C",
+      dependencies: ["envelope.groundFacing.totalHeatGain", "envelope.groundFacing.area"],
+      label: "Heat Gain Rate (Ag) (kWh/m²)",
       compute: (inputs) => {
-        const rate = parseNum(inputs["envelope.groundFacing.heatGainRate"], 0);
         const area = parseNum(inputs["envelope.groundFacing.area"], 0);
-        return rate * area;
+        return area > 0 ? parseNum(inputs["envelope.groundFacing.totalHeatGain"]) / area : 0;
       }
     });
 
@@ -327,16 +457,24 @@
     // From Section12.js calculateACH50Target and calculateAirLeakageHeatLoss
     // ========================================================================
 
-    // NRL50 preset lookup values (from Section12.js line 2076-2090)
-    const NRL50_PRESETS = {
-      "AL-1A": 0.89,
-      "AL-2A": 0.71,
-      "AL-3A": 0.53,
-      "AL-4A": 0.35,
-      "AL-1B": 1.17,
-      "AL-2B": 0.94,
-      "AL-3B": 0.70,
-      "AL-4B": 0.47
+    // The Airtightness Levels, NBC 2025 Tables 9.36.5.4.-A (single and attached zones, guarded) and
+    // 9.36.5.4.-B (attached zones, unguarded); the same values as NBC 2020 Tables 9.36.6.4.-A/-B. Each
+    // level's maximum ACH50, NLA10 (cm2/m2) and NLR50 (L/s.m2); a level is met by any one of the three
+    // (9.36.5.4.(1)). Read from the code 2026-11-19: the old NRL50-only table (from the legacy
+    // Section12.js) had AL-2B 0.94, AL-3B 0.70, AL-4B 0.47 (the code: 0.98, 0.78, 0.59), and no AL-5A,
+    // AL-5B or AL-6B, which the B.18.1 dropdown offers and which fell back to AL-1B's 1.17.
+    const AIRTIGHTNESS_LEVELS = {
+      "AL-1A": { ach50: 2.5, nla10: 1.20, nlr50: 0.89 },
+      "AL-2A": { ach50: 2.0, nla10: 0.96, nlr50: 0.71 },
+      "AL-3A": { ach50: 1.5, nla10: 0.72, nlr50: 0.53 },
+      "AL-4A": { ach50: 1.0, nla10: 0.48, nlr50: 0.35 },
+      "AL-5A": { ach50: 0.6, nla10: 0.29, nlr50: 0.21 },
+      "AL-1B": { ach50: 3.0, nla10: 1.92, nlr50: 1.17 },
+      "AL-2B": { ach50: 2.5, nla10: 1.6, nlr50: 0.98 },
+      "AL-3B": { ach50: 2.0, nla10: 1.28, nlr50: 0.78 },
+      "AL-4B": { ach50: 1.5, nla10: 0.96, nlr50: 0.59 },
+      "AL-5B": { ach50: 1.0, nla10: 0.64, nlr50: 0.39 },
+      "AL-6B": { ach50: 0.6, nla10: 0.38, nlr50: 0.23 },
     };
 
     // g_108: NRL50 Target (Normalized Leakage Rate at 50Pa in L/s/m²)
@@ -373,10 +511,10 @@
           return achToNrl(1.0);
         } else if (method === "PH_PLUS") {
           return 0.1;
-        } else {
-          // Use preset value from lookup table
-          return NRL50_PRESETS[method] || 1.17;
         }
+        const level = AIRTIGHTNESS_LEVELS[method];
+        if (!level) throw new Error(`S12 B.18.1: "${method}" is not an Airtightness Level (NBC 9.36.5.4.)`);
+        return level.nlr50;
       }
     });
 
@@ -441,6 +579,91 @@
       }
     });
 
+    // ========================================================================
+    // WOMBAT'S FOOTPRINT (S19 19.1-19.2b; Andy 2026-11-19: "As for its perimeter: could we not add that as a
+    // field in Wombat? Then all a user needs to do is tweak the aspect ratio"). The rectangle Section19.js
+    // solves (solveGeometry): S11's slab area kept exactly (else the exposed floor's), the slider's L:W
+    // (0 = square; +k = 1 + k, -k = 1 / (1 + k)); width = sqrt(A / ratio), length = A / width. Its perimeter is
+    // S03 G.4.6's when G.4.6 is blank (BASESIMP; the whole outline exposed).
+    // ========================================================================
+    graph.registerNode({
+      id: "wombat.footprint",
+      section: "S19",
+      classification: "C",
+      dependencies: ["transmissionLoss.slabOnGrade.area", "transmissionLoss.exposedFloor.area", "wombat.aspectRatio"],
+      label: "Wombat Footprint",
+      compute: (inputs) => {
+        const slab = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
+        const area = slab > 0 ? slab : parseNum(inputs["transmissionLoss.exposedFloor.area"]);
+        if (!(area > 0)) return "Unavailable"; // no footprint: S11 has neither a slab nor an exposed floor
+        const raw = parseNum(inputs["wombat.aspectRatio"], -2.0);
+        const ratio = raw >= 0 ? 1 + raw : 1 / (1 - raw);
+        const width = Math.sqrt(area / ratio);
+        const length = area / width;
+        return { area, length, width, perimeter: 2 * (length + width) };
+      }
+    });
+    for (const [key, legacyId, label] of [["length", "h_157", "Footprint Length (m)"], ["width", "h_155", "Footprint Width (m)"],
+      ["perimeter", "h_155b", "Footprint Perimeter (m)"]]) {
+      graph.registerNode({
+        id: `wombat.footprint.${key}`,
+        legacyId,
+        section: "S19",
+        classification: "C",
+        dependencies: ["wombat.footprint"],
+        label,
+        compute: (inputs) => inputs["wombat.footprint"][key]
+      });
+    }
+
+    // ========================================================================
+    // AIM-2 (S12 B.19.2-B.19.14): CSA F280-12 Cl. 5.2.3's air-leakage rate (AIM2.xls, src/core/Aim2.js)
+    // at the design condition, and the heating season's mean rate for the annual figure
+    // ========================================================================
+    graph.registerNode({
+      id: "airTightness.aim2",
+      section: "S12",
+      classification: "C",
+      dependencies: [
+        "aim2.tightness", "aim2.ela", "aim2.ceilingHeight", "aim2.siteTerrain", "aim2.stationTerrain",
+        "aim2.wallShielding", "aim2.flueShielding", "aim2.buildingType", "aim2.foundation",
+        "aim2.ventilationBalance", "aim2.flueDiameter",
+        "airTightness.ach50Target", "volume.conditioned", "volume.numStoreys", "volume.floorToFloorHeight",
+        "ventilation.volumetricRate",
+        "climate.location.province", "climate.location.city", "climate.station",
+        "climate.heating.obcSetpoint", "climate.heating.setpoint", "climate.cooling.setpoint",
+        "climate.temperature.coldest", "climate.temperature.hottest"
+      ],
+      label: "AIM-2 air leakage (F280 Cl. 5.2.3)",
+      compute: (inputs) => aim2For(inputs)
+    });
+
+    graph.registerNode({
+      id: "aim2.heatingRate",
+      legacyId: "d_112f",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.aim2"],
+      label: "LRairh: Air Leakage, Heating Design (AC/H)",
+      compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        return r && !r.error ? r.design.heating.natural : "Unavailable";
+      }
+    });
+
+    graph.registerNode({
+      id: "aim2.coolingRate",
+      legacyId: "g_112f",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.aim2"],
+      label: "LRairc: Air Leakage, Cooling Design (AC/H)",
+      compute: (inputs) => {
+        const r = inputs["airTightness.aim2"];
+        return r && !r.error ? r.design.cooling.natural : "Unavailable";
+      }
+    });
+
     // i_103: Air Leakage Heat Loss
     // From Section12.js line 2564-2571:
     // baseLeakageCoefficient = (1.21 × NRL50 × area_air) / N_factor
@@ -454,19 +677,31 @@
         "airTightness.nrl50",
         "envelope.airFacing.area",
         "airTightness.nFactor",
-        "climate.heating.degreedays"
+        "climate.heating.degreedays",
+        "airTightness.infiltrationMethodInEffect",
+        "airTightness.aim2",
+        "volume.conditioned"
       ],
       label: "Air Leakage Heat Loss (kWh/yr)",
       compute: (inputs) => {
         const hdd = inputs["climate.heating.degreedays"];
         if (isUnavailable(hdd)) return "Unavailable";
+        const leakageFactor = 1.21;
+
+        // F280 Mode On (AIM-2): the same form with AIM-2's heating-season mean rate in place of the
+        // N-factor's (airTightness.aim2.seasonal, AC/H -> L/s = rate x volume / 3.6)
+        if (inputs["airTightness.infiltrationMethodInEffect"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (!r || r.error || !r.seasonal) return "Unavailable";
+          const ls = (r.seasonal.rate * parseNum(inputs["volume.conditioned"])) / 3.6;
+          return (leakageFactor * ls * parseNum(hdd) * 24) / 1000;
+        }
 
         const nrl50 = parseNum(inputs["airTightness.nrl50"]);
         const areaAir = parseNum(inputs["envelope.airFacing.area"]);
         const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
 
         // Legacy formula: (1.21 × NRL50 × area / N_factor × HDD × 24) / 1000
-        const leakageFactor = 1.21;
         const baseLeakageCoefficient = nFactor > 0
           ? (leakageFactor * nrl50 * areaAir) / nFactor
           : 0;
@@ -475,36 +710,16 @@
       }
     });
 
-    // k_103: Air Leakage Heat Gain (cooling season)
+    // k_103: Air Leakage Heat Gain - the leakage's share of the unmitigated
+    // ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js)
     graph.registerNode({
       id: "airTightness.heatGain",
       legacyId: "k_103",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "airTightness.nrl50",
-        "envelope.airFacing.area",
-        "airTightness.nFactor",
-        "climate.cooling.degreedays"
-      ],
+      dependencies: ["cooling.iso52016"],
       label: "Air Leakage Heat Gain (kWh/yr)",
-      compute: (inputs) => {
-        const cdd = inputs["climate.cooling.degreedays"];
-        // Legacy returns 0 when CDD unavailable
-        if (isUnavailable(cdd)) return 0;
-
-        const nrl50 = parseNum(inputs["airTightness.nrl50"]);
-        const areaAir = parseNum(inputs["envelope.airFacing.area"]);
-        const nFactor = parseNum(inputs["airTightness.nFactor"], 13);
-
-        // Legacy formula: (1.21 × NRL50 × area / N_factor × CDD × 24) / 1000
-        const leakageFactor = 1.21;
-        const baseLeakageCoefficient = nFactor > 0
-          ? (leakageFactor * nrl50 * areaAir) / nFactor
-          : 0;
-
-        return (baseLeakageCoefficient * parseNum(cdd) * 24) / 1000;
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.leak ?? 0
     });
 
     // ========================================================================
@@ -526,6 +741,8 @@
       label: "Total Envelope Heat Loss (kWh/yr)",
       compute: (inputs) => {
         // i_104 = i_101 + i_102 + i_103
+        // i_102 is Unavailable only when BASESIMP cannot run (F280 Mode On): then so is the total
+        if (inputs["envelope.groundFacing.totalHeatLoss"] === "Unavailable") return "Unavailable";
         // Use default 0 to handle "Unavailable" values gracefully
         const i101 = parseNum(inputs["envelope.airFacing.totalHeatLoss"], 0);
         const i102 = parseNum(inputs["envelope.groundFacing.totalHeatLoss"], 0);
@@ -537,8 +754,10 @@
     // k_104: Total Envelope Heat Gain
     // Excel: =IF(H21="Capacitance", K98, SUM(K101:K102))
     // NOTE: k_103 (air leakage heat gain) is NOT included in this sum
-    // NOTE: k_101/k_102 are from Section 12 (envelope.*.totalHeatGain) using weighted U-values
-    //       k_98 is from Section 11 (transmissionLoss.components.subtotalHeatGain) using component sums
+    // NOTE: since the ISO 52016-1 cooling, k_101 + k_102 and k_98 are the same
+    //       sum - S11's components' shares of the monthly need - so the
+    //       Capacitance setting no longer changes the cooling (thermal mass is
+    //       C_m from S05's typology, inside the need).
     graph.registerNode({
       id: "envelope.total.heatGain",
       legacyId: "k_104",
@@ -603,47 +822,63 @@
       legacyId: "d_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.walls.area",
-        "transmissionLoss.doors.area",
-        "transmissionLoss.windowNorth.area",
-        "transmissionLoss.windowEast.area",
-        "transmissionLoss.windowSouth.area",
-        "transmissionLoss.windowWest.area"
-      ],
+      dependencies: ["transmissionLoss.walls.area", ...wallOpeningDeps("area")],
       label: "Window-to-Wall Ratio",
       compute: (inputs) => {
         const d86 = parseNum(inputs["transmissionLoss.walls.area"]);
-        const d88 = parseNum(inputs["transmissionLoss.doors.area"]);
-        const d89 = parseNum(inputs["transmissionLoss.windowNorth.area"]);
-        const d90 = parseNum(inputs["transmissionLoss.windowEast.area"]);
-        const d91 = parseNum(inputs["transmissionLoss.windowSouth.area"]);
-        const d92 = parseNum(inputs["transmissionLoss.windowWest.area"]);
-        const windowArea = d88 + d89 + d90 + d91 + d92;
+        const windowArea = sumWallOpenings(inputs, "area");
         const totalWallArea = d86 + windowArea;
         return totalWallArea > 0 ? windowArea / totalWallArea : 0;
       }
     });
 
     // ========================================================================
-    // d_110: Equivalent Leakage Area at 10 Pa (ELA10)
-    // Formula: ACH50 × Volume / 3600
+    // d_110: NLA10, the Normalized Leakage Area at 10 Pa, cm2/m2 (NBC 2025 9.36.5.2.(1)(d), Tables
+    // 9.36.5.4.-A/-B; Andy 2026-11-19: "modify the B.18.4 to cm2/m2")
+    // = the ELA at 10 Pa (cm2) / the air-facing envelope area (d_101, the area NRL50 uses).
+    // History: it read ACH50 x volume / 3600, the 50 Pa FLOW in m3/s (to 2026-11-19, F280-1 0.304), then
+    // the ELA in m2 (e056780, F280-1 0.0394); the code states airtightness as NLA10, not a bare ELA.
+    // The ELA: under AIM-2 (F280 Mode On), AIM-2's in effect - the prescribed type's, or the Custom measured
+    // one (B.19.3, the only MEASURED NLA10: 9.36.5.3.(3) wants a multi-point test). Otherwise derived
+    // from the ACH50 at the flow exponent of AIM2.xls's nearest prescribed type (Aim2.typicalN).
     // ========================================================================
     graph.registerNode({
-      id: "airTightness.ela10",
+      id: "airTightness.nla10",
       legacyId: "d_110",
       section: "S12",
       classification: "C",
       dependencies: [
         "airTightness.ach50Target",
-        "volume.conditioned"
+        "volume.conditioned",
+        "envelope.airFacing.area",
+        "airTightness.infiltrationMethodInEffect",
+        "airTightness.aim2"
       ],
-      label: "Equivalent Leakage Area at 10 Pa (m²)",
+      label: "NLA10, Normalized Leakage Area at 10 Pa (cm²/m²)",
       compute: (inputs) => {
         const ach50 = parseNum(inputs["airTightness.ach50Target"]);
         const volume = parseNum(inputs["volume.conditioned"]);
-        return volume > 0 ? (ach50 * volume) / 3600 : 0;
+        const area = parseNum(inputs["envelope.airFacing.area"]);
+        if (!(area > 0)) return 0;
+        if (inputs["airTightness.infiltrationMethodInEffect"] === "AIM2") {
+          const r = inputs["airTightness.aim2"];
+          if (r && !r.error) return r.design.ela / area;
+        }
+        const A = window.TEUI.Aim2;
+        if (!A || !(volume > 0) || !(ach50 > 0)) return 0;
+        return A.elaFromAch50(ach50, volume, A.typicalN(ach50).n) / area;
       }
+    });
+
+    // The NLA10 maximum of B.18.1's Airtightness Level (NBC Tables 9.36.5.4.-A/-B), or 0 when B.18.1 is
+    // Measured or a PH preset (no NBC level): m_110 then compares against the Reference's NLA10
+    graph.registerNode({
+      id: "airTightness.nla10Limit",
+      section: "S12",
+      classification: "C",
+      dependencies: ["airTightness.method"],
+      label: "NLA10 maximum of the B.18.1 Airtightness Level (cm²/m²)",
+      compute: (inputs) => AIRTIGHTNESS_LEVELS[inputs["airTightness.method"]]?.nla10 ?? 0
     });
 
     // ========================================================================
@@ -707,22 +942,10 @@
       legacyId: "g_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.walls.area",
-        "transmissionLoss.doors.area",
-        "transmissionLoss.windowNorth.area",
-        "transmissionLoss.windowEast.area",
-        "transmissionLoss.windowSouth.area",
-        "transmissionLoss.windowWest.area"
-      ],
+      dependencies: ["transmissionLoss.walls.area", ...wallOpeningDeps("area")],
       label: "Total Wall Area (m²)",
       compute: (inputs) => {
-        return parseNum(inputs["transmissionLoss.walls.area"])
-          + parseNum(inputs["transmissionLoss.doors.area"])
-          + parseNum(inputs["transmissionLoss.windowNorth.area"])
-          + parseNum(inputs["transmissionLoss.windowEast.area"])
-          + parseNum(inputs["transmissionLoss.windowSouth.area"])
-          + parseNum(inputs["transmissionLoss.windowWest.area"]);
+        return parseNum(inputs["transmissionLoss.walls.area"]) + sumWallOpenings(inputs, "area");
       },
     });
 
@@ -732,21 +955,9 @@
       legacyId: "i_107",
       section: "S12",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.doors.heatLoss",
-        "transmissionLoss.windowNorth.heatLoss",
-        "transmissionLoss.windowEast.heatLoss",
-        "transmissionLoss.windowSouth.heatLoss",
-        "transmissionLoss.windowWest.heatLoss"
-      ],
+      dependencies: wallOpeningDeps("heatLoss"),
       label: "Window/Door Heat Loss (kWh/yr)",
-      compute: (inputs) => {
-        return parseNum(inputs["transmissionLoss.doors.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowNorth.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowEast.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowSouth.heatLoss"])
-          + parseNum(inputs["transmissionLoss.windowWest.heatLoss"]);
-      },
+      compute: (inputs) => sumWallOpenings(inputs, "heatLoss"),
     });
 
     // i_110: Air Leakage Climate Zone Number (1/2/3 from climate zone)

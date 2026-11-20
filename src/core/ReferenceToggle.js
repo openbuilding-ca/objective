@@ -35,6 +35,7 @@ TEUI.ReferenceToggle = (function () {
   const FIELD_CLASSIFICATION = {
     // Row 1-10
     d_12: "C",
+    e_12: "C", // the 62.1 space type travels with its occupancy
     d_13: "C",
     d_14: "A",
     d_15: "C",
@@ -55,6 +56,13 @@ TEUI.ReferenceToggle = (function () {
     h_20: "G",
     h_21: "G",
     i_21: "G",
+    // G.4.4-G.4.8 (2026-11-19): the site and geometry are the building's; where the insulation sits
+    // (the BASESIMP configuration) is construction. G.4.3's method is F280 Mode's.
+    l_25: "C",
+    d_26: "G",
+    h_26: "G",
+    l_26: "G",
+    d_26b: "G",
     // Row 21-30
     m_19: "G",
     l_20: "G",
@@ -94,7 +102,10 @@ TEUI.ReferenceToggle = (function () {
     d_58: "C",
     d_59: "C",
     i_59: "C",
+    g_59: "C",
     d_63: "C",
+    l_63: "C", // bedrooms travel with the occupants (Part 9 ventilation)
+    m_63: "C", // dwelling units, likewise
     g_63: "G",
     d_64: "G",
     d_66: "G",
@@ -160,6 +171,19 @@ TEUI.ReferenceToggle = (function () {
     d_105: "G",
     d_108: "C",
     g_109: "C",
+    // B.19.2-B.19.12 (2026-11-19): site and house G; air tightness, ventilation and flue C. B.19.1's
+    // method is F280 Mode's.
+    g_111: "C",
+    d_112: "C",
+    g_112: "G",
+    d_112b: "G",
+    g_112b: "G",
+    d_112c: "G",
+    g_112c: "G",
+    d_112d: "G",
+    g_112d: "G",
+    d_112e: "C",
+    g_112e: "C",
     d_113: "C",
     f_113: "C",
     j_115: "C",
@@ -167,6 +191,11 @@ TEUI.ReferenceToggle = (function () {
     d_116: "C",
     // Row 121-127
     d_118: "C",
+    e_118: "C",
+    l_122: "C",
+    i_122: "C",
+    l_123: "C",
+    f280_mode: "A", // per model (Andy 2026-11-19); only All Inputs copies it
     g_118: "C",
     l_118: "C",
     d_119: "C",
@@ -1115,6 +1144,17 @@ TEUI.ReferenceToggle = (function () {
             copiedCount++;
           }
         });
+
+        // The Target's heat pump cools at M.1.3, from its HSPF - computed, so not copied above. The
+        // Reference's heat pump cools at its own M.3.3 (the standard's minimum by default): a clone
+        // carries the Target's COPc there (Andy 2026-11-19: it left the Reference at 3.30 against the
+        // Target's 2.66, TEUI 90.0 vs 93.1 on the sample)
+        if (window.TEUI.FileHandler?.heatpumpCools?.("")) {
+          const copCool = window.TEUI.StateManager.getValue("j_113");
+          if (copCool !== null && copCool !== undefined && copCool !== "") {
+            window.TEUI.StateManager.setValue("ref_j_116", copCool, "mirror");
+          }
+        }
 
         console.log(
           `[ReferenceToggle] ✅ Perfect clone: ${copiedCount} fields copied to Reference state via StateManager`

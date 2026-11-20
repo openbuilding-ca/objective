@@ -1,15 +1,19 @@
 name: Tests
 
+# Runs on pull requests to main, and on demand: Actions > Tests > Run workflow, or `gh workflow run test.yml`.
+# Pushes do not start a run. This was on demand only from 2026-10-31 (Andy); the pull request
+# run is back so that what merges to main has been checked. To return to on demand only,
+# delete the pull_request block.
+# Run the suite locally before a PR: npm test (the unit tests, then Playwright).
 on:
-  push:
-    branches: [main, deploy/dev]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
     name: Run Playwright Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # not -latest: 26.04 has no Playwright 1.56.1 WebKit
     timeout-minutes: 10
 
     steps:
@@ -25,11 +29,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # test/*.test.cjs, plain node, no browser. They require() the src/ files,
+      # which are ES modules here: that needs Node 20.19+ or 22.12+.
+      # test/climateStation.test.cjs is not in this set - it reads CWEC EPW
+      # files that are not in the repo (npm run test:unit:climate).
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps webkit
 
-      - name: Run tests
-        run: npm test
+      - name: Run Playwright tests
+        run: npm run test:e2e
 
       - name: Upload test results
         if: failure()

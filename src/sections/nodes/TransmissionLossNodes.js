@@ -15,7 +15,8 @@
   window.TEUI.ComputationNodes = window.TEUI.ComputationNodes || {};
 
   // Component definitions - matches Section11.js legacy structure
-  // NOTE: Ground-facing heat gain uses capacitance factor (i_21 / 100) with fallback to 0.5
+  // NOTE: every heat GAIN (k column) is the component's share of the ISO 52016-1
+  // monthly cooling need (cooling.iso52016); the heat losses are unchanged
   const AIR_FACING_COMPONENTS = [
     { row: 85, id: "roof", label: "Roof/Ceiling", input: "rsi" },
     { row: 86, id: "walls", label: "Walls Above Grade", input: "rsi" },
@@ -25,7 +26,15 @@
     { row: 90, id: "windowEast", label: "Window East", input: "uvalue" },
     { row: 91, id: "windowSouth", label: "Window South", input: "uvalue" },
     { row: 92, id: "windowWest", label: "Window West", input: "uvalue" },
-    { row: 93, id: "skylights", label: "Skylights", input: "uvalue" }
+    { row: 93, id: "skylights", label: "Skylights", input: "uvalue" },
+    // The opening rows after the first (Openings.js): each S10 door / window row's S11 twin, its area
+    // from S10 (AREA_BRIDGE), its own U-value
+    ...window.TEUI.Openings.SLOTS.map(o => ({
+      row: o.s11,
+      id: o.id,
+      label: o.kind === "door" ? `Door ${window.TEUI.Openings.s11RowId(o)}` : `Window ${window.TEUI.Openings.s11RowId(o)}`,
+      input: "uvalue"
+    }))
   ];
 
   const GROUND_FACING_COMPONENTS = [
@@ -34,6 +43,25 @@
   ];
 
   const ALL_COMPONENTS = [...AIR_FACING_COMPONENTS, ...GROUND_FACING_COMPONENTS];
+
+  // Interior surface film resistance by component (m²K/W), by direction of heat flow. Used for the
+  // surface temperatures (o_85-o_95) and as each RSI row's floor: no assembly's total resistance can
+  // fall below its own surface film, so an RSI of 0 (an uninsulated assembly) still loses heat.
+  const R_SI_MAP = {
+    roof: 0.10,           // upward heat flow
+    walls: 0.13,          // horizontal
+    exposedFloor: 0.17,   // downward
+    doors: 0.13,          // horizontal
+    windowNorth: 0.13,    // horizontal
+    windowEast: 0.13,     // horizontal
+    windowSouth: 0.13,    // horizontal
+    windowWest: 0.13,     // horizontal
+    skylights: 0.10,      // upward
+    wallsBelowGrade: 0.13, // horizontal
+    slabOnGrade: 0.17,    // downward
+    // the opening rows after the first: doors and windows in a wall, horizontal
+    ...Object.fromEntries(window.TEUI.Openings.SLOTS.map(o => [o.id, 0.13]))
+  };
 
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
@@ -46,15 +74,8 @@
     return value === "Unavailable" || value === "N/A";
   }
 
-  // S10→S11 area bridge: rows 88-93 in S11 mirror rows 73-78 from S10
-  const AREA_BRIDGE = {
-    88: 73,  // doors
-    89: 74,  // window north
-    90: 75,  // window east
-    91: 76,  // window south
-    92: 77,  // window west
-    93: 78   // skylights
-  };
+  // S10→S11 area bridge: every opening's S11 row mirrors its S10 row (88-93 ← 73-78, 88a ← 73a ...)
+  const AREA_BRIDGE = Object.fromEntries(window.TEUI.Openings.ALL.map(o => [o.s11, o.s10]));
 
   function register(graph) {
     const inputs = [];
@@ -155,7 +176,9 @@
           label: `${label} U-Value (W/m²K)`,
           compute: (inputs) => {
             const rsi = parseNum(inputs[`transmissionLoss.${id}.rsi`], 5);
-            return rsi > 0 ? 1 / rsi : 0;
+            // Was `rsi > 0 ? 1 / rsi : 0`: an RSI of 0 read as U 0, zero heat loss on the row, the
+            // opposite of an uninsulated assembly. The row's own surface film is the least it can be.
+            return 1 / Math.max(rsi, R_SI_MAP[id]);
           }
         });
       } else {
@@ -219,27 +242,17 @@
         }
       });
 
+      // The component's share of the unmitigated ISO 52016-1 monthly need
+      // (cooling.iso52016, CoolingNodes.js): its transmission inflow in the
+      // months the outdoor side is warmer, plus solar on its outer surface
       graph.registerNode({
         id: `transmissionLoss.${id}.heatGain`,
         legacyId: `k_${row}`,
         section: "S11",
         classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.cooling.degreedays"
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Heat Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const cdd = inputs["climate.cooling.degreedays"];
-          // Legacy returns 0 for heat gains when CDD unavailable
-          if (isUnavailable(cdd)) return 0;
-
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          // Heat gain = Area × U-value × CDD × 24 / 1000
-          return (area * uValue * parseNum(cdd) * 24) / 1000;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[id] ?? 0
       });
     });
 
@@ -255,10 +268,19 @@
         dependencies: [
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
-          "climate.groundFacing.hdd"
+          "climate.groundFacing.hdd",
+          "ground.methodInEffect",
+          "ground.basesimp"
         ],
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
+          // F280 Mode On (BASESIMP): the row's share of the foundation's heating-season loss
+          // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
+          if (inputs["ground.methodInEffect"] === "BASESIMP") {
+            const bs = inputs["ground.basesimp"];
+            if (!bs || bs.error) return "Unavailable";
+            return id === "slabOnGrade" ? bs.annual.slab : bs.annual.walls;
+          }
           const groundHdd = inputs["climate.groundFacing.hdd"];
           if (isUnavailable(groundHdd)) return "Unavailable";
 
@@ -269,30 +291,18 @@
         }
       });
 
+      // The component's share of the unmitigated ISO 52016-1 monthly need
+      // (cooling.iso52016, CoolingNodes.js): its transmission inflow in the
+      // months the outdoor side is warmer, against the year's mean outdoor
+      // temperature (ISO 52016-1 6.6.5.1)
       graph.registerNode({
         id: `transmissionLoss.${id}.heatGain`,
         legacyId: `k_${row}`,
         section: "S11",
         classification: "C",
-        dependencies: [
-          `transmissionLoss.${id}.area`,
-          `transmissionLoss.${id}.uValue`,
-          "climate.groundFacing.cdd",
-          "building.capacitance.percentage"
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Heat Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const groundCdd = parseNum(inputs["climate.groundFacing.cdd"], 0);
-          const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
-          const uValue = parseNum(inputs[`transmissionLoss.${id}.uValue`]);
-          // Legacy Section11.js: capacitanceFactor = i_21 / 100, fallback to 0.5
-          let capacitanceFactor = parseNum(inputs["building.capacitance.percentage"], 0) / 100;
-          if (capacitanceFactor === 0 || isNaN(capacitanceFactor)) {
-            capacitanceFactor = 0.5;
-          }
-          // Heat gain = Area × U-value × (capacitance × groundCDD × 24) / 1000
-          return (area * uValue * capacitanceFactor * groundCdd * 24) / 1000;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[id] ?? 0
       });
     });
 
@@ -491,16 +501,11 @@
       legacyId: "k_97",
       section: "S11",
       classification: "C",
-      dependencies: [
-        "transmissionLoss.components.subtotalHeatGain",
-        "transmissionLoss.thermalBridgePenalty"
-      ],
+      // The thermal bridges' share of the unmitigated ISO 52016-1 monthly need
+      // (the penalty % on every component's conductance, cooling.iso52016)
+      dependencies: ["cooling.iso52016"],
       label: "Thermal Bridge Penalty Heat Gain (kWh/yr)",
-      compute: (inputs) => {
-        const subtotal = parseNum(inputs["transmissionLoss.components.subtotalHeatGain"]);
-        const penaltyPercent = parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5);
-        return subtotal * (penaltyPercent / 100);
-      }
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.tb ?? 0
     });
 
     // ========================================================================
@@ -723,21 +728,8 @@
     // ========================================================================
     // SURFACE TEMPERATURES (o_85-o_95)
     // T_si = T_interior - (U × ΔT × R_si)
-    // R_si varies by component type; exterior temp varies air vs ground
+    // R_si varies by component type (R_SI_MAP, top of file); exterior temp varies air vs ground
     // ========================================================================
-    const R_SI_MAP = {
-      roof: 0.10,           // upward heat flow
-      walls: 0.13,          // horizontal
-      exposedFloor: 0.17,   // downward
-      doors: 0.13,          // horizontal
-      windowNorth: 0.13,    // horizontal
-      windowEast: 0.13,     // horizontal
-      windowSouth: 0.13,    // horizontal
-      windowWest: 0.13,     // horizontal
-      skylights: 0.10,      // upward
-      wallsBelowGrade: 0.13, // horizontal
-      slabOnGrade: 0.17     // downward
-    };
 
     AIR_FACING_COMPONENTS.forEach(({ row, id, label }) => {
       graph.registerNode({
@@ -819,9 +811,187 @@
       });
     });
 
+    // ========================================================================
+    // BASESIMP - the foundation's heat loss by CSA F280-12 Cl. 5.2.2.1 (S03 G.4.4-G.4.10)
+    // ========================================================================
+    graph.registerNode({
+      id: "ground.basesimp",
+      section: "S03",
+      classification: "C",
+      dependencies: [
+        "ground.basesimp.configuration",
+        "ground.basesimp.depth",
+        "ground.basesimp.exposedPerimeter",
+        "wombat.footprint.perimeter",
+        "ground.basesimp.soilConductivity",
+        "ground.basesimp.waterTable",
+        "transmissionLoss.slabOnGrade.area",
+        "transmissionLoss.wallsBelowGrade.area",
+        "transmissionLoss.slabOnGrade.rsi",
+        "transmissionLoss.wallsBelowGrade.rsi",
+        "climate.location.province",
+        "climate.location.city",
+        "climate.heating.obcSetpoint",
+        "climate.cooling.setpoint",
+        "climate.temperature.coldest",
+        "climate.temperature.hottest",
+        // the heating season (OBJECTIVE's annual figure): its length, set-point and outdoor mean
+        "climate.coolingDays",
+        "climate.heating.setpoint",
+        "climate.temperature.winterAverage"
+      ],
+      label: "BASESIMP foundation heat loss (F280 Cl. 5.2.2.1)",
+      compute: (inputs) => basesimpFor(inputs)
+    });
+
+    graph.registerNode({
+      id: "ground.basesimp.deepGround",
+      legacyId: "h_26b",
+      section: "S03",
+      classification: "C",
+      // From F280's weather table for S03's city, whether or not BASESIMP has its geometry: it read
+      // BASESIMP's result, so any missing BASESIMP input (G.4.6 perimeter 0, no slab) showed it
+      // Unavailable for every city (Andy 2026-11-19)
+      dependencies: ["climate.location.province", "climate.location.city"],
+      label: "Deep Ground Temperature (F280)",
+      compute: (inputs) =>
+        window.TEUI.F280Weather?.lookup(inputs["climate.location.province"], inputs["climate.location.city"])?.deepGround ??
+        "Unavailable"
+    });
+
+    graph.registerNode({
+      id: "ground.basesimp.peakHeatLoss",
+      legacyId: "l_26b",
+      section: "S03",
+      classification: "C",
+      dependencies: ["ground.basesimp"],
+      label: "BASESIMP Peak Heat Loss (W)",
+      compute: (inputs) => {
+        const r = inputs["ground.basesimp"];
+        return r && !r.error ? r.heatingLoad : "Unavailable";
+      }
+    });
+
     console.log("[TransmissionLossNodes] Registered", inputs.length, "inputs");
   }
 
-  window.TEUI.ComputationNodes.TransmissionLoss = { register, AIR_FACING_COMPONENTS, GROUND_FACING_COMPONENTS };
+  /**
+   * BasementHLR.xls's inputs from the model (F280 Cl. 5.2.2.1 a)-q)):
+   *   a) the outside length and width come from S11's slab area A and the exposed perimeter P (G.4.6):
+   *      P at least a square's (4 x sqrt A) is the outline of a rectangle of area A, all of it exposed
+   *      (L + W = P / 2, L x W = A); a shorter P is a square of area A with only P exposed - the
+   *      workbook's own attached-house case (Input!G7). The height is S11's below-grade wall area / P;
+   *      the depth below grade is G.4.5. F280 Archetype 1 this way: 1387 W, F280's room-by-room 1384 W.
+   *      A SLAB configuration (G.4.4 SCN / SCB / SCA) is NRCan's SlabOnGradeHLR.xls instead: height 0,
+   *      depth 0.05 m (its Input!B11:B12), no below-grade wall, S11's slab RSI the one added insulation.
+   *   b) c) d) soil, water table and configuration: G.4.7, G.4.8, G.4.4.
+   *   e) f) the ADDED insulation: S11's below-grade wall RSI (all as interior: BasementHLR reads the
+   *      walls' insulation only as max(interior, exterior) or their sum, so the split never changes a
+   *      result) and S11's slab RSI.
+   *   i) j) k) heating degree days, deep ground temperature, monthly dry bulbs: F280's weather table
+   *      for S03's city (F280Weather.js; a city F280 does not list takes its nearest F280 location's).
+   *   l) m) n) room and design temperatures: S03's design set-point and L.3.1 / L.3.2.
+   *   o) no radiant slab; q) no openings in the above-grade foundation wall (OBJECTIVE does not
+   *      separate them).
+   * Returns Basesimp.compute()'s result plus the geometry and weather used, or { error } naming what
+   * is missing - never a substitute value.
+   */
+  function basesimpFor(inputs) {
+    const B = window.TEUI.Basesimp;
+    const W = window.TEUI.F280Weather;
+    if (!B || !W) return { error: "BASESIMP is not loaded" };
+    const area = parseNum(inputs["transmissionLoss.slabOnGrade.area"]);
+    const wallArea = parseNum(inputs["transmissionLoss.wallsBelowGrade.area"]);
+    // G.4.6 blank: Wombat's footprint perimeter, the whole outline (S19 19.2b; Andy 2026-11-19)
+    const typedPerimeter = parseNum(inputs["ground.basesimp.exposedPerimeter"]);
+    const perimeter = typedPerimeter > 0 ? typedPerimeter : parseNum(inputs["wombat.footprint.perimeter"]);
+    const configuration = parseNum(inputs["ground.basesimp.configuration"], 1);
+    if (!window.TEUI.BasesimpData?.configs?.[configuration]) {
+      return { error: `no BASESIMP configuration #${configuration}` };
+    }
+    const name = window.TEUI.BasesimpData.configs[configuration].name;
+    // FoundationCC's SC* configurations are slabs on grade: NRCan's SlabOnGradeHLR.xls, height 0 and its
+    // depth 0.05 m (its Input!B11:B12); every other is a basement by BasementHLR.xls
+    const slab = B.isSlab(configuration);
+    if (!(area > 0)) return { error: "no slab area (S11 D.4.11)" };
+    if (slab && wallArea > 0) {
+      return { error: `S03 G.4.4 is ${name}, a slab on grade, but S11 has ${wallArea} m2 of below-grade wall: choose a basement configuration` };
+    }
+    if (!slab && !(wallArea > 0)) {
+      return { error: `S11 has no below-grade wall, so S03 G.4.4 (${name}, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)` };
+    }
+    if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6, or Wombat's footprint, S19 19.2b)" };
+    const height = slab ? 0 : wallArea / perimeter;
+    const depth = slab ? 0.05 : parseNum(inputs["ground.basesimp.depth"]);
+    if (!slab && (!(depth > 0) || depth > height)) {
+      return { error: `depth below grade ${depth} m must be above 0 and at most the wall height ${height.toFixed(2)} m` };
+    }
+    const province = inputs["climate.location.province"];
+    const city = inputs["climate.location.city"];
+    const weather = W.lookup(province, city);
+    if (!weather) return { error: `F280's weather table does not list ${city}, ${province}` };
+
+    const side = Math.sqrt(area);
+    let length, width, exposedPerimeter;
+    if (perimeter >= 4 * side) {
+      const half = perimeter / 2;
+      const root = Math.sqrt(half * half - 4 * area);
+      length = (half + root) / 2;
+      width = (half - root) / 2;
+      exposedPerimeter = 0; // the whole outline
+    } else {
+      length = width = side;
+      exposedPerimeter = perimeter;
+    }
+    const result = B.compute({
+      configuration,
+      length,
+      width,
+      height,
+      depth,
+      soilk: parseNum(inputs["ground.basesimp.soilConductivity"]),
+      wtable: parseNum(inputs["ground.basesimp.waterTable"]),
+      interior: parseNum(inputs["transmissionLoss.wallsBelowGrade.rsi"]),
+      exterior: 0,
+      slab: parseNum(inputs["transmissionLoss.slabOnGrade.rsi"]),
+      overlap: 0,
+      exposedPerimeter,
+      windowArea: 0,
+      doorArea: 0,
+      hdd: weather.hdd,
+      deepGround: weather.deepGround,
+      monthly: weather.monthly,
+      heating: {
+        month: 1,
+        room: parseNum(inputs["climate.heating.obcSetpoint"], 22),
+        design: parseNum(inputs["climate.temperature.coldest"]),
+        slab: 0
+      },
+      cooling: {
+        month: 7,
+        room: parseNum(inputs["climate.cooling.setpoint"], 24),
+        design: parseNum(inputs["climate.temperature.hottest"])
+      }
+    });
+    // OBJECTIVE's annual figure: the heating season's loss (Basesimp.seasonLoss) - 365 - Days Cooling
+    // days centred on the coldest day, at the ENERGY set-point, the above-grade strip against S03 L.3.3's
+    // winter average (Andy 2026-11-19, "that is what drives the heating season split")
+    const days = 365 - parseNum(inputs["climate.coolingDays"], 120);
+    const annual = B.seasonLoss(result, {
+      room: parseNum(inputs["climate.heating.setpoint"], 21),
+      outdoorMean: parseNum(inputs["climate.temperature.winterAverage"], NaN),
+      deepGround: weather.deepGround,
+      days
+    });
+    if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
+    return { ...result, geometry: { length, width, height, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
+  }
+
+  window.TEUI.ComputationNodes.TransmissionLoss = {
+    register,
+    AIR_FACING_COMPONENTS,
+    GROUND_FACING_COMPONENTS,
+    basesimpFor
+  };
   console.log("[TransmissionLossNodes] Module loaded");
 })();

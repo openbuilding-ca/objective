@@ -438,12 +438,15 @@ body {
   transition: transform 0.3s ease;
 }
 
-.section-header.collapsed .toggle-icon {
+/* Collapse is the vertical scroll's: a horizontal tab always shows its whole
+   section (headers toggle only in vertical, init.js), so the sections that
+   start collapsed - WOMBAT, Notes, F280 - still open from their tabs */
+body:not(.horizontal-layout) .section-header.collapsed .toggle-icon {
   transform: rotate(-90deg);
 }
 
 /* Collapsible section content */
-.section-header.collapsed + .section-content {
+body:not(.horizontal-layout) .section-header.collapsed + .section-content {
   max-height: 0 !important;
   opacity: 0 !important;
   overflow: hidden;
@@ -478,6 +481,16 @@ body {
   margin-top: 0;
   padding-top: 0;
   align-self: flex-start;
+}
+
+/* Section 20 (Notes & Debug): readable from its horizontal tab only - never
+   in the vertical scroll, never on paper (the print rule is below) */
+#notes {
+  display: none;
+}
+
+.horizontal-layout #notes.active {
+  display: block;
 }
 
 /* Vertical layout */
@@ -535,7 +548,9 @@ option,
 /* Apply to select elements within table cells */
 .data-table select.form-select {
   width: 100%;
-  min-width: 140px; /* Ensure minimum width for content */
+  /* As wide as its longest option - never clipped, and a short one ("HRV",
+     "None") no longer holds its column at a flat 140px (Andy 2026-11-18) */
+  min-width: max-content;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -549,16 +564,17 @@ option,
   height: calc(100% - 4px); /* Account for margins */
 }
 
-/* Ensure dropdown cells have minimum width */
+/* Dropdown cells: no width floor of their own - the select's longest option
+   is the floor */
 [data-dropdown-id],
 .dropdown-cell {
-  min-width: 140px;
   padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
-/* Handle dropdowns spanning columns */
-td[colspan="2"] .form-select {
-  min-width: 180px;
+/* A dropdown whose cell spans the empty cell(s) beside it (a cell's `span`):
+   as wide as its longest option, not stretched across the cells it spans. */
+.data-table td[colspan] select.form-select {
+  width: auto;
 }
 
 /* Sliders */
@@ -814,6 +830,31 @@ td[colspan="2"] .form-select {
   text-overflow: ellipsis; /* Ensure this is set */
 }
 
+/* Words may wrap, numbers and controls never (Andy 2026-11-18, the fit on a
+   16" MBP and smaller): a description or label keeps its one line whenever the
+   table has room - auto layout gives it its full width first - and wraps only
+   when the window is too narrow, instead of pushing the right-hand columns
+   out of the section. */
+.data-table td.description-cell,
+.data-table td.label,
+.data-table td.label-prefix,
+.data-table td.label-main {
+  white-space: normal;
+}
+
+/* Kept as they were: Wombat's panel takes its width from its table, so a
+   label free to wrap narrows the whole panel; and City's longest names (the
+   airports) would widen Section 03 at every width - it keeps the old 140px. */
+#wombat .data-table td.description-cell,
+#wombat .data-table td.label,
+#wombat .data-table td.label-prefix,
+#wombat .data-table td.label-main {
+  white-space: nowrap;
+}
+.data-table select.form-select[data-field-id="h_19"] {
+  min-width: 140px;
+}
+
 /* Browser-specific fixes */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   /* Safari and Chrome specific fixes */
@@ -980,7 +1021,7 @@ input[type=number].form-control {
 .data-table td select.form-control,
 table.data-table select.form-select {
   width: 100%;
-  min-width: 140px;
+  min-width: max-content; /* its longest option: see .data-table select.form-select */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1007,6 +1048,77 @@ table.data-table select.form-select {
 .data-table td select.form-control:hover,
 table.data-table select.form-select:hover {
   border-color: #86b7fe !important;
+}
+
+/* A dropdown that does not apply to this building (disabled): ghosted, the same grey italic as
+   .disabled-input, so it never reads as a live blue input (Andy 2026-11-20, S02 B.1's space type) */
+.data-table td select.form-select:disabled,
+.data-table td select.form-control:disabled,
+table.data-table select.form-select:disabled {
+  color: var(--secondary-text) !important;
+  -webkit-text-fill-color: var(--secondary-text) !important;
+  font-style: italic !important;
+  background-color: #f1f3f5 !important;
+  border-color: #e9ecef !important;
+  cursor: default !important;
+  opacity: 0.8;
+}
+
+/* Row +/- (Andy 2026-11-20: S10/S11's opening rows, Openings.js) - the OBC Matrix's controls
+   (src/obc/OBC-ExpandableRows.js addExpandableRowsCSS), so the two apps add rows alike */
+.expandable-row-trigger {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 2px !important;
+}
+.expandable-controls {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+}
+.expandable-add-btn,
+.expandable-remove-btn {
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 14px;
+  font-weight: bold;
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: white;
+  margin: 0;
+  cursor: pointer;
+}
+.expandable-add-btn:hover,
+.expandable-remove-btn:hover {
+  transform: scale(1.05);
+}
+.expandable-add-btn:active,
+.expandable-remove-btn:active {
+  transform: scale(0.95);
+}
+.expandable-add-btn {
+  border-color: #28a745;
+  color: #28a745;
+}
+.expandable-add-btn:hover {
+  background-color: #d4edda;
+  border-color: #1e7e34;
+  color: #1e7e34;
+}
+.expandable-remove-btn {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+.expandable-remove-btn:hover {
+  background-color: #f8d7da;
+  border-color: #bd2130;
+  color: #bd2130;
 }
 
 /* Ensure the cell itself doesn't interfere */
@@ -1054,6 +1166,14 @@ table.data-table select.form-select:hover {
 /* Removed conflicting alignment utility classes - now handled by universal rules */
 
 /* Style for disabled/non-applicable input fields */
+/* F280 Mode Off (S21 F.00, Andy 2026-11-19): F280-only rows go, a shared row's F280 cells keep their place */
+.f280-hidden-row {
+  display: none !important;
+}
+.f280-hidden-cell {
+  visibility: hidden;
+}
+
 .disabled-input {
   color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
   font-style: italic !important;
@@ -2508,6 +2628,11 @@ body.dev-environment {
     margin: 0.25in; /* Reduced from 0.5in to maximize content space */
   }
 
+  /* Notes & Debug never prints (beats the .section rule below by id) */
+  #notes {
+    display: none !important;
+  }
+
   /* CRITICAL FIX: Allow horizontal overflow to prevent content clipping */
   .section {
     display: block !important; /* Ensure sections are visible */
@@ -2597,9 +2722,9 @@ body.dev-environment {
   .graphics-section,
   .graphics-section canvas,
   .graphics-section svg,
-  #section16,
-  #section17,
-  #section18 {
+  #sankeyDiagram,
+  #dependencyDiagram,
+  #parallelCoordinates {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -2627,18 +2752,21 @@ body.dev-environment {
     text-decoration: underline;
   }
 
-  /* Page breaks between major sections */
-  #section01,
-  #section02,
-  #section16,
-  #section17,
-  #section18 {
+  /* Page breaks between major sections: Section 2 and each graphics section
+     (16 Sankey, 17 Dependency Graph, 18 Optimize) start a page. These named
+     #section01/02/16/17/18, which no element carries, so they never applied
+     (Andy 2026-11-18: fixed, the pagination change welcome). */
+  #keyValues,
+  #buildingInfo,
+  #sankeyDiagram,
+  #dependencyDiagram,
+  #parallelCoordinates {
     page-break-before: always;
     break-before: page;
   }
 
   /* First section shouldn't force page break */
-  #section01:first-child {
+  #keyValues:first-child {
     page-break-before: auto;
     break-before: auto;
   }
@@ -2649,16 +2777,30 @@ body.dev-environment {
     border: none !important;
   }
 
-  /* REFINEMENT 2: Center Sankey diagram and use full available width */
-  #section16 .section-content,
-  #sankeySection16Container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  /* REFINEMENT 2: Center the Sankey diagram on its page (when drawn narrower
+     than the page). Was #section16 / #sankeySection16Container: neither exists. */
+  #s16DiagramWrapper svg {
+    margin: 0 auto;
   }
 
-  #section16 svg {
+  /* The Sankey (S16) and the Optimize graph (S18) are drawn at the screen's
+     width; their viewBox lets the browser scale them to the page instead of
+     cutting off the right side. ("#section16" never matched: the sections'
+     ids are sankeyDiagram and parallelCoordinates.) */
+  #sankeyDiagram svg,
+  #parallelCoordinates svg {
     max-width: 100% !important;
+    height: auto !important;
+    /* and never taller than a landscape page leaves under the section's
+       header (Letter 8in, A4 7.77in inside the 0.25in margins) - drawn in a
+       narrow window, the Sankey otherwise jumps a page and leaves its header
+       behind */
+    max-height: 6in !important;
+  }
+
+  /* The Sankey's wrapper holds the drawn height inline (600px): printed, it
+     follows the scaled drawing instead of leaving that height empty. */
+  #s16DiagramWrapper {
     height: auto !important;
   }
 

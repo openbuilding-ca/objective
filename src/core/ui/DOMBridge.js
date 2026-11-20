@@ -39,6 +39,8 @@
     d_23: "integer", h_23: "integer",
     d_24: "integer", h_24: "integer",
     d_25: "integer", l_22: "integer", l_24: "integer",
+    d_140b: "integer", h_140b: "integer", // S15 T.6.10 / T.6.11: F280's loss and sensible gain, W
+    l_140b: "number-2dp", m_140b: "integer", // S15 T.6.12: x LM (Cl. 6.3.1) = the nominal gain Annex J compares
     e_23: "integer-nocomma", i_23: "integer-nocomma",
     e_24: "integer-nocomma", i_24: "integer-nocomma",
     e_25: "integer-nocomma",
@@ -73,7 +75,7 @@
     n_56: "raw", n_57: "raw", n_58: "raw", n_59: "raw",
 
     // S09 Occupancy: integer counts and hours
-    d_63: "integer", h_63: "integer",
+    d_63: "integer", h_63: "integer", m_63: "integer",
     g_63: "integer-nocomma", j_63: "integer-nocomma", i_63: "integer-nocomma",
 
     // S09 Internal Gains: densities as 1dp, seasonal split percentages
@@ -131,8 +133,10 @@
     // S08 Humidity guidance
     k_59: "raw",
 
-    // S12 Volume Metrics: WWR as percent, ELA10 as 3dp, compliance text and checkmarks
-    d_107: "percent-2dp", d_110: "number-3dp",
+    // S12 Volume Metrics: WWR as percent, NLA10 (cm2/m2) to 2dp as NBC's tables state it, compliance text and checkmarks
+    d_107: "percent-2dp", d_110: "number-2dp",
+    // B.19.13 / B.19.14: AIM-2's air-leakage rates, AC/H (F280 Cl. 5.2.3, 6.2.6)
+    d_112f: "number-4dp", g_112f: "number-4dp",
     i_110: "integer",
     l_101: "percent-2dp", l_102: "percent-2dp", l_103: "percent-2dp", l_104: "percent-0dp",
     m_104: "raw", n_104: "raw",
@@ -166,6 +170,21 @@
     d_145: "number-2dp-comma",
   };
 
+  // The opening rows after the first (Openings.js) format as their group's first row: S10's j/l, S11's
+  // g/h/j/l/m/n/o
+  window.TEUI.Openings.SLOTS.forEach(o => {
+    FORMAT[`j_${o.s10}`] = FORMAT[`l_${o.s10}`] = "percent-2dp";
+    Object.assign(FORMAT, {
+      [`g_${o.s11}`]: "number-3dp",
+      [`h_${o.s11}`]: "percent-2dp",
+      [`j_${o.s11}`]: "percent-2dp",
+      [`l_${o.s11}`]: "percent-2dp",
+      [`m_${o.s11}`]: "raw",
+      [`n_${o.s11}`]: "raw",
+      [`o_${o.s11}`]: "condensation",
+    });
+  });
+
   // S01 fields always read from Target model (S01 renders all 3 columns itself)
   const S01_FIELDS = new Set([
     "e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10",
@@ -184,7 +203,8 @@
   const CONDENSATION_FIELDS = [
     "o_85", "o_86", "o_87", "o_88", "o_89",
     "o_90", "o_91", "o_92", "o_93", "o_94", "o_95",
-    "o_101", "o_102"
+    "o_101", "o_102",
+    ...window.TEUI.Openings.SLOTS.map(o => `o_${o.s11}`),
   ];
 
   // ==========================================================================
@@ -418,6 +438,19 @@
     }
 
     console.log(`[DOMBridge] Stamped ${stamped} inputs for ${isRef ? "reference" : "target"} mode`);
+
+    // The sections' display rules run AFTER the stamp, as after a recompute: a mode switch stamped the
+    // model's stored inputs over them (2026-11-20: S09's lighting under the Reference's F280 Mode On
+    // showed the stored 1.5, not its 0 in effect; S03 G.4.5's ghosting followed the other model)
+    runPostStamp();
+  }
+
+  /** The sections' postStamp hooks (display mirrors, key values, the rules that ghost or lock an input). */
+  function runPostStamp() {
+    const modules = window.TEUI.SectionModules || {};
+    for (const key of ["sect01", "sect03", "sect10", "sect11", "sect12", "sect13", "sect16", "sect21"]) {
+      if (modules[key]?.postStamp) modules[key].postStamp();
+    }
   }
 
   // ==========================================================================
@@ -483,16 +516,16 @@
       setIndicator(`l_${row}`, coolingGainClass(lPct), "gain-indicator");
     }
 
-    // S10: Radiant Gains (rows 73-78)
-    for (const row of [73, 74, 75, 76, 77, 78]) {
+    // S10: Radiant Gains (the opening rows, Openings.js)
+    for (const row of window.TEUI.Openings.ALL.map(o => o.s10)) {
       const jPct = readPct(`j_${row}`);
       const lPct = readPct(`l_${row}`);
       setIndicator(`j_${row}`, heatingGainClassS10(jPct), "gain-indicator");
       setIndicator(`l_${row}`, coolingGainClass(lPct), "gain-indicator");
     }
 
-    // S11: Transmission Losses (rows 85-95, 97)
-    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97]) {
+    // S11: Transmission Losses (rows 85-95, 97, and the openings' twins after the first)
+    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, ...window.TEUI.Openings.SLOTS.map(o => o.s11)]) {
       const jPct = readPct(`j_${row}`);
       const lPct = readPct(`l_${row}`);
       setIndicator(`j_${row}`, lossContribClass(jPct), "loss-indicator");
@@ -502,10 +535,32 @@
   }
 
   // ==========================================================================
+  // GHOSTING - an input that does not apply to this building (Andy: "greying out values that are not
+  // relevant for a given building type or standard"). One helper, read by every section: the value cell
+  // and its label take .disabled-input, the input stops taking edits (a select: styles.css :disabled).
+  // ==========================================================================
+
+  function ghostField(fieldId, ghosted) {
+    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
+    if (!valueCell) return;
+    valueCell.classList.toggle("disabled-input", ghosted);
+    const input = valueCell.querySelector('input, select, [contenteditable="true"]');
+    if (input) {
+      if (input.hasAttribute("contenteditable")) input.contentEditable = !ghosted;
+      else input.disabled = ghosted;
+    }
+    if (valueCell.hasAttribute("contenteditable")) valueCell.contentEditable = !ghosted;
+    const labelCell = valueCell.previousElementSibling;
+    if (labelCell && labelCell.tagName === "TD" && !labelCell.hasAttribute("data-field-id")) {
+      labelCell.classList.toggle("disabled-input", ghosted);
+    }
+  }
+
+  // ==========================================================================
   // EXPORT
   // ==========================================================================
 
-  window.TEUI.DOMBridge = { stampAll, stampInputsForMode };
+  window.TEUI.DOMBridge = { stampAll, stampInputsForMode, runPostStamp, ghostField };
 
   console.log("[DOMBridge] Module loaded");
 })();

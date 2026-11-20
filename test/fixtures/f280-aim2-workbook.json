@@ -1,0 +1,21 @@
+{
+  "source": "F280_2015_TestCases.xlsx, sheet AIM2 (NRCan, Brian Bradley, 2014-07-25 / 09-10), shipped with the purchased CSA F280-12 package; computed with AIM2-F280-2014.xls",
+  "sandbox_only": true,
+  "inputs": "NOT YET READ: the house, site, shielding, flue and weather inputs live in F280_Package/AIM2-F280_Example.xls (old .xls; open in Excel and record them here before wiring the test)",
+  "set_1_volume": {
+    "what": "natural ACH (AIM-2, heating) against house volume, all else as the example",
+    "rows": [
+      { "volume_m3": 500, "natural_ach": 0.1857 },
+      { "volume_m3": 566.3, "natural_ach": 0.1582 },
+      { "volume_m3": 600, "natural_ach": 0.1469 }
+    ]
+  },
+  "set_2_exhaust_only": {
+    "what": "natural ACH against an unbalanced exhaust-only flow, at volume 566.3 m3: the witness for Cl. 8.3.4 c)'s exhaust-only variant",
+    "rows": [
+      { "exhaust_ls": 0, "natural_ach": 0.1582 },
+      { "exhaust_ls": 1, "natural_ach": 0.1519 },
+      { "exhaust_ls": 10, "natural_ach": 0.1069 }
+    ]
+  }
+}

@@ -62,8 +62,7 @@ class ExcelMapper {
       H21: "h_21", // Capacitance/Static Toggle (Dropdown)
       I21: "i_21", // Capacitance Slider Position (Number)
       M19: "m_19", // Days Cooling (Editable Number)
-      L20: "l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
-      L21: "l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      // L20 / L21 (summer night mean, summer RH) are read from the climate station now
       L24: "l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE - allows testing lower setpoints
 
       // Section 04: Actual vs Target Energy (REPORT! Sheet)
@@ -108,6 +107,7 @@ class ExcelMapper {
       D58: "d_58", // TVOC ppm
       D59: "d_59", // Indoor Heating Season RH % (Slider)
       I59: "i_59", // Indoor Cooling Season RH % (Slider) used in Cooling.js
+      G59: "g_59", // Indoor state for the latent cooling load: F280 | Target (Dropdown)
 
       // Section 09: Occupant Internal Gains (REPORT! Sheet)
       D63: "d_63", // Occupants
@@ -194,6 +194,10 @@ class ExcelMapper {
       D119: "d_119", // Rate Per Person (Editable Number)
       L119: "l_119", // Summer Boost (Dropdown)
       K120: "k_120", // Unoccupied Setback % (Percentage Dropdown/Slider) - NOTE: Stores value like "0.9"
+      E118: "e_118", // Heat Recovery Type HRV / ERV (Dropdown)
+      L122: "l_122", // ERV Latent Recovery Efficiency % (Editable Number, ERV only)
+      L123: "l_123", // ATRE % (F280 Cl. 6.2.7; Editable Number)
+      I122: "i_122", // Latent Load Method: F280 | OBJECTIVE | ASHRAE140 (Dropdown)
 
       // Section 15: TEUI Summary (REPORT! Sheet)
       D142: "d_142", // Cost Premium HP (Editable Number)
@@ -230,8 +234,7 @@ class ExcelMapper {
       H21: "ref_h_21",
       I21: "ref_i_21",
       M19: "ref_m_19",
-      L20: "ref_l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
-      L21: "ref_l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      // L20 / L21: from the climate station (as Target)
       L24: "ref_l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE
 
       // Section 04: Actual vs Target Energy (REFERENCE! Sheet)
@@ -358,6 +361,10 @@ class ExcelMapper {
       D119: "ref_d_119",
       L119: "ref_l_119",
       K120: "ref_k_120",
+      E118: "ref_e_118",
+      L122: "ref_l_122",
+      L123: "ref_l_123",
+      I122: "ref_i_122",
 
       // Section 15: TEUI Summary (REFERENCE! Sheet)
       D142: "ref_d_142",

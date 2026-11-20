@@ -1,6 +1,12 @@
 // @ts-check
 const { defineConfig, devices } = require("@playwright/test");
 
+// The specs open the app over http (test/static-server.cjs): the ISO 52016-1
+// cooling fetches each location's climate station, which a file:// page
+// cannot, so over file:// the suite passed without the cooling ever running.
+const PORT = Number(process.env.TEST_PORT) || 8771;
+const BASE_URL = `http://127.0.0.1:${PORT}`;
+
 /**
  * Playwright configuration for OBJECTIVE Calculator tests
  * @see https://playwright.dev/docs/test-configuration
@@ -29,13 +35,21 @@ module.exports = defineConfig({
 
   use: {
     // Base URL for all tests
-    baseURL: "file://" + __dirname,
+    baseURL: BASE_URL,
 
     // Collect trace when retrying the failed test
     trace: "on-first-retry",
 
     // Screenshot only on failure
     screenshot: "only-on-failure",
+  },
+
+  // Serve the repo root for the run. Never reuse a server already on the
+  // port: it may be serving another checkout.
+  webServer: {
+    command: `node test/static-server.cjs ${PORT}`,
+    url: `${BASE_URL}/index.html`,
+    reuseExistingServer: false,
   },
 
   // Configure projects for major browsers

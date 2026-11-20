@@ -671,6 +671,21 @@ window.TEUI.SectionModules.sect01 = (function () {
     // Read graph-computed values and animate key fields
     const vals = {};
     for (const fid of ["e_6","e_8","e_10","h_6","h_8","h_10","k_6","k_8","k_10"]) {
+      // A figure the graph could not give (an F280 method without its inputs) shows as a dash, never 0.0
+      // (it read 0.0 for Hemmingford under F280 Mode On, 2026-11-19); the hover says where to look.
+      const el = document.querySelector(`[data-field-id="${fid}"]`);
+      if (getValue(fid) === "Unavailable") {
+        if (activeAnimations[fid]) cancelAnimationFrame(activeAnimations[fid]);
+        delete activeAnimations[fid];
+        if (el) {
+          stampFieldValue(el, fid, "—");
+          el.title = "Unavailable: a method this model uses is missing an input (S03 G.4.10 BASESIMP, S12 B.19.13 AIM-2, S15 T.6.10 / T.6.11)";
+        }
+        vals[fid] = NaN;
+        previousValues[fid] = undefined;
+        continue;
+      }
+      if (el) el.title = "";
       vals[fid] = parse(getValue(fid), 0);
       const formatted = window.TEUI?.formatNumber?.(vals[fid], "number-1dp") ?? vals[fid].toString();
       const prev = previousValues[fid];
@@ -703,14 +718,14 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     // Update explanation text for Target columns
-    updateExplanationText("h_6", h_6, e_6);
-    updateExplanationText("h_8", h_8, e_8);
-    updateExplanationText("h_10", h_10, e_10);
+    if (Number.isFinite(h_6) && Number.isFinite(e_6)) updateExplanationText("h_6", h_6, e_6);
+    if (Number.isFinite(h_8) && Number.isFinite(e_8)) updateExplanationText("h_8", h_8, e_8);
+    if (Number.isFinite(h_10) && Number.isFinite(e_10)) updateExplanationText("h_10", h_10, e_10);
 
     // Update explanation text for Actual columns
-    updateActualExplanationText("k_6", k_6, e_6, useType);
-    updateActualExplanationText("k_8", k_8, e_8, useType);
-    updateActualExplanationText("k_10", k_10, e_10, useType);
+    if (Number.isFinite(k_6) && Number.isFinite(e_6)) updateActualExplanationText("k_6", k_6, e_6, useType);
+    if (Number.isFinite(k_8) && Number.isFinite(e_8)) updateActualExplanationText("k_8", k_8, e_8, useType);
+    if (Number.isFinite(k_10) && Number.isFinite(e_10)) updateActualExplanationText("k_10", k_10, e_10, useType);
 
     // Update gauges, mode indicators, warnings
     updateAllGauges();

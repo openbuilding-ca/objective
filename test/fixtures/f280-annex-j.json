@@ -1,0 +1,524 @@
+{
+  "source": "CSA F280-12 Annex J (whole house), read from the text extract of Andy's licensed copy",
+  "recorded": "2026-11-18",
+  "sandbox_only": true,
+  "verified_against_pdf": "yes for Annex J pp. 171-183 (Andy's screenshots 2026-11-19): 8.3.2 c-f, every 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a) (W and Btuh), 8.3.10 c-d",
+  "gain_is": "the NOMINAL cooling capacity, Cl. 6.3.1 CSCn = LM x sum of HGsr at LM 1.3 - SETTLED 2026-11-19 by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's internal gains over its 18 rooms moves the 4 occupied rooms -387 W and the other 14 +111 W, a total of ~1995 W = 1.3 x (5 x 70 + 4 x 295.57) = 1992 W (no floor area explains it without the 1.3: 4A + 350 = 1995 needs 411 m2)",
+  "band_8_4_1": {
+    "low": "result >= 98 % of expected OR no more than 146.5 W below it",
+    "high": "result <= 120 % of expected OR no more than 146.5 W above it",
+    "low_fraction": 0.98,
+    "high_fraction": 1.2,
+    "absolute_W": 146.5
+  },
+  "base_case": {
+    "archetype": 1,
+    "vintage": "2010s",
+    "location": "Ottawa (Orleans)",
+    "case": "F280-1"
+  },
+  "location_and_vintage_8_3_9": [
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1960s",
+      "archetype": 1,
+      "loss_W": 30063,
+      "gain_W": 9755,
+      "loss_Btuh": 102574,
+      "gain_Btuh": 33285
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1960s",
+      "archetype": 2,
+      "loss_W": 39022,
+      "gain_W": 17656,
+      "loss_Btuh": 133143,
+      "gain_Btuh": 60243
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1960s",
+      "archetype": 3,
+      "loss_W": 19608,
+      "gain_W": 6798,
+      "loss_Btuh": 66901,
+      "gain_Btuh": 23194
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1960s",
+      "archetype": 4,
+      "loss_W": 16186,
+      "gain_W": 4608,
+      "loss_Btuh": 55227,
+      "gain_Btuh": 15723
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1980s",
+      "archetype": 1,
+      "loss_W": 23927,
+      "gain_W": 8637,
+      "loss_Btuh": 81638,
+      "gain_Btuh": 29468
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1980s",
+      "archetype": 2,
+      "loss_W": 31852,
+      "gain_W": 16512,
+      "loss_Btuh": 108680,
+      "gain_Btuh": 56339
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1980s",
+      "archetype": 3,
+      "loss_W": 15700,
+      "gain_W": 6119,
+      "loss_Btuh": 53567,
+      "gain_Btuh": 20879
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "1980s",
+      "archetype": 4,
+      "loss_W": 12705,
+      "gain_W": 4004,
+      "loss_Btuh": 43348,
+      "gain_Btuh": 13660
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "2010s",
+      "archetype": 1,
+      "loss_W": 11787,
+      "gain_W": 7321,
+      "loss_Btuh": 40216,
+      "gain_Btuh": 24979
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "2010s",
+      "archetype": 2,
+      "loss_W": 15753,
+      "gain_W": 14641,
+      "loss_Btuh": 53748,
+      "gain_Btuh": 49957
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "2010s",
+      "archetype": 3,
+      "loss_W": 7329,
+      "gain_W": 5358,
+      "loss_Btuh": 25007,
+      "gain_Btuh": 18282
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "2010s",
+      "archetype": 4,
+      "loss_W": 5607,
+      "gain_W": 3468,
+      "loss_Btuh": 19130,
+      "gain_Btuh": 11834
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "net zero",
+      "archetype": 1,
+      "loss_W": 8299,
+      "gain_W": 4732,
+      "loss_Btuh": 28318,
+      "gain_Btuh": 16146
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "net zero",
+      "archetype": 2,
+      "loss_W": 11276,
+      "gain_W": 7860,
+      "loss_Btuh": 38472,
+      "gain_Btuh": 26820
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "net zero",
+      "archetype": 3,
+      "loss_W": 5324,
+      "gain_W": 3420,
+      "loss_Btuh": 18164,
+      "gain_Btuh": 11670
+    },
+    {
+      "location": "Ottawa (Orleans)",
+      "vintage": "net zero",
+      "archetype": 4,
+      "loss_W": 4245,
+      "gain_W": 2605,
+      "loss_Btuh": 14482,
+      "gain_Btuh": 8888
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1960s",
+      "archetype": 1,
+      "loss_W": 16014,
+      "gain_W": 8767,
+      "loss_Btuh": 54641,
+      "gain_Btuh": 29914
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1960s",
+      "archetype": 2,
+      "loss_W": 12962,
+      "gain_W": 7892,
+      "loss_Btuh": 44226,
+      "gain_Btuh": 26929
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1960s",
+      "archetype": 3,
+      "loss_W": 10203,
+      "gain_W": 6135,
+      "loss_Btuh": 34812,
+      "gain_Btuh": 20934
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1960s",
+      "archetype": 4,
+      "loss_W": 8131,
+      "gain_W": 4094,
+      "loss_Btuh": 27742,
+      "gain_Btuh": 13970
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1980s",
+      "archetype": 1,
+      "loss_W": 12962,
+      "gain_W": 7892,
+      "loss_Btuh": 44226,
+      "gain_Btuh": 26929
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1980s",
+      "archetype": 2,
+      "loss_W": 16856,
+      "gain_W": 16002,
+      "loss_Btuh": 57514,
+      "gain_Btuh": 54600
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1980s",
+      "archetype": 3,
+      "loss_W": 8339,
+      "gain_W": 5596,
+      "loss_Btuh": 28453,
+      "gain_Btuh": 19094
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "1980s",
+      "archetype": 4,
+      "loss_W": 6533,
+      "gain_W": 3609,
+      "loss_Btuh": 22291,
+      "gain_Btuh": 12315
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "2010s",
+      "archetype": 1,
+      "loss_W": 6873,
+      "gain_W": 6855,
+      "loss_Btuh": 23451,
+      "gain_Btuh": 23390
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "2010s",
+      "archetype": 2,
+      "loss_W": 9056,
+      "gain_W": 14491,
+      "loss_Btuh": 30899,
+      "gain_Btuh": 49442
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "2010s",
+      "archetype": 3,
+      "loss_W": 4233,
+      "gain_W": 4982,
+      "loss_Btuh": 14444,
+      "gain_Btuh": 16999
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "2010s",
+      "archetype": 4,
+      "loss_W": 3163,
+      "gain_W": 3171,
+      "loss_Btuh": 10794,
+      "gain_Btuh": 10820
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "net zero",
+      "archetype": 1,
+      "loss_W": 4716,
+      "gain_W": 4376,
+      "loss_Btuh": 16091,
+      "gain_Btuh": 14930
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "net zero",
+      "archetype": 2,
+      "loss_W": 6325,
+      "gain_W": 7585,
+      "loss_Btuh": 21582,
+      "gain_Btuh": 25878
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "net zero",
+      "archetype": 3,
+      "loss_W": 2993,
+      "gain_W": 3147,
+      "loss_Btuh": 10212,
+      "gain_Btuh": 10738
+    },
+    {
+      "location": "Vancouver (City Hall)",
+      "vintage": "net zero",
+      "archetype": 4,
+      "loss_W": 2322,
+      "gain_W": 2380,
+      "loss_Btuh": 7922,
+      "gain_Btuh": 8121
+    }
+  ],
+  "variants_on_base_case": [
+    {
+      "clause": "8.3.4 b",
+      "variant": "ventilation supplied directly to the bedrooms",
+      "quantity": "loss",
+      "expected_change_W": 0,
+      "expected_change_Btuh": 0,
+      "verified": true,
+      "note": "whole house unchanged; a room test (Annex K)",
+      "page": "173-174"
+    },
+    {
+      "clause": "8.3.4 b",
+      "variant": "ventilation supplied directly to the bedrooms",
+      "quantity": "gain",
+      "expected_change_W": 0,
+      "expected_change_Btuh": 0,
+      "verified": true,
+      "note": "whole house unchanged; a room test (Annex K)",
+      "page": "173-174"
+    },
+    {
+      "clause": "8.3.4 c",
+      "variant": "exhaust-only at the HRV's flow",
+      "quantity": "loss",
+      "expected_change_W": -897,
+      "expected_change_Btuh": -3059,
+      "verified": true,
+      "note": "printed -897: the MAGNITUDE (exhaust-only at the HRV's flow without recovery must raise the loss; superposing the exhaust on AIM-2's leakage gives about +930 W by hand)",
+      "page": 174
+    },
+    {
+      "clause": "8.3.4 c",
+      "variant": "exhaust-only at the HRV's flow",
+      "quantity": "gain",
+      "expected_change_W": 108,
+      "expected_change_Btuh": 368,
+      "verified": true,
+      "note": "",
+      "page": 174
+    },
+    {
+      "clause": "8.3.5 b",
+      "variant": "blinds or curtains on every window",
+      "quantity": "gain",
+      "expected_change_W": 1489,
+      "expected_change_Btuh": 5080,
+      "verified": true,
+      "note": "a reduction in gain",
+      "page": "174-175"
+    },
+    {
+      "clause": "8.3.5 c",
+      "variant": "reflective blinds on every window",
+      "quantity": "gain",
+      "expected_change_W": 2084,
+      "expected_change_Btuh": 7112,
+      "verified": true,
+      "note": "a reduction in gain",
+      "page": "174-175"
+    },
+    {
+      "clause": "8.3.6 b",
+      "variant": "no external shading",
+      "quantity": "gain",
+      "expected_change_W": 165,
+      "expected_change_Btuh": 563,
+      "verified": true,
+      "note": "an increase in gain (the overhangs removed)",
+      "page": 175
+    },
+    {
+      "clause": "8.3.7 b",
+      "variant": "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)",
+      "quantity": "loss",
+      "expected_change_W": 1925,
+      "expected_change_Btuh": 6568,
+      "verified": true,
+      "note": "",
+      "page": 175
+    },
+    {
+      "clause": "8.3.7 b",
+      "variant": "3.0 ACH50, ELA10 844 cm2 (base 1.5 ACH50)",
+      "quantity": "gain",
+      "expected_change_W": 118,
+      "expected_change_Btuh": 403,
+      "verified": true,
+      "note": "",
+      "page": 175
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door SE",
+      "quantity": "gain",
+      "expected_change_W": 1995,
+      "expected_change_Btuh": 6808,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door E",
+      "quantity": "gain",
+      "expected_change_W": 2467,
+      "expected_change_Btuh": 8419,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door NE",
+      "quantity": "gain",
+      "expected_change_W": 2014,
+      "expected_change_Btuh": 6873,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door N",
+      "quantity": "gain",
+      "expected_change_W": 3,
+      "expected_change_Btuh": 9,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door NW",
+      "quantity": "gain",
+      "expected_change_W": 2073,
+      "expected_change_Btuh": 7073,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door W",
+      "quantity": "gain",
+      "expected_change_W": 2529,
+      "expected_change_Btuh": 8630,
+      "verified": true,
+      "note": "",
+      "page": 176
+    },
+    {
+      "clause": "8.3.8",
+      "variant": "front door SW",
+      "quantity": "gain",
+      "expected_change_W": 2054,
+      "expected_change_Btuh": 7008,
+      "verified": true,
+      "note": "",
+      "page": 176
+    }
+  ],
+  "sign_convention": "Annex J prints the 8.3.4-8.3.8 changes with no consistent sign (checked against the PDF 2026-11-19): positive for a REDUCTION (8.3.5 blinds), positive for an INCREASE (8.3.6 no shading, 8.3.7 3.0 ACH50, 8.3.8 turns), negative for an increase (8.3.4 c exhaust-only loss). Compare magnitudes; check each direction by physics.",
+  "report_review_8_3_2": {
+    "page": "171-173",
+    "verified": true,
+    "effective_rsi_c": {
+      "above_grade_wall": 3.428,
+      "garage_wall": 3.363,
+      "above_grade_header": 3.587,
+      "garage_wall_header": 3.361,
+      "below_grade_wall_added": 2.76,
+      "ceiling": 9.05,
+      "exposed_floor": 5.349,
+      "floor_slab_added": 0.0
+    },
+    "window_d": {
+      "shgc": 0.47,
+      "rsi": 0.511
+    },
+    "door_rsi_e": 1.101,
+    "hrv_f": {
+      "ase": 0.76,
+      "atre": 0
+    }
+  },
+  "location_and_vintage_8_3_9_page": "177-182",
+  "suspected_erratum_in_f280_12": "8.3.9 a) Vancouver 1960s Archetype 2 (12 962 W / 7892 W; 44 226 / 26 929 Btuh) is digit for digit Vancouver 1980s Archetype 1, and smaller than 1960s Archetype 1 though Archetype 2 is the larger house (Ottawa 1960s: 39 022 vs 30 063 W). Transcribed as printed; Kieran to confirm before it is used as a target.",
+  "foundation_8_3_10": {
+    "page": 183,
+    "verified": true,
+    "base": "Archetype 2, Ottawa, 1980s, facing northeast, no slab or perimeter insulation",
+    "variants": [
+      {
+        "clause": "8.3.10 c",
+        "variant": "R10 perimeter insulation where the slab is < 24 in below grade (the walk-out)",
+        "loss_change_W": -18,
+        "loss_change_Btuh": -61,
+        "gain_change_W": 0
+      },
+      {
+        "clause": "8.3.10 d",
+        "variant": "R10 under the full slab",
+        "loss_change_W": -191,
+        "loss_change_Btuh": -652,
+        "gain_change_W": 0
+      }
+    ]
+  },
+  "annex_k_8_3_3": {
+    "page": "188-190",
+    "verified": true,
+    "note": "room test (Annex K); whole house 0. Family, Kitchen, Living, Dining -387 W each; the other 14 rooms +111 W each"
+  }
+}

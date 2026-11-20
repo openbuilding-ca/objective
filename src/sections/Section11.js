@@ -435,9 +435,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     88: {
       id: "B.7.0",
       rowId: "B.7.0",
-      label: "Doors",
+      label: "Door",
       cells: {
-        c: { label: "Doors" },
+        c: { label: "Door" },
         d: {
           fieldId: "d_88",
           semanticPath: "envelope.doors.area",
@@ -533,9 +533,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     89: {
       id: "B.8.1",
       rowId: "B.8.1",
-      label: "Window Area North",
+      label: "Window",
       cells: {
-        c: { label: "Window Area North" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_89",
           semanticPath: "envelope.windowNorth.area",
@@ -631,9 +631,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     90: {
       id: "B.8.2",
       rowId: "B.8.2",
-      label: "Window Area East",
+      label: "Window",
       cells: {
-        c: { label: "Window Area East" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_90",
           semanticPath: "envelope.windowEast.area",
@@ -729,9 +729,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     91: {
       id: "B.8.3",
       rowId: "B.8.3",
-      label: "Window Area South",
+      label: "Window",
       cells: {
-        c: { label: "Window Area South" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_91",
           semanticPath: "envelope.windowSouth.area",
@@ -827,9 +827,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     92: {
       id: "B.8.4",
       rowId: "B.8.4",
-      label: "Window Area West",
+      label: "Window",
       cells: {
-        c: { label: "Window Area West" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_92",
           semanticPath: "envelope.windowWest.area",
@@ -1450,6 +1450,36 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
   };
 
+  // The openings' twins after the first (Openings.js; Andy 2026-11-20: "If a window row is created in
+  // S10, S11 needs to ape it"): door rows B.7.2-B.7.4 take row 88's shape, window rows B.8.6-B.8.12
+  // row 89's - the area S10's (calculated), the U-value their own. Shown and hidden with their S10 row.
+  const OPENINGS = window.TEUI.Openings;
+  OPENINGS.SLOTS.forEach(o => {
+    const door = o.kind === "door";
+    const base = door ? "88" : "89";
+    const row = OPENINGS.cloneRow(sectionRows[base], base, o.s11, {
+      id: OPENINGS.s11RowId(o),
+      label: door ? "Door" : "Window",
+      pathFrom: door ? "doors" : "windowNorth",
+      pathTo: o.id,
+      textPattern: door ? /\bDoors?\b/g : /\bWindow( Area)? North\b/g,
+      textTo: door ? `Door ${OPENINGS.s11RowId(o)}` : `Window ${OPENINGS.s11RowId(o)}`,
+    });
+    row.cells.d.dependencies = [`d_${o.s10}`]; // its area is its S10 row's
+    sectionRows[o.s11] = row;
+    areaSourceMap[`d_${o.s11}`] = `d_${o.s10}`;
+    editableFields.push(`g_${o.s11}`);
+  });
+
+  // The rows in order: each opening's twins with its group (object keys put 88a after every number)
+  const ROW_ORDER = [
+    "header",
+    ...Object.keys(sectionRows).filter(k => k !== "header" && Number(k) < 88),
+    ...OPENINGS.DOORS.map(o => o.s11),
+    ...OPENINGS.WINDOWS.map(o => o.s11),
+    ...Object.keys(sectionRows).filter(k => k !== "header" && Number(k) > 93),
+  ];
+
   //==========================================================================
   // ACCESSOR METHODS
   //==========================================================================
@@ -1479,10 +1509,8 @@ window.TEUI.SectionModules.sect11 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"])
-      layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.entries(sectionRows).forEach(([key, row]) => {
-      if (key !== "header") layoutRows.push(createLayoutRow(row));
+    ROW_ORDER.forEach(key => {
+      if (sectionRows[key]) layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
   }
@@ -1920,6 +1948,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Graph handles initial calculations via dependency chain
     isInitializationPhase = false;
 
+    // The openings' twins show and hide with their S10 rows; S11's +/- do the same as S10's
+    OPENINGS.installControls("S11");
+    document.addEventListener("teui-openings-changed", () => OPENINGS.applyVisibility("S11"));
+
     // Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
       setTimeout(() => {
@@ -1939,6 +1971,8 @@ window.TEUI.SectionModules.sect11 = (function () {
     getLayout,
     initializeEventHandlers,
     onSectionRendered,
+    // After each stamp: an opening's twin shows when its S10 row does
+    postStamp: () => OPENINGS.applyVisibility("S11"),
     // S10 area sync for FileHandler post-import call
     syncAreasFromS10: syncAreasFromS10,
 

@@ -168,6 +168,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_d_19",
           value: "ON",
           section: "climateCalculations",
+          span: 2, // spans the empty E: "Newfoundland and Labrador" shows whole
           tooltip: true, // Select a Province
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {
@@ -271,13 +272,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_20",
           semanticPath: "climate.cooling.nightTemp",
-          type: "editable",
+          type: "calculated",
           label: "Summer Night (Seasonal Mean) ºC",
-          value: "20.43", // Default: Alexandria, ON summer night temp
           section: "climateCalculations",
-          tooltip: true, // Night-time outdoor temp (cooling season mean)
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
+          dependencies: ["h_19"],
+          tooltip: true, // the station's Jun-Aug mean daily minimum (ClimateNodes)
         },
         m: { content: "ºC", classes: ["unit-label"] },
       },
@@ -303,7 +302,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           value: "196",
           section: "climateCalculations",
           classes: ["user-input", "editable"], // ✅ Add styling for editable field
-          tooltip: true, // ✅ Shows help with Climate Atlas link when unavailable
+          tooltip: true, // Shown for reference only: ghosted by ghostUnusedCDD()
         },
         f: { content: "G.4.2", classes: ["label-prefix"] },
         g: { content: "Capacitance", classes: ["label-main"] },
@@ -343,13 +342,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_21",
           semanticPath: "climate.cooling.seasonMeanRH",
-          type: "editable",
+          type: "calculated",
           label: "Summer Mean RH%",
-          value: "55.85", // Default: Alexandria, ON cooling season mean RH at 15h00 LST
           section: "climateCalculations",
-          tooltip: true, // Cooling season mean RH at 15h00 LST
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
+          dependencies: ["h_19"],
+          tooltip: true, // the station's Jun-Aug mean RH (ClimateNodes)
         },
         m: { content: "%", classes: ["unit-label"] },
       },
@@ -566,6 +563,109 @@ window.TEUI.SectionModules.sect03 = (function () {
           value: "32",
           section: "climateCalculations",
           dependencies: ["d_25"],
+        },
+        // G.4.3, the ground heat-loss method, retired 2026-11-19: S21 F280 Mode chooses it (BASESIMP On,
+        // OBJECTIVE's Off; ground.methodInEffect).
+        j: { content: "G.4.4", classes: ["label-prefix"] },
+        k: { content: "Foundation Config.", classes: ["label-main"] },
+        l: {
+          fieldId: "l_25",
+          semanticPath: "ground.basesimp.configuration",
+          type: "dropdown",
+          label: "Foundation Configuration (BASESIMP)",
+          dropdownId: "dd_l_25",
+          value: "1",
+          section: "climateCalculations",
+          span: 3, // spans the empty M and N
+          tooltip: true,
+          getOptions: function () {
+            const configs = window.TEUI.BasesimpData?.configs || {};
+            return Object.entries(configs).map(([n, c]) => ({ value: n, name: c.name }));
+          },
+        },
+      },
+    },
+
+    // Rows 26 and 26b: BASESIMP's inputs (CSA F280-12 Cl. 5.2.2.1), shown under F280 Mode On
+    26: {
+      id: "G.4.5",
+      rowId: "G.4.5",
+      label: "Depth Below Grade (m)",
+      cells: {
+        b: { content: "G.4.5", classes: ["label-prefix"] },
+        c: { content: "Depth Below Grade (m)", type: "label" },
+        d: {
+          fieldId: "d_26",
+          semanticPath: "ground.basesimp.depth",
+          type: "editable",
+          label: "Depth Below Grade",
+          value: "2.06",
+          section: "climateCalculations",
+          classes: ["user-input", "editable"],
+          tooltip: true,
+        },
+        f: { content: "G.4.6", classes: ["label-prefix"] },
+        g: { content: "Exposed Perimeter (m)", classes: ["label-main"] },
+        h: {
+          fieldId: "h_26",
+          semanticPath: "ground.basesimp.exposedPerimeter",
+          type: "editable",
+          label: "Exposed Perimeter",
+          value: "0",
+          section: "climateCalculations",
+          classes: ["user-input", "editable"],
+          tooltip: true,
+        },
+        j: { content: "G.4.7", classes: ["label-prefix"] },
+        k: { content: "Soil Conductivity (W/mK)", classes: ["label-main"] },
+        l: {
+          fieldId: "l_26",
+          semanticPath: "ground.basesimp.soilConductivity",
+          type: "editable",
+          label: "Soil Conductivity",
+          value: "0.85",
+          section: "climateCalculations",
+          classes: ["user-input", "editable"],
+          tooltip: true,
+        },
+      },
+    },
+    "26b": {
+      id: "G.4.8",
+      rowId: "G.4.8",
+      label: "Water Table Depth (m)",
+      cells: {
+        b: { content: "G.4.8", classes: ["label-prefix"] },
+        c: { content: "Water Table Depth (m)", type: "label" },
+        d: {
+          fieldId: "d_26b",
+          semanticPath: "ground.basesimp.waterTable",
+          type: "editable",
+          label: "Water Table Depth",
+          value: "8",
+          section: "climateCalculations",
+          classes: ["user-input", "editable"],
+          tooltip: true,
+        },
+        f: { content: "G.4.9", classes: ["label-prefix"] },
+        g: { content: "Deep Ground Temp. (F280) °C", classes: ["label-main"] },
+        h: {
+          fieldId: "h_26b",
+          semanticPath: "ground.basesimp.deepGround",
+          type: "calculated",
+          value: "",
+          section: "climateCalculations",
+          tooltip: true,
+        },
+        j: { content: "G.4.10", classes: ["label-prefix"] },
+        k: { content: "BASESIMP Peak Heat Loss (W)", classes: ["label-main"] },
+        l: {
+          fieldId: "l_26b",
+          semanticPath: "ground.basesimp.peakHeatLoss",
+          type: "calculated",
+          value: "",
+          section: "climateCalculations",
+          tooltip: true,
         },
       },
     },
@@ -1273,6 +1373,19 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
 
+    // G.4.4 BASESIMP configuration
+    ["l_25"].forEach(fieldId => {
+      const dropdown = getElement([`[data-dropdown-id="dd_${fieldId}"]`]);
+      if (!dropdown) return;
+      const fresh = dropdown.cloneNode(true);
+      dropdown.parentNode.replaceChild(fresh, dropdown);
+      fresh.addEventListener("change", function () {
+        setModeValue(fieldId, this.value, "user-modified");
+        updateGroundUI();
+      });
+    });
+    updateGroundUI();
+
     // Weather data buttons
     ["showWeatherDataBtn", "weatherDataBtn"].forEach(id => {
       const btn = document.getElementById(id);
@@ -1306,6 +1419,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
 
+    // After the loop above, which makes every editable field editable
+    ghostUnusedCDD();
+
     // ✅ INITIALIZE SLIDERS VIA FIELDMANAGER (Standard Architecture)
     if (window.TEUI?.FieldManager?.initializeSliders) {
       window.TEUI.FieldManager.initializeSliders("climateCalculations");
@@ -1316,6 +1432,19 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Graph handles cross-section computation via wildcard listener.
     // No per-section StateManager listeners needed.
+  }
+
+  /**
+   * Ghost CDD (d_21): no calculation reads it since the cooling need became
+   * ISO 52016-1 on the climate station (CoolingNodes ISO_DEPENDENCIES).
+   * Still looked up and shown for reference; typing a value would change
+   * nothing, so the cell is not editable.
+   */
+  function ghostUnusedCDD() {
+    const cddCell = document.querySelector('td[data-field-id="d_21"]');
+    if (!cddCell) return;
+    cddCell.classList.add("disabled-input");
+    cddCell.contentEditable = false;
   }
 
   /**
@@ -1473,6 +1602,35 @@ window.TEUI.SectionModules.sect03 = (function () {
     console.log(`S03: Location dropdowns synced - ${province}/${city}`);
   }
 
+  /**
+   * G.4.4-G.4.10 for the current model: the dropdown shows the stored choice. BASESIMP's inputs are never
+   * greyed: shown only under F280 Mode (S21), where they drive F280's sizing and, On, the annual figures
+   * (Andy 2026-11-19). When
+   * BASESIMP cannot run, G.4.10 says why (the node's error) on hover.
+   */
+  function updateGroundUI() {
+    const config = String(getModeValue("l_25") || "1");
+    const configSelect = getElement(['[data-dropdown-id="dd_l_25"]']);
+    if (configSelect && configSelect.value !== config) configSelect.value = config;
+
+    // G.4.5 does not apply to a slab on grade: BASESIMP's slab method takes its own 0.05 m
+    // (TransmissionLossNodes basesimpFor), so the depth is ghosted rather than shown as if read
+    const known = !!window.TEUI.BasesimpData?.configs?.[Number(config)];
+    window.TEUI.DOMBridge?.ghostField("d_26", known && window.TEUI.Basesimp.isSlab(Number(config)));
+
+    const cell = document.querySelector('td[data-field-id="l_26b"]');
+    const state = window.TEUI.ComputationIntegration?.getState?.();
+    if (cell && state) {
+      const r = state.getValueForModel(state.getActiveModelId(), "ground.basesimp");
+      cell.title = r?.error
+        ? `BASESIMP cannot run: ${r.error}`
+        : r?.configuration
+          ? `${r.configuration}; ${r.geometry.length.toFixed(2)} x ${r.geometry.width.toFixed(2)} m, ` +
+            `height ${r.geometry.height.toFixed(2)} m; F280 weather: ${r.weather.city}`
+          : "";
+    }
+  }
+
   //==========================================================================
   // PART 5: PUBLIC API - Enhanced with DualState
   //==========================================================================
@@ -1486,6 +1644,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Event handling and initialization
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+    postStamp: updateGroundUI,
 
     // Utility functions
     showWeatherData: showWeatherData,

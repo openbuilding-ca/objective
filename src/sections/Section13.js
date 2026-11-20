@@ -350,11 +350,16 @@ window.TEUI.SectionModules.sect13 = (function () {
           semanticPath: "mechanical.cooling.system",
           type: "dropdown",
           dropdownId: "dd_d_116",
-          value: "Cooling",
+          value: "Heatpump Heats & Cools",
           section: "mechanicalLoads",
+          span: 2, // spans the empty E: the choice's full name shows
           tooltip: true,
+          // Andy 2026-11-18 (window.TEUI.CoolingSystem, MechanicalNodes): the
+          // heat pump option is offered only when M.1.0 is Heatpump
+          // (updateCoolingOptions); an old file's "Cooling" is read on import.
           options: [
-            { value: "Cooling", name: "Cooling" },
+            { value: "Heatpump Heats & Cools", name: "Heatpump Heats & Cools" },
+            { value: "Separate Cooling", name: "Separate Cooling" },
             { value: "No Cooling", name: "No Cooling" },
           ],
         },
@@ -373,7 +378,8 @@ window.TEUI.SectionModules.sect13 = (function () {
           value: "2.66",
           section: "mechanicalLoads",
           classes: ["user-input", "editable"],
-          label: "COP Cool (Dedicated Cooling System)",
+          label:
+            "COP Cool (Separate Cooling; shows M.1.3 when the heat pump cools)",
         },
         k: {
           content: "M.3.4 Sink",
@@ -495,7 +501,20 @@ window.TEUI.SectionModules.sect13 = (function () {
           tooltip: true,
           label: "HRV/ERV/MVHR Sensible Recovery Efficiency (SRE): %",
         },
-        e: {},
+        e: {
+          fieldId: "e_118",
+          semanticPath: "ventilation.recoveryType",
+          type: "dropdown",
+          dropdownId: "dd_e_118",
+          value: "HRV",
+          section: "mechanicalLoads",
+          tooltip: true,
+          options: [
+            { value: "HRV", name: "HRV" },
+            { value: "ERV", name: "ERV" },
+          ],
+          label: "Heat Recovery Type (HRV: sensible only; ERV: sensible + latent)",
+        },
         f: {
           content: "Ventil. Method",
           classes: ["label-prefix"],
@@ -507,6 +526,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_g_118",
           value: "Volume by Schedule",
           section: "mechanicalLoads",
+          span: 2, // spans the empty H: the method's full name shows
           tooltip: true,
           options: [
             { value: "Volume Constant", name: "Volume Constant" },
@@ -636,8 +656,18 @@ window.TEUI.SectionModules.sect13 = (function () {
           type: "calculated",
           value: "112%",
           section: "mechanicalLoads",
-          dependencies: ["d_119", "ref_d_119"],
-          label: "Ventilation Rate Ratio to Reference",
+          tooltip: true,
+          dependencies: [
+            "l_118",
+            "d_119",
+            "g_118",
+            "e_12",
+            "d_13",
+            "l_63",
+            "m_63",
+            "d_103",
+          ],
+          label: "Outdoor Air Delivered / Required (ASHRAE 62.1)",
         },
         n: {
           fieldId: "n_119",
@@ -829,10 +859,36 @@ window.TEUI.SectionModules.sect13 = (function () {
           dependencies: ["cooling_latentLoadFactor"],
           label: "Latent Load Factor (from Cooling Calculation): %",
         },
-        i: {},
-        j: {},
+        i: {
+          fieldId: "i_122",
+          semanticPath: "cooling.latentMethod",
+          type: "dropdown",
+          dropdownId: "dd_i_122",
+          value: "F280",
+          section: "mechanicalLoads",
+          tooltip: true,
+          options: [
+            { value: "F280", name: "F280" },
+            { value: "OBJECTIVE", name: "OBJECTIVE" },
+            { value: "ASHRAE140", name: "ASHRAE 140" },
+          ],
+          label: "Latent Load Method (F280 / OBJECTIVE / ASHRAE 140)",
+        },
+        j: {
+          content: "ERV LRE",
+          classes: ["label"],
+        },
         k: {},
-        l: {},
+        l: {
+          fieldId: "l_122",
+          semanticPath: "ventilation.ervLatentEfficiency",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+          section: "mechanicalLoads",
+          tooltip: true,
+          label: "ERV Latent Recovery Efficiency (LRE): %",
+        },
         m: {},
         n: {},
       },
@@ -863,9 +919,21 @@ window.TEUI.SectionModules.sect13 = (function () {
         g: {},
         h: {},
         i: {},
-        j: {},
+        j: {
+          content: "ATRE (F280)",
+          classes: ["label"],
+        },
         k: {},
-        l: {},
+        l: {
+          fieldId: "l_123",
+          semanticPath: "ventilation.atre",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+          section: "mechanicalLoads",
+          tooltip: true,
+          label: "ATRE, Adjusted Total Recovery Efficiency (F280 Cl. 6.2.7): %",
+        },
         m: {},
         n: {},
       },
@@ -1373,6 +1441,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       });
     }
 
+    // An old file's or session's "Cooling" stored as what it means
+    settleStoredCoolingChoice();
+
     // 5. Update conditional UI (ghosting) for current mode
     updateConditionalUI();
 
@@ -1396,6 +1467,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       dropdown.removeEventListener("change", handleDropdownChange);
       dropdown.addEventListener("change", handleDropdownChange);
     });
+
+    // Capture phase: runs before any listener on the dropdown itself
+    sectionElement.removeEventListener("change", noteCoolingBeforeChange, true);
+    sectionElement.addEventListener("change", noteCoolingBeforeChange, true);
   }
 
   /**
@@ -1411,11 +1486,33 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Special handling for heating system changes
     if (fieldId === "d_113") {
+      // The heat pump option needs a heat pump: without one the cooling
+      // becomes Separate Cooling, at the standard's minimum COPc.
+      const CS = window.TEUI.CoolingSystem;
+      const cooling = getModeValue("d_116");
+      if (
+        CS &&
+        cooling !== CS.NONE &&
+        cooling !== CS.SEPARATE &&
+        newValue !== "Heatpump"
+      ) {
+        enterSeparateCooling(cooling);
+      }
       handleHeatingSystemChangeForGhosting(newValue);
     }
 
-    // Special handling for cooling system changes (d_116)
-    if (fieldId === "d_116") {
+    // Choosing Separate Cooling fills M.3.3 with the standard's minimum; the
+    // user then types the unit's own COPc over it (Andy 2026-11-18) - and
+    // back from No Cooling that COPc stays (enterSeparateCooling).
+    if (
+      fieldId === "d_116" &&
+      newValue === window.TEUI.CoolingSystem?.SEPARATE
+    ) {
+      enterSeparateCooling(coolingBeforeChange);
+    }
+
+    // Special handling for cooling system (d_116) and recovery type (e_118) changes
+    if (fieldId === "d_116" || fieldId === "e_118") {
       const currentHeatingSystem = getModeValue("d_113") || "Heatpump";
       handleHeatingSystemChangeForGhosting(currentHeatingSystem);
     }
@@ -1433,6 +1530,166 @@ window.TEUI.SectionModules.sect13 = (function () {
     }
 
     /* graph computes — no calculateAll() or updateCalculatedDisplayValues() calls */
+  }
+
+  //==========================================================================
+  // THE COOLING CHOICE (M.3.0, d_116) - Andy 2026-11-18
+  //==========================================================================
+  // Heatpump Heats & Cools: the heat pump cools at M.1.3 (from HSPF); M.3.3
+  // is locked and shows M.1.3. Separate Cooling: M.3.3 is the unit's own
+  // COPc, editable. No Cooling: the load stands, unmet. The values and the
+  // reading of an old file's "Cooling" are window.TEUI.CoolingSystem
+  // (MechanicalNodes), the one source the engine also reads.
+
+  /** The selected standard's minimum COPc (ReferenceValues j_116). */
+  function standardMinimumCopCool() {
+    const RV = window.TEUI.ReferenceValues || {};
+    const standard = window.TEUI.StateManager?.getValue("d_13");
+    const values = RV[standard] || RV["OBC SB12 3.1.1.2.C4"];
+    return values?.j_116 ?? null;
+  }
+
+  // The current mode's cooling choice as the dropdown's change event found it
+  let coolingBeforeChange = null;
+
+  /**
+   * Reads the choice being left, in the capture phase: the listeners on the
+   * dropdown itself (FieldManager's, then handleDropdownChange) have stored
+   * the new choice before enterSeparateCooling can ask.
+   */
+  function noteCoolingBeforeChange(e) {
+    if (e.target?.getAttribute?.("data-field-id") === "d_116") {
+      coolingBeforeChange = getModeValue("d_116");
+    }
+  }
+
+  /**
+   * The current mode becomes Separate Cooling - on a user's choice only (an
+   * import carries its own M.3.3). M.3.3 is filled with the standard's
+   * minimum unless it holds the unit's own COPc (CoolingSystem.seedsCopCool):
+   * - leaving the heat pump option: always filled (M.3.3 showed M.1.3);
+   * - back from No Cooling: a positive COPc the user typed, a file brought or
+   *   an earlier fill left stays; an untouched default, a blank or a zero is
+   *   filled.
+   * So a look at No Cooling and back leaves M.3.3, and the cooling
+   * electricity it sets, as they were.
+   * @param {string} [leaving] the cooling choice being left; unknown fills
+   */
+  function enterSeparateCooling(leaving) {
+    const CS = window.TEUI.CoolingSystem;
+    if (!CS) return;
+    if (getModeValue("d_116") !== CS.SEPARATE) {
+      setModeValue("d_116", CS.SEPARATE, "user-modified");
+    }
+    const minimum = standardMinimumCopCool();
+    if (minimum === null) return;
+    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    const source = window.TEUI.StateManager?.getDebugInfo?.(
+      isRef ? "ref_j_116" : "j_116"
+    )?.state;
+    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source)) {
+      setModeValue("j_116", String(minimum), "user-modified");
+    }
+  }
+
+  /**
+   * An old "Cooling", or the heat pump option without a heat pump, stored as
+   * what it means - for Target and Reference - so the dropdown shows a real
+   * option and the next save writes the new names.
+   */
+  function settleStoredCoolingChoice() {
+    const CS = window.TEUI.CoolingSystem;
+    const sm = window.TEUI.StateManager;
+    if (!CS || !sm) return;
+    for (const prefix of ["", "ref_"]) {
+      const stored = sm.getValue(`${prefix}d_116`);
+      if (stored === null || stored === undefined || stored === "") continue;
+      const settled = CS.normalize(stored, sm.getValue(`${prefix}d_113`));
+      if (settled !== stored) sm.setValue(`${prefix}d_116`, settled, "default");
+    }
+  }
+
+  /** The heat pump option is offered only when M.1.0 is Heatpump. */
+  function updateCoolingOptions(isHP, cooling) {
+    const select = document.querySelector('select[data-field-id="d_116"]');
+    if (!select) return;
+    const CS = window.TEUI.CoolingSystem;
+    for (const option of select.options) {
+      if (option.value === CS.HEATPUMP) {
+        option.hidden = !isHP;
+        option.disabled = !isHP;
+      }
+    }
+    if (select.value !== cooling) select.value = cooling;
+  }
+
+  /**
+   * M.3.3 shows the COP the heat pump cools at while it cools - M.1.3 in the
+   * Target; in the Reference its OWN M.3.3, the standard's minimum by default
+   * (Andy 2026-10-31) and editable there (Andy 2026-11-19: a default, not a
+   * lock) - and its own value otherwise.
+   */
+  function refreshCopCoolDisplay(cooling) {
+    const CS = window.TEUI.CoolingSystem;
+    const cell = document.querySelector('td[data-field-id="j_116"]');
+    if (!cell || !CS) return;
+    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    let shown = getModeValue("j_116");
+    if (cooling === CS.HEATPUMP) {
+      shown = isRef ? (getModeValue("j_116") || standardMinimumCopCool()) : getModeValue("j_113");
+    }
+    const value = window.TEUI.parseNumeric(shown, NaN);
+    if (!isNaN(value)) {
+      cell.textContent = window.TEUI.formatNumber(value, "number-2dp");
+    }
+  }
+
+  /** The current mode's cooling choice: options, M.3.3, and its row's ghosting. */
+  function updateCoolingUI(heatingSystem) {
+    const CS = window.TEUI.CoolingSystem;
+    if (!CS) return;
+    const heating = heatingSystem || getModeValue("d_113");
+    const cooling = CS.normalize(getModeValue("d_116"), heating);
+    updateCoolingOptions(heating === "Heatpump", cooling);
+    // M.3.3 is live for Separate Cooling, and on the Reference while its heat pump cools (its COPc,
+    // the standard's minimum by default - Andy 2026-11-19)
+    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    setFieldGhosted("j_116", !(cooling === CS.SEPARATE || (cooling === CS.HEATPUMP && isRef)));
+    setFieldGhosted("l_116", cooling !== CS.SEPARATE);
+    setFieldGhosted("m_116", cooling === CS.NONE);
+    refreshCopCoolDisplay(cooling);
+  }
+
+  /**
+   * The inputs V.1.4's requirement reads, greyed where they have no effect -
+   * the house rule (Andy 2026-11-18): S09 Bedrooms / Units only under the
+   * Part 9 rule, S02's 62.1 space type only when 62.1 sets the requirement.
+   * VentilationRates.fieldsInEffect is the engine's own predicate, read with
+   * the current mode's values (a field a model lacks falls back to the
+   * Target's, as the Reference model's inputs do).
+   */
+  function updateVentilationFieldsUI() {
+    const R = window.TEUI.VentilationRates;
+    const sm = window.TEUI.StateManager;
+    if (!R || !sm) return;
+    const v = id => {
+      const own = getModeValue(id);
+      return own === undefined || own === null || own === "" ? sm.getValue(id) : own;
+    };
+    const num = id => window.TEUI.parseNumeric(v(id), 0);
+    const f = R.fieldsInEffect({
+      occupancy: v("d_12"),
+      standard: v("d_13"),
+      storeys: num("d_103") || 1,
+      area: num("h_15"),
+      occupants: num("d_63"),
+      bedrooms: v("l_63"),
+      units: v("m_63"),
+      spaceType: v("e_12"),
+    });
+    setFieldGhosted("l_63", !f.bedrooms);
+    setFieldGhosted("m_63", !f.units);
+    setFieldGhosted("e_12", !f.spaceType);
   }
 
   //==========================================================================
@@ -1458,33 +1715,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Helper to add/remove a ghosting class to a field's TD element.
    */
   function setFieldGhosted(fieldId, shouldBeGhosted) {
-    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
-
-    if (valueCell) {
-      valueCell.classList.toggle("disabled-input", shouldBeGhosted);
-
-      const input = valueCell.querySelector(
-        'input, select, [contenteditable="true"]'
-      );
-      if (input) {
-        if (input.hasAttribute("contenteditable")) {
-          input.contentEditable = !shouldBeGhosted;
-        } else {
-          input.disabled = shouldBeGhosted;
-        }
-      }
-      if (valueCell.hasAttribute("contenteditable"))
-        valueCell.contentEditable = !shouldBeGhosted;
-
-      const labelCell = valueCell.previousElementSibling;
-      if (
-        labelCell &&
-        labelCell.tagName === "TD" &&
-        !labelCell.hasAttribute("data-field-id")
-      ) {
-        labelCell.classList.toggle("disabled-input", shouldBeGhosted);
-      }
-    }
+    window.TEUI.DOMBridge?.ghostField(fieldId, shouldBeGhosted);
   }
 
   /**
@@ -1521,18 +1752,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Exhaust field (l_115) - Active only for Gas/Oil
     setFieldGhosted("l_115", !isFossilFuel);
 
-    // --- ROW 116 GHOSTING: Dedicated Cooling System Logic ---
-    const currentCoolingSystem =
-      window.TEUI?.StateManager?.getValue("d_116");
-    const isCoolingActive = currentCoolingSystem === "Cooling";
+    // --- ROW 116: the cooling choice (options, M.3.3, its sink) ---
+    updateCoolingUI(systemType);
 
-    // Row 116 j_116 field: Ghost when "No Cooling" OR when "Heatpump" (calculated from j_113)
-    const shouldGhostJ116 = !isCoolingActive || isHP;
-    setFieldGhosted("j_116", shouldGhostJ116);
-
-    // Row 116 other fields: Ghost only when "No Cooling"
-    setFieldGhosted("l_116", !isCoolingActive);
-    setFieldGhosted("m_116", !isCoolingActive);
+    // Row 122 l_122 (ERV latent recovery): active only for an ERV (e_118)
+    const isERV = getModeValue("e_118") === "ERV";
+    setFieldGhosted("l_122", !isERV);
 
     // Row 115: Heating Fuel Impact - Ghost entire row if not Gas or Oil
     const row115 = document.querySelector('tr[data-id="M.2.2"]');
@@ -1570,6 +1795,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function onModeSwitch(mode) {
     updateConditionalUI();
+    updateVentilationFieldsUI();
   }
 
   //==========================================================================
@@ -1587,6 +1813,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     onSectionRendered: onSectionRendered,
 
     onModeSwitch: onModeSwitch,
+
+    // After every DOMBridge stamp: it writes j_116 from the graph, so M.3.3's
+    // mirror of M.1.3 (the heat pump cooling) is restored here, following HSPF;
+    // and the ventilation inputs grey by what this building's check reads.
+    postStamp: () => {
+      updateCoolingUI();
+      updateVentilationFieldsUI();
+    },
 
     // Ghosting functions
     setFieldGhosted: setFieldGhosted,

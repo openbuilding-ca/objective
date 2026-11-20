@@ -588,11 +588,13 @@
     },
     {
       legacyId: "j_116",
-      semanticPath: "mechanical.cooling.cop",
+      // The graph's input (MechanicalNodes); "mechanical.cooling.cop" named
+      // nothing, and this static entry wins over the graph's in populateFromGraph.
+      semanticPath: "mechanical.cooling.copDedicated",
       classification: "C",
       section: "S13",
-      label: "Cooling COP",
-      defaultValue: 3.3
+      label: "Cooling COP (Separate Cooling)",
+      defaultValue: 2.66
     },
     {
       legacyId: "d_118",

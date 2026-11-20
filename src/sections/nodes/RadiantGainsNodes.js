@@ -47,22 +47,22 @@
     // ========================================================================
     // INPUTS - Glazing properties by orientation (rows 73-78)
     // ========================================================================
-    const rows = [
-      { row: 73, label: "Average/Doors" },
-      { row: 74, label: "North" },
-      { row: 75, label: "East" },
-      { row: 76, label: "South" },
-      { row: 77, label: "West" },
-      { row: 78, label: "Skylight" }
-    ];
+    // Every opening row (Openings.js: doors G.7.1-G.7.4, windows G.8.1-G.8.12). The first six keep
+    // their labels and default orientations; a row after them starts North (a window) or Average (a door).
+    const FIRST = { 73: "Average/Doors", 74: "North", 75: "East", 76: "South", 77: "West", 78: "Skylight" };
+    const rows = window.TEUI.Openings.ALL.map(o => ({
+      row: o.s10,
+      label: FIRST[o.s10] || window.TEUI.Openings.s10RowId(o),
+      orientation: FIRST[o.s10] || (o.kind === "door" ? "Average" : "North")
+    }));
 
     const inputs = [];
 
     // Register inputs for each glazing row
-    rows.forEach(({ row, label }) => {
+    rows.forEach(({ row, label, orientation }) => {
       inputs.push(
         { id: `radiantGains.row${row}.area`, legacyId: `d_${row}`, section: "S10", classification: "C", label: `${label} Area (m²)`, defaultValue: 0 },
-        { id: `radiantGains.row${row}.orientation`, legacyId: `e_${row}`, section: "S10", classification: "C", label: `${label} Orientation`, defaultValue: label === "Skylight" ? "Skylight" : label },
+        { id: `radiantGains.row${row}.orientation`, legacyId: `e_${row}`, section: "S10", classification: "C", label: `${label} Orientation`, defaultValue: orientation },
         { id: `radiantGains.row${row}.shgc`, legacyId: `f_${row}`, section: "S10", classification: "C", label: `${label} SHGC`, defaultValue: 0.35 },
         { id: `radiantGains.row${row}.winterShading`, legacyId: `g_${row}`, section: "S10", classification: "C", label: `${label} Winter Shading (%)`, defaultValue: 0 },
         { id: `radiantGains.row${row}.summerShading`, legacyId: `h_${row}`, section: "S10", classification: "C", label: `${label} Summer Shading (%)`, defaultValue: 0 }
@@ -128,7 +128,11 @@
     });
 
     // ========================================================================
-    // COOLING GAINS (k_73 to k_78)
+    // COOLING GAINS (k_73 to k_78): each glazing row's share of the
+    // unmitigated ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js)
+    // - area x SHGC x (1 - summer shading) x the station's monthly irradiation
+    // on the row's orientation, in the months with a need. The heating side
+    // keeps the gain factors above (NRC, ruled 2026-10-30).
     // ========================================================================
     rows.forEach(({ row, label }) => {
       graph.registerNode({
@@ -136,26 +140,9 @@
         legacyId: `k_${row}`,
         section: "S10",
         classification: "C",
-        dependencies: [
-          `radiantGains.row${row}.area`,
-          `radiantGains.row${row}.gainFactor`,
-          `radiantGains.row${row}.shgc`,
-          `radiantGains.row${row}.summerShading`,
-          `radiantGains.row${row}.orientation`
-        ],
+        dependencies: ["cooling.iso52016"],
         label: `${label} Cooling Gain (kWh/yr)`,
-        compute: (inputs) => {
-          const area = parseNum(inputs[`radiantGains.row${row}.area`]);
-          const gainFactor = parseNum(inputs[`radiantGains.row${row}.gainFactor`]);
-          const shgc = parseNum(inputs[`radiantGains.row${row}.shgc`], 0.35);
-          const summerShading = parseNum(inputs[`radiantGains.row${row}.summerShading`]) / 100;
-          const orientation = inputs[`radiantGains.row${row}.orientation`] || "Average";
-
-          const shgcNormalized = shgc / 0.5;
-          const coolingModifier = orientation === "Skylight" ? 1.25 : 0.5;
-
-          return area * gainFactor * shgcNormalized * (1 - summerShading) * coolingModifier;
-        }
+        compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[`glazing${row}`] ?? 0
       });
     });
 
