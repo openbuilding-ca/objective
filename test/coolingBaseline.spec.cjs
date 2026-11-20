@@ -75,11 +75,41 @@ const IDS = [
   "building.coolingLatentBasis",
 ];
 
+/**
+ * One CSV line as its fields. Quote-aware, as FileHandler's parseCSVRow is: a
+ * quoted field may hold commas, and "" inside one is a literal quote. A bare
+ * split(",") shifted every column after case 09's
+ * e_12 "Gym, sports arena (play area)".
+ */
+function csvRow(line) {
+  const fields = [];
+  let field = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (quoted && line[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (ch === "," && !quoted) {
+      fields.push(field.trim());
+      field = "";
+    } else {
+      field += ch;
+    }
+  }
+  fields.push(field.trim());
+  return fields;
+}
+
 /** The target row's value of one column of a case-study CSV (header "h_19: City"). */
 function csvField(csv, id) {
   const [head, row] = csv.split(/\r?\n/);
-  const i = head.split(",").findIndex((h) => h.split(":")[0].trim() === id);
-  return i >= 0 ? (row.split(",")[i] || "").trim() : null;
+  const i = csvRow(head).findIndex((h) => h.split(":")[0].trim() === id);
+  return i >= 0 ? (csvRow(row || "")[i] ?? "") : null;
 }
 
 test("record the cooling chain for every case study", async ({ page }) => {
