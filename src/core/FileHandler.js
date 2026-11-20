@@ -665,6 +665,12 @@
         e_118: "HRV",
         l_122: "0",
         i_122: "F280",
+        // Wombat's own settings (S19 19.1 / 19.RT / 19.W): a file without them takes Wombat's defaults,
+        // never the previous project's - the aspect sets the footprint perimeter BASESIMP takes when
+        // G.4.6 is blank, so a case's F280 figures hung on what was loaded before it (2026-11-20)
+        d_154: "-2.0",
+        d_159: "biplanar",
+        d_160: "show",
         // The envelope rows' fields (added 2026-11-20, Openings.addedFields), every one at its own
         // default: a file without them has no extra rows (area 0), its opaque rows their old types (B.5
         // facing Average), no L or H - and a row + shows later starts clean, never the previous project's
@@ -1363,9 +1369,9 @@
           // Section 15: Summary
           "d_142",
 
-          // Section 19: Wombat's own settings (not exported before 2026-11-19; d_150 / d_151 mirror S12)
+          // Section 19: Wombat's own settings (not exported before 2026-11-19; d_150 / d_151 mirror S12,
+          // and since 2026-11-20 d_158 follows S12's storeys)
           "d_154",
-          "d_158",
           "d_159",
           "d_160",
         ];

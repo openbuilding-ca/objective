@@ -278,7 +278,7 @@ window.TEUI.SectionModules.sect19 = (function () {
           fieldId: "h_156",
           type: "calculated",
           value: "0.00",
-          label: "Nominal Height (m)",
+          label: "Building Height, grade to ridge (m)",
         },
       },
     },
@@ -301,7 +301,8 @@ window.TEUI.SectionModules.sect19 = (function () {
           value: "mezzanine",
           section: "wombat",
           tooltip: true,
-          label: "Geometry interpretation for fractional stories",
+          label:
+            "Follows S12's storeys: a fractional count is a mezzanine (read-only)",
           options: [
             { value: "mezzanine", name: "Mezzanine" },
             { value: "equal", name: "Equal Floorplates" },
@@ -1638,6 +1639,66 @@ window.TEUI.SectionModules.sect19 = (function () {
     window.TEUI.WombatRender.renderPlaceholder(svg);
   }
 
+  /**
+   * 19.FP follows S12's storeys (Andy 2026-11-20: "Floorplate option should read from S12, where a half
+   * storey ~= Mezzanine"): a fractional count is a mezzanine / partial floor, a whole one equal
+   * floorplates. Locked by rule, so ghosted; nothing in the solve or the drawing reads it.
+   */
+  function stampFloorplate(isReference) {
+    const stories = parseFloat(getModeAwareValue("d_103", isReference));
+    const select = document.querySelector(
+      '#wombat select[data-field-id="d_158"]'
+    );
+    if (select && Number.isFinite(stories)) {
+      select.value = stories % 1 === 0 ? "equal" : "mezzanine";
+    }
+    window.TEUI.DOMBridge?.ghostField("d_158", true);
+  }
+
+  /**
+   * S19's display rows for the model on screen (19.3 from this solve, the rest via stampS12Rows): 19.Ae / 19.Ag and their U-values mirror S12's B.16 / B.17
+   * (they held the template's numbers before 2026-11-20: Ag 1100.93 on a 106.45 m2 slab), and 19.3 shows
+   * this solve's building height, grade to ridge (a cathedral ceiling's highest point: S12 B.19.4).
+   */
+  function stampTableRows(geometry, isReference) {
+    stampS12Rows(isReference);
+    const el = document.querySelector('#wombat [data-field-id="h_156"]');
+    if (el && Number.isFinite(geometry.totalHeight)) {
+      el.textContent = window.TEUI.formatNumber(
+        geometry.totalHeight,
+        "number-2dp"
+      );
+    }
+  }
+
+  /** The rows that read S12 (19.Ae / 19.Ag, their U-values, 19.FP): after every stamp, activated or not. */
+  function stampS12Rows(isReference) {
+    const sm = window.TEUI.StateManager;
+    const pre = isReference ? "ref_" : "";
+    const cell = id =>
+      document.querySelector(`#wombat [data-field-id="${id}"]`);
+    const show = (id, value, format) => {
+      const el = cell(id);
+      const n = window.TEUI.parseNumeric?.(value);
+      if (el && Number.isFinite(n))
+        el.textContent = window.TEUI.formatNumber(n, format);
+    };
+    [
+      ["d_152", "d_101", "number-2dp"],
+      ["g_152", "g_101", "number-3dp"],
+      ["d_153", "d_102", "number-2dp"],
+      ["g_153", "g_102", "number-3dp"],
+    ].forEach(([own, s12, format]) =>
+      show(own, sm?.getValue(`${pre}${s12}`), format)
+    );
+    stampFloorplate(isReference);
+  }
+
+  /** DOMBridge.runPostStamp: after an import or a recalculation, in the model on screen. */
+  function postStamp() {
+    stampS12Rows(!!window.TEUI.ReferenceToggle?.isReferenceMode?.());
+  }
+
   function updateVisualization(mode = "target") {
     console.log(`🎨 [WOMBAT updateVisualization] Called with mode="${mode}"`);
     console.log(`🎨 [WOMBAT updateVisualization] isActivated = ${isActivated}`);
@@ -1653,6 +1714,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     console.log(`🎨 [WOMBAT updateVisualization] isReference = ${isReference}`);
     const geometry = solveGeometry(isReference);
     currentModel = geometry;
+    stampTableRows(geometry, isReference);
 
     // Get SVG element
     const svg = document.getElementById("wombat-svg");
@@ -2193,13 +2255,13 @@ window.TEUI.SectionModules.sect19 = (function () {
 
   function calculateTargetModel() {
     const geometry = solveGeometry(false); // isReferenceCalculation = false
-    // h_157 / h_155 (and 19.2b's h_155b) are the graph's wombat.footprint.* since 2026-11-19; only the
-    // storey height, which this solve alone owns, is published here
+    // h_157 / h_155 (and 19.2b's h_155b) are the graph's wombat.footprint.* since 2026-11-19; only 19.3's
+    // building height (ground to ridge), which this solve alone owns, is published here
 
     // Publish calculated dimensions to StateManager (unprefixed for Target)
     window.TEUI.StateManager.setValue(
       "h_156",
-      geometry.storyHeight.toFixed(2),
+      geometry.totalHeight.toFixed(2),
       "calculated"
     );
 
@@ -2212,7 +2274,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     // Publish calculated dimensions to StateManager (ref_ prefixed for Reference)
     window.TEUI.StateManager.setValue(
       "ref_h_156",
-      geometry.storyHeight.toFixed(2),
+      geometry.totalHeight.toFixed(2),
       "calculated"
     );
 
@@ -2224,6 +2286,8 @@ window.TEUI.SectionModules.sect19 = (function () {
     console.log(
       `[WOMBAT calculateAll] Called - Current mode: ${mode}, isActivated: ${isActivated}`
     );
+
+    stampFloorplate(mode === "reference");
 
     // DUAL-ENGINE: ALWAYS run both Target and Reference calculations
     const targetGeometry = calculateTargetModel();
@@ -2244,6 +2308,7 @@ window.TEUI.SectionModules.sect19 = (function () {
    * Called by ReferenceToggle when mode switches.
    */
   function onModeSwitch(mode) {
+    stampFloorplate(mode === "reference");
     if (isActivated) {
       updateVisualization(mode);
     }
@@ -2260,6 +2325,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     initializeEventHandlers,
     onSectionRendered,
     onModeSwitch,
+    postStamp,
 
     // WOMBAT-specific exports
     solveGeometry,
