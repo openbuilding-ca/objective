@@ -113,7 +113,9 @@ test("opening rows: + / twin / Sankey / CSV / -", async ({ page }) => {
   expect(withRow.coolingNodes).toContain("G.8.6 Window · N");
   expect(withRow.heatingNodes.some((n) => /^G\.8\.7/.test(n)), "a hidden row draws no node").toBe(false);
 
-  await set(page, { e_78a: "South" });
+  // both models: an import resets the Target through the graph, but a stored ref_ value outlives it
+  // (Mark's #123 review, the latent fields) - the Reference is where a stale row would leak
+  await set(page, { e_78a: "South", ref_e_78a: "South" });
   const south = await settle(page);
   expect(south.heatingNodes).toContain("G.8.6 Window · S");
   expect(south.teui).not.toBe(withRow.teui);
@@ -124,7 +126,9 @@ test("opening rows: + / twin / Sankey / CSV / -", async ({ page }) => {
   const text = fs.readFileSync(await (await download).path(), "utf8");
   const other = await load(page, "src/template/case-studies/01-assembly-obc-sb10.csv");
   expect(other.shown.g86, "a file without the rows has none").toBe(false);
-  expect(other.sm.d_78a).toBe("0");
+  expect(parseFloat(other.sm.d_78a)).toBe(0);
+  // every column back to the row's default, both models: the previous project's South never returns
+  expect([other.sm.e_78a, other.sm.ref_e_78a]).toEqual(["North", "North"]);
   await page.evaluate((t) => window.TEUI.FileHandler.processImportedCSV(t), text);
   const back = await settle(page);
   expect(back.shown.g86).toBe(true);
@@ -140,4 +144,17 @@ test("opening rows: + / twin / Sankey / CSV / -", async ({ page }) => {
   // the skylight's SHGC 0.25 moves nothing (Hemmingford has no skylight area): the house's own TEUIs
   expect(removed.teui).toBe(house.teui);
   expect(removed.refTeui).toBe(house.refTeui);
+
+  // "Set Values" (a standard's values, through the import path, and a change to the house) is not a
+  // project file: a row with an area keeps it, its orientation and its place
+  await click(page, "s10", "windows", "add");
+  await set(page, { d_78a: "10", e_78a: "South" });
+  await settle(page);
+  await page.evaluate(() =>
+    window.TEUI.FileHandler.applyReferenceValuesFromStandard(window.TEUI.StateManager.getValue("d_13"), "target")
+  );
+  const setValues = await settle(page);
+  expect(parseFloat(setValues.sm.d_78a), "Set Values keeps the row's area").toBe(10);
+  expect(setValues.sm.e_78a).toBe("South");
+  expect(setValues.shown.g86).toBe(true);
 });

@@ -4,7 +4,7 @@
   "main": "index.html",
   "scripts": {
     "test": "npm run test:unit && playwright test --config=playwright.config.cjs",
-    "test:unit": "node test/coolingISO52016.test.cjs && node test/ventilationCheck.test.cjs && node test/coolingChoice.test.cjs && node test/coolingCop.test.cjs",
+    "test:unit": "node test/coolingISO52016.test.cjs && node test/ventilationCheck.test.cjs && node test/coolingChoice.test.cjs && node test/coolingCop.test.cjs && node test/aim2.test.cjs && node test/aim2FromHouse.test.cjs && node test/airtightnessLevels.test.cjs && node test/basesimp.test.cjs && node test/basesimpSlab.test.cjs && node test/f280InternalGains.test.cjs && node test/f280Mode.test.cjs && node test/opaqueSolarCorrection.test.cjs && node test/unavailablePropagates.test.cjs && node test/wombatFootprint.test.cjs",
     "test:unit:climate": "node test/climateStation.test.cjs",
     "test:e2e": "playwright test --config=playwright.config.cjs",
     "test:ui": "playwright test --ui --config=playwright.config.cjs",

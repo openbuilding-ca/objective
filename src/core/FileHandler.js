@@ -449,16 +449,6 @@
           }
         }
 
-        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
-        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
-        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On.
-        if (!("f280_mode" in importedData)) {
-          for (const p of ["", "ref_"]) {
-            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
-            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
-          }
-        }
-
         // Project notes (the last column) belong to Section 20, not the
         // StateManager. Every cell under a header is kept above, an empty
         // one as "", so the key is there exactly when the file has the column.
@@ -473,6 +463,18 @@
             "warning"
           );
           return;
+        }
+
+        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
+        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
+        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On. After the
+        // check above: a value this supplies is not the file's, so a file with no data still changes
+        // nothing (Mark's #127 witness, a notes-only file)
+        if (!("f280_mode" in importedData)) {
+          for (const p of ["", "ref_"]) {
+            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
+            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
+          }
         }
 
         // A file with the column replaces the notes, an empty cell clearing
@@ -663,6 +665,15 @@
         e_118: "HRV",
         l_122: "0",
         i_122: "F280",
+        // The opening rows after the first (added 2026-11-20, Openings.js), every column at its row's
+        // own default: a file without them has none (area 0), and a row + shows later starts clean -
+        // its orientation, SHGC, shading and U-value never the previous project's
+        ...Object.fromEntries(
+          window.TEUI.Openings.SLOTS.flatMap(o => [
+            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
+            `g_${o.s11}`,
+          ]).map(id => [id, String(this.fieldManager.getField(id)?.defaultValue ?? "")])
+        ),
       };
       // The display follows in the model on screen, as an imported value's
       // does below: stampAll leaves a dropdown and a "" as they were.
@@ -684,16 +695,9 @@
         }
       }
 
-      // The opening rows after the first (added 2026-11-20, Openings.js): a file without them has none -
-      // their areas 0, never the previous project's - and the rows shown are the file's own
-      for (const o of window.TEUI.Openings.SLOTS) {
-        for (const prefix of ["", "ref_"]) {
-          if (importedData[`${prefix}d_${o.s10}`] === undefined) {
-            this.stateManager.setValue(`${prefix}d_${o.s10}`, "0", "imported");
-          }
-        }
-      }
-      window.TEUI.Openings.resetShown();
+      // A project file: the opening rows shown are its own (those with an area), not those + showed
+      // before. "Set Values" (no d_12) leaves the rows as they are.
+      if (importedData.d_12 !== undefined) window.TEUI.Openings.resetShown();
 
       const allEntries = Object.entries(importedData);
 
