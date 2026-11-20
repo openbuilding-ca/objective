@@ -494,14 +494,18 @@
     };
     const scWallsAverage = (col) =>
       Object.values(F280_SC_WALLS).reduce((sum, v) => sum + v[col], 0) / Object.keys(F280_SC_WALLS).length;
-    const F280_SC_OPAQUE = {
+    // Table 3 by the opaque ROW (Openings.js, Andy 2026-11-20): a roof the roofs' column, an exposed floor
+    // the floors', a WALL its facing's (Average: the compass mean, every wall's before) - a house's walls
+    // by facing turn with it (Kieran's open #1). The doors: the compass mean.
+    const SC_BY_TYPE = {
       roof: (col) => [15.0, 12.2][col], // roofs and top storey ceilings
-      walls: scWallsAverage,
-      doors: scWallsAverage,
-      exposedFloor: (col) => [-3.3, -6.1][col], // floors over non-conditioned rooms; fully shaded
-      // the door rows after the first (Openings.js), as the first: the compass mean
-      ...Object.fromEntries(window.TEUI.Openings.SLOTS.filter(o => o.kind === "door").map(o => [o.id, scWallsAverage]))
+      walls: (col, facing) => (F280_SC_WALLS[facing] ? F280_SC_WALLS[facing][col] : scWallsAverage(col)),
+      exposedFloor: (col) => [-3.3, -6.1][col] // floors over non-conditioned rooms; fully shaded
     };
+    const OPAQUE_ROWS = window.TEUI.Openings.ABOVE;
+    const DOOR_IDS = window.TEUI.Openings.DOORS.map(o => o.id);
+    const typeOfRow = (o, inputs) =>
+      SC_BY_TYPE[inputs[`transmissionLoss.${o.id}.type`]] ? inputs[`transmissionLoss.${o.id}.type`] : o.type;
 
     graph.registerNode({
       id: "f280.opaqueSolarCorrection",
@@ -513,7 +517,8 @@
         "climate.temperature.hottest",
         "climate.cooling.setpoint",
         "transmissionLoss.thermalBridgePenalty",
-        ...Object.keys(F280_SC_OPAQUE).flatMap((id) => [`transmissionLoss.${id}.area`, `transmissionLoss.${id}.uValue`])
+        ...OPAQUE_ROWS.flatMap((o) => ["area", "uValue", "type", "facing"].map((k) => `transmissionLoss.${o.id}.${k}`)),
+        ...DOOR_IDS.flatMap((id) => [`transmissionLoss.${id}.area`, `transmissionLoss.${id}.uValue`])
       ],
       label: "F280 Solar Correction on Opaque Assemblies (W)",
       compute: (inputs) => {
@@ -523,10 +528,14 @@
         const dtdc = parseNum(inputs["climate.temperature.hottest"], 34) - parseNum(inputs["climate.cooling.setpoint"], 24);
         const tbFactor = 1 + parseNum(inputs["transmissionLoss.thermalBridgePenalty"], 5) / 100;
         let total = 0;
-        for (const [id, sc] of Object.entries(F280_SC_OPAQUE)) {
+        const add = (id, sc) => {
           const ua = parseNum(inputs[`transmissionLoss.${id}.area`]) * parseNum(inputs[`transmissionLoss.${id}.uValue`]) * tbFactor;
-          total += ua * (Math.max(0, dtdc + sc(col)) - Math.max(0, dtdc));
-        }
+          total += ua * (Math.max(0, dtdc + sc) - Math.max(0, dtdc));
+        };
+        OPAQUE_ROWS.forEach((o) =>
+          add(o.id, SC_BY_TYPE[typeOfRow(o, inputs)](col, inputs[`transmissionLoss.${o.id}.facing`] || "Average"))
+        );
+        DOOR_IDS.forEach((id) => add(id, scWallsAverage(col)));
         return total;
       }
     });

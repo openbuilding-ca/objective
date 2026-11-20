@@ -2503,6 +2503,57 @@ textarea.mirror-highlight {
   padding-right: 12px;
 }
 
+/* S11's L and H columns (Andy 2026-11-20: L x H = Area, under "Areas") put two columns before its area,
+   so its later columns carry letters two on: Heatgain % is col-n, Reference col-o, Status col-p, Surface
+   col-q. Their styles follow them: */
+#envelopeTransmissionLosses .data-table td.col-n:not(.section-subheader) {
+  font-weight: inherit;
+  font-size: inherit;
+  text-align: right;
+}
+#envelopeTransmissionLosses .data-table td.col-o:not(.section-subheader) {
+  padding-right: 0;
+  text-align: right;
+}
+#envelopeTransmissionLosses .data-table td.col-m:not(.section-subheader) {
+  text-align: right;
+}
+#envelopeTransmissionLosses .data-table td.col-p:not(.section-subheader) {
+  vertical-align: middle;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+}
+#envelopeTransmissionLosses .data-table td.col-q:not(.section-subheader) {
+  padding-right: 12px;
+}
+
+/* An opaque row's L and H: narrow, and visibly an input while blank (a faint dash) */
+#envelopeTransmissionLosses td.opaque-lh {
+  min-width: 4.5em;
+  text-align: right;
+}
+#envelopeTransmissionLosses td.opaque-lh:empty::before {
+  content: "\2014";
+  color: var(--user-input-color);
+  opacity: 0.35;
+}
+/* Its area when L x H gives it: calculated (black), not typed */
+#envelopeTransmissionLosses td.opaque-area-from-lh {
+  color: var(--text-color, #212529) !important;
+  font-weight: normal;
+}
+/* The type and, for a wall, the facing, side by side in the description cell */
+#envelopeTransmissionLosses td.opaque-description {
+  white-space: nowrap;
+}
+#envelopeTransmissionLosses td.opaque-description select.form-select {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  margin-right: 6px;
+}
+
 .checkmark, [data-status="pass"] {
   color: #28a745;
 }

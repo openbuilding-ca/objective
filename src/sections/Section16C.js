@@ -399,6 +399,30 @@ window.TEUI.CoolingSankey = (function () {
       energyGainedLinks.push({ source: transmission, target: 0, value: getStateValue(`k_${o.s11}`), id: `OpeningGain${o.s11}` });
     });
 
+    // The opaque rows likewise (Andy 2026-11-20): B.4-B.10 rename the template's nodes (B.9 / B.10 their
+    // removal nodes too); a row after them that shows brings its own - above grade a gain, below grade a
+    // gain when its k is positive, a removal when the ground takes heat (as B.9 / B.10 do above)
+    const opaquePrefix = isRef ? "ref_" : "";
+    const OPAQUE_GAIN_NODE = { 85: 1, 86: 2, 87: 28, 94: 9, 95: 10 };
+    const OPAQUE_REMOVAL_NODE = { 94: 23, 95: 24 };
+    O.OPAQUE.forEach(o => {
+      const name = O.opaqueName(o, opaquePrefix);
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[OPAQUE_GAIN_NODE[o.s11]].name = name;
+        if (OPAQUE_REMOVAL_NODE[o.s11]) sankeyData.nodes[OPAQUE_REMOVAL_NODE[o.s11]].name = `${name} (Removal)`;
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const k = getRawStateValue(`k_${o.s11}`);
+      if (o.group === "below" && k < 0) {
+        const removal = sankeyData.nodes.push({ name: `${name} (Removal)`, color: "#A5D3ED" }) - 1;
+        energyRemovedLinks.push({ source: 0, target: removal, value: Math.abs(k), id: `OpaqueRemoval${o.s11}` });
+      } else {
+        const gain = sankeyData.nodes.push({ name, color: "#FFB6A3" }) - 1;
+        energyGainedLinks.push({ source: gain, target: 0, value: Math.max(0, k), id: `OpaqueGain${o.s11}` });
+      }
+    });
+
     // Combine all links (DO NOT FILTER - show all values including zeros)
     const allLinks = [...energyGainedLinks, ...energyRemovedLinks];
 

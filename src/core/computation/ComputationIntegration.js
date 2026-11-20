@@ -783,9 +783,11 @@
           // Priority 1: CSV-imported ref_ value from StateManager
           state.setValueForModel(refModelId, semanticPath, refValue);
           debug.cFieldsFromStateManager.push({ legacyId, semanticPath, value: refValue });
-        } else if (legacyId && standardValues && standardValues[legacyId] !== undefined) {
-          // Priority 2: Standard default from ReferenceValues.js
-          const stdValue = standardValues[legacyId];
+        } else if (legacyId && standardValues && standardValues[window.TEUI.Openings?.standardKeyFor(legacyId) ?? legacyId] !== undefined) {
+          // Priority 2: Standard default from ReferenceValues.js. An opaque row's RSI is the standard's
+          // for the type the row holds in the Reference (Openings.standardKeyFor: a row turned to Roof
+          // takes f_85's), whatever its own field
+          const stdValue = standardValues[window.TEUI.Openings?.standardKeyFor(legacyId) ?? legacyId];
           state.setValueForModel(refModelId, semanticPath, stdValue);
           cFieldsLoaded++;
           debug.cFieldsFromStandard.push({ legacyId, semanticPath, value: stdValue });

@@ -248,41 +248,49 @@
     // ========================================================================
     // S11: Envelope Compliance — RSI components (higher is better)
     // ========================================================================
-    ...[
-      { row: 85, id: "roof", prop: "rsi" },
-      { row: 86, id: "walls", prop: "rsi" },
-      { row: 87, id: "exposedFloor", prop: "rsi" },
-      { row: 94, id: "wallsBelowGrade", prop: "rsi" },
-      { row: 95, id: "slabOnGrade", prop: "rsi" },
-    ].flatMap(({ row, id, prop }) => [
-      {
-        id: `compliance.envelope.${id}.ratio`,
-        legacyId: `m_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [`transmissionLoss.${id}.${prop}`, `reference.transmissionLoss.${id}.${prop}`],
-        label: `${id} Compliance Ratio`,
-        compute: (inputs) => {
-          const target = parseNum(inputs[`transmissionLoss.${id}.${prop}`]);
-          const ref = parseNum(inputs[`reference.transmissionLoss.${id}.${prop}`]);
-          if (ref > 0) return Math.round((target / ref) * 100) + "%";
-          return "100%";
+    // Per opaque ROW (Openings.js, Andy 2026-11-20): the row's RSI against the Reference's for the TYPE
+    // the row holds (reference.transmissionLoss.<type>.rsi, the Reference model's type sum) - a wall
+    // row turned to Roof is held to the roof's.
+    ...window.TEUI.Openings.OPAQUE.flatMap((o) => {
+      const TYPES = window.TEUI.Openings.TYPES;
+      const typeOf = (inputs) => (TYPES[inputs[`transmissionLoss.${o.id}.type`]] ? inputs[`transmissionLoss.${o.id}.type`] : o.type);
+      const deps = [
+        `transmissionLoss.${o.id}.rsi`,
+        `transmissionLoss.${o.id}.type`,
+        ...Object.keys(TYPES).map((type) => `reference.transmissionLoss.${type}.rsi`)
+      ];
+      const pair = (inputs) => [
+        parseNum(inputs[`transmissionLoss.${o.id}.rsi`]),
+        parseNum(inputs[`reference.transmissionLoss.${typeOf(inputs)}.rsi`])
+      ];
+      return [
+        {
+          id: `compliance.envelope.${o.id}.ratio`,
+          legacyId: `m_${o.s11}`,
+          section: "S11",
+          classification: "C",
+          dependencies: deps,
+          label: `${o.id} Compliance Ratio`,
+          compute: (inputs) => {
+            const [target, ref] = pair(inputs);
+            if (ref > 0) return Math.round((target / ref) * 100) + "%";
+            return "100%";
+          }
+        },
+        {
+          id: `compliance.envelope.${o.id}.pass`,
+          legacyId: `n_${o.s11}`,
+          section: "S11",
+          classification: "C",
+          dependencies: deps,
+          label: `${o.id} Compliance Status`,
+          compute: (inputs) => {
+            const [target, ref] = pair(inputs);
+            return target >= ref ? "\u2713" : "\u2717";
+          }
         }
-      },
-      {
-        id: `compliance.envelope.${id}.pass`,
-        legacyId: `n_${row}`,
-        section: "S11",
-        classification: "C",
-        dependencies: [`transmissionLoss.${id}.${prop}`, `reference.transmissionLoss.${id}.${prop}`],
-        label: `${id} Compliance Status`,
-        compute: (inputs) => {
-          const target = parseNum(inputs[`transmissionLoss.${id}.${prop}`]);
-          const ref = parseNum(inputs[`reference.transmissionLoss.${id}.${prop}`]);
-          return target >= ref ? "✓" : "✗";
-        }
-      }
-    ]),
+      ];
+    }),
 
     // S11: Envelope Compliance — U-value components (lower is better)
     ...[

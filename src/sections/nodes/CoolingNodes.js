@@ -35,10 +35,11 @@
   // The building as cooling.iso52016 reads it. S11's air-facing rows with
   // their tilt (for the sky view) and whether opaque (solar on the outer
   // surface); a window's or door's solar is S10's glazing row instead.
+  const O = window.TEUI.Openings;
   const AIR_COMPONENTS = [
-    ["roof", "roof", true],
-    ["walls", "wall", true],
-    ["exposedFloor", "floor", true],
+    // the opaque rows above grade (Openings.js, Andy 2026-11-20): each its own, its tilt from its TYPE
+    // (roof / wall / floor) and a wall's orientation from its FACING (the fifth entry: the row)
+    ...O.ABOVE.map(o => [o.id, null, true, null, o]),
     ["doors", "wall", false],
     ["windowNorth", "wall", false],
     ["windowEast", "wall", false],
@@ -49,8 +50,8 @@
     // orientation is Skylight (the fourth entry: that S10 row)
     ...window.TEUI.Openings.SLOTS.map(o => [o.id, "wall", false, o.s10])
   ];
-  const GROUND_COMPONENTS = ["wallsBelowGrade", "slabOnGrade"];
-  const GLAZING_ROWS = window.TEUI.Openings.ALL.map(o => o.s10);
+  const GROUND_COMPONENTS = O.BELOW.map(o => o.id);
+  const GLAZING_ROWS = O.ALL.map(o => o.s10);
   // LIMITATION: no climate.timeframe (h_20) and no climate.cooling.degreedays
   // (d_21) here. The station is one CWEC 2020 typical year with no future
   // period, so "Future" moves heating (HDD18_2021_2050) but models no warmer
@@ -70,6 +71,7 @@
       `transmissionLoss.${key}.area`,
       `transmissionLoss.${key}.uValue`
     ]),
+    ...O.ABOVE.flatMap(o => [`transmissionLoss.${o.id}.type`, `transmissionLoss.${o.id}.facing`]),
     "transmissionLoss.thermalBridgePenalty",
     ...GLAZING_ROWS.flatMap((row) => [
       `radiantGains.row${row}.area`,
@@ -255,9 +257,14 @@
         if (!station) return null;
         const setpoint = parseNum(inputs["climate.cooling.setpoint"], 24);
         const indoorRH = parseNum(inputs["building.indoorRH"], 45);
-        const component = ([key, tilt, opaque, s10]) => ({
+        const typeOf = o => (O.TYPES[inputs[`transmissionLoss.${o.id}.type`]] ? inputs[`transmissionLoss.${o.id}.type`] : o.type);
+        const component = ([key, tilt, opaque, s10, row]) => ({
           key,
-          tilt: s10 && inputs[`radiantGains.row${s10}.orientation`] === "Skylight" ? "roof" : tilt,
+          tilt: row
+            ? O.TYPES[typeOf(row)].tilt
+            : s10 && inputs[`radiantGains.row${s10}.orientation`] === "Skylight" ? "roof" : tilt,
+          // a wall's facing reaches the opaque solar; every wall before 2026-11-20 faced Average
+          ...(row && typeOf(row) === "walls" ? { orientation: inputs[`transmissionLoss.${row.id}.facing`] || "Average" } : {}),
           opaque,
           A: parseNum(inputs[`transmissionLoss.${key}.area`]),
           U: parseNum(inputs[`transmissionLoss.${key}.uValue`])
