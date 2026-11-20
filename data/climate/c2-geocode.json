@@ -1,0 +1,6796 @@
+{
+ "source": "NRCan Canadian Geographical Names (geogratis.gc.ca/services/geoname)",
+ "tool": "tools/climate/c2_geocode.py",
+ "locations": [
+  {
+   "province": "BC",
+   "name": "100 Mile House",
+   "query": "100 Mile House",
+   "match": "exact",
+   "feature": "100 Mile House",
+   "concise": "MUN1",
+   "lat": 51.642778,
+   "lon": -121.295556
+  },
+  {
+   "province": "BC",
+   "name": "Abbotsford",
+   "query": "Abbotsford",
+   "match": "exact",
+   "feature": "Abbotsford",
+   "concise": "CITY",
+   "lat": 49.052222,
+   "lon": -122.329167
+  },
+  {
+   "province": "BC",
+   "name": "Agassiz",
+   "query": "Agassiz",
+   "match": "exact",
+   "feature": "Agassiz",
+   "concise": "UNP",
+   "lat": 49.2330555555556,
+   "lon": -121.767777777778
+  },
+  {
+   "province": "BC",
+   "name": "Alberni",
+   "query": "Alberni",
+   "match": "exact",
+   "feature": "Alberni",
+   "concise": "UNP",
+   "lat": 49.25,
+   "lon": -124.8
+  },
+  {
+   "province": "BC",
+   "name": "Ashcroft",
+   "query": "Ashcroft",
+   "match": "exact",
+   "feature": "Ashcroft",
+   "concise": "VILG",
+   "lat": 50.721389,
+   "lon": -121.283611
+  },
+  {
+   "province": "BC",
+   "name": "Bamfield",
+   "query": "Bamfield",
+   "match": "exact",
+   "feature": "Bamfield",
+   "concise": "UNP",
+   "lat": 48.8286111111111,
+   "lon": -125.134722222222
+  },
+  {
+   "province": "BC",
+   "name": "Beatton River",
+   "query": "Beatton River",
+   "match": "exact",
+   "feature": "Beatton River",
+   "concise": "UNP",
+   "lat": 57.033333,
+   "lon": -122.51667
+  },
+  {
+   "province": "BC",
+   "name": "Bella Bella",
+   "query": "Bella Bella",
+   "match": "exact",
+   "feature": "Bella Bella",
+   "concise": "UNP",
+   "lat": 52.161944,
+   "lon": -128.145
+  },
+  {
+   "province": "BC",
+   "name": "Bella Coola",
+   "query": "Bella Coola",
+   "match": "exact",
+   "feature": "Bella Coola",
+   "concise": "UNP",
+   "lat": 52.383333,
+   "lon": -126.75
+  },
+  {
+   "province": "BC",
+   "name": "Burns Lake",
+   "query": "Burns Lake",
+   "match": "exact",
+   "feature": "Burns Lake",
+   "concise": "VILG",
+   "lat": 54.230278,
+   "lon": -125.764444
+  },
+  {
+   "province": "BC",
+   "name": "Cache Creek",
+   "query": "Cache Creek",
+   "match": "exact",
+   "feature": "Cache Creek",
+   "concise": "VILG",
+   "lat": 50.811944,
+   "lon": -121.323334
+  },
+  {
+   "province": "BC",
+   "name": "Campbell River",
+   "query": "Campbell River",
+   "match": "exact",
+   "feature": "Campbell River",
+   "concise": "CITY",
+   "lat": 50.023056,
+   "lon": -125.243611
+  },
+  {
+   "province": "BC",
+   "name": "Carmi",
+   "query": "Carmi",
+   "match": "exact",
+   "feature": "Carmi",
+   "concise": "UNP",
+   "lat": 49.5,
+   "lon": -119.11667
+  },
+  {
+   "province": "BC",
+   "name": "Castlegar",
+   "query": "Castlegar",
+   "match": "exact",
+   "feature": "Castlegar",
+   "concise": "CITY",
+   "lat": 49.324444,
+   "lon": -117.666944
+  },
+  {
+   "province": "BC",
+   "name": "Chetwynd",
+   "query": "Chetwynd",
+   "match": "exact",
+   "feature": "Chetwynd",
+   "concise": "MUN1",
+   "lat": 55.695833,
+   "lon": -121.638333
+  },
+  {
+   "province": "BC",
+   "name": "Chilliwack",
+   "query": "Chilliwack",
+   "match": "exact",
+   "feature": "Chilliwack",
+   "concise": "CITY",
+   "lat": 49.157778,
+   "lon": -121.950833
+  },
+  {
+   "province": "BC",
+   "name": "Comox",
+   "query": "Comox",
+   "match": "exact",
+   "feature": "Comox",
+   "concise": "TOWN",
+   "lat": 49.672778,
+   "lon": -124.927778
+  },
+  {
+   "province": "BC",
+   "name": "Courtenay",
+   "query": "Courtenay",
+   "match": "exact",
+   "feature": "Courtenay",
+   "concise": "CITY",
+   "lat": 49.689444,
+   "lon": -124.995833
+  },
+  {
+   "province": "BC",
+   "name": "Cranbrook",
+   "query": "Cranbrook",
+   "match": "exact",
+   "feature": "Cranbrook",
+   "concise": "CITY",
+   "lat": 49.508056,
+   "lon": -115.746944
+  },
+  {
+   "province": "BC",
+   "name": "Crescent Valley",
+   "query": "Crescent Valley",
+   "match": "exact",
+   "feature": "Crescent Valley",
+   "concise": "UNP",
+   "lat": 49.45,
+   "lon": -117.55
+  },
+  {
+   "province": "BC",
+   "name": "Crofton",
+   "query": "Crofton",
+   "match": "exact",
+   "feature": "Crofton",
+   "concise": "UNP",
+   "lat": 48.866667,
+   "lon": -123.65
+  },
+  {
+   "province": "BC",
+   "name": "Dawson Creek",
+   "query": "Dawson Creek",
+   "match": "exact",
+   "feature": "Dawson Creek",
+   "concise": "CITY",
+   "lat": 55.760556,
+   "lon": -120.235556
+  },
+  {
+   "province": "BC",
+   "name": "Dease Lake",
+   "query": "Dease Lake",
+   "match": "exact",
+   "feature": "Dease Lake",
+   "concise": "UNP",
+   "lat": 58.433333,
+   "lon": -130.024167
+  },
+  {
+   "province": "BC",
+   "name": "Dog Creek",
+   "query": "Dog Creek",
+   "match": "exact",
+   "feature": "Dog Creek",
+   "concise": "UNP",
+   "lat": 51.583333,
+   "lon": -122.23333
+  },
+  {
+   "province": "BC",
+   "name": "Duncan",
+   "query": "Duncan",
+   "match": "exact",
+   "feature": "Duncan",
+   "concise": "CITY",
+   "lat": 48.778611,
+   "lon": -123.708056
+  },
+  {
+   "province": "BC",
+   "name": "Elko",
+   "query": "Elko",
+   "match": "exact",
+   "feature": "Elko",
+   "concise": "UNP",
+   "lat": 49.3,
+   "lon": -115.111667
+  },
+  {
+   "province": "BC",
+   "name": "Fernie",
+   "query": "Fernie",
+   "match": "exact",
+   "feature": "Fernie",
+   "concise": "CITY",
+   "lat": 49.504167,
+   "lon": -115.062778
+  },
+  {
+   "province": "BC",
+   "name": "Fort Nelson",
+   "query": "Fort Nelson",
+   "match": "exact",
+   "feature": "Fort Nelson",
+   "concise": "TOWN",
+   "lat": 58.805555,
+   "lon": -122.697222
+  },
+  {
+   "province": "BC",
+   "name": "Fort St. John",
+   "query": "Fort St. John",
+   "match": "exact",
+   "feature": "Fort St. John",
+   "concise": "CITY",
+   "lat": 56.2525,
+   "lon": -120.846667
+  },
+  {
+   "province": "BC",
+   "name": "Glacier",
+   "query": "Glacier",
+   "match": "exact",
+   "feature": "Glacier",
+   "concise": "UNP",
+   "lat": 51.2663889,
+   "lon": -117.5177778
+  },
+  {
+   "province": "BC",
+   "name": "Golden",
+   "query": "Golden",
+   "match": "exact",
+   "feature": "Golden",
+   "concise": "TOWN",
+   "lat": 51.297778,
+   "lon": -116.964722
+  },
+  {
+   "province": "BC",
+   "name": "Gold River",
+   "query": "Gold River",
+   "match": "exact",
+   "feature": "Gold River",
+   "concise": "VILG",
+   "lat": 49.781389,
+   "lon": -126.046944
+  },
+  {
+   "province": "BC",
+   "name": "Grand Forks",
+   "query": "Grand Forks",
+   "match": "exact",
+   "feature": "Grand Forks",
+   "concise": "CITY",
+   "lat": 49.031111,
+   "lon": -118.439167
+  },
+  {
+   "province": "BC",
+   "name": "Hope",
+   "query": "Hope",
+   "match": "exact",
+   "feature": "Hope",
+   "concise": "MUN1",
+   "lat": 49.38,
+   "lon": -121.441389
+  },
+  {
+   "province": "BC",
+   "name": "Jordan River",
+   "query": "Jordan River",
+   "match": "fuzzy",
+   "feature": "River Jordan",
+   "concise": "UNP",
+   "lat": 48.416667,
+   "lon": -124.05
+  },
+  {
+   "province": "BC",
+   "name": "Kamloops",
+   "query": "Kamloops",
+   "match": "exact",
+   "feature": "Kamloops",
+   "concise": "CITY",
+   "lat": 50.675833,
+   "lon": -120.339444
+  },
+  {
+   "province": "BC",
+   "name": "Kaslo",
+   "query": "Kaslo",
+   "match": "exact",
+   "feature": "Kaslo",
+   "concise": "VILG",
+   "lat": 49.910556,
+   "lon": -116.905
+  },
+  {
+   "province": "BC",
+   "name": "Kelowna",
+   "query": "Kelowna",
+   "match": "exact",
+   "feature": "Kelowna",
+   "concise": "CITY",
+   "lat": 49.888056,
+   "lon": -119.495556
+  },
+  {
+   "province": "BC",
+   "name": "Kimberley",
+   "query": "Kimberley",
+   "match": "exact",
+   "feature": "Kimberley",
+   "concise": "CITY",
+   "lat": 49.685,
+   "lon": -115.981667
+  },
+  {
+   "province": "BC",
+   "name": "Kitimat Plant",
+   "query": "Kitimat",
+   "match": "exact",
+   "feature": "Kitimat",
+   "concise": "MUN1",
+   "lat": 54.053333,
+   "lon": -128.652222
+  },
+  {
+   "province": "BC",
+   "name": "Kitimat Townsite",
+   "query": "Kitimat",
+   "match": "exact",
+   "feature": "Kitimat",
+   "concise": "MUN1",
+   "lat": 54.053333,
+   "lon": -128.652222
+  },
+  {
+   "province": "BC",
+   "name": "Ladysmith",
+   "query": "Ladysmith",
+   "match": "exact",
+   "feature": "Ladysmith",
+   "concise": "TOWN",
+   "lat": 48.993333,
+   "lon": -123.815556
+  },
+  {
+   "province": "BC",
+   "name": "Langford",
+   "query": "Langford",
+   "match": "exact",
+   "feature": "Langford",
+   "concise": "CITY",
+   "lat": 48.449722,
+   "lon": -123.504444
+  },
+  {
+   "province": "BC",
+   "name": "Lillooet",
+   "query": "Lillooet",
+   "match": "exact",
+   "feature": "Lillooet",
+   "concise": "MUN1",
+   "lat": 50.693889,
+   "lon": -121.933611
+  },
+  {
+   "province": "BC",
+   "name": "Lytton",
+   "query": "Lytton",
+   "match": "exact",
+   "feature": "Lytton",
+   "concise": "VILG",
+   "lat": 50.231111,
+   "lon": -121.581389
+  },
+  {
+   "province": "BC",
+   "name": "Mackenzie",
+   "query": "Mackenzie",
+   "match": "exact",
+   "feature": "Mackenzie",
+   "concise": "MUN1",
+   "lat": 55.324444,
+   "lon": -123.092778
+  },
+  {
+   "province": "BC",
+   "name": "Masset",
+   "query": "Masset",
+   "match": "exact",
+   "feature": "Masset",
+   "concise": "VILG",
+   "lat": 54.011111,
+   "lon": -132.146667
+  },
+  {
+   "province": "BC",
+   "name": "McBride",
+   "query": "McBride",
+   "match": "exact",
+   "feature": "McBride",
+   "concise": "VILG",
+   "lat": 53.304167,
+   "lon": -120.163889
+  },
+  {
+   "province": "BC",
+   "name": "McLeod Lake",
+   "query": "McLeod Lake",
+   "match": "exact",
+   "feature": "McLeod Lake",
+   "concise": "UNP",
+   "lat": 54.9830555555556,
+   "lon": -123.034722222222
+  },
+  {
+   "province": "BC",
+   "name": "Merritt",
+   "query": "Merritt",
+   "match": "exact",
+   "feature": "Merritt",
+   "concise": "CITY",
+   "lat": 50.1125,
+   "lon": -120.788333
+  },
+  {
+   "province": "BC",
+   "name": "Mission City",
+   "query": "Mission City",
+   "match": "exact",
+   "feature": "Mission City",
+   "concise": "TOWN",
+   "lat": 49.159167,
+   "lon": -122.283889
+  },
+  {
+   "province": "BC",
+   "name": "Montrose",
+   "query": "Montrose",
+   "match": "exact",
+   "feature": "Montrose",
+   "concise": "VILG",
+   "lat": 49.078889,
+   "lon": -117.594167
+  },
+  {
+   "province": "BC",
+   "name": "Nakusp",
+   "query": "Nakusp",
+   "match": "exact",
+   "feature": "Nakusp",
+   "concise": "VILG",
+   "lat": 50.239167,
+   "lon": -117.7975
+  },
+  {
+   "province": "BC",
+   "name": "Nanaimo",
+   "query": "Nanaimo",
+   "match": "exact",
+   "feature": "Nanaimo",
+   "concise": "CITY",
+   "lat": 49.163889,
+   "lon": -123.938056
+  },
+  {
+   "province": "BC",
+   "name": "Nelson",
+   "query": "Nelson",
+   "match": "exact",
+   "feature": "Nelson",
+   "concise": "CITY",
+   "lat": 49.493333,
+   "lon": -117.295833
+  },
+  {
+   "province": "BC",
+   "name": "Ocean Falls",
+   "query": "Ocean Falls",
+   "match": "exact",
+   "feature": "Ocean Falls",
+   "concise": "UNP",
+   "lat": 52.35,
+   "lon": -127.7
+  },
+  {
+   "province": "BC",
+   "name": "Osoyoos",
+   "query": "Osoyoos",
+   "match": "exact",
+   "feature": "Osoyoos",
+   "concise": "TOWN",
+   "lat": 49.0325,
+   "lon": -119.468333
+  },
+  {
+   "province": "BC",
+   "name": "Parksville",
+   "query": "Parksville",
+   "match": "exact",
+   "feature": "Parksville",
+   "concise": "CITY",
+   "lat": 49.318056,
+   "lon": -124.311389
+  },
+  {
+   "province": "BC",
+   "name": "Penticton",
+   "query": "Penticton",
+   "match": "exact",
+   "feature": "Penticton",
+   "concise": "CITY",
+   "lat": 49.500833,
+   "lon": -119.593889
+  },
+  {
+   "province": "BC",
+   "name": "Port Alberni",
+   "query": "Port Alberni",
+   "match": "exact",
+   "feature": "Port Alberni",
+   "concise": "CITY",
+   "lat": 49.234444,
+   "lon": -124.805833
+  },
+  {
+   "province": "BC",
+   "name": "Port Alice",
+   "query": "Port Alice",
+   "match": "exact",
+   "feature": "Port Alice",
+   "concise": "VILG",
+   "lat": 50.426667,
+   "lon": -127.488056
+  },
+  {
+   "province": "BC",
+   "name": "Port Hardy",
+   "query": "Port Hardy",
+   "match": "exact",
+   "feature": "Port Hardy",
+   "concise": "MUN1",
+   "lat": 50.724444,
+   "lon": -127.498056
+  },
+  {
+   "province": "BC",
+   "name": "Port McNeill",
+   "query": "Port McNeill",
+   "match": "exact",
+   "feature": "Port McNeill",
+   "concise": "TOWN",
+   "lat": 50.589444,
+   "lon": -127.083611
+  },
+  {
+   "province": "BC",
+   "name": "Port Renfrew",
+   "query": "Port Renfrew",
+   "match": "exact",
+   "feature": "Port Renfrew",
+   "concise": "UNP",
+   "lat": 48.55,
+   "lon": -124.41667
+  },
+  {
+   "province": "BC",
+   "name": "Powell River",
+   "query": "Powell River",
+   "match": "exact",
+   "feature": "Powell River",
+   "concise": "CITY",
+   "lat": 49.835556,
+   "lon": -124.524444
+  },
+  {
+   "province": "BC",
+   "name": "Prince George",
+   "query": "Prince George",
+   "match": "exact",
+   "feature": "Prince George",
+   "concise": "CITY",
+   "lat": 53.913056,
+   "lon": -122.745278
+  },
+  {
+   "province": "BC",
+   "name": "Prince Rupert",
+   "query": "Prince Rupert",
+   "match": "exact",
+   "feature": "Prince Rupert",
+   "concise": "CITY",
+   "lat": 54.312778,
+   "lon": -130.325278
+  },
+  {
+   "province": "BC",
+   "name": "Princeton",
+   "query": "Princeton",
+   "match": "exact",
+   "feature": "Princeton",
+   "concise": "TOWN",
+   "lat": 49.460278,
+   "lon": -120.507778
+  },
+  {
+   "province": "BC",
+   "name": "Qualicum Beach",
+   "query": "Qualicum Beach",
+   "match": "exact",
+   "feature": "Qualicum Beach",
+   "concise": "TOWN",
+   "lat": 49.348056,
+   "lon": -124.443889
+  },
+  {
+   "province": "BC",
+   "name": "Queen Charlotte City",
+   "query": "Queen Charlotte City",
+   "match": "exact",
+   "feature": "Queen Charlotte City",
+   "concise": "VILG",
+   "lat": 53.254722,
+   "lon": -132.1025
+  },
+  {
+   "province": "BC",
+   "name": "Quesnel",
+   "query": "Quesnel",
+   "match": "exact",
+   "feature": "Quesnel",
+   "concise": "CITY",
+   "lat": 52.979722,
+   "lon": -122.493611
+  },
+  {
+   "province": "BC",
+   "name": "Revelstoke",
+   "query": "Revelstoke",
+   "match": "exact",
+   "feature": "Revelstoke",
+   "concise": "CITY",
+   "lat": 50.998889,
+   "lon": -118.195833
+  },
+  {
+   "province": "BC",
+   "name": "Salmon Arm",
+   "query": "Salmon Arm",
+   "match": "exact",
+   "feature": "Salmon Arm",
+   "concise": "CITY",
+   "lat": 50.701389,
+   "lon": -119.278056
+  },
+  {
+   "province": "BC",
+   "name": "Sandspit",
+   "query": "Sandspit",
+   "match": "exact",
+   "feature": "Sandspit",
+   "concise": "UNP",
+   "lat": 53.25,
+   "lon": -131.81667
+  },
+  {
+   "province": "BC",
+   "name": "Sechelt",
+   "query": "Sechelt",
+   "match": "exact",
+   "feature": "Sechelt",
+   "concise": "MUN1",
+   "lat": 49.4713888888889,
+   "lon": -123.763055555556
+  },
+  {
+   "province": "BC",
+   "name": "Sidney",
+   "query": "Sidney",
+   "match": "exact",
+   "feature": "Sidney",
+   "concise": "TOWN",
+   "lat": 48.650556,
+   "lon": -123.398333
+  },
+  {
+   "province": "BC",
+   "name": "Smithers",
+   "query": "Smithers",
+   "match": "exact",
+   "feature": "Smithers",
+   "concise": "TOWN",
+   "lat": 54.779167,
+   "lon": -127.176111
+  },
+  {
+   "province": "BC",
+   "name": "Smith River",
+   "query": "Smith River",
+   "match": "exact",
+   "feature": "Smith River",
+   "concise": "UNP",
+   "lat": 59.883333,
+   "lon": -126.43333
+  },
+  {
+   "province": "BC",
+   "name": "Sooke",
+   "query": "Sooke",
+   "match": "exact",
+   "feature": "Sooke",
+   "concise": "MUN1",
+   "lat": 48.382778,
+   "lon": -123.731944
+  },
+  {
+   "province": "BC",
+   "name": "Squamish",
+   "query": "Squamish",
+   "match": "exact",
+   "feature": "Squamish",
+   "concise": "MUN1",
+   "lat": 49.698056,
+   "lon": -123.155833
+  },
+  {
+   "province": "BC",
+   "name": "Stewart",
+   "query": "Stewart",
+   "match": "exact",
+   "feature": "Stewart",
+   "concise": "MUN1",
+   "lat": 55.938333,
+   "lon": -129.991111
+  },
+  {
+   "province": "BC",
+   "name": "Tahsis",
+   "query": "Tahsis",
+   "match": "exact",
+   "feature": "Tahsis",
+   "concise": "VILG",
+   "lat": 49.916389,
+   "lon": -126.664444
+  },
+  {
+   "province": "BC",
+   "name": "Taylor",
+   "query": "Taylor",
+   "match": "exact",
+   "feature": "Taylor",
+   "concise": "MUN1",
+   "lat": 56.159167,
+   "lon": -120.686667
+  },
+  {
+   "province": "BC",
+   "name": "Terrace",
+   "query": "Terrace",
+   "match": "exact",
+   "feature": "Terrace",
+   "concise": "CITY",
+   "lat": 54.516389,
+   "lon": -128.599722
+  },
+  {
+   "province": "BC",
+   "name": "Tofino",
+   "query": "Tofino",
+   "match": "exact",
+   "feature": "Tofino",
+   "concise": "MUN1",
+   "lat": 49.153056,
+   "lon": -125.904444
+  },
+  {
+   "province": "BC",
+   "name": "Trail",
+   "query": "Trail",
+   "match": "exact",
+   "feature": "Trail",
+   "concise": "CITY",
+   "lat": 49.094444,
+   "lon": -117.709167
+  },
+  {
+   "province": "BC",
+   "name": "Ucluelet",
+   "query": "Ucluelet",
+   "match": "exact",
+   "feature": "Ucluelet",
+   "concise": "MUN1",
+   "lat": 48.942778,
+   "lon": -125.546111
+  },
+  {
+   "province": "BC",
+   "name": "Burnaby (Simon Fraser Univ.)",
+   "query": "Burnaby",
+   "match": "exact",
+   "feature": "Burnaby",
+   "concise": "CITY",
+   "lat": 49.242778,
+   "lon": -122.972778
+  },
+  {
+   "province": "BC",
+   "name": "Cloverdale",
+   "query": "Cloverdale",
+   "match": "exact",
+   "feature": "Cloverdale",
+   "concise": "UNP",
+   "lat": 49.108333,
+   "lon": -122.725
+  },
+  {
+   "province": "BC",
+   "name": "Haney",
+   "query": "Haney",
+   "match": "exact",
+   "feature": "Haney",
+   "concise": "UNP",
+   "lat": 49.216667,
+   "lon": -122.6
+  },
+  {
+   "province": "BC",
+   "name": "Ladner",
+   "query": "Ladner",
+   "match": "exact",
+   "feature": "Ladner",
+   "concise": "UNP",
+   "lat": 49.091667,
+   "lon": -123.077778
+  },
+  {
+   "province": "BC",
+   "name": "Langley",
+   "query": "Langley",
+   "match": "exact",
+   "feature": "Langley",
+   "concise": "CITY",
+   "lat": 49.1025,
+   "lon": -122.658056
+  },
+  {
+   "province": "BC",
+   "name": "New Westminster",
+   "query": "New Westminster",
+   "match": "exact",
+   "feature": "New Westminster",
+   "concise": "CITY",
+   "lat": 49.206667,
+   "lon": -122.910556
+  },
+  {
+   "province": "BC",
+   "name": "North Vancouver",
+   "query": "North Vancouver",
+   "match": "exact",
+   "feature": "North Vancouver",
+   "concise": "CITY",
+   "lat": 49.320556,
+   "lon": -123.073889
+  },
+  {
+   "province": "BC",
+   "name": "Richmond",
+   "query": "Richmond",
+   "match": "exact",
+   "feature": "Richmond",
+   "concise": "CITY",
+   "lat": 49.163333,
+   "lon": -123.163333
+  },
+  {
+   "province": "BC",
+   "name": "Surrey (88 Ave & 156 St.)",
+   "query": "Surrey",
+   "match": "exact",
+   "feature": "Surrey",
+   "concise": "CITY",
+   "lat": 49.111667,
+   "lon": -122.8275
+  },
+  {
+   "province": "BC",
+   "name": "Vancouver (City Hall)",
+   "query": "Vancouver",
+   "match": "exact",
+   "feature": "Vancouver",
+   "concise": "CITY",
+   "lat": 49.261111,
+   "lon": -123.113889
+  },
+  {
+   "province": "BC",
+   "name": "Vancouver (Granville St. & 41st Ave)",
+   "query": "Vancouver",
+   "match": "exact",
+   "feature": "Vancouver",
+   "concise": "CITY",
+   "lat": 49.261111,
+   "lon": -123.113889
+  },
+  {
+   "province": "BC",
+   "name": "West Vancouver",
+   "query": "West Vancouver",
+   "match": "exact",
+   "feature": "West Vancouver",
+   "concise": "MUN1",
+   "lat": 49.331111,
+   "lon": -123.159722
+  },
+  {
+   "province": "BC",
+   "name": "Vernon",
+   "query": "Vernon",
+   "match": "exact",
+   "feature": "Vernon",
+   "concise": "CITY",
+   "lat": 50.2655555555556,
+   "lon": -119.271388888889
+  },
+  {
+   "province": "BC",
+   "name": "Victoria Region",
+   "query": "Victoria",
+   "match": "exact",
+   "feature": "Victoria",
+   "concise": "CITY",
+   "lat": 48.428333,
+   "lon": -123.364722
+  },
+  {
+   "province": "BC",
+   "name": "Victoria",
+   "query": "Victoria",
+   "match": "exact",
+   "feature": "Victoria",
+   "concise": "CITY",
+   "lat": 48.428333,
+   "lon": -123.364722
+  },
+  {
+   "province": "BC",
+   "name": "Victoria (Gonzales Hts)",
+   "query": "Victoria",
+   "match": "exact",
+   "feature": "Victoria",
+   "concise": "CITY",
+   "lat": 48.428333,
+   "lon": -123.364722
+  },
+  {
+   "province": "BC",
+   "name": "Victoria (Mt Tolmie)",
+   "query": "Victoria",
+   "match": "exact",
+   "feature": "Victoria",
+   "concise": "CITY",
+   "lat": 48.428333,
+   "lon": -123.364722
+  },
+  {
+   "province": "BC",
+   "name": "Whistler",
+   "query": "Whistler",
+   "match": "exact",
+   "feature": "Whistler",
+   "concise": "UNP",
+   "lat": 50.1166667,
+   "lon": -122.9541667
+  },
+  {
+   "province": "BC",
+   "name": "White Rock",
+   "query": "White Rock",
+   "match": "exact",
+   "feature": "White Rock",
+   "concise": "CITY",
+   "lat": 49.023611,
+   "lon": -122.798333
+  },
+  {
+   "province": "BC",
+   "name": "Williams Lake",
+   "query": "Williams Lake",
+   "match": "exact",
+   "feature": "Williams Lake",
+   "concise": "CITY",
+   "lat": 52.129167,
+   "lon": -122.14
+  },
+  {
+   "province": "BC",
+   "name": "Youbou",
+   "query": "Youbou",
+   "match": "exact",
+   "feature": "Youbou",
+   "concise": "UNP",
+   "lat": 48.866667,
+   "lon": -124.2
+  },
+  {
+   "province": "AB",
+   "name": "Athabasca",
+   "query": "Athabasca",
+   "match": "exact",
+   "feature": "Athabasca",
+   "concise": "TOWN",
+   "lat": 54.7166666,
+   "lon": -113.2841667
+  },
+  {
+   "province": "AB",
+   "name": "Banff",
+   "query": "Banff",
+   "match": "exact",
+   "feature": "Banff",
+   "concise": "TOWN",
+   "lat": 51.1777778,
+   "lon": -115.5736111
+  },
+  {
+   "province": "AB",
+   "name": "Barrhead",
+   "query": "Barrhead",
+   "match": "exact",
+   "feature": "Barrhead",
+   "concise": "TOWN",
+   "lat": 54.1216667,
+   "lon": -114.4036111
+  },
+  {
+   "province": "AB",
+   "name": "Beaverlodge",
+   "query": "Beaverlodge",
+   "match": "exact",
+   "feature": "Beaverlodge",
+   "concise": "TOWN",
+   "lat": 55.2091667,
+   "lon": -119.4288889
+  },
+  {
+   "province": "AB",
+   "name": "Brooks",
+   "query": "Brooks",
+   "match": "exact",
+   "feature": "Brooks",
+   "concise": "CITY",
+   "lat": 50.567222,
+   "lon": -111.895
+  },
+  {
+   "province": "AB",
+   "name": "Calgary",
+   "query": "Calgary",
+   "match": "exact",
+   "feature": "Calgary",
+   "concise": "CITY",
+   "lat": 51.0458333,
+   "lon": -114.0574999
+  },
+  {
+   "province": "AB",
+   "name": "Campsie",
+   "query": "Campsie",
+   "match": "exact",
+   "feature": "Campsie",
+   "concise": "UNP",
+   "lat": 54.1277778,
+   "lon": -114.6466667
+  },
+  {
+   "province": "AB",
+   "name": "Camrose",
+   "query": "Camrose",
+   "match": "exact",
+   "feature": "Camrose",
+   "concise": "CITY",
+   "lat": 53.0247222,
+   "lon": -112.8241667
+  },
+  {
+   "province": "AB",
+   "name": "Canmore",
+   "query": "Canmore",
+   "match": "exact",
+   "feature": "Canmore",
+   "concise": "TOWN",
+   "lat": 51.0830555,
+   "lon": -115.3683333
+  },
+  {
+   "province": "AB",
+   "name": "Cardston",
+   "query": "Cardston",
+   "match": "exact",
+   "feature": "Cardston",
+   "concise": "TOWN",
+   "lat": 49.2,
+   "lon": -113.3038889
+  },
+  {
+   "province": "AB",
+   "name": "Claresholm",
+   "query": "Claresholm",
+   "match": "exact",
+   "feature": "Claresholm",
+   "concise": "TOWN",
+   "lat": 50.0197222,
+   "lon": -113.5827778
+  },
+  {
+   "province": "AB",
+   "name": "Cold Lake",
+   "query": "Cold Lake",
+   "match": "exact",
+   "feature": "Cold Lake",
+   "concise": "CITY",
+   "lat": 54.45,
+   "lon": -110.1666667
+  },
+  {
+   "province": "AB",
+   "name": "Coleman",
+   "query": "Coleman",
+   "match": "exact",
+   "feature": "Coleman",
+   "concise": "UNP",
+   "lat": 49.6352777,
+   "lon": -114.5030556
+  },
+  {
+   "province": "AB",
+   "name": "Coronation",
+   "query": "Coronation",
+   "match": "exact",
+   "feature": "Coronation",
+   "concise": "TOWN",
+   "lat": 52.0947223,
+   "lon": -111.4477778
+  },
+  {
+   "province": "AB",
+   "name": "Cowley",
+   "query": "Cowley",
+   "match": "exact",
+   "feature": "Cowley",
+   "concise": "VILG",
+   "lat": 49.571111,
+   "lon": -114.0749999
+  },
+  {
+   "province": "AB",
+   "name": "Drumheller",
+   "query": "Drumheller",
+   "match": "exact",
+   "feature": "Drumheller",
+   "concise": "TOWN",
+   "lat": 51.4644444,
+   "lon": -112.7188889
+  },
+  {
+   "province": "AB",
+   "name": "Edmonton",
+   "query": "Edmonton",
+   "match": "exact",
+   "feature": "Edmonton",
+   "concise": "CITY",
+   "lat": 53.5344445,
+   "lon": -113.4902778
+  },
+  {
+   "province": "AB",
+   "name": "Edson",
+   "query": "Edson",
+   "match": "exact",
+   "feature": "Edson",
+   "concise": "TOWN",
+   "lat": 53.5836111,
+   "lon": -116.4327778
+  },
+  {
+   "province": "AB",
+   "name": "Embarras Portage",
+   "query": "Embarras Portage",
+   "match": "exact",
+   "feature": "Embarras Portage",
+   "concise": "UNP",
+   "lat": 58.4477778,
+   "lon": -111.4797222
+  },
+  {
+   "province": "AB",
+   "name": "Fairview",
+   "query": "Fairview",
+   "match": "exact",
+   "feature": "Fairview",
+   "concise": "TOWN",
+   "lat": 56.0672222,
+   "lon": -118.3841667
+  },
+  {
+   "province": "AB",
+   "name": "Fort MacLeod",
+   "query": "Fort MacLeod",
+   "match": "exact",
+   "feature": "Fort Macleod",
+   "concise": "TOWN",
+   "lat": 49.7230555,
+   "lon": -113.4041667
+  },
+  {
+   "province": "AB",
+   "name": "Fort McMurray",
+   "query": "Fort McMurray",
+   "match": "exact",
+   "feature": "Fort McMurray",
+   "concise": "UNP",
+   "lat": 56.6963889,
+   "lon": -111.3608333
+  },
+  {
+   "province": "AB",
+   "name": "Fort Saskatchewan",
+   "query": "Fort Saskatchewan",
+   "match": "exact",
+   "feature": "Fort Saskatchewan",
+   "concise": "CITY",
+   "lat": 53.7111111,
+   "lon": -113.2177778
+  },
+  {
+   "province": "AB",
+   "name": "Fort Vermilion",
+   "query": "Fort Vermilion",
+   "match": "exact",
+   "feature": "Fort Vermilion",
+   "concise": "UNP",
+   "lat": 58.39,
+   "lon": -116.0166667
+  },
+  {
+   "province": "AB",
+   "name": "Grande Prairie",
+   "query": "Grande Prairie",
+   "match": "exact",
+   "feature": "Grande Prairie",
+   "concise": "CITY",
+   "lat": 55.1708334,
+   "lon": -118.7961111
+  },
+  {
+   "province": "AB",
+   "name": "Habay",
+   "query": "Habay",
+   "match": "exact",
+   "feature": "Habay",
+   "concise": "UNP",
+   "lat": 58.8094444,
+   "lon": -118.7133333
+  },
+  {
+   "province": "AB",
+   "name": "Hardisty",
+   "query": "Hardisty",
+   "match": "exact",
+   "feature": "Hardisty",
+   "concise": "TOWN",
+   "lat": 52.675,
+   "lon": -111.3044444
+  },
+  {
+   "province": "AB",
+   "name": "High River",
+   "query": "High River",
+   "match": "exact",
+   "feature": "High River",
+   "concise": "TOWN",
+   "lat": 50.5797223,
+   "lon": -113.8741667
+  },
+  {
+   "province": "AB",
+   "name": "Hinton",
+   "query": "Hinton",
+   "match": "exact",
+   "feature": "Hinton",
+   "concise": "TOWN",
+   "lat": 53.4111111,
+   "lon": -117.5627778
+  },
+  {
+   "province": "AB",
+   "name": "Jasper",
+   "query": "Jasper",
+   "match": "exact",
+   "feature": "Jasper",
+   "concise": "UNP",
+   "lat": 52.8777778,
+   "lon": -118.0830556
+  },
+  {
+   "province": "AB",
+   "name": "Keg River",
+   "query": "Keg River",
+   "match": "exact",
+   "feature": "Keg River",
+   "concise": "UNP",
+   "lat": 57.7880556,
+   "lon": -117.8586111
+  },
+  {
+   "province": "AB",
+   "name": "Lac La Biche",
+   "query": "Lac La Biche",
+   "match": "exact",
+   "feature": "Lac La Biche",
+   "concise": "UNP",
+   "lat": 54.7702778,
+   "lon": -111.9791667
+  },
+  {
+   "province": "AB",
+   "name": "Lacombe",
+   "query": "Lacombe",
+   "match": "exact",
+   "feature": "Lacombe",
+   "concise": "CITY",
+   "lat": 52.464444,
+   "lon": -113.734167
+  },
+  {
+   "province": "AB",
+   "name": "Lethbridge",
+   "query": "Lethbridge",
+   "match": "exact",
+   "feature": "Lethbridge",
+   "concise": "CITY",
+   "lat": 49.6936111,
+   "lon": -112.8419444
+  },
+  {
+   "province": "AB",
+   "name": "Manning",
+   "query": "Manning",
+   "match": "exact",
+   "feature": "Manning",
+   "concise": "TOWN",
+   "lat": 56.9222222,
+   "lon": -117.6283333
+  },
+  {
+   "province": "AB",
+   "name": "Medicine Hat",
+   "query": "Medicine Hat",
+   "match": "exact",
+   "feature": "Medicine Hat",
+   "concise": "CITY",
+   "lat": 50.0408334,
+   "lon": -110.6766667
+  },
+  {
+   "province": "AB",
+   "name": "Peace River",
+   "query": "Peace River",
+   "match": "exact",
+   "feature": "Peace River",
+   "concise": "TOWN",
+   "lat": 56.2358334,
+   "lon": -117.2986111
+  },
+  {
+   "province": "AB",
+   "name": "Pincher Creek",
+   "query": "Pincher Creek",
+   "match": "exact",
+   "feature": "Pincher Creek",
+   "concise": "TOWN",
+   "lat": 49.4852778,
+   "lon": -113.9475
+  },
+  {
+   "province": "AB",
+   "name": "Ranfurly",
+   "query": "Ranfurly",
+   "match": "exact",
+   "feature": "Ranfurly",
+   "concise": "UNP",
+   "lat": 53.4072223,
+   "lon": -111.6797222
+  },
+  {
+   "province": "AB",
+   "name": "Red Deer",
+   "query": "Red Deer",
+   "match": "exact",
+   "feature": "Red Deer",
+   "concise": "CITY",
+   "lat": 52.2686111,
+   "lon": -113.8102778
+  },
+  {
+   "province": "AB",
+   "name": "Rocky Mountain House",
+   "query": "Rocky Mountain House",
+   "match": "exact",
+   "feature": "Rocky Mountain House",
+   "concise": "TOWN",
+   "lat": 52.3747222,
+   "lon": -114.9219444
+  },
+  {
+   "province": "AB",
+   "name": "Slave Lake",
+   "query": "Slave Lake",
+   "match": "exact",
+   "feature": "Slave Lake",
+   "concise": "TOWN",
+   "lat": 55.2822222,
+   "lon": -114.7702778
+  },
+  {
+   "province": "AB",
+   "name": "Stettler",
+   "query": "Stettler",
+   "match": "exact",
+   "feature": "Stettler",
+   "concise": "TOWN",
+   "lat": 52.3238889,
+   "lon": -112.7044444
+  },
+  {
+   "province": "AB",
+   "name": "Stony Plain",
+   "query": "Stony Plain",
+   "match": "exact",
+   "feature": "Stony Plain",
+   "concise": "TOWN",
+   "lat": 53.5263889,
+   "lon": -114.0069444
+  },
+  {
+   "province": "AB",
+   "name": "Suffield",
+   "query": "Suffield",
+   "match": "exact",
+   "feature": "Suffield",
+   "concise": "UNP",
+   "lat": 50.2183333,
+   "lon": -111.1611111
+  },
+  {
+   "province": "AB",
+   "name": "Taber",
+   "query": "Taber",
+   "match": "exact",
+   "feature": "Taber",
+   "concise": "TOWN",
+   "lat": 49.78475,
+   "lon": -112.150972
+  },
+  {
+   "province": "AB",
+   "name": "Turner Valley",
+   "query": "Turner Valley",
+   "match": "exact",
+   "feature": "Turner Valley",
+   "concise": "TOWN",
+   "lat": 50.6752778,
+   "lon": -114.2802778
+  },
+  {
+   "province": "AB",
+   "name": "Valleyview",
+   "query": "Valleyview",
+   "match": "exact",
+   "feature": "Valleyview",
+   "concise": "TOWN",
+   "lat": 55.065944,
+   "lon": -117.281861
+  },
+  {
+   "province": "AB",
+   "name": "Vegreville",
+   "query": "Vegreville",
+   "match": "exact",
+   "feature": "Vegreville",
+   "concise": "TOWN",
+   "lat": 53.4955555,
+   "lon": -112.0516667
+  },
+  {
+   "province": "AB",
+   "name": "Vermilion",
+   "query": "Vermilion",
+   "match": "exact",
+   "feature": "Vermilion",
+   "concise": "TOWN",
+   "lat": 53.3547222,
+   "lon": -110.8527778
+  },
+  {
+   "province": "AB",
+   "name": "Wagner",
+   "query": "Wagner",
+   "match": "exact",
+   "feature": "Wagner",
+   "concise": "UNP",
+   "lat": 55.3541667,
+   "lon": -114.9855556
+  },
+  {
+   "province": "AB",
+   "name": "Wainwright",
+   "query": "Wainwright",
+   "match": "exact",
+   "feature": "Wainwright",
+   "concise": "TOWN",
+   "lat": 52.8341666,
+   "lon": -110.8580556
+  },
+  {
+   "province": "AB",
+   "name": "Wetaskiwin",
+   "query": "Wetaskiwin",
+   "match": "exact",
+   "feature": "Wetaskiwin",
+   "concise": "CITY",
+   "lat": 52.9691667,
+   "lon": -113.3769444
+  },
+  {
+   "province": "AB",
+   "name": "Whitecourt",
+   "query": "Whitecourt",
+   "match": "exact",
+   "feature": "Whitecourt",
+   "concise": "TOWN",
+   "lat": 54.1411111,
+   "lon": -115.6841667
+  },
+  {
+   "province": "AB",
+   "name": "Wimborne",
+   "query": "Wimborne",
+   "match": "exact",
+   "feature": "Wimborne",
+   "concise": "UNP",
+   "lat": 51.8661111,
+   "lon": -113.595
+  },
+  {
+   "province": "SK",
+   "name": "Assiniboia",
+   "query": "Assiniboia",
+   "match": "exact",
+   "feature": "Assiniboia",
+   "concise": "TOWN",
+   "lat": 49.6291139,
+   "lon": -105.9886333
+  },
+  {
+   "province": "SK",
+   "name": "Battrum",
+   "query": "Battrum",
+   "match": "exact",
+   "feature": "Battrum",
+   "concise": "UNP",
+   "lat": 50.5500437,
+   "lon": -108.3340289
+  },
+  {
+   "province": "SK",
+   "name": "Biggar",
+   "query": "Biggar",
+   "match": "exact",
+   "feature": "Biggar",
+   "concise": "TOWN",
+   "lat": 52.0634611,
+   "lon": -107.979075
+  },
+  {
+   "province": "SK",
+   "name": "Broadview",
+   "query": "Broadview",
+   "match": "exact",
+   "feature": "Broadview",
+   "concise": "TOWN",
+   "lat": 50.3749722,
+   "lon": -102.5772583
+  },
+  {
+   "province": "SK",
+   "name": "Dafoe",
+   "query": "Dafoe",
+   "match": "exact",
+   "feature": "Dafoe",
+   "concise": "UNP",
+   "lat": 51.753452,
+   "lon": -104.52299
+  },
+  {
+   "province": "SK",
+   "name": "Dundurn",
+   "query": "Dundurn",
+   "match": "exact",
+   "feature": "Dundurn",
+   "concise": "TOWN",
+   "lat": 51.8092028,
+   "lon": -106.5053722
+  },
+  {
+   "province": "SK",
+   "name": "Estevan",
+   "query": "Estevan",
+   "match": "exact",
+   "feature": "Estevan",
+   "concise": "CITY",
+   "lat": 49.1392833,
+   "lon": -102.9859847
+  },
+  {
+   "province": "SK",
+   "name": "Hudson Bay",
+   "query": "Hudson Bay",
+   "match": "exact",
+   "feature": "Hudson Bay",
+   "concise": "TOWN",
+   "lat": 52.8428167,
+   "lon": -102.3756861
+  },
+  {
+   "province": "SK",
+   "name": "Humboldt",
+   "query": "Humboldt",
+   "match": "exact",
+   "feature": "Humboldt",
+   "concise": "CITY",
+   "lat": 52.2019155,
+   "lon": -105.1229806
+  },
+  {
+   "province": "SK",
+   "name": "Island Falls",
+   "query": "Island Falls",
+   "match": "exact",
+   "feature": "Island Falls",
+   "concise": "UNP",
+   "lat": 55.5334171,
+   "lon": -102.3503903
+  },
+  {
+   "province": "SK",
+   "name": "Kamsack",
+   "query": "Kamsack",
+   "match": "exact",
+   "feature": "Kamsack",
+   "concise": "TOWN",
+   "lat": 51.5611889,
+   "lon": -101.8964417
+  },
+  {
+   "province": "SK",
+   "name": "Kindersley",
+   "query": "Kindersley",
+   "match": "exact",
+   "feature": "Kindersley",
+   "concise": "TOWN",
+   "lat": 51.4676781,
+   "lon": -109.1566139
+  },
+  {
+   "province": "SK",
+   "name": "Lloydminster",
+   "query": "Lloydminster",
+   "match": "exact",
+   "feature": "Lloydminster",
+   "concise": "CITY",
+   "lat": 53.2779556,
+   "lon": -109.9802528
+  },
+  {
+   "province": "SK",
+   "name": "Maple Creek",
+   "query": "Maple Creek",
+   "match": "exact",
+   "feature": "Maple Creek",
+   "concise": "TOWN",
+   "lat": 49.902116,
+   "lon": -109.486129
+  },
+  {
+   "province": "SK",
+   "name": "Meadow Lake",
+   "query": "Meadow Lake",
+   "match": "exact",
+   "feature": "Meadow Lake",
+   "concise": "CITY",
+   "lat": 54.1241055,
+   "lon": -108.4359051
+  },
+  {
+   "province": "SK",
+   "name": "Melfort",
+   "query": "Melfort",
+   "match": "exact",
+   "feature": "Melfort",
+   "concise": "CITY",
+   "lat": 52.8563361,
+   "lon": -104.6099722
+  },
+  {
+   "province": "SK",
+   "name": "Melville",
+   "query": "Melville",
+   "match": "exact",
+   "feature": "Melville",
+   "concise": "CITY",
+   "lat": 50.9304306,
+   "lon": -102.8078417
+  },
+  {
+   "province": "SK",
+   "name": "Moose Jaw",
+   "query": "Moose Jaw",
+   "match": "exact",
+   "feature": "Moose Jaw",
+   "concise": "CITY",
+   "lat": 50.3934194,
+   "lon": -105.5519522
+  },
+  {
+   "province": "SK",
+   "name": "Nipawin",
+   "query": "Nipawin",
+   "match": "exact",
+   "feature": "Nipawin",
+   "concise": "TOWN",
+   "lat": 53.3571917,
+   "lon": -104.0191231
+  },
+  {
+   "province": "SK",
+   "name": "North Battleford",
+   "query": "North Battleford",
+   "match": "exact",
+   "feature": "North Battleford",
+   "concise": "CITY",
+   "lat": 52.7574361,
+   "lon": -108.2861667
+  },
+  {
+   "province": "SK",
+   "name": "Prince Albert",
+   "query": "Prince Albert",
+   "match": "exact",
+   "feature": "Prince Albert",
+   "concise": "CITY",
+   "lat": 53.199517,
+   "lon": -105.760094
+  },
+  {
+   "province": "SK",
+   "name": "Qu'Appelle",
+   "query": "Qu'Appelle",
+   "match": "exact",
+   "feature": "Qu'Appelle",
+   "concise": "TOWN",
+   "lat": 50.5425111,
+   "lon": -103.8735111
+  },
+  {
+   "province": "SK",
+   "name": "Regina",
+   "query": "Regina",
+   "match": "exact",
+   "feature": "Regina",
+   "concise": "CITY",
+   "lat": 50.4548389,
+   "lon": -104.6066083
+  },
+  {
+   "province": "SK",
+   "name": "Rosetown",
+   "query": "Rosetown",
+   "match": "exact",
+   "feature": "Rosetown",
+   "concise": "TOWN",
+   "lat": 51.5548472,
+   "lon": -107.9901833
+  },
+  {
+   "province": "SK",
+   "name": "Saskatoon",
+   "query": "Saskatoon",
+   "match": "exact",
+   "feature": "Saskatoon",
+   "concise": "CITY",
+   "lat": 52.13965,
+   "lon": -106.6861833
+  },
+  {
+   "province": "SK",
+   "name": "Scott",
+   "query": "Scott",
+   "match": "exact",
+   "feature": "Scott",
+   "concise": "TOWN",
+   "lat": 52.3655833,
+   "lon": -108.8278556
+  },
+  {
+   "province": "SK",
+   "name": "Strasbourg",
+   "query": "Strasbourg",
+   "match": "exact",
+   "feature": "Strasbourg",
+   "concise": "TOWN",
+   "lat": 51.0702806,
+   "lon": -104.9555028
+  },
+  {
+   "province": "SK",
+   "name": "Swift Current",
+   "query": "Swift Current",
+   "match": "exact",
+   "feature": "Swift Current",
+   "concise": "CITY",
+   "lat": 50.2881611,
+   "lon": -107.7938944
+  },
+  {
+   "province": "SK",
+   "name": "Uranium City",
+   "query": "Uranium City",
+   "match": "exact",
+   "feature": "Uranium City",
+   "concise": "HAM",
+   "lat": 59.569415,
+   "lon": -108.611429
+  },
+  {
+   "province": "SK",
+   "name": "Weyburn",
+   "query": "Weyburn",
+   "match": "exact",
+   "feature": "Weyburn",
+   "concise": "CITY",
+   "lat": 49.6609833,
+   "lon": -103.8526306
+  },
+  {
+   "province": "SK",
+   "name": "Yorkton",
+   "query": "Yorkton",
+   "match": "exact",
+   "feature": "Yorkton",
+   "concise": "CITY",
+   "lat": 51.213775,
+   "lon": -102.4628806
+  },
+  {
+   "province": "MB",
+   "name": "Beausejour",
+   "query": "Beausejour",
+   "match": "exact",
+   "feature": "Beausejour",
+   "concise": "TOWN",
+   "lat": 50.062222,
+   "lon": -96.516111
+  },
+  {
+   "province": "MB",
+   "name": "Boissevain",
+   "query": "Boissevain",
+   "match": "exact",
+   "feature": "Boissevain",
+   "concise": "TOWN",
+   "lat": 49.230556,
+   "lon": -100.055
+  },
+  {
+   "province": "MB",
+   "name": "Brandon",
+   "query": "Brandon",
+   "match": "exact",
+   "feature": "Brandon",
+   "concise": "CITY",
+   "lat": 49.846944,
+   "lon": -99.952222
+  },
+  {
+   "province": "MB",
+   "name": "Churchill",
+   "query": "Churchill",
+   "match": "exact",
+   "feature": "Churchill",
+   "concise": "TOWN",
+   "lat": 58.780833,
+   "lon": -94.186944
+  },
+  {
+   "province": "MB",
+   "name": "Dauphin",
+   "query": "Dauphin",
+   "match": "exact",
+   "feature": "Dauphin",
+   "concise": "CITY",
+   "lat": 51.149444,
+   "lon": -100.04944
+  },
+  {
+   "province": "MB",
+   "name": "Flin Flon",
+   "query": "Flin Flon",
+   "match": "exact",
+   "feature": "Flin Flon",
+   "concise": "CITY",
+   "lat": 54.766735,
+   "lon": -101.867054
+  },
+  {
+   "province": "MB",
+   "name": "Gimli",
+   "query": "Gimli",
+   "match": "exact",
+   "feature": "Gimli",
+   "concise": "TOWN",
+   "lat": 50.633611,
+   "lon": -96.99
+  },
+  {
+   "province": "MB",
+   "name": "Island Lake",
+   "query": "Island Lake",
+   "match": "exact",
+   "feature": "Island Lake",
+   "concise": "UNP",
+   "lat": 53.863611,
+   "lon": -94.665833
+  },
+  {
+   "province": "MB",
+   "name": "Lac du Bonnet",
+   "query": "Lac du Bonnet",
+   "match": "exact",
+   "feature": "Lac du Bonnet",
+   "concise": "TOWN",
+   "lat": 50.253611,
+   "lon": -96.060556
+  },
+  {
+   "province": "MB",
+   "name": "Lynn Lake",
+   "query": "Lynn Lake",
+   "match": "exact",
+   "feature": "Lynn Lake",
+   "concise": "TOWN",
+   "lat": 56.825,
+   "lon": -101.075
+  },
+  {
+   "province": "MB",
+   "name": "Morden",
+   "query": "Morden",
+   "match": "exact",
+   "feature": "Morden",
+   "concise": "TOWN",
+   "lat": 49.191944,
+   "lon": -98.100556
+  },
+  {
+   "province": "MB",
+   "name": "Neepawa",
+   "query": "Neepawa",
+   "match": "exact",
+   "feature": "Neepawa",
+   "concise": "TOWN",
+   "lat": 50.228889,
+   "lon": -99.465556
+  },
+  {
+   "province": "MB",
+   "name": "Pine Falls",
+   "query": "Pine Falls",
+   "match": "exact",
+   "feature": "Pine Falls",
+   "concise": "UNP",
+   "lat": 50.566389,
+   "lon": -96.2175
+  },
+  {
+   "province": "MB",
+   "name": "Portage la Prairie",
+   "query": "Portage la Prairie",
+   "match": "exact",
+   "feature": "Portage la Prairie",
+   "concise": "CITY",
+   "lat": 49.972778,
+   "lon": -98.291944
+  },
+  {
+   "province": "MB",
+   "name": "Rivers",
+   "query": "Rivers",
+   "match": "exact",
+   "feature": "Rivers",
+   "concise": "TOWN",
+   "lat": 50.030833,
+   "lon": -100.23944
+  },
+  {
+   "province": "MB",
+   "name": "Sandilands",
+   "query": "Sandilands",
+   "match": "exact",
+   "feature": "Sandilands",
+   "concise": "UNP",
+   "lat": 49.324444,
+   "lon": -96.296389
+  },
+  {
+   "province": "MB",
+   "name": "Selkirk",
+   "query": "Selkirk",
+   "match": "exact",
+   "feature": "Selkirk",
+   "concise": "CITY",
+   "lat": 50.143611,
+   "lon": -96.883889
+  },
+  {
+   "province": "MB",
+   "name": "Split Lake",
+   "query": "Split Lake",
+   "match": "exact",
+   "feature": "Split Lake",
+   "concise": "UNP",
+   "lat": 56.245278,
+   "lon": -96.093889
+  },
+  {
+   "province": "MB",
+   "name": "Steinbach",
+   "query": "Steinbach",
+   "match": "exact",
+   "feature": "Steinbach",
+   "concise": "CITY",
+   "lat": 49.525833,
+   "lon": -96.683889
+  },
+  {
+   "province": "MB",
+   "name": "Swan River",
+   "query": "Swan River",
+   "match": "exact",
+   "feature": "Swan River",
+   "concise": "TOWN",
+   "lat": 52.105833,
+   "lon": -101.26667
+  },
+  {
+   "province": "MB",
+   "name": "The Pas",
+   "query": "The Pas",
+   "match": "exact",
+   "feature": "The Pas",
+   "concise": "TOWN",
+   "lat": 53.825,
+   "lon": -101.25333
+  },
+  {
+   "province": "MB",
+   "name": "Thompson",
+   "query": "Thompson",
+   "match": "exact",
+   "feature": "Thompson",
+   "concise": "CITY",
+   "lat": 55.743333,
+   "lon": -97.855278
+  },
+  {
+   "province": "MB",
+   "name": "Virden",
+   "query": "Virden",
+   "match": "exact",
+   "feature": "Virden",
+   "concise": "TOWN",
+   "lat": 49.850833,
+   "lon": -100.93167
+  },
+  {
+   "province": "MB",
+   "name": "Winnipeg",
+   "query": "Winnipeg",
+   "match": "exact",
+   "feature": "Winnipeg",
+   "concise": "CITY",
+   "lat": 49.884444,
+   "lon": -97.146389
+  },
+  {
+   "province": "ON",
+   "name": "Ailsa Craig",
+   "query": "Ailsa Craig",
+   "match": "exact",
+   "feature": "Ailsa Craig",
+   "concise": "UNP",
+   "lat": 43.15142,
+   "lon": -81.5365
+  },
+  {
+   "province": "ON",
+   "name": "Ajax",
+   "query": "Ajax",
+   "match": "exact",
+   "feature": "Ajax",
+   "concise": "TOWN",
+   "lat": 43.85821,
+   "lon": -79.03635
+  },
+  {
+   "province": "ON",
+   "name": "Alexandria",
+   "query": "Alexandria",
+   "match": "exact",
+   "feature": "Alexandria",
+   "concise": "UNP",
+   "lat": 45.30944,
+   "lon": -74.63295
+  },
+  {
+   "province": "ON",
+   "name": "Alliston",
+   "query": "Alliston",
+   "match": "exact",
+   "feature": "Alliston",
+   "concise": "UNP",
+   "lat": 44.1536111,
+   "lon": -79.8641667
+  },
+  {
+   "province": "ON",
+   "name": "Almonte",
+   "query": "Almonte",
+   "match": "exact",
+   "feature": "Almonte",
+   "concise": "UNP",
+   "lat": 45.22487,
+   "lon": -76.19513
+  },
+  {
+   "province": "ON",
+   "name": "Armstrong",
+   "query": "Armstrong",
+   "match": "exact",
+   "feature": "Armstrong",
+   "concise": "UNP",
+   "lat": 50.304886,
+   "lon": -89.041809
+  },
+  {
+   "province": "ON",
+   "name": "Arnprior",
+   "query": "Arnprior",
+   "match": "exact",
+   "feature": "Arnprior",
+   "concise": "TOWN",
+   "lat": 45.4347223,
+   "lon": -76.3580556
+  },
+  {
+   "province": "ON",
+   "name": "Atikokan",
+   "query": "Atikokan",
+   "match": "exact",
+   "feature": "Atikokan",
+   "concise": "UNP",
+   "lat": 48.7583334,
+   "lon": -91.6133333
+  },
+  {
+   "province": "ON",
+   "name": "Attawapiskat",
+   "query": "Attawapiskat",
+   "match": "exact",
+   "feature": "Attawapiskat",
+   "concise": "UNP",
+   "lat": 52.9225,
+   "lon": -82.4252778
+  },
+  {
+   "province": "ON",
+   "name": "Aurora",
+   "query": "Aurora",
+   "match": "exact",
+   "feature": "Aurora",
+   "concise": "TOWN",
+   "lat": 43.99763,
+   "lon": -79.46988
+  },
+  {
+   "province": "ON",
+   "name": "Bancroft",
+   "query": "Bancroft",
+   "match": "exact",
+   "feature": "Bancroft",
+   "concise": "TOWN",
+   "lat": 45.055,
+   "lon": -77.7577778
+  },
+  {
+   "province": "ON",
+   "name": "Barrie",
+   "query": "Barrie",
+   "match": "exact",
+   "feature": "Barrie",
+   "concise": "CITY",
+   "lat": 44.37124,
+   "lon": -79.67697
+  },
+  {
+   "province": "ON",
+   "name": "Barriefield",
+   "query": "Barriefield",
+   "match": "exact",
+   "feature": "Barriefield",
+   "concise": "UNP",
+   "lat": 44.24182,
+   "lon": -76.46196
+  },
+  {
+   "province": "ON",
+   "name": "Beaverton",
+   "query": "Beaverton",
+   "match": "exact",
+   "feature": "Beaverton",
+   "concise": "UNP",
+   "lat": 44.43081,
+   "lon": -79.15267
+  },
+  {
+   "province": "ON",
+   "name": "Belleville",
+   "query": "Belleville",
+   "match": "exact",
+   "feature": "Belleville",
+   "concise": "CITY",
+   "lat": 44.2566666,
+   "lon": -77.3697222
+  },
+  {
+   "province": "ON",
+   "name": "Belmont",
+   "query": "Belmont",
+   "match": "exact",
+   "feature": "Belmont",
+   "concise": "UNP",
+   "lat": 42.8857,
+   "lon": -81.08603
+  },
+  {
+   "province": "ON",
+   "name": "Borden (CFB)",
+   "query": "Borden",
+   "match": "exact",
+   "feature": "Borden",
+   "concise": "UNP",
+   "lat": 44.28017,
+   "lon": -79.89428
+  },
+  {
+   "province": "ON",
+   "name": "Bracebridge",
+   "query": "Bracebridge",
+   "match": "exact",
+   "feature": "Bracebridge",
+   "concise": "TOWN",
+   "lat": 45.0263889,
+   "lon": -79.19
+  },
+  {
+   "province": "ON",
+   "name": "Bradford",
+   "query": "Bradford",
+   "match": "exact",
+   "feature": "Bradford",
+   "concise": "UNP",
+   "lat": 44.11519,
+   "lon": -79.56595
+  },
+  {
+   "province": "ON",
+   "name": "Brampton",
+   "query": "Brampton",
+   "match": "exact",
+   "feature": "Brampton",
+   "concise": "CITY",
+   "lat": 43.6883334,
+   "lon": -79.7608333
+  },
+  {
+   "province": "ON",
+   "name": "Brantford",
+   "query": "Brantford",
+   "match": "exact",
+   "feature": "Brantford",
+   "concise": "CITY",
+   "lat": 43.1569444,
+   "lon": -80.2575
+  },
+  {
+   "province": "ON",
+   "name": "Brighton",
+   "query": "Brighton",
+   "match": "exact",
+   "feature": "Brighton",
+   "concise": "TOWN",
+   "lat": 44.1222222,
+   "lon": -77.7641667
+  },
+  {
+   "province": "ON",
+   "name": "Brockville",
+   "query": "Brockville",
+   "match": "exact",
+   "feature": "Brockville",
+   "concise": "CITY",
+   "lat": 44.59733,
+   "lon": -75.6855
+  },
+  {
+   "province": "ON",
+   "name": "Burk's Falls",
+   "query": "Burk's Falls",
+   "match": "exact",
+   "feature": "Burk's Falls",
+   "concise": "VILG",
+   "lat": 45.6292,
+   "lon": -79.40317
+  },
+  {
+   "province": "ON",
+   "name": "Burlington",
+   "query": "Burlington",
+   "match": "exact",
+   "feature": "Burlington",
+   "concise": "CITY",
+   "lat": 43.37006,
+   "lon": -79.81403
+  },
+  {
+   "province": "ON",
+   "name": "Cambridge",
+   "query": "Cambridge",
+   "match": "exact",
+   "feature": "Cambridge",
+   "concise": "CITY",
+   "lat": 43.397222,
+   "lon": -80.311389
+  },
+  {
+   "province": "ON",
+   "name": "Campbellford",
+   "query": "Campbellford",
+   "match": "exact",
+   "feature": "Campbellford",
+   "concise": "UNP",
+   "lat": 44.30868,
+   "lon": -77.79486
+  },
+  {
+   "province": "ON",
+   "name": "Cannington",
+   "query": "Cannington",
+   "match": "exact",
+   "feature": "Cannington",
+   "concise": "UNP",
+   "lat": 44.3494444,
+   "lon": -79.0408333
+  },
+  {
+   "province": "ON",
+   "name": "Carleton Place",
+   "query": "Carleton Place",
+   "match": "exact",
+   "feature": "Carleton Place",
+   "concise": "TOWN",
+   "lat": 45.1380555,
+   "lon": -76.1422222
+  },
+  {
+   "province": "ON",
+   "name": "Cavan",
+   "query": "Cavan",
+   "match": "exact",
+   "feature": "Cavan",
+   "concise": "UNP",
+   "lat": 44.2,
+   "lon": -78.4691666
+  },
+  {
+   "province": "ON",
+   "name": "Centralia",
+   "query": "Centralia",
+   "match": "exact",
+   "feature": "Centralia",
+   "concise": "UNP",
+   "lat": 43.28409,
+   "lon": -81.47317
+  },
+  {
+   "province": "ON",
+   "name": "Chapleau",
+   "query": "Chapleau",
+   "match": "exact",
+   "feature": "Chapleau",
+   "concise": "UNP",
+   "lat": 47.84385,
+   "lon": -83.4004
+  },
+  {
+   "province": "ON",
+   "name": "Chatham",
+   "query": "Chatham",
+   "match": "exact",
+   "feature": "Chatham",
+   "concise": "UNP",
+   "lat": 42.39989,
+   "lon": -82.18984
+  },
+  {
+   "province": "ON",
+   "name": "Chesley",
+   "query": "Chesley",
+   "match": "exact",
+   "feature": "Chesley",
+   "concise": "UNP",
+   "lat": 44.29761,
+   "lon": -81.09502
+  },
+  {
+   "province": "ON",
+   "name": "Clinton",
+   "query": "Clinton",
+   "match": "exact",
+   "feature": "Clinton",
+   "concise": "UNP",
+   "lat": 43.6166667,
+   "lon": -81.5397222
+  },
+  {
+   "province": "ON",
+   "name": "Coboconk",
+   "query": "Coboconk",
+   "match": "exact",
+   "feature": "Coboconk",
+   "concise": "UNP",
+   "lat": 44.6582,
+   "lon": -78.79856
+  },
+  {
+   "province": "ON",
+   "name": "Cobourg",
+   "query": "Cobourg",
+   "match": "exact",
+   "feature": "Cobourg",
+   "concise": "TOWN",
+   "lat": 43.9630555,
+   "lon": -78.1647223
+  },
+  {
+   "province": "ON",
+   "name": "Cochrane",
+   "query": "Cochrane",
+   "match": "exact",
+   "feature": "Cochrane",
+   "concise": "TOWN",
+   "lat": 49.1747223,
+   "lon": -81.0630555
+  },
+  {
+   "province": "ON",
+   "name": "Colborne",
+   "query": "Colborne",
+   "match": "exact",
+   "feature": "Colborne",
+   "concise": "UNP",
+   "lat": 44.0058333,
+   "lon": -77.8880556
+  },
+  {
+   "province": "ON",
+   "name": "Collingwood",
+   "query": "Collingwood",
+   "match": "exact",
+   "feature": "Collingwood",
+   "concise": "TOWN",
+   "lat": 44.5014,
+   "lon": -80.24071
+  },
+  {
+   "province": "ON",
+   "name": "Cornwall",
+   "query": "Cornwall",
+   "match": "exact",
+   "feature": "Cornwall",
+   "concise": "CITY",
+   "lat": 45.0263889,
+   "lon": -74.7263889
+  },
+  {
+   "province": "ON",
+   "name": "Corunna",
+   "query": "Corunna",
+   "match": "exact",
+   "feature": "Corunna",
+   "concise": "UNP",
+   "lat": 42.8855556,
+   "lon": -82.4483333
+  },
+  {
+   "province": "ON",
+   "name": "Deep River",
+   "query": "Deep River",
+   "match": "exact",
+   "feature": "Deep River",
+   "concise": "TOWN",
+   "lat": 46.0502777,
+   "lon": -77.4177778
+  },
+  {
+   "province": "ON",
+   "name": "Deseronto",
+   "query": "Deseronto",
+   "match": "exact",
+   "feature": "Deseronto",
+   "concise": "TOWN",
+   "lat": 44.19657,
+   "lon": -77.05095
+  },
+  {
+   "province": "ON",
+   "name": "Dorchester",
+   "query": "Dorchester",
+   "match": "exact",
+   "feature": "Dorchester",
+   "concise": "UNP",
+   "lat": 42.98652,
+   "lon": -81.05812
+  },
+  {
+   "province": "ON",
+   "name": "Dorion",
+   "query": "Dorion",
+   "match": "exact",
+   "feature": "Dorion",
+   "concise": "UNP",
+   "lat": 48.79446,
+   "lon": -88.54149
+  },
+  {
+   "province": "ON",
+   "name": "Dresden",
+   "query": "Dresden",
+   "match": "exact",
+   "feature": "Dresden",
+   "concise": "UNP",
+   "lat": 42.59033,
+   "lon": -82.18154
+  },
+  {
+   "province": "ON",
+   "name": "Dryden",
+   "query": "Dryden",
+   "match": "exact",
+   "feature": "Dryden",
+   "concise": "CITY",
+   "lat": 49.7833333,
+   "lon": -92.7652777
+  },
+  {
+   "province": "ON",
+   "name": "Dundalk",
+   "query": "Dundalk",
+   "match": "exact",
+   "feature": "Dundalk",
+   "concise": "UNP",
+   "lat": 44.17039,
+   "lon": -80.39351
+  },
+  {
+   "province": "ON",
+   "name": "Dunnville",
+   "query": "Dunnville",
+   "match": "exact",
+   "feature": "Dunnville",
+   "concise": "TOWN",
+   "lat": 42.986111,
+   "lon": -79.853333
+  },
+  {
+   "province": "ON",
+   "name": "Durham",
+   "query": "Durham",
+   "match": "exact",
+   "feature": "Durham",
+   "concise": "UNP",
+   "lat": 44.17794,
+   "lon": -80.81745
+  },
+  {
+   "province": "ON",
+   "name": "Dutton",
+   "query": "Dutton",
+   "match": "exact",
+   "feature": "Dutton",
+   "concise": "UNP",
+   "lat": 42.66468,
+   "lon": -81.50212
+  },
+  {
+   "province": "ON",
+   "name": "Earlton",
+   "query": "Earlton",
+   "match": "exact",
+   "feature": "Earlton",
+   "concise": "UNP",
+   "lat": 47.71015,
+   "lon": -79.82117
+  },
+  {
+   "province": "ON",
+   "name": "Edison",
+   "query": "Edison",
+   "match": "exact",
+   "feature": "Edison",
+   "concise": "UNP",
+   "lat": 49.812037,
+   "lon": -93.529878
+  },
+  {
+   "province": "ON",
+   "name": "Elliot Lake",
+   "query": "Elliot Lake",
+   "match": "exact",
+   "feature": "Elliot Lake",
+   "concise": "CITY",
+   "lat": 46.3811111,
+   "lon": -82.6572222
+  },
+  {
+   "province": "ON",
+   "name": "Elmvale",
+   "query": "Elmvale",
+   "match": "exact",
+   "feature": "Elmvale",
+   "concise": "UNP",
+   "lat": 44.583889,
+   "lon": -79.866944
+  },
+  {
+   "province": "ON",
+   "name": "Embro",
+   "query": "Embro",
+   "match": "exact",
+   "feature": "Embro",
+   "concise": "UNP",
+   "lat": 43.15515,
+   "lon": -80.90062
+  },
+  {
+   "province": "ON",
+   "name": "Englehart",
+   "query": "Englehart",
+   "match": "exact",
+   "feature": "Englehart",
+   "concise": "TOWN",
+   "lat": 47.8232,
+   "lon": -79.87352
+  },
+  {
+   "province": "ON",
+   "name": "Espanola",
+   "query": "Espanola",
+   "match": "exact",
+   "feature": "Espanola",
+   "concise": "TOWN",
+   "lat": 46.242,
+   "lon": -81.75733
+  },
+  {
+   "province": "ON",
+   "name": "Exeter",
+   "query": "Exeter",
+   "match": "exact",
+   "feature": "Exeter",
+   "concise": "UNP",
+   "lat": 43.3549,
+   "lon": -81.48067
+  },
+  {
+   "province": "ON",
+   "name": "Fenelon Falls",
+   "query": "Fenelon Falls",
+   "match": "exact",
+   "feature": "Fenelon Falls",
+   "concise": "UNP",
+   "lat": 44.53707,
+   "lon": -78.73734
+  },
+  {
+   "province": "ON",
+   "name": "Fergus",
+   "query": "Fergus",
+   "match": "exact",
+   "feature": "Fergus",
+   "concise": "UNP",
+   "lat": 43.70298,
+   "lon": -80.37984
+  },
+  {
+   "province": "ON",
+   "name": "Forest",
+   "query": "Forest",
+   "match": "exact",
+   "feature": "Forest",
+   "concise": "UNP",
+   "lat": 43.10484,
+   "lon": -82.00571
+  },
+  {
+   "province": "ON",
+   "name": "Fort Erie",
+   "query": "Fort Erie",
+   "match": "exact",
+   "feature": "Fort Erie",
+   "concise": "TOWN",
+   "lat": 42.92261,
+   "lon": -79.022
+  },
+  {
+   "province": "ON",
+   "name": "Fort Erie (Ridgeway)",
+   "query": "Ridgeway",
+   "match": "exact",
+   "feature": "Ridgeway",
+   "concise": "UNP",
+   "lat": 42.8844445,
+   "lon": -79.0536111
+  },
+  {
+   "province": "ON",
+   "name": "Fort Frances",
+   "query": "Fort Frances",
+   "match": "exact",
+   "feature": "Fort Frances",
+   "concise": "TOWN",
+   "lat": 48.6125,
+   "lon": -93.393889
+  },
+  {
+   "province": "ON",
+   "name": "Gananoque",
+   "query": "Gananoque",
+   "match": "exact",
+   "feature": "Gananoque",
+   "concise": "TOWN",
+   "lat": 44.33212,
+   "lon": -76.16116
+  },
+  {
+   "province": "ON",
+   "name": "Geraldton",
+   "query": "Geraldton",
+   "match": "exact",
+   "feature": "Geraldton",
+   "concise": "UNP",
+   "lat": 49.7197222,
+   "lon": -86.9505555
+  },
+  {
+   "province": "ON",
+   "name": "Glencoe",
+   "query": "Glencoe",
+   "match": "exact",
+   "feature": "Glencoe",
+   "concise": "UNP",
+   "lat": 42.7516,
+   "lon": -81.70432
+  },
+  {
+   "province": "ON",
+   "name": "Goderich",
+   "query": "Goderich",
+   "match": "exact",
+   "feature": "Goderich",
+   "concise": "TOWN",
+   "lat": 43.73813,
+   "lon": -81.70455
+  },
+  {
+   "province": "ON",
+   "name": "Gore Bay",
+   "query": "Gore Bay",
+   "match": "exact",
+   "feature": "Gore Bay",
+   "concise": "TOWN",
+   "lat": 45.9161111,
+   "lon": -82.4647222
+  },
+  {
+   "province": "ON",
+   "name": "Graham",
+   "query": "Graham",
+   "match": "exact",
+   "feature": "Graham",
+   "concise": "UNP",
+   "lat": 49.2477777,
+   "lon": -90.5730556
+  },
+  {
+   "province": "ON",
+   "name": "Gravenhurst (Muskoka Airport)",
+   "query": "Gravenhurst",
+   "match": "exact",
+   "feature": "Gravenhurst",
+   "concise": "TOWN",
+   "lat": 44.8686111,
+   "lon": -79.3394445
+  },
+  {
+   "province": "ON",
+   "name": "Grimsby",
+   "query": "Grimsby",
+   "match": "exact",
+   "feature": "Grimsby",
+   "concise": "TOWN",
+   "lat": 43.18584,
+   "lon": -79.57266
+  },
+  {
+   "province": "ON",
+   "name": "Guelph",
+   "query": "Guelph",
+   "match": "exact",
+   "feature": "Guelph",
+   "concise": "CITY",
+   "lat": 43.53571,
+   "lon": -80.229
+  },
+  {
+   "province": "ON",
+   "name": "Guthrie",
+   "query": "Guthrie",
+   "match": "exact",
+   "feature": "Guthrie",
+   "concise": "UNP",
+   "lat": 44.4725,
+   "lon": -79.5491666
+  },
+  {
+   "province": "ON",
+   "name": "Haileybury",
+   "query": "Haileybury",
+   "match": "exact",
+   "feature": "Haileybury",
+   "concise": "UNP",
+   "lat": 47.44339,
+   "lon": -79.63515
+  },
+  {
+   "province": "ON",
+   "name": "Haldimand (Caledonia)",
+   "query": "Caledonia",
+   "match": "exact",
+   "feature": "Caledonia",
+   "concise": "UNP",
+   "lat": 43.0711111,
+   "lon": -79.9536111
+  },
+  {
+   "province": "ON",
+   "name": "Haldimand (Hagersville)",
+   "query": "Hagersville",
+   "match": "exact",
+   "feature": "Hagersville",
+   "concise": "UNP",
+   "lat": 42.9619445,
+   "lon": -80.0516667
+  },
+  {
+   "province": "ON",
+   "name": "Haliburton",
+   "query": "Haliburton",
+   "match": "exact",
+   "feature": "Haliburton",
+   "concise": "UNP",
+   "lat": 45.0486111,
+   "lon": -78.5075
+  },
+  {
+   "province": "ON",
+   "name": "Halton Hills (Georgetown)",
+   "query": "Georgetown",
+   "match": "exact",
+   "feature": "Georgetown",
+   "concise": "UNP",
+   "lat": 43.64689,
+   "lon": -79.91013
+  },
+  {
+   "province": "ON",
+   "name": "Hamilton",
+   "query": "Hamilton",
+   "match": "exact",
+   "feature": "Hamilton",
+   "concise": "CITY",
+   "lat": 43.242778,
+   "lon": -79.989444
+  },
+  {
+   "province": "ON",
+   "name": "Hanover",
+   "query": "Hanover",
+   "match": "exact",
+   "feature": "Hanover",
+   "concise": "TOWN",
+   "lat": 44.1544445,
+   "lon": -81.0233334
+  },
+  {
+   "province": "ON",
+   "name": "Hastings",
+   "query": "Hastings",
+   "match": "exact",
+   "feature": "Hastings",
+   "concise": "UNP",
+   "lat": 44.3108333,
+   "lon": -77.9625
+  },
+  {
+   "province": "ON",
+   "name": "Hawkesbury",
+   "query": "Hawkesbury",
+   "match": "exact",
+   "feature": "Hawkesbury",
+   "concise": "TOWN",
+   "lat": 45.60826,
+   "lon": -74.60179
+  },
+  {
+   "province": "ON",
+   "name": "Hearst",
+   "query": "Hearst",
+   "match": "exact",
+   "feature": "Hearst",
+   "concise": "TOWN",
+   "lat": 49.6869445,
+   "lon": -83.6544445
+  },
+  {
+   "province": "ON",
+   "name": "Honey Harbour",
+   "query": "Honey Harbour",
+   "match": "exact",
+   "feature": "Honey Harbour",
+   "concise": "UNP",
+   "lat": 44.8680556,
+   "lon": -79.8197222
+  },
+  {
+   "province": "ON",
+   "name": "Hornepayne",
+   "query": "Hornepayne",
+   "match": "exact",
+   "feature": "Hornepayne",
+   "concise": "UNP",
+   "lat": 49.2180555,
+   "lon": -84.7772223
+  },
+  {
+   "province": "ON",
+   "name": "Huntsville",
+   "query": "Huntsville",
+   "match": "exact",
+   "feature": "Huntsville",
+   "concise": "TOWN",
+   "lat": 45.31098,
+   "lon": -79.27733
+  },
+  {
+   "province": "ON",
+   "name": "Ingersoll",
+   "query": "Ingersoll",
+   "match": "exact",
+   "feature": "Ingersoll",
+   "concise": "TOWN",
+   "lat": 43.04062,
+   "lon": -80.87399
+  },
+  {
+   "province": "ON",
+   "name": "Iroquois Falls",
+   "query": "Iroquois Falls",
+   "match": "exact",
+   "feature": "Iroquois Falls",
+   "concise": "TOWN",
+   "lat": 48.7663889,
+   "lon": -80.6813889
+  },
+  {
+   "province": "ON",
+   "name": "Jellicoe",
+   "query": "Jellicoe",
+   "match": "exact",
+   "feature": "Jellicoe",
+   "concise": "UNP",
+   "lat": 49.68547,
+   "lon": -87.52789
+  },
+  {
+   "province": "ON",
+   "name": "Kapuskasing",
+   "query": "Kapuskasing",
+   "match": "exact",
+   "feature": "Kapuskasing",
+   "concise": "TOWN",
+   "lat": 49.4152778,
+   "lon": -82.4169445
+  },
+  {
+   "province": "ON",
+   "name": "Kemptville",
+   "query": "Kemptville",
+   "match": "exact",
+   "feature": "Kemptville",
+   "concise": "UNP",
+   "lat": 45.0169445,
+   "lon": -75.6433333
+  },
+  {
+   "province": "ON",
+   "name": "Kenora",
+   "query": "Kenora",
+   "match": "exact",
+   "feature": "Kenora",
+   "concise": "CITY",
+   "lat": 49.8161111,
+   "lon": -94.435
+  },
+  {
+   "province": "ON",
+   "name": "Killaloe",
+   "query": "Killaloe",
+   "match": "exact",
+   "feature": "Killaloe",
+   "concise": "UNP",
+   "lat": 45.5652778,
+   "lon": -77.4083334
+  },
+  {
+   "province": "ON",
+   "name": "Kincardine",
+   "query": "Kincardine",
+   "match": "exact",
+   "feature": "Kincardine",
+   "concise": "UNP",
+   "lat": 44.16951,
+   "lon": -81.63484
+  },
+  {
+   "province": "ON",
+   "name": "Kingston",
+   "query": "Kingston",
+   "match": "exact",
+   "feature": "Kingston",
+   "concise": "CITY",
+   "lat": 44.3066667,
+   "lon": -76.4163888
+  },
+  {
+   "province": "ON",
+   "name": "Kinmount",
+   "query": "Kinmount",
+   "match": "exact",
+   "feature": "Kinmount",
+   "concise": "UNP",
+   "lat": 44.78093,
+   "lon": -78.651
+  },
+  {
+   "province": "ON",
+   "name": "Kirkland Lake",
+   "query": "Kirkland Lake",
+   "match": "exact",
+   "feature": "Kirkland Lake",
+   "concise": "TOWN",
+   "lat": 48.15,
+   "lon": -80.0330556
+  },
+  {
+   "province": "ON",
+   "name": "Kitchener",
+   "query": "Kitchener",
+   "match": "exact",
+   "feature": "Kitchener",
+   "concise": "CITY",
+   "lat": 43.4186111,
+   "lon": -80.4727778
+  },
+  {
+   "province": "ON",
+   "name": "Kitchenuhmaykoosib / Big Trout Lake",
+   "query": "Kitchenuhmaykoosib",
+   "match": "exact",
+   "feature": "Kitchenuhmaykoosib",
+   "concise": "UNP",
+   "lat": 53.8238889,
+   "lon": -89.8808334
+  },
+  {
+   "province": "ON",
+   "name": "Lakefield",
+   "query": "Lakefield",
+   "match": "exact",
+   "feature": "Lakefield",
+   "concise": "UNP",
+   "lat": 44.42988,
+   "lon": -78.27351
+  },
+  {
+   "province": "ON",
+   "name": "Lansdowne House",
+   "query": "Lansdowne House",
+   "match": "exact",
+   "feature": "Lansdowne House",
+   "concise": "UNP",
+   "lat": 52.22106,
+   "lon": -87.88681
+  },
+  {
+   "province": "ON",
+   "name": "Leamington",
+   "query": "Leamington",
+   "match": "exact",
+   "feature": "Leamington",
+   "concise": "TOWN",
+   "lat": 42.09535,
+   "lon": -82.55906
+  },
+  {
+   "province": "ON",
+   "name": "Lindsay",
+   "query": "Lindsay",
+   "match": "exact",
+   "feature": "Lindsay",
+   "concise": "UNP",
+   "lat": 44.3552778,
+   "lon": -78.7438889
+  },
+  {
+   "province": "ON",
+   "name": "Lion's Head",
+   "query": "Lion's Head",
+   "match": "exact",
+   "feature": "Lion's Head",
+   "concise": "UNP",
+   "lat": 44.9863889,
+   "lon": -81.2547223
+  },
+  {
+   "province": "ON",
+   "name": "Listowel",
+   "query": "Listowel",
+   "match": "exact",
+   "feature": "Listowel",
+   "concise": "UNP",
+   "lat": 43.73429,
+   "lon": -80.95198
+  },
+  {
+   "province": "ON",
+   "name": "London",
+   "query": "London",
+   "match": "exact",
+   "feature": "London",
+   "concise": "CITY",
+   "lat": 42.9675,
+   "lon": -81.2325
+  },
+  {
+   "province": "ON",
+   "name": "Lucan",
+   "query": "Lucan",
+   "match": "exact",
+   "feature": "Lucan",
+   "concise": "UNP",
+   "lat": 43.18785,
+   "lon": -81.40151
+  },
+  {
+   "province": "ON",
+   "name": "Maitland",
+   "query": "Maitland",
+   "match": "exact",
+   "feature": "Maitland",
+   "concise": "UNP",
+   "lat": 44.6375,
+   "lon": -75.6147223
+  },
+  {
+   "province": "ON",
+   "name": "Markdale",
+   "query": "Markdale",
+   "match": "exact",
+   "feature": "Markdale",
+   "concise": "UNP",
+   "lat": 44.3183333,
+   "lon": -80.6491666
+  },
+  {
+   "province": "ON",
+   "name": "Markham",
+   "query": "Markham",
+   "match": "exact",
+   "feature": "Markham",
+   "concise": "TOWN",
+   "lat": 43.87653,
+   "lon": -79.2634
+  },
+  {
+   "province": "ON",
+   "name": "Martin",
+   "query": "Martin",
+   "match": "exact",
+   "feature": "Martin",
+   "concise": "UNP",
+   "lat": 49.2597222,
+   "lon": -91.1302778
+  },
+  {
+   "province": "ON",
+   "name": "Matheson",
+   "query": "Matheson",
+   "match": "exact",
+   "feature": "Matheson",
+   "concise": "UNP",
+   "lat": 48.53682,
+   "lon": -80.46485
+  },
+  {
+   "province": "ON",
+   "name": "Mattawa",
+   "query": "Mattawa",
+   "match": "exact",
+   "feature": "Mattawa",
+   "concise": "TOWN",
+   "lat": 46.31294,
+   "lon": -78.70973
+  },
+  {
+   "province": "ON",
+   "name": "Midland",
+   "query": "Midland",
+   "match": "exact",
+   "feature": "Midland",
+   "concise": "TOWN",
+   "lat": 44.7502777,
+   "lon": -79.8836111
+  },
+  {
+   "province": "ON",
+   "name": "Milton",
+   "query": "Milton",
+   "match": "exact",
+   "feature": "Milton",
+   "concise": "TOWN",
+   "lat": 43.5055556,
+   "lon": -79.9177778
+  },
+  {
+   "province": "ON",
+   "name": "Milverton",
+   "query": "Milverton",
+   "match": "exact",
+   "feature": "Milverton",
+   "concise": "UNP",
+   "lat": 43.565,
+   "lon": -80.9211111
+  },
+  {
+   "province": "ON",
+   "name": "Minden",
+   "query": "Minden",
+   "match": "exact",
+   "feature": "Minden",
+   "concise": "UNP",
+   "lat": 44.9258334,
+   "lon": -78.7230556
+  },
+  {
+   "province": "ON",
+   "name": "Mississauga",
+   "query": "Mississauga",
+   "match": "exact",
+   "feature": "Mississauga",
+   "concise": "CITY",
+   "lat": 43.58566,
+   "lon": -79.65711
+  },
+  {
+   "province": "ON",
+   "name": "Mississauga (Lester B. Pearson Int'l Airport)",
+   "query": "Mississauga",
+   "match": "exact",
+   "feature": "Mississauga",
+   "concise": "CITY",
+   "lat": 43.58566,
+   "lon": -79.65711
+  },
+  {
+   "province": "ON",
+   "name": "Mississauga (Port Credit)",
+   "query": "Port Credit",
+   "match": "exact",
+   "feature": "Port Credit",
+   "concise": "UNP",
+   "lat": 43.5519445,
+   "lon": -79.5844444
+  },
+  {
+   "province": "ON",
+   "name": "Mitchell",
+   "query": "Mitchell",
+   "match": "exact",
+   "feature": "Mitchell",
+   "concise": "UNP",
+   "lat": 43.4680555,
+   "lon": -81.1977778
+  },
+  {
+   "province": "ON",
+   "name": "Moosonee",
+   "query": "Moosonee",
+   "match": "exact",
+   "feature": "Moosonee",
+   "concise": "TOWN",
+   "lat": 51.334167,
+   "lon": -80.721111
+  },
+  {
+   "province": "ON",
+   "name": "Morrisburg",
+   "query": "Morrisburg",
+   "match": "exact",
+   "feature": "Morrisburg",
+   "concise": "UNP",
+   "lat": 44.8980556,
+   "lon": -75.1819445
+  },
+  {
+   "province": "ON",
+   "name": "Mount Forest",
+   "query": "Mount Forest",
+   "match": "exact",
+   "feature": "Mount Forest",
+   "concise": "UNP",
+   "lat": 43.9816667,
+   "lon": -80.7366667
+  },
+  {
+   "province": "ON",
+   "name": "Nakina",
+   "query": "Nakina",
+   "match": "exact",
+   "feature": "Nakina",
+   "concise": "UNP",
+   "lat": 50.179018,
+   "lon": -86.709931
+  },
+  {
+   "province": "ON",
+   "name": "Nanticoke (Jarvis)",
+   "query": "Jarvis",
+   "match": "exact",
+   "feature": "Jarvis",
+   "concise": "UNP",
+   "lat": 42.8861111,
+   "lon": -80.1127778
+  },
+  {
+   "province": "ON",
+   "name": "Nanticoke (Port Dover)",
+   "query": "Port Dover",
+   "match": "exact",
+   "feature": "Port Dover",
+   "concise": "UNP",
+   "lat": 42.78975,
+   "lon": -80.20903
+  },
+  {
+   "province": "ON",
+   "name": "Napanee",
+   "query": "Napanee",
+   "match": "exact",
+   "feature": "Napanee",
+   "concise": "UNP",
+   "lat": 44.2475,
+   "lon": -76.9538889
+  },
+  {
+   "province": "ON",
+   "name": "Newcastle",
+   "query": "Newcastle",
+   "match": "exact",
+   "feature": "Newcastle",
+   "concise": "TOWN",
+   "lat": 43.916667,
+   "lon": -78.583333
+  },
+  {
+   "province": "ON",
+   "name": "Newcastle (Bowmanville)",
+   "query": "Bowmanville",
+   "match": "exact",
+   "feature": "Bowmanville",
+   "concise": "UNP",
+   "lat": 43.9113889,
+   "lon": -78.6875
+  },
+  {
+   "province": "ON",
+   "name": "New Liskeard",
+   "query": "New Liskeard",
+   "match": "exact",
+   "feature": "New Liskeard",
+   "concise": "UNP",
+   "lat": 47.5072222,
+   "lon": -79.6813889
+  },
+  {
+   "province": "ON",
+   "name": "Newmarket",
+   "query": "Newmarket",
+   "match": "exact",
+   "feature": "Newmarket",
+   "concise": "TOWN",
+   "lat": 44.05794,
+   "lon": -79.45835
+  },
+  {
+   "province": "ON",
+   "name": "Niagara Falls",
+   "query": "Niagara Falls",
+   "match": "exact",
+   "feature": "Niagara Falls",
+   "concise": "CITY",
+   "lat": 43.06012,
+   "lon": -79.10671
+  },
+  {
+   "province": "ON",
+   "name": "North Bay",
+   "query": "North Bay",
+   "match": "exact",
+   "feature": "North Bay",
+   "concise": "CITY",
+   "lat": 46.314444,
+   "lon": -79.459167
+  },
+  {
+   "province": "ON",
+   "name": "Norwood",
+   "query": "Norwood",
+   "match": "exact",
+   "feature": "Norwood",
+   "concise": "UNP",
+   "lat": 44.3833334,
+   "lon": -77.9777778
+  },
+  {
+   "province": "ON",
+   "name": "Oakville",
+   "query": "Oakville",
+   "match": "exact",
+   "feature": "Oakville",
+   "concise": "TOWN",
+   "lat": 43.45649,
+   "lon": -79.71378
+  },
+  {
+   "province": "ON",
+   "name": "Orangeville",
+   "query": "Orangeville",
+   "match": "exact",
+   "feature": "Orangeville",
+   "concise": "TOWN",
+   "lat": 43.9152778,
+   "lon": -80.1086111
+  },
+  {
+   "province": "ON",
+   "name": "Orillia",
+   "query": "Orillia",
+   "match": "exact",
+   "feature": "Orillia",
+   "concise": "CITY",
+   "lat": 44.6043,
+   "lon": -79.42392
+  },
+  {
+   "province": "ON",
+   "name": "Oshawa",
+   "query": "Oshawa",
+   "match": "exact",
+   "feature": "Oshawa",
+   "concise": "CITY",
+   "lat": 43.9005555,
+   "lon": -78.8572222
+  },
+  {
+   "province": "ON",
+   "name": "Ottawa (Barrhaven)",
+   "query": "Barrhaven",
+   "match": "exact",
+   "feature": "Barrhaven",
+   "concise": "UNP",
+   "lat": 45.279012,
+   "lon": -75.768363
+  },
+  {
+   "province": "ON",
+   "name": "Ottawa (City Hall)",
+   "query": "Ottawa",
+   "match": "exact",
+   "feature": "Ottawa",
+   "concise": "CITY",
+   "lat": 45.33339,
+   "lon": -75.58429
+  },
+  {
+   "province": "ON",
+   "name": "Ottawa (Kanata)",
+   "query": "Kanata",
+   "match": "exact",
+   "feature": "Kanata",
+   "concise": "UNP",
+   "lat": 45.32906,
+   "lon": -75.90147
+  },
+  {
+   "province": "ON",
+   "name": "Ottawa (M-C Int'l Airport)",
+   "query": "Ottawa",
+   "match": "exact",
+   "feature": "Ottawa",
+   "concise": "CITY",
+   "lat": 45.33339,
+   "lon": -75.58429
+  },
+  {
+   "province": "ON",
+   "name": "Ottawa (Orléans)",
+   "query": "Orléans",
+   "match": "exact",
+   "feature": "Orléans",
+   "concise": "UNP",
+   "lat": 45.472778,
+   "lon": -75.521667
+  },
+  {
+   "province": "ON",
+   "name": "Owen Sound",
+   "query": "Owen Sound",
+   "match": "exact",
+   "feature": "Owen Sound",
+   "concise": "CITY",
+   "lat": 44.56981,
+   "lon": -80.93067
+  },
+  {
+   "province": "ON",
+   "name": "Pagwa River",
+   "query": "Pagwa River",
+   "match": "exact",
+   "feature": "Pagwa River",
+   "concise": "UNP",
+   "lat": 50.0136111,
+   "lon": -85.2186111
+  },
+  {
+   "province": "ON",
+   "name": "Paris",
+   "query": "Paris",
+   "match": "exact",
+   "feature": "Paris",
+   "concise": "UNP",
+   "lat": 43.1933334,
+   "lon": -80.3847222
+  },
+  {
+   "province": "ON",
+   "name": "Parkhill",
+   "query": "Parkhill",
+   "match": "exact",
+   "feature": "Parkhill",
+   "concise": "UNP",
+   "lat": 43.1663889,
+   "lon": -81.6830555
+  },
+  {
+   "province": "ON",
+   "name": "Parry Sound",
+   "query": "Parry Sound",
+   "match": "exact",
+   "feature": "Parry Sound",
+   "concise": "TOWN",
+   "lat": 45.3538889,
+   "lon": -80.0361111
+  },
+  {
+   "province": "ON",
+   "name": "Pelham (Fonthill)",
+   "query": "Fonthill",
+   "match": "exact",
+   "feature": "Fonthill",
+   "concise": "UNP",
+   "lat": 43.0438889,
+   "lon": -79.2875
+  },
+  {
+   "province": "ON",
+   "name": "Pembroke",
+   "query": "Pembroke",
+   "match": "exact",
+   "feature": "Pembroke",
+   "concise": "CITY",
+   "lat": 45.8205556,
+   "lon": -77.1111111
+  },
+  {
+   "province": "ON",
+   "name": "Penetanguishene",
+   "query": "Penetanguishene",
+   "match": "exact",
+   "feature": "Penetanguishene",
+   "concise": "TOWN",
+   "lat": 44.7838889,
+   "lon": -79.9
+  },
+  {
+   "province": "ON",
+   "name": "Perth",
+   "query": "Perth",
+   "match": "exact",
+   "feature": "Perth",
+   "concise": "TOWN",
+   "lat": 44.89943,
+   "lon": -76.25039
+  },
+  {
+   "province": "ON",
+   "name": "Petawawa",
+   "query": "Petawawa",
+   "match": "exact",
+   "feature": "Petawawa",
+   "concise": "TOWN",
+   "lat": 45.8838889,
+   "lon": -77.3177778
+  },
+  {
+   "province": "ON",
+   "name": "Peterborough",
+   "query": "Peterborough",
+   "match": "exact",
+   "feature": "Peterborough",
+   "concise": "CITY",
+   "lat": 44.3011111,
+   "lon": -78.3333334
+  },
+  {
+   "province": "ON",
+   "name": "Petrolia",
+   "query": "Petrolia",
+   "match": "exact",
+   "feature": "Petrolia",
+   "concise": "TOWN",
+   "lat": 42.8861111,
+   "lon": -82.1441667
+  },
+  {
+   "province": "ON",
+   "name": "Pickering (Dunbarton)",
+   "query": "Dunbarton",
+   "match": "exact",
+   "feature": "Dunbarton",
+   "concise": "UNP",
+   "lat": 43.82849,
+   "lon": -79.12066
+  },
+  {
+   "province": "ON",
+   "name": "Picton",
+   "query": "Picton",
+   "match": "exact",
+   "feature": "Picton",
+   "concise": "UNP",
+   "lat": 44.0061111,
+   "lon": -77.1436111
+  },
+  {
+   "province": "ON",
+   "name": "Plattsville",
+   "query": "Plattsville",
+   "match": "exact",
+   "feature": "Plattsville",
+   "concise": "UNP",
+   "lat": 43.3044445,
+   "lon": -80.6208334
+  },
+  {
+   "province": "ON",
+   "name": "Point Alexander",
+   "query": "Point Alexander",
+   "match": "exact",
+   "feature": "Point Alexander",
+   "concise": "UNP",
+   "lat": 46.1325,
+   "lon": -77.5519444
+  },
+  {
+   "province": "ON",
+   "name": "Port Burwell",
+   "query": "Port Burwell",
+   "match": "exact",
+   "feature": "Port Burwell",
+   "concise": "UNP",
+   "lat": 42.64774,
+   "lon": -80.8035
+  },
+  {
+   "province": "ON",
+   "name": "Port Colborne",
+   "query": "Port Colborne",
+   "match": "exact",
+   "feature": "Port Colborne",
+   "concise": "CITY",
+   "lat": 42.9155556,
+   "lon": -79.1930555
+  },
+  {
+   "province": "ON",
+   "name": "Port Elgin",
+   "query": "Port Elgin",
+   "match": "exact",
+   "feature": "Port Elgin",
+   "concise": "UNP",
+   "lat": 44.43706,
+   "lon": -81.39083
+  },
+  {
+   "province": "ON",
+   "name": "Port Hope",
+   "query": "Port Hope",
+   "match": "exact",
+   "feature": "Port Hope",
+   "concise": "TOWN",
+   "lat": 44.0283334,
+   "lon": -78.3875
+  },
+  {
+   "province": "ON",
+   "name": "Port Perry",
+   "query": "Port Perry",
+   "match": "exact",
+   "feature": "Port Perry",
+   "concise": "UNP",
+   "lat": 44.1030555,
+   "lon": -78.9475
+  },
+  {
+   "province": "ON",
+   "name": "Port Stanley",
+   "query": "Port Stanley",
+   "match": "exact",
+   "feature": "Port Stanley",
+   "concise": "UNP",
+   "lat": 42.6663888,
+   "lon": -81.2108334
+  },
+  {
+   "province": "ON",
+   "name": "Prescott",
+   "query": "Prescott",
+   "match": "exact",
+   "feature": "Prescott",
+   "concise": "TOWN",
+   "lat": 44.71201,
+   "lon": -75.51683
+  },
+  {
+   "province": "ON",
+   "name": "Princeton",
+   "query": "Princeton",
+   "match": "exact",
+   "feature": "Princeton",
+   "concise": "UNP",
+   "lat": 43.1702778,
+   "lon": -80.5272223
+  },
+  {
+   "province": "ON",
+   "name": "Raith",
+   "query": "Raith",
+   "match": "exact",
+   "feature": "Raith",
+   "concise": "UNP",
+   "lat": 48.8219445,
+   "lon": -89.9191666
+  },
+  {
+   "province": "ON",
+   "name": "Rayside-Balfour (Chelmsford)",
+   "query": "Chelmsford",
+   "match": "exact",
+   "feature": "Chelmsford",
+   "concise": "UNP",
+   "lat": 46.5786111,
+   "lon": -81.1969445
+  },
+  {
+   "province": "ON",
+   "name": "Red Lake",
+   "query": "Red Lake",
+   "match": "exact",
+   "feature": "Red Lake",
+   "concise": "TOWN",
+   "lat": 51.099444,
+   "lon": -93.7225
+  },
+  {
+   "province": "ON",
+   "name": "Renfrew",
+   "query": "Renfrew",
+   "match": "exact",
+   "feature": "Renfrew",
+   "concise": "TOWN",
+   "lat": 45.4732,
+   "lon": -76.68282
+  },
+  {
+   "province": "ON",
+   "name": "Richmond Hill",
+   "query": "Richmond Hill",
+   "match": "exact",
+   "feature": "Richmond Hill",
+   "concise": "TOWN",
+   "lat": 43.8747222,
+   "lon": -79.4394444
+  },
+  {
+   "province": "ON",
+   "name": "Rockland",
+   "query": "Rockland",
+   "match": "exact",
+   "feature": "Rockland",
+   "concise": "UNP",
+   "lat": 45.54584,
+   "lon": -75.29235
+  },
+  {
+   "province": "ON",
+   "name": "Sarnia",
+   "query": "Sarnia",
+   "match": "exact",
+   "feature": "Sarnia",
+   "concise": "CITY",
+   "lat": 42.9813889,
+   "lon": -82.3177777
+  },
+  {
+   "province": "ON",
+   "name": "Sault Ste. Marie",
+   "query": "Sault Ste. Marie",
+   "match": "exact",
+   "feature": "Sault Ste. Marie",
+   "concise": "CITY",
+   "lat": 46.558889,
+   "lon": -84.346944
+  },
+  {
+   "province": "ON",
+   "name": "Schreiber",
+   "query": "Schreiber",
+   "match": "exact",
+   "feature": "Schreiber",
+   "concise": "UNP",
+   "lat": 48.80929,
+   "lon": -87.26611
+  },
+  {
+   "province": "ON",
+   "name": "Seaforth",
+   "query": "Seaforth",
+   "match": "exact",
+   "feature": "Seaforth",
+   "concise": "UNP",
+   "lat": 43.55454,
+   "lon": -81.3943
+  },
+  {
+   "province": "ON",
+   "name": "Shelburne",
+   "query": "Shelburne",
+   "match": "exact",
+   "feature": "Shelburne",
+   "concise": "TOWN",
+   "lat": 44.0763889,
+   "lon": -80.2044445
+  },
+  {
+   "province": "ON",
+   "name": "Simcoe",
+   "query": "Simcoe",
+   "match": "exact",
+   "feature": "Simcoe",
+   "concise": "UNP",
+   "lat": 42.84186,
+   "lon": -80.31405
+  },
+  {
+   "province": "ON",
+   "name": "Sioux Lookout",
+   "query": "Sioux Lookout",
+   "match": "exact",
+   "feature": "Sioux Lookout",
+   "concise": "TOWN",
+   "lat": 50.0905556,
+   "lon": -91.9988889
+  },
+  {
+   "province": "ON",
+   "name": "Smiths Falls",
+   "query": "Smiths Falls",
+   "match": "exact",
+   "feature": "Smiths Falls",
+   "concise": "TOWN",
+   "lat": 44.9011111,
+   "lon": -76.0194445
+  },
+  {
+   "province": "ON",
+   "name": "Smithville",
+   "query": "Smithville",
+   "match": "exact",
+   "feature": "Smithville",
+   "concise": "UNP",
+   "lat": 43.09735,
+   "lon": -79.54627
+  },
+  {
+   "province": "ON",
+   "name": "Smooth Rock Falls",
+   "query": "Smooth Rock Falls",
+   "match": "exact",
+   "feature": "Smooth Rock Falls",
+   "concise": "TOWN",
+   "lat": 49.27817,
+   "lon": -81.62629
+  },
+  {
+   "province": "ON",
+   "name": "Southampton",
+   "query": "Southampton",
+   "match": "exact",
+   "feature": "Southampton",
+   "concise": "UNP",
+   "lat": 44.4908334,
+   "lon": -81.3744444
+  },
+  {
+   "province": "ON",
+   "name": "South River",
+   "query": "South River",
+   "match": "exact",
+   "feature": "South River",
+   "concise": "VILG",
+   "lat": 45.8458333,
+   "lon": -79.3738889
+  },
+  {
+   "province": "ON",
+   "name": "St. Catharines",
+   "query": "St. Catharines",
+   "match": "exact",
+   "feature": "St. Catharines",
+   "concise": "CITY",
+   "lat": 43.16544,
+   "lon": -79.2533
+  },
+  {
+   "province": "ON",
+   "name": "St. Marys",
+   "query": "St. Marys",
+   "match": "exact",
+   "feature": "St. Marys",
+   "concise": "TOWN",
+   "lat": 43.2594445,
+   "lon": -81.1330556
+  },
+  {
+   "province": "ON",
+   "name": "St. Thomas",
+   "query": "St. Thomas",
+   "match": "exact",
+   "feature": "St. Thomas",
+   "concise": "CITY",
+   "lat": 42.7808333,
+   "lon": -81.1855555
+  },
+  {
+   "province": "ON",
+   "name": "Stirling",
+   "query": "Stirling",
+   "match": "exact",
+   "feature": "Stirling",
+   "concise": "UNP",
+   "lat": 44.29666,
+   "lon": -77.54846
+  },
+  {
+   "province": "ON",
+   "name": "Stratford",
+   "query": "Stratford",
+   "match": "exact",
+   "feature": "Stratford",
+   "concise": "CITY",
+   "lat": 43.3725,
+   "lon": -80.9763889
+  },
+  {
+   "province": "ON",
+   "name": "Strathroy",
+   "query": "Strathroy",
+   "match": "exact",
+   "feature": "Strathroy",
+   "concise": "UNP",
+   "lat": 42.9644445,
+   "lon": -81.6175
+  },
+  {
+   "province": "ON",
+   "name": "Sturgeon Falls",
+   "query": "Sturgeon Falls",
+   "match": "exact",
+   "feature": "Sturgeon Falls",
+   "concise": "UNP",
+   "lat": 46.36636,
+   "lon": -79.92677
+  },
+  {
+   "province": "ON",
+   "name": "Sudbury",
+   "query": "Sudbury",
+   "match": "exact",
+   "feature": "Sudbury",
+   "concise": "UNP",
+   "lat": 46.5011111,
+   "lon": -80.9775
+  },
+  {
+   "province": "ON",
+   "name": "Sundridge",
+   "query": "Sundridge",
+   "match": "exact",
+   "feature": "Sundridge",
+   "concise": "VILG",
+   "lat": 45.77988,
+   "lon": -79.38064
+  },
+  {
+   "province": "ON",
+   "name": "Tavistock",
+   "query": "Tavistock",
+   "match": "exact",
+   "feature": "Tavistock",
+   "concise": "UNP",
+   "lat": 43.3216667,
+   "lon": -80.8355555
+  },
+  {
+   "province": "ON",
+   "name": "Temagami",
+   "query": "Temagami",
+   "match": "exact",
+   "feature": "Temagami",
+   "concise": "TOWN",
+   "lat": 47.0640291,
+   "lon": -79.7917297
+  },
+  {
+   "province": "ON",
+   "name": "Thamesford",
+   "query": "Thamesford",
+   "match": "exact",
+   "feature": "Thamesford",
+   "concise": "UNP",
+   "lat": 43.0575,
+   "lon": -81.0022222
+  },
+  {
+   "province": "ON",
+   "name": "Thedford",
+   "query": "Thedford",
+   "match": "exact",
+   "feature": "Thedford",
+   "concise": "UNP",
+   "lat": 43.1680556,
+   "lon": -81.8469445
+  },
+  {
+   "province": "ON",
+   "name": "Thunder Bay",
+   "query": "Thunder Bay",
+   "match": "exact",
+   "feature": "Thunder Bay",
+   "concise": "CITY",
+   "lat": 48.4013889,
+   "lon": -89.2677778
+  },
+  {
+   "province": "ON",
+   "name": "Tillsonburg",
+   "query": "Tillsonburg",
+   "match": "exact",
+   "feature": "Tillsonburg",
+   "concise": "TOWN",
+   "lat": 42.86794,
+   "lon": -80.7307
+  },
+  {
+   "province": "ON",
+   "name": "Timmins",
+   "query": "Timmins",
+   "match": "exact",
+   "feature": "Timmins",
+   "concise": "CITY",
+   "lat": 48.47153,
+   "lon": -81.33132
+  },
+  {
+   "province": "ON",
+   "name": "Timmins (Porcupine)",
+   "query": "Porcupine",
+   "match": "exact",
+   "feature": "Porcupine",
+   "concise": "UNP",
+   "lat": 48.4961111,
+   "lon": -81.1844444
+  },
+  {
+   "province": "ON",
+   "name": "Etobicoke",
+   "query": "Etobicoke",
+   "match": "exact",
+   "feature": "Etobicoke",
+   "concise": "UNP",
+   "lat": 43.6927778,
+   "lon": -79.5580556
+  },
+  {
+   "province": "ON",
+   "name": "North York",
+   "query": "North York",
+   "match": "exact",
+   "feature": "North York",
+   "concise": "UNP",
+   "lat": 43.76205,
+   "lon": -79.41026
+  },
+  {
+   "province": "ON",
+   "name": "Scarborough",
+   "query": "Scarborough",
+   "match": "exact",
+   "feature": "Scarborough",
+   "concise": "UNP",
+   "lat": 43.7558333,
+   "lon": -79.2308334
+  },
+  {
+   "province": "ON",
+   "name": "Toronto (City Hall)",
+   "query": "Toronto",
+   "match": "exact",
+   "feature": "Toronto",
+   "concise": "CITY",
+   "lat": 43.7417,
+   "lon": -79.3733
+  },
+  {
+   "province": "ON",
+   "name": "Trenton",
+   "query": "Trenton",
+   "match": "exact",
+   "feature": "Trenton",
+   "concise": "UNP",
+   "lat": 44.11,
+   "lon": -77.5786111
+  },
+  {
+   "province": "ON",
+   "name": "Trout Creek",
+   "query": "Trout Creek",
+   "match": "exact",
+   "feature": "Trout Creek",
+   "concise": "UNP",
+   "lat": 45.98579,
+   "lon": -79.36181
+  },
+  {
+   "province": "ON",
+   "name": "Uxbridge",
+   "query": "Uxbridge",
+   "match": "exact",
+   "feature": "Uxbridge",
+   "concise": "UNP",
+   "lat": 44.1086111,
+   "lon": -79.1213889
+  },
+  {
+   "province": "ON",
+   "name": "Vaughan (Woodbridge)",
+   "query": "Woodbridge",
+   "match": "exact",
+   "feature": "Woodbridge",
+   "concise": "UNP",
+   "lat": 43.78209,
+   "lon": -79.59706
+  },
+  {
+   "province": "ON",
+   "name": "Vittoria",
+   "query": "Vittoria",
+   "match": "exact",
+   "feature": "Vittoria",
+   "concise": "UNP",
+   "lat": 42.7622222,
+   "lon": -80.3230555
+  },
+  {
+   "province": "ON",
+   "name": "Walkerton",
+   "query": "Walkerton",
+   "match": "exact",
+   "feature": "Walkerton",
+   "concise": "UNP",
+   "lat": 44.12573,
+   "lon": -81.15126
+  },
+  {
+   "province": "ON",
+   "name": "Wallaceburg",
+   "query": "Wallaceburg",
+   "match": "exact",
+   "feature": "Wallaceburg",
+   "concise": "UNP",
+   "lat": 42.5946,
+   "lon": -82.38426
+  },
+  {
+   "province": "ON",
+   "name": "Waterloo",
+   "query": "Waterloo",
+   "match": "exact",
+   "feature": "Waterloo",
+   "concise": "CITY",
+   "lat": 43.4797222,
+   "lon": -80.5411111
+  },
+  {
+   "province": "ON",
+   "name": "Watford",
+   "query": "Watford",
+   "match": "exact",
+   "feature": "Watford",
+   "concise": "UNP",
+   "lat": 42.95031,
+   "lon": -81.8801
+  },
+  {
+   "province": "ON",
+   "name": "Wawa",
+   "query": "Wawa",
+   "match": "exact",
+   "feature": "Wawa",
+   "concise": "UNP",
+   "lat": 47.9936111,
+   "lon": -84.7738889
+  },
+  {
+   "province": "ON",
+   "name": "Welland",
+   "query": "Welland",
+   "match": "exact",
+   "feature": "Welland",
+   "concise": "CITY",
+   "lat": 42.99712,
+   "lon": -79.22497
+  },
+  {
+   "province": "ON",
+   "name": "West Lorne",
+   "query": "West Lorne",
+   "match": "exact",
+   "feature": "West Lorne",
+   "concise": "UNP",
+   "lat": 42.60306,
+   "lon": -81.60681
+  },
+  {
+   "province": "ON",
+   "name": "Whitby",
+   "query": "Whitby",
+   "match": "exact",
+   "feature": "Whitby",
+   "concise": "TOWN",
+   "lat": 43.9325,
+   "lon": -78.9544445
+  },
+  {
+   "province": "ON",
+   "name": "Whitby (Brooklin)",
+   "query": "Brooklin",
+   "match": "exact",
+   "feature": "Brooklin",
+   "concise": "UNP",
+   "lat": 43.958333,
+   "lon": -78.959722
+  },
+  {
+   "province": "ON",
+   "name": "White River",
+   "query": "White River",
+   "match": "exact",
+   "feature": "White River",
+   "concise": "UNP",
+   "lat": 48.59124,
+   "lon": -85.28151
+  },
+  {
+   "province": "ON",
+   "name": "Wiarton",
+   "query": "Wiarton",
+   "match": "exact",
+   "feature": "Wiarton",
+   "concise": "UNP",
+   "lat": 44.74066,
+   "lon": -81.13999
+  },
+  {
+   "province": "ON",
+   "name": "Windsor",
+   "query": "Windsor",
+   "match": "exact",
+   "feature": "Windsor",
+   "concise": "CITY",
+   "lat": 42.30227,
+   "lon": -82.99348
+  },
+  {
+   "province": "ON",
+   "name": "Wingham",
+   "query": "Wingham",
+   "match": "exact",
+   "feature": "Wingham",
+   "concise": "UNP",
+   "lat": 43.8883334,
+   "lon": -81.3088889
+  },
+  {
+   "province": "ON",
+   "name": "Woodstock",
+   "query": "Woodstock",
+   "match": "exact",
+   "feature": "Woodstock",
+   "concise": "CITY",
+   "lat": 43.1372222,
+   "lon": -80.7377778
+  },
+  {
+   "province": "ON",
+   "name": "Wyoming",
+   "query": "Wyoming",
+   "match": "exact",
+   "feature": "Wyoming",
+   "concise": "UNP",
+   "lat": 42.95383,
+   "lon": -82.12288
+  },
+  {
+   "province": "QC",
+   "name": "Acton Vale",
+   "query": "Acton Vale",
+   "match": "exact",
+   "feature": "Acton Vale",
+   "concise": "CITY",
+   "lat": 45.64786,
+   "lon": -72.564786
+  },
+  {
+   "province": "QC",
+   "name": "Alma",
+   "query": "Alma",
+   "match": "exact",
+   "feature": "Alma",
+   "concise": "CITY",
+   "lat": 48.549702,
+   "lon": -71.653425
+  },
+  {
+   "province": "QC",
+   "name": "Amos",
+   "query": "Amos",
+   "match": "exact",
+   "feature": "Amos",
+   "concise": "CITY",
+   "lat": 48.564766,
+   "lon": -78.11275
+  },
+  {
+   "province": "QC",
+   "name": "Aylmer",
+   "query": "Aylmer",
+   "match": "exact",
+   "feature": "Aylmer",
+   "concise": "CITY",
+   "lat": 45.427929,
+   "lon": -75.710938
+  },
+  {
+   "province": "QC",
+   "name": "Baie-Comeau",
+   "query": "Baie-Comeau",
+   "match": "exact",
+   "feature": "Baie-Comeau",
+   "concise": "CITY",
+   "lat": 49.220927,
+   "lon": -68.149305
+  },
+  {
+   "province": "QC",
+   "name": "Baie-Saint-Paul",
+   "query": "Baie-Saint-Paul",
+   "match": "exact",
+   "feature": "Baie-Saint-Paul",
+   "concise": "CITY",
+   "lat": 47.440649,
+   "lon": -70.509461
+  },
+  {
+   "province": "QC",
+   "name": "Beauport",
+   "query": "Beauport",
+   "match": "exact",
+   "feature": "Beauport",
+   "concise": "CITY",
+   "lat": 46.813819,
+   "lon": -71.207997
+  },
+  {
+   "province": "QC",
+   "name": "Bedford",
+   "query": "Bedford",
+   "match": "exact",
+   "feature": "Bedford",
+   "concise": "CITY",
+   "lat": 45.120924,
+   "lon": -72.987621
+  },
+  {
+   "province": "QC",
+   "name": "Beloeil",
+   "query": "Beloeil",
+   "match": "fuzzy",
+   "feature": "Belœil",
+   "concise": "CITY",
+   "lat": 45.567054,
+   "lon": -73.202508
+  },
+  {
+   "province": "QC",
+   "name": "Brome",
+   "query": "Brome",
+   "match": "exact",
+   "feature": "Brome",
+   "concise": "TOWN",
+   "lat": 45.2,
+   "lon": -72.5666666
+  },
+  {
+   "province": "QC",
+   "name": "Brossard",
+   "query": "Brossard",
+   "match": "exact",
+   "feature": "Brossard",
+   "concise": "CITY",
+   "lat": 45.455263,
+   "lon": -73.467793
+  },
+  {
+   "province": "QC",
+   "name": "Buckingham",
+   "query": "Buckingham",
+   "match": "exact",
+   "feature": "Buckingham",
+   "concise": "CITY",
+   "lat": 45.427929,
+   "lon": -75.710938
+  },
+  {
+   "province": "QC",
+   "name": "Campbell's Bay",
+   "query": "Campbell's Bay",
+   "match": "exact",
+   "feature": "Campbell's Bay",
+   "concise": "TOWN",
+   "lat": 45.733068,
+   "lon": -76.59593
+  },
+  {
+   "province": "QC",
+   "name": "Chambly",
+   "query": "Chambly",
+   "match": "exact",
+   "feature": "Chambly",
+   "concise": "CITY",
+   "lat": 45.449074,
+   "lon": -73.291694
+  },
+  {
+   "province": "QC",
+   "name": "Coaticook",
+   "query": "Coaticook",
+   "match": "exact",
+   "feature": "Coaticook",
+   "concise": "CITY",
+   "lat": 45.134466,
+   "lon": -71.8048
+  },
+  {
+   "province": "QC",
+   "name": "Contrecoeur",
+   "query": "Contrecoeur",
+   "match": "fuzzy",
+   "feature": "Contrecœur",
+   "concise": "CITY",
+   "lat": 45.857261,
+   "lon": -73.239074
+  },
+  {
+   "province": "QC",
+   "name": "Cowansville",
+   "query": "Cowansville",
+   "match": "exact",
+   "feature": "Cowansville",
+   "concise": "CITY",
+   "lat": 45.2047,
+   "lon": -72.74086
+  },
+  {
+   "province": "QC",
+   "name": "Deux-Montagnes",
+   "query": "Deux-Montagnes",
+   "match": "exact",
+   "feature": "Deux-Montagnes",
+   "concise": "CITY",
+   "lat": 45.54183,
+   "lon": -73.89293
+  },
+  {
+   "province": "QC",
+   "name": "Dolbeau",
+   "query": "Dolbeau",
+   "match": "exact",
+   "feature": "Dolbeau",
+   "concise": "CITY",
+   "lat": 48.87651,
+   "lon": -72.225957
+  },
+  {
+   "province": "QC",
+   "name": "Drummondville",
+   "query": "Drummondville",
+   "match": "exact",
+   "feature": "Drummondville",
+   "concise": "CITY",
+   "lat": 45.880577,
+   "lon": -72.484058
+  },
+  {
+   "province": "QC",
+   "name": "Farnham",
+   "query": "Farnham",
+   "match": "exact",
+   "feature": "Farnham",
+   "concise": "CITY",
+   "lat": 45.283663,
+   "lon": -72.97691
+  },
+  {
+   "province": "QC",
+   "name": "Fort-Coulonge",
+   "query": "Fort-Coulonge",
+   "match": "exact",
+   "feature": "Fort-Coulonge",
+   "concise": "TOWN",
+   "lat": 45.841302,
+   "lon": -76.738055
+  },
+  {
+   "province": "QC",
+   "name": "Gagnon",
+   "query": "Gagnon",
+   "match": "exact",
+   "feature": "Gagnon",
+   "concise": "UNP",
+   "lat": 51.8916667,
+   "lon": -68.1652778
+  },
+  {
+   "province": "QC",
+   "name": "Gaspé",
+   "query": "Gaspé",
+   "match": "exact",
+   "feature": "Gaspé",
+   "concise": "CITY",
+   "lat": 48.824618,
+   "lon": -64.476254
+  },
+  {
+   "province": "QC",
+   "name": "Gatineau",
+   "query": "Gatineau",
+   "match": "exact",
+   "feature": "Gatineau",
+   "concise": "CITY",
+   "lat": 45.427929,
+   "lon": -75.710938
+  },
+  {
+   "province": "QC",
+   "name": "Gracefield",
+   "query": "Gracefield",
+   "match": "exact",
+   "feature": "Gracefield",
+   "concise": "CITY",
+   "lat": 46.081771,
+   "lon": -76.059772
+  },
+  {
+   "province": "QC",
+   "name": "Granby",
+   "query": "Granby",
+   "match": "exact",
+   "feature": "Granby",
+   "concise": "CITY",
+   "lat": 45.398555,
+   "lon": -72.722249
+  },
+  {
+   "province": "QC",
+   "name": "Harrington Harbour",
+   "query": "Harrington Harbour",
+   "match": "exact",
+   "feature": "Harrington Harbour",
+   "concise": "UNP",
+   "lat": 50.5,
+   "lon": -59.4797222
+  },
+  {
+   "province": "QC",
+   "name": "Havre-Saint-Pierre",
+   "query": "Havre-Saint-Pierre",
+   "match": "exact",
+   "feature": "Havre-Saint-Pierre",
+   "concise": "VILG",
+   "lat": 50.245021,
+   "lon": -63.59728
+  },
+  {
+   "province": "QC",
+   "name": "Hemmingford",
+   "query": "Hemmingford",
+   "match": "exact",
+   "feature": "Hemmingford",
+   "concise": "TOWN",
+   "lat": 45.05,
+   "lon": -73.5833333
+  },
+  {
+   "province": "QC",
+   "name": "Hull",
+   "query": "Hull",
+   "match": "exact",
+   "feature": "Hull",
+   "concise": "CITY",
+   "lat": 45.427929,
+   "lon": -75.710938
+  },
+  {
+   "province": "QC",
+   "name": "Iberville",
+   "query": "Iberville",
+   "match": "exact",
+   "feature": "Iberville",
+   "concise": "CITY",
+   "lat": 45.305672,
+   "lon": -73.253813
+  },
+  {
+   "province": "QC",
+   "name": "Inukjuak",
+   "query": "Inukjuak",
+   "match": "exact",
+   "feature": "Inukjuak",
+   "concise": "VILG",
+   "lat": 58.450611,
+   "lon": -78.109477
+  },
+  {
+   "province": "QC",
+   "name": "Joliette",
+   "query": "Joliette",
+   "match": "exact",
+   "feature": "Joliette",
+   "concise": "CITY",
+   "lat": 46.023541,
+   "lon": -73.442666
+  },
+  {
+   "province": "QC",
+   "name": "Kuujjuaq",
+   "query": "Kuujjuaq",
+   "match": "exact",
+   "feature": "Kuujjuaq",
+   "concise": "VILG",
+   "lat": 58.107516,
+   "lon": -68.399563
+  },
+  {
+   "province": "QC",
+   "name": "Kuujjuarapik",
+   "query": "Kuujjuarapik",
+   "match": "exact",
+   "feature": "Kuujjuarapik",
+   "concise": "VILG",
+   "lat": 55.2833333,
+   "lon": -77.75
+  },
+  {
+   "province": "QC",
+   "name": "Lachute",
+   "query": "Lachute",
+   "match": "exact",
+   "feature": "Lachute",
+   "concise": "CITY",
+   "lat": 45.6558,
+   "lon": -74.338846
+  },
+  {
+   "province": "QC",
+   "name": "Lac-Mégantic",
+   "query": "Lac-Mégantic",
+   "match": "exact",
+   "feature": "Lac-Mégantic",
+   "concise": "CITY",
+   "lat": 45.574216,
+   "lon": -70.882371
+  },
+  {
+   "province": "QC",
+   "name": "La Malbaie",
+   "query": "La Malbaie",
+   "match": "exact",
+   "feature": "La Malbaie",
+   "concise": "CITY",
+   "lat": 47.652419,
+   "lon": -70.14951
+  },
+  {
+   "province": "QC",
+   "name": "La Pocatière",
+   "query": "La Pocatière",
+   "match": "exact",
+   "feature": "La Pocatière",
+   "concise": "CITY",
+   "lat": 47.369974,
+   "lon": -70.032435
+  },
+  {
+   "province": "QC",
+   "name": "La Tuque",
+   "query": "La Tuque",
+   "match": "exact",
+   "feature": "La Tuque",
+   "concise": "CITY",
+   "lat": 47.44078,
+   "lon": -72.781466
+  },
+  {
+   "province": "QC",
+   "name": "Lennoxville",
+   "query": "Lennoxville",
+   "match": "exact",
+   "feature": "Lennoxville",
+   "concise": "CITY",
+   "lat": 45.404047,
+   "lon": -71.893171
+  },
+  {
+   "province": "QC",
+   "name": "Léry",
+   "query": "Léry",
+   "match": "exact",
+   "feature": "Léry",
+   "concise": "CITY",
+   "lat": 45.344824,
+   "lon": -73.806222
+  },
+  {
+   "province": "QC",
+   "name": "Loretteville",
+   "query": "Loretteville",
+   "match": "exact",
+   "feature": "Loretteville",
+   "concise": "CITY",
+   "lat": 46.813819,
+   "lon": -71.207997
+  },
+  {
+   "province": "QC",
+   "name": "Louiseville",
+   "query": "Louiseville",
+   "match": "exact",
+   "feature": "Louiseville",
+   "concise": "CITY",
+   "lat": 46.255777,
+   "lon": -72.942402
+  },
+  {
+   "province": "QC",
+   "name": "Magog",
+   "query": "Magog",
+   "match": "exact",
+   "feature": "Magog",
+   "concise": "CITY",
+   "lat": 45.264991,
+   "lon": -72.146858
+  },
+  {
+   "province": "QC",
+   "name": "Malartic",
+   "query": "Malartic",
+   "match": "exact",
+   "feature": "Malartic",
+   "concise": "CITY",
+   "lat": 48.136333,
+   "lon": -78.127413
+  },
+  {
+   "province": "QC",
+   "name": "Maniwaki",
+   "query": "Maniwaki",
+   "match": "exact",
+   "feature": "Maniwaki",
+   "concise": "CITY",
+   "lat": 46.374513,
+   "lon": -75.981891
+  },
+  {
+   "province": "QC",
+   "name": "Masson",
+   "query": "Masson",
+   "match": "exact",
+   "feature": "Masson",
+   "concise": "UNP",
+   "lat": 45.5444444,
+   "lon": -75.4208333
+  },
+  {
+   "province": "QC",
+   "name": "Matane",
+   "query": "Matane",
+   "match": "exact",
+   "feature": "Matane",
+   "concise": "CITY",
+   "lat": 48.843238,
+   "lon": -67.530435
+  },
+  {
+   "province": "QC",
+   "name": "Mont-Joli",
+   "query": "Mont-Joli",
+   "match": "exact",
+   "feature": "Mont-Joli",
+   "concise": "CITY",
+   "lat": 48.585358,
+   "lon": -68.189596
+  },
+  {
+   "province": "QC",
+   "name": "Mont-Laurier",
+   "query": "Mont-Laurier",
+   "match": "exact",
+   "feature": "Mont-Laurier",
+   "concise": "CITY",
+   "lat": 46.548144,
+   "lon": -75.503619
+  },
+  {
+   "province": "QC",
+   "name": "Montmagny",
+   "query": "Montmagny",
+   "match": "exact",
+   "feature": "Montmagny",
+   "concise": "CITY",
+   "lat": 46.981118,
+   "lon": -70.557452
+  },
+  {
+   "province": "QC",
+   "name": "Beaconsfield",
+   "query": "Beaconsfield",
+   "match": "exact",
+   "feature": "Beaconsfield",
+   "concise": "CITY",
+   "lat": 45.42416,
+   "lon": -73.866391
+  },
+  {
+   "province": "QC",
+   "name": "Dorval",
+   "query": "Dorval",
+   "match": "exact",
+   "feature": "Dorval",
+   "concise": "CITY",
+   "lat": 45.439263,
+   "lon": -73.730435
+  },
+  {
+   "province": "QC",
+   "name": "Laval",
+   "query": "Laval",
+   "match": "exact",
+   "feature": "Laval",
+   "concise": "CITY",
+   "lat": 45.551538,
+   "lon": -73.744616
+  },
+  {
+   "province": "QC",
+   "name": "Montréal (City Hall)",
+   "query": "Montréal",
+   "match": "exact",
+   "feature": "Montréal",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Montréal-Est",
+   "query": "Montréal-Est",
+   "match": "exact",
+   "feature": "Montréal-Est",
+   "concise": "CITY",
+   "lat": 45.631307,
+   "lon": -73.49556
+  },
+  {
+   "province": "QC",
+   "name": "Montréal-Nord",
+   "query": "Montréal-Nord",
+   "match": "exact",
+   "feature": "Montréal-Nord",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Outremont",
+   "query": "Outremont",
+   "match": "exact",
+   "feature": "Outremont",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Pierrefonds",
+   "query": "Pierrefonds",
+   "match": "exact",
+   "feature": "Pierrefonds",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Sainte-Anne-de-Bellevue",
+   "query": "Sainte-Anne-de-Bellevue",
+   "match": "exact",
+   "feature": "Sainte-Anne-de-Bellevue",
+   "concise": "CITY",
+   "lat": 45.403855,
+   "lon": -73.952397
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Lambert",
+   "query": "Saint-Lambert",
+   "match": "exact",
+   "feature": "Saint-Lambert",
+   "concise": "CITY",
+   "lat": 45.501577,
+   "lon": -73.513108
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Laurent",
+   "query": "Saint-Laurent",
+   "match": "exact",
+   "feature": "Saint-Laurent",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Verdun",
+   "query": "Verdun",
+   "match": "exact",
+   "feature": "Verdun",
+   "concise": "CITY",
+   "lat": 45.508822,
+   "lon": -73.554077
+  },
+  {
+   "province": "QC",
+   "name": "Nicolet (Gentilly)",
+   "query": "Gentilly",
+   "match": "exact",
+   "feature": "Gentilly",
+   "concise": "UNP",
+   "lat": 46.4,
+   "lon": -72.275
+  },
+  {
+   "province": "QC",
+   "name": "Nitchequon",
+   "query": "Nitchequon",
+   "match": "exact",
+   "feature": "Nitchequon",
+   "concise": "UNP",
+   "lat": 53.19701,
+   "lon": -70.90478
+  },
+  {
+   "province": "QC",
+   "name": "Noranda",
+   "query": "Noranda",
+   "match": "fuzzy",
+   "feature": "Rouyn-Noranda",
+   "concise": "CITY",
+   "lat": 48.2372222,
+   "lon": -79.0169444
+  },
+  {
+   "province": "QC",
+   "name": "Percé",
+   "query": "Percé",
+   "match": "exact",
+   "feature": "Percé",
+   "concise": "CITY",
+   "lat": 48.523902,
+   "lon": -64.210738
+  },
+  {
+   "province": "QC",
+   "name": "Pincourt",
+   "query": "Pincourt",
+   "match": "exact",
+   "feature": "Pincourt",
+   "concise": "CITY",
+   "lat": 45.357091,
+   "lon": -73.982202
+  },
+  {
+   "province": "QC",
+   "name": "Plessisville",
+   "query": "Plessisville",
+   "match": "exact",
+   "feature": "Plessisville",
+   "concise": "CITY",
+   "lat": 46.218729,
+   "lon": -71.771721
+  },
+  {
+   "province": "QC",
+   "name": "Port-Cartier",
+   "query": "Port-Cartier",
+   "match": "exact",
+   "feature": "Port-Cartier",
+   "concise": "CITY",
+   "lat": 50.018785,
+   "lon": -66.875382
+  },
+  {
+   "province": "QC",
+   "name": "Puvirnituq",
+   "query": "Puvirnituq",
+   "match": "exact",
+   "feature": "Puvirnituq",
+   "concise": "VILG",
+   "lat": 60.035527,
+   "lon": -77.274321
+  },
+  {
+   "province": "QC",
+   "name": "Ancienne-Lorette",
+   "query": "Ancienne-Lorette",
+   "match": "fuzzy",
+   "feature": "L'Ancienne-Lorette",
+   "concise": "CITY",
+   "lat": 46.79873,
+   "lon": -71.36255
+  },
+  {
+   "province": "QC",
+   "name": "Lévis",
+   "query": "Lévis",
+   "match": "exact",
+   "feature": "Lévis",
+   "concise": "CITY",
+   "lat": 46.758172,
+   "lon": -71.240366
+  },
+  {
+   "province": "QC",
+   "name": "Sainte-Foy",
+   "query": "Sainte-Foy",
+   "match": "exact",
+   "feature": "Sainte-Foy",
+   "concise": "CITY",
+   "lat": 46.813819,
+   "lon": -71.207997
+  },
+  {
+   "province": "QC",
+   "name": "Sillery",
+   "query": "Sillery",
+   "match": "exact",
+   "feature": "Sillery",
+   "concise": "CITY",
+   "lat": 46.813819,
+   "lon": -71.207997
+  },
+  {
+   "province": "QC",
+   "name": "Richmond",
+   "query": "Richmond",
+   "match": "exact",
+   "feature": "Richmond",
+   "concise": "CITY",
+   "lat": 45.665505,
+   "lon": -72.147171
+  },
+  {
+   "province": "QC",
+   "name": "Rimouski",
+   "query": "Rimouski",
+   "match": "exact",
+   "feature": "Rimouski",
+   "concise": "CITY",
+   "lat": 48.449138,
+   "lon": -68.525096
+  },
+  {
+   "province": "QC",
+   "name": "Rivière-du-Loup",
+   "query": "Rivière-du-Loup",
+   "match": "exact",
+   "feature": "Rivière-du-Loup",
+   "concise": "CITY",
+   "lat": 47.835752,
+   "lon": -69.536608
+  },
+  {
+   "province": "QC",
+   "name": "Roberval",
+   "query": "Roberval",
+   "match": "exact",
+   "feature": "Roberval",
+   "concise": "CITY",
+   "lat": 48.517771,
+   "lon": -72.221996
+  },
+  {
+   "province": "QC",
+   "name": "Rock Island",
+   "query": "Rock Island",
+   "match": "exact",
+   "feature": "Rock Island",
+   "concise": "CITY",
+   "lat": 45.010663,
+   "lon": -72.097502
+  },
+  {
+   "province": "QC",
+   "name": "Rosemère",
+   "query": "Rosemère",
+   "match": "exact",
+   "feature": "Rosemère",
+   "concise": "CITY",
+   "lat": 45.639041,
+   "lon": -73.78508
+  },
+  {
+   "province": "QC",
+   "name": "Rouyn",
+   "query": "Rouyn",
+   "match": "fuzzy",
+   "feature": "Rouyn-Noranda",
+   "concise": "CITY",
+   "lat": 48.2372222,
+   "lon": -79.0169444
+  },
+  {
+   "province": "QC",
+   "name": "Saguenay",
+   "query": "Saguenay",
+   "match": "exact",
+   "feature": "Saguenay",
+   "concise": "CITY",
+   "lat": 48.428221,
+   "lon": -71.062202
+  },
+  {
+   "province": "QC",
+   "name": "Saguenay (Bagotville)",
+   "query": "Bagotville",
+   "match": "exact",
+   "feature": "Bagotville",
+   "concise": "UNP",
+   "lat": 48.342778,
+   "lon": -70.893611
+  },
+  {
+   "province": "QC",
+   "name": "Saguenay (Jonquière)",
+   "query": "Jonquière",
+   "match": "exact",
+   "feature": "Jonquière",
+   "concise": "CITY",
+   "lat": 48.428221,
+   "lon": -71.062202
+  },
+  {
+   "province": "QC",
+   "name": "Saguenay (Kénogami)",
+   "query": "Kénogami",
+   "match": "exact",
+   "feature": "Kénogami",
+   "concise": "UNP",
+   "lat": 48.433333,
+   "lon": -71.230556
+  },
+  {
+   "province": "QC",
+   "name": "Sainte-Agathe-des-Monts",
+   "query": "Sainte-Agathe-des-Monts",
+   "match": "exact",
+   "feature": "Sainte-Agathe-des-Monts",
+   "concise": "CITY",
+   "lat": 46.04763,
+   "lon": -74.283649
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Eustache",
+   "query": "Saint-Eustache",
+   "match": "exact",
+   "feature": "Saint-Eustache",
+   "concise": "CITY",
+   "lat": 45.557622,
+   "lon": -73.888638
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Félicien",
+   "query": "Saint-Félicien",
+   "match": "exact",
+   "feature": "Saint-Félicien",
+   "concise": "CITY",
+   "lat": 48.652725,
+   "lon": -72.446691
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Georges-de-Cacouna",
+   "query": "Saint-Georges-de-Cacouna",
+   "match": "exact",
+   "feature": "Saint-Georges-de-Cacouna",
+   "concise": "TOWN",
+   "lat": 47.916394,
+   "lon": -69.499666
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Hubert",
+   "query": "Saint-Hubert",
+   "match": "exact",
+   "feature": "Saint-Hubert",
+   "concise": "CITY",
+   "lat": 45.513947,
+   "lon": -73.431493
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Hubert-de-Rivière-du-Loup",
+   "query": "Saint-Hubert-de-Rivière-du-Loup",
+   "match": "exact",
+   "feature": "Saint-Hubert-de-Rivière-du-Loup",
+   "concise": "VILG",
+   "lat": 47.8166667,
+   "lon": -69.15
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Hyacinthe",
+   "query": "Saint-Hyacinthe",
+   "match": "exact",
+   "feature": "Saint-Hyacinthe",
+   "concise": "CITY",
+   "lat": 45.625902,
+   "lon": -72.946463
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Jean-sur-Richelieu",
+   "query": "Saint-Jean-sur-Richelieu",
+   "match": "exact",
+   "feature": "Saint-Jean-sur-Richelieu",
+   "concise": "CITY",
+   "lat": 45.305672,
+   "lon": -73.253813
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Jérôme",
+   "query": "Saint-Jérôme",
+   "match": "exact",
+   "feature": "Saint-Jérôme",
+   "concise": "CITY",
+   "lat": 45.775252,
+   "lon": -74.003708
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Jovite",
+   "query": "Saint-Jovite",
+   "match": "exact",
+   "feature": "Saint-Jovite",
+   "concise": "CITY",
+   "lat": 46.118146,
+   "lon": -74.600227
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Lazare / Hudson",
+   "query": "Saint-Lazare",
+   "match": "exact",
+   "feature": "Saint-Lazare",
+   "concise": "CITY",
+   "lat": 45.399369,
+   "lon": -74.141227
+  },
+  {
+   "province": "QC",
+   "name": "Saint-Nicolas",
+   "query": "Saint-Nicolas",
+   "match": "exact",
+   "feature": "Saint-Nicolas",
+   "concise": "CITY",
+   "lat": 46.758172,
+   "lon": -71.240366
+  },
+  {
+   "province": "QC",
+   "name": "Salaberry-de-Valleyfield",
+   "query": "Salaberry-de-Valleyfield",
+   "match": "exact",
+   "feature": "Salaberry-de-Valleyfield",
+   "concise": "CITY",
+   "lat": 45.255397,
+   "lon": -74.131552
+  },
+  {
+   "province": "QC",
+   "name": "Schefferville",
+   "query": "Schefferville",
+   "match": "exact",
+   "feature": "Schefferville",
+   "concise": "CITY",
+   "lat": 54.800519,
+   "lon": -66.821102
+  },
+  {
+   "province": "QC",
+   "name": "Senneterre",
+   "query": "Senneterre",
+   "match": "exact",
+   "feature": "Senneterre",
+   "concise": "CITY",
+   "lat": 48.390435,
+   "lon": -77.240452
+  },
+  {
+   "province": "QC",
+   "name": "Sept-Îles",
+   "query": "Sept-Îles",
+   "match": "exact",
+   "feature": "Sept-Îles",
+   "concise": "CITY",
+   "lat": 50.209655,
+   "lon": -66.38518
+  },
+  {
+   "province": "QC",
+   "name": "Shawinigan",
+   "query": "Shawinigan",
+   "match": "exact",
+   "feature": "Shawinigan",
+   "concise": "CITY",
+   "lat": 46.541088,
+   "lon": -72.74521
+  },
+  {
+   "province": "QC",
+   "name": "Shawville",
+   "query": "Shawville",
+   "match": "exact",
+   "feature": "Shawville",
+   "concise": "TOWN",
+   "lat": 45.603508,
+   "lon": -76.491769
+  },
+  {
+   "province": "QC",
+   "name": "Sherbrooke",
+   "query": "Sherbrooke",
+   "match": "exact",
+   "feature": "Sherbrooke",
+   "concise": "CITY",
+   "lat": 45.404047,
+   "lon": -71.893171
+  },
+  {
+   "province": "QC",
+   "name": "Sorel",
+   "query": "Sorel",
+   "match": "exact",
+   "feature": "Sorel",
+   "concise": "CITY",
+   "lat": 46.0436111,
+   "lon": -73.1130556
+  },
+  {
+   "province": "QC",
+   "name": "Sutton",
+   "query": "Sutton",
+   "match": "exact",
+   "feature": "Sutton",
+   "concise": "CITY",
+   "lat": 45.105991,
+   "lon": -72.615552
+  },
+  {
+   "province": "QC",
+   "name": "Tadoussac",
+   "query": "Tadoussac",
+   "match": "exact",
+   "feature": "Tadoussac",
+   "concise": "TOWN",
+   "lat": 48.15,
+   "lon": -69.7166667
+  },
+  {
+   "province": "QC",
+   "name": "Témiscaming",
+   "query": "Témiscaming",
+   "match": "exact",
+   "feature": "Témiscaming",
+   "concise": "CITY",
+   "lat": 46.722071,
+   "lon": -79.093116
+  },
+  {
+   "province": "QC",
+   "name": "Terrebonne",
+   "query": "Terrebonne",
+   "match": "exact",
+   "feature": "Terrebonne",
+   "concise": "CITY",
+   "lat": 45.691538,
+   "lon": -73.634302
+  },
+  {
+   "province": "QC",
+   "name": "Thetford Mines",
+   "query": "Thetford Mines",
+   "match": "exact",
+   "feature": "Thetford Mines",
+   "concise": "CITY",
+   "lat": 46.088908,
+   "lon": -71.301952
+  },
+  {
+   "province": "QC",
+   "name": "Thurso",
+   "query": "Thurso",
+   "match": "exact",
+   "feature": "Thurso",
+   "concise": "CITY",
+   "lat": 45.599449,
+   "lon": -75.243324
+  },
+  {
+   "province": "QC",
+   "name": "Trois-Rivières",
+   "query": "Trois-Rivières",
+   "match": "exact",
+   "feature": "Trois-Rivières",
+   "concise": "CITY",
+   "lat": 46.343077,
+   "lon": -72.543383
+  },
+  {
+   "province": "QC",
+   "name": "Val-des-Sources",
+   "query": "Val-des-Sources",
+   "match": "exact",
+   "feature": "Val-des-Sources",
+   "concise": "CITY",
+   "lat": 45.7774,
+   "lon": -71.9384
+  },
+  {
+   "province": "QC",
+   "name": "Val-d'Or",
+   "query": "Val-d'Or",
+   "match": "exact",
+   "feature": "Val-d'Or",
+   "concise": "CITY",
+   "lat": 48.102044,
+   "lon": -77.789358
+  },
+  {
+   "province": "QC",
+   "name": "Varennes",
+   "query": "Varennes",
+   "match": "exact",
+   "feature": "Varennes",
+   "concise": "CITY",
+   "lat": 45.6825,
+   "lon": -73.4408333
+  },
+  {
+   "province": "QC",
+   "name": "Verchères",
+   "query": "Verchères",
+   "match": "exact",
+   "feature": "Verchères",
+   "concise": "VILG",
+   "lat": 45.7758333,
+   "lon": -73.3575
+  },
+  {
+   "province": "QC",
+   "name": "Victoriaville",
+   "query": "Victoriaville",
+   "match": "exact",
+   "feature": "Victoriaville",
+   "concise": "CITY",
+   "lat": 46.055183,
+   "lon": -71.959997
+  },
+  {
+   "province": "QC",
+   "name": "Ville-Marie",
+   "query": "Ville-Marie",
+   "match": "exact",
+   "feature": "Ville-Marie",
+   "concise": "CITY",
+   "lat": 47.329016,
+   "lon": -79.437221
+  },
+  {
+   "province": "QC",
+   "name": "Wakefield",
+   "query": "Wakefield",
+   "match": "exact",
+   "feature": "Wakefield",
+   "concise": "TOWN",
+   "lat": 45.641916,
+   "lon": -76.037338
+  },
+  {
+   "province": "QC",
+   "name": "Waterloo",
+   "query": "Waterloo",
+   "match": "exact",
+   "feature": "Waterloo",
+   "concise": "CITY",
+   "lat": 45.344921,
+   "lon": -72.515488
+  },
+  {
+   "province": "QC",
+   "name": "Windsor",
+   "query": "Windsor",
+   "match": "exact",
+   "feature": "Windsor",
+   "concise": "CITY",
+   "lat": 45.569038,
+   "lon": -72.005566
+  },
+  {
+   "province": "NB",
+   "name": "Alma",
+   "query": "Alma",
+   "match": "exact",
+   "feature": "Alma",
+   "concise": "UNP",
+   "lat": 45.651667,
+   "lon": -64.925
+  },
+  {
+   "province": "NB",
+   "name": "Bathurst",
+   "query": "Bathurst",
+   "match": "exact",
+   "feature": "Bathurst",
+   "concise": "CITY",
+   "lat": 47.626111,
+   "lon": -65.628333
+  },
+  {
+   "province": "NB",
+   "name": "Boiestown",
+   "query": "Boiestown",
+   "match": "exact",
+   "feature": "Boiestown",
+   "concise": "UNP",
+   "lat": 46.456928,
+   "lon": -66.416343
+  },
+  {
+   "province": "NB",
+   "name": "Campbellton",
+   "query": "Campbellton",
+   "match": "exact",
+   "feature": "Campbellton",
+   "concise": "CITY",
+   "lat": 47.999336,
+   "lon": -66.683511
+  },
+  {
+   "province": "NB",
+   "name": "Edmundston",
+   "query": "Edmundston",
+   "match": "exact",
+   "feature": "Edmundston",
+   "concise": "CITY",
+   "lat": 47.377222,
+   "lon": -68.294444
+  },
+  {
+   "province": "NB",
+   "name": "Fredericton",
+   "query": "Fredericton",
+   "match": "exact",
+   "feature": "Fredericton",
+   "concise": "CITY",
+   "lat": 45.945278,
+   "lon": -66.666667
+  },
+  {
+   "province": "NB",
+   "name": "Gagetown",
+   "query": "Gagetown",
+   "match": "exact",
+   "feature": "Gagetown",
+   "concise": "UNP",
+   "lat": 45.77,
+   "lon": -66.162778
+  },
+  {
+   "province": "NB",
+   "name": "Grand Falls",
+   "query": "Grand Falls",
+   "match": "exact",
+   "feature": "Grand Falls",
+   "concise": "TOWN",
+   "lat": 47.0525,
+   "lon": -67.735
+  },
+  {
+   "province": "NB",
+   "name": "Miramichi",
+   "query": "Miramichi",
+   "match": "exact",
+   "feature": "Miramichi",
+   "concise": "CITY",
+   "lat": 47.004167,
+   "lon": -65.466667
+  },
+  {
+   "province": "NB",
+   "name": "Moncton",
+   "query": "Moncton",
+   "match": "exact",
+   "feature": "Moncton",
+   "concise": "CITY",
+   "lat": 46.099479,
+   "lon": -64.799802
+  },
+  {
+   "province": "NB",
+   "name": "Oromocto",
+   "query": "Oromocto",
+   "match": "exact",
+   "feature": "Oromocto",
+   "concise": "TOWN",
+   "lat": 45.847602,
+   "lon": -66.470851
+  },
+  {
+   "province": "NB",
+   "name": "Sackville",
+   "query": "Sackville",
+   "match": "exact",
+   "feature": "Sackville",
+   "concise": "UNP",
+   "lat": 45.918611,
+   "lon": -64.385833
+  },
+  {
+   "province": "NB",
+   "name": "Saint Andrews",
+   "query": "Saint Andrews",
+   "match": "exact",
+   "feature": "Saint Andrews",
+   "concise": "TOWN",
+   "lat": 45.079907,
+   "lon": -67.058373
+  },
+  {
+   "province": "NB",
+   "name": "Saint John",
+   "query": "Saint John",
+   "match": "exact",
+   "feature": "Saint John",
+   "concise": "CITY",
+   "lat": 45.259167,
+   "lon": -66.038889
+  },
+  {
+   "province": "NB",
+   "name": "Shippagan",
+   "query": "Shippagan",
+   "match": "exact",
+   "feature": "Shippagan",
+   "concise": "TOWN",
+   "lat": 47.735556,
+   "lon": -64.723611
+  },
+  {
+   "province": "NB",
+   "name": "St. George",
+   "query": "St. George",
+   "match": "exact",
+   "feature": "St. George",
+   "concise": "UNP",
+   "lat": 45.132014,
+   "lon": -66.820232
+  },
+  {
+   "province": "NB",
+   "name": "St. Stephen",
+   "query": "St. Stephen",
+   "match": "exact",
+   "feature": "St. Stephen",
+   "concise": "TOWN",
+   "lat": 45.180278,
+   "lon": -67.296389
+  },
+  {
+   "province": "NB",
+   "name": "Woodstock",
+   "query": "Woodstock",
+   "match": "exact",
+   "feature": "Woodstock",
+   "concise": "TOWN",
+   "lat": 46.152222,
+   "lon": -67.598333
+  },
+  {
+   "province": "NS",
+   "name": "Amherst",
+   "query": "Amherst",
+   "match": "exact",
+   "feature": "Amherst",
+   "concise": "TOWN",
+   "lat": 45.833392,
+   "lon": -64.212968
+  },
+  {
+   "province": "NS",
+   "name": "Antigonish",
+   "query": "Antigonish",
+   "match": "exact",
+   "feature": "Antigonish",
+   "concise": "TOWN",
+   "lat": 45.622765,
+   "lon": -61.991581
+  },
+  {
+   "province": "NS",
+   "name": "Bridgewater",
+   "query": "Bridgewater",
+   "match": "exact",
+   "feature": "Bridgewater",
+   "concise": "TOWN",
+   "lat": 44.377498,
+   "lon": -64.518605
+  },
+  {
+   "province": "NS",
+   "name": "Canso",
+   "query": "Canso",
+   "match": "exact",
+   "feature": "Canso",
+   "concise": "UNP",
+   "lat": 45.337408,
+   "lon": -60.99621
+  },
+  {
+   "province": "NS",
+   "name": "Debert",
+   "query": "Debert",
+   "match": "exact",
+   "feature": "Debert",
+   "concise": "UNP",
+   "lat": 45.437701,
+   "lon": -63.458516
+  },
+  {
+   "province": "NS",
+   "name": "Digby",
+   "query": "Digby",
+   "match": "exact",
+   "feature": "Digby",
+   "concise": "TOWN",
+   "lat": 44.620795,
+   "lon": -65.758442
+  },
+  {
+   "province": "NS",
+   "name": "Halifax Region",
+   "query": "Halifax",
+   "match": "exact",
+   "feature": "Halifax",
+   "concise": "UNP",
+   "lat": 44.647401,
+   "lon": -63.590651
+  },
+  {
+   "province": "NS",
+   "name": "Dartmouth",
+   "query": "Dartmouth",
+   "match": "exact",
+   "feature": "Dartmouth",
+   "concise": "UNP",
+   "lat": 44.670036,
+   "lon": -63.577577
+  },
+  {
+   "province": "NS",
+   "name": "Halifax",
+   "query": "Halifax",
+   "match": "exact",
+   "feature": "Halifax",
+   "concise": "UNP",
+   "lat": 44.647401,
+   "lon": -63.590651
+  },
+  {
+   "province": "NS",
+   "name": "Kentville",
+   "query": "Kentville",
+   "match": "exact",
+   "feature": "Kentville",
+   "concise": "TOWN",
+   "lat": 45.077707,
+   "lon": -64.495306
+  },
+  {
+   "province": "NS",
+   "name": "Liverpool",
+   "query": "Liverpool",
+   "match": "exact",
+   "feature": "Liverpool",
+   "concise": "UNP",
+   "lat": 44.039147,
+   "lon": -64.714759
+  },
+  {
+   "province": "NS",
+   "name": "Lockeport",
+   "query": "Lockeport",
+   "match": "exact",
+   "feature": "Lockeport",
+   "concise": "TOWN",
+   "lat": 43.698733,
+   "lon": -65.113322
+  },
+  {
+   "province": "NS",
+   "name": "Louisbourg",
+   "query": "Louisbourg",
+   "match": "exact",
+   "feature": "Louisbourg",
+   "concise": "UNP",
+   "lat": 45.919865,
+   "lon": -59.972807
+  },
+  {
+   "province": "NS",
+   "name": "Lunenburg",
+   "query": "Lunenburg",
+   "match": "exact",
+   "feature": "Lunenburg",
+   "concise": "TOWN",
+   "lat": 44.377896,
+   "lon": -64.309529
+  },
+  {
+   "province": "NS",
+   "name": "New Glasgow",
+   "query": "New Glasgow",
+   "match": "exact",
+   "feature": "New Glasgow",
+   "concise": "TOWN",
+   "lat": 45.589332,
+   "lon": -62.64479
+  },
+  {
+   "province": "NS",
+   "name": "North Sydney",
+   "query": "North Sydney",
+   "match": "exact",
+   "feature": "North Sydney",
+   "concise": "UNP",
+   "lat": 46.207766,
+   "lon": -60.254894
+  },
+  {
+   "province": "NS",
+   "name": "Pictou",
+   "query": "Pictou",
+   "match": "exact",
+   "feature": "Pictou",
+   "concise": "TOWN",
+   "lat": 45.676017,
+   "lon": -62.708861
+  },
+  {
+   "province": "NS",
+   "name": "Port Hawkesbury",
+   "query": "Port Hawkesbury",
+   "match": "exact",
+   "feature": "Port Hawkesbury",
+   "concise": "TOWN",
+   "lat": 45.616462,
+   "lon": -61.356262
+  },
+  {
+   "province": "NS",
+   "name": "Springhill",
+   "query": "Springhill",
+   "match": "exact",
+   "feature": "Springhill",
+   "concise": "UNP",
+   "lat": 45.650675,
+   "lon": -64.056904
+  },
+  {
+   "province": "NS",
+   "name": "Stewiacke",
+   "query": "Stewiacke",
+   "match": "exact",
+   "feature": "Stewiacke",
+   "concise": "TOWN",
+   "lat": 45.138517,
+   "lon": -63.346097
+  },
+  {
+   "province": "NS",
+   "name": "Sydney",
+   "query": "Sydney",
+   "match": "exact",
+   "feature": "Sydney",
+   "concise": "UNP",
+   "lat": 46.137925,
+   "lon": -60.195727
+  },
+  {
+   "province": "NS",
+   "name": "Tatamagouche",
+   "query": "Tatamagouche",
+   "match": "exact",
+   "feature": "Tatamagouche",
+   "concise": "VILG",
+   "lat": 45.71214,
+   "lon": -63.291092
+  },
+  {
+   "province": "NS",
+   "name": "Truro",
+   "query": "Truro",
+   "match": "exact",
+   "feature": "Truro",
+   "concise": "TOWN",
+   "lat": 45.364959,
+   "lon": -63.279847
+  },
+  {
+   "province": "NS",
+   "name": "Wolfville",
+   "query": "Wolfville",
+   "match": "exact",
+   "feature": "Wolfville",
+   "concise": "TOWN",
+   "lat": 45.091713,
+   "lon": -64.359242
+  },
+  {
+   "province": "NS",
+   "name": "Yarmouth",
+   "query": "Yarmouth",
+   "match": "exact",
+   "feature": "Yarmouth",
+   "concise": "TOWN",
+   "lat": 43.838654,
+   "lon": -66.115223
+  },
+  {
+   "province": "PE",
+   "name": "Charlottetown",
+   "query": "Charlottetown",
+   "match": "exact",
+   "feature": "Charlottetown",
+   "concise": "CITY",
+   "lat": 46.240278,
+   "lon": -63.134722
+  },
+  {
+   "province": "PE",
+   "name": "Souris",
+   "query": "Souris",
+   "match": "exact",
+   "feature": "Souris",
+   "concise": "TOWN",
+   "lat": 46.354462,
+   "lon": -62.25164
+  },
+  {
+   "province": "PE",
+   "name": "Summerside",
+   "query": "Summerside",
+   "match": "exact",
+   "feature": "Summerside",
+   "concise": "CITY",
+   "lat": 46.395833,
+   "lon": -63.788889
+  },
+  {
+   "province": "PE",
+   "name": "Tignish",
+   "query": "Tignish",
+   "match": "exact",
+   "feature": "Tignish",
+   "concise": "TOWN",
+   "lat": 46.950493,
+   "lon": -64.033583
+  },
+  {
+   "province": "NL",
+   "name": "Argentia",
+   "query": "Argentia",
+   "match": "exact",
+   "feature": "Argentia",
+   "concise": "UNP",
+   "lat": 47.2980555,
+   "lon": -53.9855556
+  },
+  {
+   "province": "NL",
+   "name": "Bonavista",
+   "query": "Bonavista",
+   "match": "exact",
+   "feature": "Bonavista",
+   "concise": "TOWN",
+   "lat": 48.6317917,
+   "lon": -53.1041333
+  },
+  {
+   "province": "NL",
+   "name": "Buchans",
+   "query": "Buchans",
+   "match": "exact",
+   "feature": "Buchans",
+   "concise": "TOWN",
+   "lat": 48.8238,
+   "lon": -56.8490694
+  },
+  {
+   "province": "NL",
+   "name": "Cape Harrison",
+   "query": "Cape Harrison",
+   "match": "feature",
+   "feature": "Cape Harrison",
+   "concise": "CAPE",
+   "lat": 54.9268212,
+   "lon": -57.9361222
+  },
+  {
+   "province": "NL",
+   "name": "Cape Race",
+   "query": "Cape Race",
+   "match": "exact",
+   "feature": "Cape Race",
+   "concise": "UNP",
+   "lat": 46.6597222,
+   "lon": -53.0736111
+  },
+  {
+   "province": "NL",
+   "name": "Channel-Port aux Basques",
+   "query": "Channel-Port aux Basques",
+   "match": "exact",
+   "feature": "Channel-Port aux Basques",
+   "concise": "TOWN",
+   "lat": 47.5955806,
+   "lon": -59.1352917
+  },
+  {
+   "province": "NL",
+   "name": "Corner Brook",
+   "query": "Corner Brook",
+   "match": "exact",
+   "feature": "Corner Brook",
+   "concise": "CITY",
+   "lat": 48.941111,
+   "lon": -57.970278
+  },
+  {
+   "province": "NL",
+   "name": "Gander",
+   "query": "Gander",
+   "match": "exact",
+   "feature": "Gander",
+   "concise": "TOWN",
+   "lat": 48.957189,
+   "lon": -54.588561
+  },
+  {
+   "province": "NL",
+   "name": "Grand Bank",
+   "query": "Grand Bank",
+   "match": "exact",
+   "feature": "Grand Bank",
+   "concise": "TOWN",
+   "lat": 47.088906,
+   "lon": -55.755111
+  },
+  {
+   "province": "NL",
+   "name": "Grand Falls",
+   "query": "Grand Falls",
+   "match": "exact",
+   "feature": "Grand Falls",
+   "concise": "UNP",
+   "lat": 48.9330556,
+   "lon": -55.6513889
+  },
+  {
+   "province": "NL",
+   "name": "Happy Valley-Goose Bay",
+   "query": "Happy Valley-Goose Bay",
+   "match": "exact",
+   "feature": "Happy Valley - Goose Bay",
+   "concise": "TOWN",
+   "lat": 53.341739,
+   "lon": -60.448803
+  },
+  {
+   "province": "NL",
+   "name": "Labrador City",
+   "query": "Labrador City",
+   "match": "exact",
+   "feature": "Labrador City",
+   "concise": "TOWN",
+   "lat": 52.9605694,
+   "lon": -66.9365973
+  },
+  {
+   "province": "NL",
+   "name": "St. Anthony",
+   "query": "St. Anthony",
+   "match": "exact",
+   "feature": "St. Anthony",
+   "concise": "TOWN",
+   "lat": 51.374936,
+   "lon": -55.616405
+  },
+  {
+   "province": "NL",
+   "name": "Stephenville",
+   "query": "Stephenville",
+   "match": "exact",
+   "feature": "Stephenville",
+   "concise": "TOWN",
+   "lat": 48.5476139,
+   "lon": -58.5475556
+  },
+  {
+   "province": "NL",
+   "name": "St. John's",
+   "query": "St. John's",
+   "match": "exact",
+   "feature": "St. John's",
+   "concise": "CITY",
+   "lat": 47.482197,
+   "lon": -52.797069
+  },
+  {
+   "province": "NL",
+   "name": "Twin Falls",
+   "query": "Twin Falls",
+   "match": "exact",
+   "feature": "Twin Falls",
+   "concise": "UNP",
+   "lat": 53.5,
+   "lon": -64.5325
+  },
+  {
+   "province": "NL",
+   "name": "Wabana",
+   "query": "Wabana",
+   "match": "exact",
+   "feature": "Wabana",
+   "concise": "TOWN",
+   "lat": 47.6394722,
+   "lon": -52.9476666
+  },
+  {
+   "province": "NL",
+   "name": "Wabush",
+   "query": "Wabush",
+   "match": "exact",
+   "feature": "Wabush",
+   "concise": "TOWN",
+   "lat": 52.872,
+   "lon": -66.8909194
+  },
+  {
+   "province": "YT",
+   "name": "Aishihik",
+   "query": "Aishihik",
+   "match": "exact",
+   "feature": "Aishihik",
+   "concise": "UNP",
+   "lat": 61.5977776,
+   "lon": -137.5063888
+  },
+  {
+   "province": "YT",
+   "name": "Dawson",
+   "query": "Dawson",
+   "match": "exact",
+   "feature": "Dawson",
+   "concise": "TOWN",
+   "lat": 64.06,
+   "lon": -139.431944
+  },
+  {
+   "province": "YT",
+   "name": "Destruction Bay",
+   "query": "Destruction Bay",
+   "match": "exact",
+   "feature": "Destruction Bay",
+   "concise": "UNP",
+   "lat": 61.2519513,
+   "lon": -138.8043868
+  },
+  {
+   "province": "YT",
+   "name": "Faro",
+   "query": "Faro",
+   "match": "exact",
+   "feature": "Faro",
+   "concise": "TOWN",
+   "lat": 62.2263889,
+   "lon": -133.3558333
+  },
+  {
+   "province": "YT",
+   "name": "Haines Junction",
+   "query": "Haines Junction",
+   "match": "exact",
+   "feature": "Haines Junction",
+   "concise": "VILG",
+   "lat": 60.7536111,
+   "lon": -137.5108333
+  },
+  {
+   "province": "YT",
+   "name": "Snag",
+   "query": "Snag",
+   "match": "exact",
+   "feature": "Snag",
+   "concise": "UNP",
+   "lat": 62.4005556,
+   "lon": -140.3638889
+  },
+  {
+   "province": "YT",
+   "name": "Teslin",
+   "query": "Teslin",
+   "match": "exact",
+   "feature": "Teslin",
+   "concise": "VILG",
+   "lat": 60.1672222,
+   "lon": -132.7216666
+  },
+  {
+   "province": "YT",
+   "name": "Watson Lake",
+   "query": "Watson Lake",
+   "match": "exact",
+   "feature": "Watson Lake",
+   "concise": "TOWN",
+   "lat": 60.0624374,
+   "lon": -128.7068575
+  },
+  {
+   "province": "YT",
+   "name": "Whitehorse",
+   "query": "Whitehorse",
+   "match": "exact",
+   "feature": "Whitehorse",
+   "concise": "CITY",
+   "lat": 60.7242144,
+   "lon": -135.0560981
+  },
+  {
+   "province": "NT",
+   "name": "Aklavik",
+   "query": "Aklavik",
+   "match": "exact",
+   "feature": "Aklavik",
+   "concise": "HAM",
+   "lat": 68.21930833147,
+   "lon": -135.00811060561
+  },
+  {
+   "province": "NT",
+   "name": "Behchokǫ̀ / Rae-Edzo",
+   "query": "Behchokǫ̀",
+   "match": "exact",
+   "feature": "Behchokǫ̀",
+   "concise": "HAM",
+   "lat": 62.8273,
+   "lon": -116.0582
+  },
+  {
+   "province": "NT",
+   "name": "Echo Bay / Port Radium",
+   "query": "Echo Bay",
+   "match": "exact",
+   "feature": "Echo Bay",
+   "concise": "UNP",
+   "lat": 66.086383,
+   "lon": -118.039133
+  },
+  {
+   "province": "NT",
+   "name": "Fort Good Hope",
+   "query": "Fort Good Hope",
+   "match": "exact",
+   "feature": "Fort Good Hope",
+   "concise": "HAM",
+   "lat": 66.257,
+   "lon": -128.6377
+  },
+  {
+   "province": "NT",
+   "name": "Fort McPherson",
+   "query": "Fort McPherson",
+   "match": "exact",
+   "feature": "Fort McPherson",
+   "concise": "HAM",
+   "lat": 67.4354,
+   "lon": -134.8824
+  },
+  {
+   "province": "NT",
+   "name": "Fort Providence",
+   "query": "Fort Providence",
+   "match": "exact",
+   "feature": "Fort Providence",
+   "concise": "HAM",
+   "lat": 61.3552,
+   "lon": -117.6542
+  },
+  {
+   "province": "NT",
+   "name": "Fort Resolution",
+   "query": "Fort Resolution",
+   "match": "exact",
+   "feature": "Fort Resolution",
+   "concise": "HAM",
+   "lat": 61.170988,
+   "lon": -113.672053
+  },
+  {
+   "province": "NT",
+   "name": "Fort Simpson",
+   "query": "Fort Simpson",
+   "match": "exact",
+   "feature": "Fort Simpson",
+   "concise": "VILG",
+   "lat": 61.8609,
+   "lon": -121.3527
+  },
+  {
+   "province": "NT",
+   "name": "Fort Smith",
+   "query": "Fort Smith",
+   "match": "exact",
+   "feature": "Fort Smith",
+   "concise": "TOWN",
+   "lat": 60.0053,
+   "lon": -111.8829
+  },
+  {
+   "province": "NT",
+   "name": "Hay River",
+   "query": "Hay River",
+   "match": "exact",
+   "feature": "Hay River",
+   "concise": "TOWN",
+   "lat": 60.8097,
+   "lon": -115.7898
+  },
+  {
+   "province": "NT",
+   "name": "Inuvik",
+   "query": "Inuvik",
+   "match": "exact",
+   "feature": "Inuvik",
+   "concise": "TOWN",
+   "lat": 68.3609,
+   "lon": -133.7297
+  },
+  {
+   "province": "NT",
+   "name": "Mould Bay",
+   "query": "Mould Bay",
+   "match": "exact",
+   "feature": "Mould Bay",
+   "concise": "UNP",
+   "lat": 76.2339816,
+   "lon": -119.3366278
+  },
+  {
+   "province": "NT",
+   "name": "Norman Wells",
+   "query": "Norman Wells",
+   "match": "exact",
+   "feature": "Norman Wells",
+   "concise": "TOWN",
+   "lat": 65.2811,
+   "lon": -126.8316
+  },
+  {
+   "province": "NT",
+   "name": "Tungsten",
+   "query": "Tungsten",
+   "match": "exact",
+   "feature": "Tungsten",
+   "concise": "UNP",
+   "lat": 61.949863,
+   "lon": -128.235103
+  },
+  {
+   "province": "NT",
+   "name": "Ulukhaktok / Holman",
+   "query": "Ulukhaktok",
+   "match": "exact",
+   "feature": "Ulukhaktok",
+   "concise": "HAM",
+   "lat": 70.7366,
+   "lon": -117.772
+  },
+  {
+   "province": "NT",
+   "name": "Wrigley",
+   "query": "Wrigley",
+   "match": "exact",
+   "feature": "Wrigley",
+   "concise": "UNP",
+   "lat": 63.2268,
+   "lon": -123.4667
+  },
+  {
+   "province": "NT",
+   "name": "Yellowknife",
+   "query": "Yellowknife",
+   "match": "exact",
+   "feature": "Yellowknife",
+   "concise": "CITY",
+   "lat": 62.4536,
+   "lon": -114.37
+  },
+  {
+   "province": "NU",
+   "name": "Alert",
+   "query": "Alert",
+   "match": "exact",
+   "feature": "Alert",
+   "concise": "UNP",
+   "lat": 82.5,
+   "lon": -62.366667
+  },
+  {
+   "province": "NU",
+   "name": "Arctic Bay",
+   "query": "Arctic Bay",
+   "match": "exact",
+   "feature": "Arctic Bay",
+   "concise": "HAM",
+   "lat": 73.033333,
+   "lon": -85.166667
+  },
+  {
+   "province": "NU",
+   "name": "Arviat",
+   "query": "Arviat",
+   "match": "exact",
+   "feature": "Arviat",
+   "concise": "HAM",
+   "lat": 61.108333,
+   "lon": -94.058333
+  },
+  {
+   "province": "NU",
+   "name": "Baker Lake",
+   "query": "Baker Lake",
+   "match": "exact",
+   "feature": "Baker Lake",
+   "concise": "HAM",
+   "lat": 64.319444,
+   "lon": -96.020833
+  },
+  {
+   "province": "NU",
+   "name": "Eureka",
+   "query": "Eureka",
+   "match": "exact",
+   "feature": "Eureka",
+   "concise": "UNP",
+   "lat": 79.983333,
+   "lon": -85.95
+  },
+  {
+   "province": "NU",
+   "name": "Igluligaarjuk / Chesterfield Inlet",
+   "query": "Chesterfield Inlet",
+   "match": "exact",
+   "feature": "Chesterfield Inlet",
+   "concise": "HAM",
+   "lat": 63.338889,
+   "lon": -90.701389
+  },
+  {
+   "province": "NU",
+   "name": "Iqaluit",
+   "query": "Iqaluit",
+   "match": "exact",
+   "feature": "Iqaluit",
+   "concise": "CITY",
+   "lat": 63.75,
+   "lon": -68.516667
+  },
+  {
+   "province": "NU",
+   "name": "Iqaluktuuttiaq / Cambridge Bay",
+   "query": "Cambridge Bay",
+   "match": "exact",
+   "feature": "Cambridge Bay",
+   "concise": "HAM",
+   "lat": 69.113889,
+   "lon": -105.05278
+  },
+  {
+   "province": "NU",
+   "name": "Isachsen",
+   "query": "Isachsen",
+   "match": "exact",
+   "feature": "Isachsen",
+   "concise": "UNP",
+   "lat": 78.783333,
+   "lon": -103.5
+  },
+  {
+   "province": "NU",
+   "name": "Kangiqiniq / Rankin Inlet",
+   "query": "Rankin Inlet",
+   "match": "exact",
+   "feature": "Rankin Inlet",
+   "concise": "HAM",
+   "lat": 62.816667,
+   "lon": -92.083333
+  },
+  {
+   "province": "NU",
+   "name": "Kanngiqtugaapik / Clyde River",
+   "query": "Clyde River",
+   "match": "exact",
+   "feature": "Clyde River",
+   "concise": "HAM",
+   "lat": 70.4680556,
+   "lon": -68.5944444
+  },
+  {
+   "province": "NU",
+   "name": "Kugluktuk / Coppermine",
+   "query": "Kugluktuk",
+   "match": "exact",
+   "feature": "Kugluktuk",
+   "concise": "HAM",
+   "lat": 67.826667,
+   "lon": -115.09333
+  },
+  {
+   "province": "NU",
+   "name": "Nottingham Island",
+   "query": "Nottingham Island",
+   "match": "exact",
+   "feature": "Nottingham Island",
+   "concise": "UNP",
+   "lat": 63.116667,
+   "lon": -77.933333
+  },
+  {
+   "province": "NU",
+   "name": "Resolute",
+   "query": "Resolute",
+   "match": "exact",
+   "feature": "Resolute",
+   "concise": "HAM",
+   "lat": 74.695833,
+   "lon": -94.829167
+  },
+  {
+   "province": "NU",
+   "name": "Resolution Island",
+   "query": "Resolution Island",
+   "match": "exact",
+   "feature": "Resolution Island",
+   "concise": "UNP",
+   "lat": 61.3,
+   "lon": -64.883333
+  },
+  {
+   "province": "NU",
+   "name": "Salliq / Coral Harbour",
+   "query": "Coral Harbour",
+   "match": "exact",
+   "feature": "Coral Harbour",
+   "concise": "HAM",
+   "lat": 64.133333,
+   "lon": -83.166667
+  }
+ ]
+}
