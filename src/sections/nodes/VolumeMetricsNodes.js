@@ -81,12 +81,22 @@
     if (!(volume > 0)) return { error: "no conditioned volume (S12 d_105)" };
     const storeys = AIM2_STOREYS[parseNum(inputs["volume.numStoreys"])];
     if (!storeys) return { error: `AIM-2 covers houses of 1 to 3 storeys (S12 d_103 = ${inputs["volume.numStoreys"]})` };
-    // B.19.4 blank: the storeys x S12's Typ. F2F Ht. (g_106; Andy 2026-11-19: "It's Typ. F2F Ht. in S12").
-    // F280-1's Annex-derived 5.53 m over 2 storeys is 2.77 m a storey.
+    // B.19.4, the highest ceiling above grade, in order (Andy 2026-11-20):
+    //   1. typed;
+    //   2. S11's walls: the tallest above-grade wall row's H (a row is a facade, its H the facade's full
+    //      height) plus the basement wall's height above grade, B.9's H less G.4.5's depth (0 for a slab or
+    //      a B.9 without H) - F280-1's 5.53 m is its 17.17 ft stair wall (5.23 m) + 0.30 m of basement;
+    //   3. the storeys x S12's Typ. F2F Ht. (g_106; Andy 2026-11-19: "It's Typ. F2F Ht. in S12").
     const typedHeight = parseNum(inputs["aim2.ceilingHeight"]);
+    const tallestWall = parseNum(inputs["transmissionLoss.walls.maxHeight"]);
+    const basementH = parseNum(inputs["transmissionLoss.wallsBelowGrade.height"]);
+    const basementAbove = basementH > 0 ? Math.max(0, basementH - parseNum(inputs["ground.basesimp.depth"])) : 0;
+    const heightFrom = typedHeight > 0 ? "typed" : tallestWall > 0 ? "S11 walls" : "storeys x F2F";
     const height = typedHeight > 0
       ? typedHeight
-      : parseNum(inputs["volume.numStoreys"]) * parseNum(inputs["volume.floorToFloorHeight"]);
+      : tallestWall > 0
+        ? tallestWall + basementAbove
+        : parseNum(inputs["volume.numStoreys"]) * parseNum(inputs["volume.floorToFloorHeight"]);
     if (!(height > 0)) return { error: "no highest-ceiling height above grade (S12 B.19.4, or d_103 x g_106)" };
     const tightness = inputs["aim2.tightness"] || "Custom";
     const ach50 = parseNum(inputs["airTightness.ach50Target"]);
@@ -142,7 +152,7 @@
       const m = station.months;
       seasonal = A.seasonalRate(p, parseNum(inputs["climate.heating.setpoint"], 21), m.t_mean, m.wind_mean, m.hdd18);
     }
-    return { design, seasonal, inputs: p, weather, derived: { ceilingHeight: !(typedHeight > 0), ela: tightness === "Custom" && !(typedEla > 0) } };
+    return { design, seasonal, inputs: p, weather, derived: { ceilingHeight: !(typedHeight > 0), ceilingHeightFrom: heightFrom, ela: tightness === "Custom" && !(typedEla > 0) } };
   }
 
   function register(graph) {
@@ -630,6 +640,7 @@
         "aim2.wallShielding", "aim2.flueShielding", "aim2.buildingType", "aim2.foundation",
         "aim2.ventilationBalance", "aim2.flueDiameter",
         "airTightness.ach50Target", "volume.conditioned", "volume.numStoreys", "volume.floorToFloorHeight",
+        "transmissionLoss.walls.maxHeight", "transmissionLoss.wallsBelowGrade.height", "ground.basesimp.depth", // B.19.4 from S11
         "ventilation.volumetricRate",
         "climate.location.province", "climate.location.city", "climate.station",
         "climate.heating.obcSetpoint", "climate.heating.setpoint", "climate.cooling.setpoint",
