@@ -70,6 +70,8 @@ its code values except the fields below). Status: standard · derived · equival
 | `d_87: Floor Exposed: Area m²` | 25.084 | derived | Table G.1.6 a): floors over the garage |
 | `f_87: Floor Exposed: RSI Value K·m²/W` | 5.348 | standard | Table I.3 (2010s): exposed floors |
 | `d_94: Walls Below Grade: Area m²` | 110.39 | derived | Table G.1.5 a): (86.69 + 66.63) ft x 7.75 ft |
+| `dl_94: B.9: Length m` | 46.7319 | derived | Table G.1.5 a): the basement walls' run, (86.69 + 66.63) ft |
+| `dh_94: B.9: Height m` | 2.3622 | standard | Table G.1.5 a): basement wall height 7.75 ft |
 | `f_94: Walls Below Grade: RSI Value K·m²/W` | 2.76 | standard | Table I.3 (2010s): basement walls, insulated full height; F280 computes below grade by BASESIMP |
 | `d_95: Floor Slab: Area m²` | 90.311 | derived | Table G.1.4 a): basement slab |
 | `f_95: Floor Slab: RSI Value K·m²/W` | 0.216 | derived | the UNINSULATED assembly: Table I.3's 0 is the ADDED insulation; 102 mm concrete (H.3.9) x 0.00045 per mm (Table 7B, 2400 kg/m3) + OBJECTIVE's slab surface film 0.17 (TransmissionLossNodes.js). Never 0: OBJECTIVE reads RSI 0 as U 0, zero loss (the RSI-0 bug) |

@@ -1,14 +1,16 @@
 # F280 whole-house verification: start here
 
 > **CURRENT STATE (2026-11-19 close; on `main` by PR #5, from `f280-review-format`). F280-1 PASSES Cl. 8.4.1 ON BOTH COUNTS:**
-> **loss 11 681 W vs Annex J 11 787 (99.1 %); gain 7347 W vs 7321 (100.4 %).** `ENFORCE_BAND` in the harness stays false until
-> the verification agent (Kieran) signs off.
+> **loss 11 680 W vs Annex J 11 787 (99.1 %); gain 7347 W vs 7321 (100.4 %).** `ENFORCE_BAND` in the harness stays false until
+> the verification agent (Kieran) signs off. BASESIMP's basement wall height is B.9's H since 2026-11-20 (S11's L x H
+> columns; F280-1 enters Table G.1.5 a)'s 7.75 ft): before, the walls' area over the exposed perimeter, 110.39 / 46.72 =
+> 2.3628 m against the table's 2.3622 m, which put the loss 1 W high (11 681 W).
 >
 > **How the gain is compared.** Annex J's (and K's) "gain" is the NOMINAL capacity, Cl. 6.3.1 CSCn = LM x the sum of HGsr at
 > LM 1.3, not the sensible sum. Shown by Annex K 8.3.3 (pp. 188-190): spreading Archetype 1's internal gains over its 18 rooms
 > moves the four occupied rooms -387 W and the other 14 +111 W, an internal total of ~1995 W = 1.3 x (5 x 70 + 4 x 295.57) =
 > 1992 W; no floor area explains it without the 1.3. **The app shows the whole chain in S15** (Andy: *"Both numbers, the gain, the
-> multiplier, and the total. Full transparency since this messed us up all day"*): T.6.10 loss 11 681 W · T.6.11 sensible 5652 W ·
+> multiplier, and the total. Full transparency since this messed us up all day"*): T.6.10 loss 11 680 W · T.6.11 sensible 5652 W ·
 > T.6.12 x LM 1.30 = 7347 W nominal (`f280.s15.nominalHeatGain`). The harness compares that cell and checks it equals sensible x 1.3
 > (`ANNEX_J_LM`). S21's own nominal capacity (the sensible + Annex B's design latent) is unchanged.
 >

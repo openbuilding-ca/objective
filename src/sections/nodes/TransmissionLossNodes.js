@@ -106,6 +106,16 @@
           label: `${label} Element Type`,
           defaultValue: opaque.type
         });
+        // its H (dh_, the S11 column beside L): a below-grade wall's is BASESIMP's wall height
+        // (transmissionLoss.wallsBelowGrade.height); blank (0) is "not given"
+        inputs.push({
+          id: `transmissionLoss.${id}.height`,
+          legacyId: `dh_${row}`,
+          section: "S11",
+          classification: "C",
+          label: `${label} Height (m)`,
+          defaultValue: 0
+        });
         if (opaque.group === "above") {
           inputs.push({
             id: `transmissionLoss.${id}.facing`,
@@ -409,6 +419,23 @@
         dependencies: deps(["heatGain"]),
         label: `${t.label}: Total Heat Gain (kWh/yr)`,
         compute: (inputs) => sum(inputs, "heatGain")
+      });
+      // the type's height (m): the area-weighted H of its rows that give one (an H and an area);
+      // 0 when none does. BASESIMP's wall height is the below-grade walls' (Andy 2026-11-20).
+      graph.registerNode({
+        id: `transmissionLoss.${type}.height`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["area", "height"]),
+        label: `${t.label}: Height, area-weighted over the rows with H (m)`,
+        compute: (inputs) => {
+          const rows = rowsOf(inputs).filter(
+            c => parseNum(inputs[`transmissionLoss.${c.id}.height`]) > 0 && parseNum(inputs[`transmissionLoss.${c.id}.area`]) > 0
+          );
+          const area = rows.reduce((a, c) => a + parseNum(inputs[`transmissionLoss.${c.id}.area`]), 0);
+          if (!(area > 0)) return 0;
+          return rows.reduce((s, c) => s + parseNum(inputs[`transmissionLoss.${c.id}.area`]) * parseNum(inputs[`transmissionLoss.${c.id}.height`]), 0) / area;
+        }
       });
     });
 
@@ -939,6 +966,7 @@
         "transmissionLoss.wallsBelowGrade.area",
         "transmissionLoss.slabOnGrade.rsi",
         "transmissionLoss.wallsBelowGrade.rsi",
+        "transmissionLoss.wallsBelowGrade.height",
         "climate.location.province",
         "climate.location.city",
         "climate.heating.obcSetpoint",
@@ -1031,7 +1059,11 @@
       return { error: `S11 has no below-grade wall, so S03 G.4.4 (${name}, a basement) needs a slab-on-grade configuration (SCN, SCB or SCA)` };
     }
     if (!(perimeter > 0)) return { error: "no exposed perimeter (S03 G.4.6, or Wombat's footprint, S19 19.2b)" };
-    const height = slab ? 0 : wallArea / perimeter;
+    // The basement wall's height: S11's below-grade wall rows' H where given (their area-weighted H,
+    // Andy 2026-11-20: "take Ht. from the Bsmt wall ht"); otherwise their area over the perimeter, as before
+    const heightFromRows = parseNum(inputs["transmissionLoss.wallsBelowGrade.height"]);
+    const heightFrom = slab ? "slab" : heightFromRows > 0 ? "S11 H" : "area / perimeter";
+    const height = slab ? 0 : heightFromRows > 0 ? heightFromRows : wallArea / perimeter;
     const depth = slab ? 0.05 : parseNum(inputs["ground.basesimp.depth"]);
     if (!slab && (!(depth > 0) || depth > height)) {
       return { error: `depth below grade ${depth} m must be above 0 and at most the wall height ${height.toFixed(2)} m` };
@@ -1094,7 +1126,7 @@
       days
     });
     if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
-    return { ...result, geometry: { length, width, height, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
+    return { ...result, geometry: { length, width, height, heightFrom, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
   }
 
   window.TEUI.ComputationNodes.TransmissionLoss = {
