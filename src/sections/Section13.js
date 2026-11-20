@@ -1734,7 +1734,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCoolingUI(systemType);
 
     // Row 122 l_122 (ERV latent recovery): active only for an ERV (e_118)
-    const isERV = window.TEUI?.StateManager?.getValue("e_118") === "ERV";
+    const isERV = getModeValue("e_118") === "ERV";
     setFieldGhosted("l_122", !isERV);
 
     // Row 115: Heating Fuel Impact - Ghost entire row if not Gas or Oil
