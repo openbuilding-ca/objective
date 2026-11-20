@@ -278,7 +278,7 @@ window.TEUI.SectionModules.sect19 = (function () {
           fieldId: "h_156",
           type: "calculated",
           value: "0.00",
-          label: "Nominal Height (m)",
+          label: "Building Height, grade to ridge (m)",
         },
       },
     },
@@ -1638,6 +1638,33 @@ window.TEUI.SectionModules.sect19 = (function () {
     window.TEUI.WombatRender.renderPlaceholder(svg);
   }
 
+  /**
+   * S19's display rows for the model on screen: 19.Ae / 19.Ag and their U-values mirror S12's B.16 / B.17
+   * (they held the template's numbers before 2026-11-20: Ag 1100.93 on a 106.45 m2 slab), and 19.3 shows
+   * this solve's building height, grade to ridge (a cathedral ceiling's highest point: S12 B.19.4).
+   */
+  function stampTableRows(geometry, isReference) {
+    const sm = window.TEUI.StateManager;
+    const pre = isReference ? "ref_" : "";
+    const cell = id =>
+      document.querySelector(`#wombat [data-field-id="${id}"]`);
+    const show = (id, value, format) => {
+      const el = cell(id);
+      const n = window.TEUI.parseNumeric?.(value);
+      if (el && Number.isFinite(n))
+        el.textContent = window.TEUI.formatNumber(n, format);
+    };
+    [
+      ["d_152", "d_101", "number-2dp"],
+      ["g_152", "g_101", "number-3dp"],
+      ["d_153", "d_102", "number-2dp"],
+      ["g_153", "g_102", "number-3dp"],
+    ].forEach(([own, s12, format]) =>
+      show(own, sm?.getValue(`${pre}${s12}`), format)
+    );
+    show("h_156", geometry.totalHeight, "number-2dp");
+  }
+
   function updateVisualization(mode = "target") {
     console.log(`🎨 [WOMBAT updateVisualization] Called with mode="${mode}"`);
     console.log(`🎨 [WOMBAT updateVisualization] isActivated = ${isActivated}`);
@@ -1653,6 +1680,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     console.log(`🎨 [WOMBAT updateVisualization] isReference = ${isReference}`);
     const geometry = solveGeometry(isReference);
     currentModel = geometry;
+    stampTableRows(geometry, isReference);
 
     // Get SVG element
     const svg = document.getElementById("wombat-svg");
@@ -2193,13 +2221,13 @@ window.TEUI.SectionModules.sect19 = (function () {
 
   function calculateTargetModel() {
     const geometry = solveGeometry(false); // isReferenceCalculation = false
-    // h_157 / h_155 (and 19.2b's h_155b) are the graph's wombat.footprint.* since 2026-11-19; only the
-    // storey height, which this solve alone owns, is published here
+    // h_157 / h_155 (and 19.2b's h_155b) are the graph's wombat.footprint.* since 2026-11-19; only 19.3's
+    // building height (ground to ridge), which this solve alone owns, is published here
 
     // Publish calculated dimensions to StateManager (unprefixed for Target)
     window.TEUI.StateManager.setValue(
       "h_156",
-      geometry.storyHeight.toFixed(2),
+      geometry.totalHeight.toFixed(2),
       "calculated"
     );
 
@@ -2212,7 +2240,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     // Publish calculated dimensions to StateManager (ref_ prefixed for Reference)
     window.TEUI.StateManager.setValue(
       "ref_h_156",
-      geometry.storyHeight.toFixed(2),
+      geometry.totalHeight.toFixed(2),
       "calculated"
     );
 

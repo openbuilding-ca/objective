@@ -135,3 +135,50 @@ test("Wombat reads the type sums and every window row", async ({ page }) => {
     expect(win.refWin[f] - house.refWin[f], `the Reference's Average: a quarter on ${f}`).toBeCloseTo(2, 9);
   }
 });
+
+/**
+ * S19's display (2026-11-20): 19.Ae / 19.Ag and their U-values mirror S12's B.16 / B.17 (they held the
+ * template's 2476.62 / 1100.93 on every house), 19.3 is the building height grade to ridge, and the legend
+ * gives the walls as S11 takes them - L x H per facade, a gable end at its mean height - with S11's own
+ * wall total beside Wombat's. Hemmingford, gable, aspect -1.2: eave 3.82, ridge 4.69, 176.12 vs 248.82 m2.
+ */
+test("S19's table mirrors S12, 19.3 is the ridge, the legend gives L x H per facade", async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => localStorage.setItem("disclaimerSeen", "true"));
+  const auto = page.waitForEvent("console", { predicate: (m) => /\[init\.js\] Auto-load/.test(m.text()), timeout: 30000 });
+  await page.goto(URL);
+  await auto;
+  await load(page, "src/template/case-studies/03-residence-phi-classic-f280.csv");
+  await setSM(page, { d_154: "-1.2", d_159: "biplanar" });
+  await settle(page);
+  const got = await page.evaluate(() => {
+    const sec = document.getElementById("wombat");
+    if (!sec.querySelector(".section-content")?.offsetHeight) sec.querySelector(".section-header")?.click();
+    document.getElementById("wombat-activate-btn").click();
+    const SM = window.TEUI.StateManager, n = (v) => window.TEUI.parseNumeric(v);
+    const text = (id) => n(document.querySelector(`#wombat [data-field-id="${id}"]`).textContent);
+    const g = window.TEUI.SectionModules.sect19.getCurrentModel();
+    return {
+      cells: ["d_152", "g_152", "d_153", "g_153", "h_156"].map(text),
+      s12: ["d_101", "g_101", "d_102", "g_102"].map((id) => n(SM.getValue(id))),
+      ridge: g.wallHeight + g.roofHeight,
+      // the prism's walls: two long sides at the eave, two gable ends at eave + rise / 2
+      walls:
+        2 * Math.max(g.footprint.width, g.footprint.length) * g.wallHeight +
+        2 * Math.min(g.footprint.width, g.footprint.length) * (g.wallHeight + g.roofHeight / 2),
+      legend: [...document.querySelectorAll("#wombat-svg text")].map((t) => t.textContent),
+    };
+  });
+  expect(got.cells[0], "19.Ae is S12's B.16").toBeCloseTo(got.s12[0], 2);
+  expect(got.cells[1], "its U-value").toBeCloseTo(got.s12[1], 3);
+  expect(got.cells[2], "19.Ag is S12's B.17: the slab").toBeCloseTo(106.45, 2);
+  expect(got.cells[2]).toBeCloseTo(got.s12[2], 2);
+  expect(got.cells[3]).toBeCloseTo(got.s12[3], 3);
+  expect(got.cells[4], "19.3: grade to ridge").toBeCloseTo(got.ridge, 2);
+  expect(got.legend).toContain("Eave Height: 3.82 m");
+  expect(got.legend).toContain("Ridge Height: 4.69 m");
+  expect(got.legend).toContain("  N, S: 15.30 × 3.82 m each");
+  expect(got.legend).toContain("  E, W: 6.96 × 4.26 m each (mean H)");
+  expect(got.walls, "Wombat's walls: a quarter short of S11's").toBeCloseTo(176.1, 1);
+  expect(got.legend).toContain(`Walls: ${got.walls.toFixed(2)} m² (S11: 248.82 m²)`);
+});

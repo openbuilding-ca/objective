@@ -14,7 +14,8 @@ F280 and the Reference was the case's code-minimum Reference: the 296 TEUI on He
 Inputs left blank (0) on purpose, each taking the house's own figure:
   G.4.6 h_26  exposed perimeter      -> Wombat's footprint perimeter (S19 19.2b)
   B.19.3 d_112 ELA for Custom        -> from S12's ACH50 in effect (B.18.4's rule)
-  B.19.4 g_112 highest ceiling       -> storeys x S12's Typ. F2F Ht.
+  B.19.4 g_112 highest ceiling       -> S11's tallest wall, else storeys x S12's Typ. F2F Ht.
+                                        (typed for Hemmingford: a cathedral ceiling's ridge)
 Never touches the case studies themselves (src/template/case-studies/<NN>-*.csv): it reads them.
 """
 import csv
@@ -55,6 +56,10 @@ REVIEW = {
         # slab on grade, "fully insulated. Slab edge also": SCB_31, bottom fully insulated incl. under the
         # footings, thermal break at the edge
         "l_25": "81", "d_112d": "Detached", "g_112d": "Slab-on-Grade",
+        # B.19.4 typed: a 1.5-storey house with pony walls under a cathedral ceiling, so its highest
+        # ceiling is the ridge, above every wall's eave and above storeys x F2F (4.05). 4.69 m is Wombat's
+        # ridge (eave 3.82 + rise 0.87) for now, until the drawings give it (Andy 2026-11-20)
+        "g_112": "4.69",
     },
     "02-residence-sb12-net-zero.csv": {
         # slab on grade, "full insulated frostwall and uninsulated footings. Frost wall depth is 5'":
