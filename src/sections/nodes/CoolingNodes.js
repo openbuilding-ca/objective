@@ -51,6 +51,13 @@
   ];
   const GROUND_COMPONENTS = ["wallsBelowGrade", "slabOnGrade"];
   const GLAZING_ROWS = window.TEUI.Openings.ALL.map(o => o.s10);
+  // LIMITATION: no climate.timeframe (h_20) and no climate.cooling.degreedays
+  // (d_21) here. The station is one CWEC 2020 typical year with no future
+  // period, so "Future" moves heating (HDD18_2021_2050) but models no warmer
+  // summer: the cooling need moves only where the future HDD changes the
+  // climate zone and with it airTightness.nFactor. d_21 feeds nothing. S03
+  // says so (h_20 / d_21 tooltips, d_21 ghosted). Whether to model future
+  // cooling is a building-science decision still to be made.
   const ISO_DEPENDENCIES = [
     "climate.station",
     "climate.cooling.setpoint",

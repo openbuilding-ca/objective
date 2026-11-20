@@ -75,7 +75,7 @@
     n_56: "raw", n_57: "raw", n_58: "raw", n_59: "raw",
 
     // S09 Occupancy: integer counts and hours
-    d_63: "integer", h_63: "integer",
+    d_63: "integer", h_63: "integer", m_63: "integer",
     g_63: "integer-nocomma", j_63: "integer-nocomma", i_63: "integer-nocomma",
 
     // S09 Internal Gains: densities as 1dp, seasonal split percentages

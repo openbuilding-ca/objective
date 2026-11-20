@@ -71,6 +71,12 @@
 
   const cache = new Map();
   const pending = new Map();
+  // Stations whose files did not load: id -> the reason. request() does not
+  // fetch these again (every recalculation would fail the same way); a page
+  // reload, the browser coming back online, retry() or load() tries again.
+  const failed = new Map();
+  // The failed stations the status line has named, to say when one arrives.
+  const reported = new Set();
 
   function stationFor(province, city) {
     const byProv = (window.TEUI.ClimateStations || {})[province];
@@ -111,9 +117,15 @@
       const station = { id, meta, months: meta.months, hourly: decode(buffer) };
       cache.set(id, station);
       pending.delete(id);
+      failed.delete(id);
       return station;
     });
     pending.set(id, p);
+    // registered first, so it has run by the time a caller's handler does
+    p.catch(err => {
+      pending.delete(id);
+      failed.set(id, err.message);
+    });
     return p;
   }
 
@@ -122,26 +134,70 @@
   }
 
   /**
+   * Why a station's files did not load, else null - which tells "failed"
+   * from "still loading" where get() and request() answer null for both.
+   */
+  function failure(id) {
+    return failed.get(id) || null;
+  }
+
+  function recalculate() {
+    if (window.TEUI.Calculator?.calculateAll)
+      window.TEUI.Calculator.calculateAll();
+  }
+
+  /** The app's status line (FileHandler.showStatus), where there is one. */
+  function showStatus(message, type) {
+    const handler = window.TEUI.FileHandler;
+    if (typeof handler?.showStatus === "function")
+      handler.showStatus(message, type);
+  }
+
+  /**
    * For a graph node: the station if loaded, else null - and start the load,
-   * which recalculates the page when it lands (a node cannot await).
+   * which recalculates the page when it lands (a node cannot await). A load
+   * that failed is not started again on every recalculation: the station
+   * stays null, failure(id) gives the reason, and the status line says, once
+   * per failed load, that the cooling rows have no climate data behind them
+   * (they read 0, which understates TEUI).
    */
   function request(id) {
     if (!id) return null;
     const station = get(id);
-    if (station || pending.has(id)) return station;
-    load(id)
-      .then(() => {
-        if (window.TEUI.Calculator?.calculateAll)
-          window.TEUI.Calculator.calculateAll();
-      })
-      .catch(err => {
-        pending.delete(id);
+    if (station || pending.has(id) || failed.has(id)) return station;
+    load(id).then(
+      () => {
+        if (reported.delete(id))
+          showStatus(`Climate data loaded (station ${id}).`, "success");
+        recalculate();
+      },
+      err => {
         console.warn(
           `[ClimateStation] ${id}: ${err.message} (served over http?)`
         );
-      });
+        reported.add(id);
+        showStatus(
+          `Climate data unavailable (station ${id}): cooling is not calculated.`,
+          "error"
+        );
+        // once more, for the nodes that tell failed from loading
+        recalculate();
+      }
+    );
     return null;
   }
+
+  /**
+   * Forget the failures and recalculate, which requests those stations
+   * again. Runs when the browser comes back online.
+   */
+  function retry() {
+    if (!failed.size) return;
+    failed.clear();
+    recalculate();
+  }
+  if (typeof window.addEventListener === "function")
+    window.addEventListener("online", retry);
 
   /**
    * Per month, on the hourly year:
@@ -187,7 +243,9 @@
     stationFor,
     load,
     get,
+    failure,
     request,
+    retry,
     freeCooling,
   };
 })();

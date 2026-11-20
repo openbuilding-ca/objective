@@ -59,6 +59,26 @@ check("no cooling stays", CS.normalize(NONE, "Heatpump"), NONE);
 check("unset on a heat pump", CS.normalize(undefined, "Heatpump"), HP);
 check("unset on gas", CS.normalize(null, "Gas"), SEP);
 
+// --- M.3.3 when Separate Cooling is chosen -------------------------------
+// The standard's minimum fills it, except back from No Cooling with a COPc of
+// its own there. The witness: M.3.3 typed as 4.20, a look at No Cooling and
+// back - it was refilled with 3.30, and the cooling electricity rose unseen.
+console.log("seedsCopCool:");
+check("leaving the heat pump option: filled", CS.seedsCopCool(HP, "2.66", "default"), true);
+check("leaving the heat pump option, an old COPc stored: filled", CS.seedsCopCool(HP, "4.2", "user-modified"), true);
+check("leaving an old Cooling: filled", CS.seedsCopCool("Cooling", "4.2", "imported"), true);
+check("the choice being left unknown: filled", CS.seedsCopCool(undefined, "4.2", "user-modified"), true);
+check("back from No Cooling, typed 4.20: stays", CS.seedsCopCool(NONE, "4.2", "user-modified"), false);
+check("back from No Cooling, a file's COPc: stays", CS.seedsCopCool(NONE, "3.85", "imported"), false);
+// an earlier fill is stored as "user-modified" too - it stays, the same value
+check("back from No Cooling, an earlier fill: stays", CS.seedsCopCool(NONE, "3.3", "user-modified"), false);
+// the Reference model's inputs are synced back to ref_j_116 as "calculated"
+check("back from No Cooling, the Reference's own: stays", CS.seedsCopCool(NONE, 5.1, "calculated"), false);
+check("from No Cooling, the untouched default: filled", CS.seedsCopCool(NONE, "2.66", "default"), true);
+check("from No Cooling, a No Cooling file's 0.00: filled", CS.seedsCopCool(NONE, "0.00", "imported"), true);
+check("from No Cooling, blank: filled", CS.seedsCopCool(NONE, "", "imported"), true);
+check("from No Cooling, nothing stored: filled", CS.seedsCopCool(NONE, null, undefined), true);
+
 // --- the COP the model cools at ------------------------------------------
 console.log("effectiveCop:");
 const effectiveCop = node("mechanical.cooling.effectiveCop");

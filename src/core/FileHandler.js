@@ -320,7 +320,7 @@
       );
     }
 
-    processImportedCSV(csvString) {
+    processImportedCSV(csvString, { replaceNotes = false } = {}) {
       this.showStatus("Parsing standardized CSV data...", "info");
       const importedData = {};
       let message = "";
@@ -449,23 +449,13 @@
           }
         }
 
-        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
-        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
-        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On.
-        if (!("f280_mode" in importedData)) {
-          for (const p of ["", "ref_"]) {
-            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
-            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
-          }
-        }
-
         // Project notes (the last column) belong to Section 20, not the
-        // StateManager. A file without the column clears them, as a new
-        // building clears the Capital Budget below.
+        // StateManager. Every cell under a header is kept above, an empty
+        // one as "", so the key is there exactly when the file has the column.
+        const fileHasNotes = "s18_notes" in importedData;
         const notes = importedData.s18_notes ?? "";
         delete importedData.s18_notes;
         delete importedData.ref_s18_notes;
-        window.TEUI.SectionModules.sect20?.setNotes(notes);
 
         if (Object.keys(importedData).length === 0) {
           this.showStatus(
@@ -473,6 +463,28 @@
             "warning"
           );
           return;
+        }
+
+        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
+        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
+        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On. After the
+        // check above: a value this supplies is not the file's, so a file with no data still changes
+        // nothing (Mark's #127 witness, a notes-only file)
+        if (!("f280_mode" in importedData)) {
+          for (const p of ["", "ref_"]) {
+            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
+            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
+          }
+        }
+
+        // A file with the column replaces the notes, an empty cell clearing
+        // them as a new building clears the Capital Budget below. A file
+        // without it was saved before notes travelled in the CSV and could
+        // not carry them: the notes on screen stay, unless the caller says
+        // the file is the whole project (a bundled sample). Below the check
+        // above, so a file that imports nothing changes nothing.
+        if (fileHasNotes || replaceNotes) {
+          window.TEUI.SectionModules.sect20?.setNotes(notes);
         }
 
         const targetCount = fieldIds.length;
@@ -637,32 +649,55 @@
         }
       }
 
-      // Fields added 2026-11-18 that older files lack: the file's own default
-      // ("" - VentilationRates resolves it), never the previous project's
-      // value. e_12, the 62.1 space type (beside d_12, the occupancy); l_63
-      // and m_63, the bedrooms and dwelling units (beside d_63, the occupants).
-      const addedBeside = { e_12: "d_12", l_63: "d_63", m_63: "d_63" };
-      for (const [added, beside] of Object.entries(addedBeside)) {
-        for (const prefix of ["", "ref_"]) {
-          if (
-            importedData[`${prefix}${beside}`] !== undefined &&
-            importedData[`${prefix}${added}`] === undefined
-          ) {
-            this.stateManager.setValue(`${prefix}${added}`, "", "imported");
+      // Fields added 2026-11-18 that older files lack: the field's own default,
+      // in either model, never the previous project's value. e_12, the 62.1
+      // space type ("" - VentilationRates resolves the occupancy's); l_63 and
+      // m_63, the bedrooms ("" - from the occupants) and dwelling units; g_59,
+      // the latent load's indoor state; e_118, HRV or ERV; l_122, the ERV's
+      // latent recovery; i_122, the latent method. A project file is known by
+      // d_12, its occupancy, which no standard's values carry
+      // (applyReferenceValuesFromStandard comes through here too).
+      const addedDefaults = {
+        e_12: "",
+        l_63: "",
+        m_63: "1",
+        g_59: "F280",
+        e_118: "HRV",
+        l_122: "0",
+        i_122: "F280",
+        // The opening rows after the first (added 2026-11-20, Openings.js), every column at its row's
+        // own default: a file without them has none (area 0), and a row + shows later starts clean -
+        // its orientation, SHGC, shading and U-value never the previous project's
+        ...Object.fromEntries(
+          window.TEUI.Openings.SLOTS.flatMap(o => [
+            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
+            `g_${o.s11}`,
+          ]).map(id => [id, String(this.fieldManager.getField(id)?.defaultValue ?? "")])
+        ),
+      };
+      // The display follows in the model on screen, as an imported value's
+      // does below: stampAll leaves a dropdown and a "" as they were.
+      const onScreen = window.TEUI.ReferenceToggle?.isReferenceMode?.()
+        ? "ref_"
+        : "";
+      for (const prefix of ["", "ref_"]) {
+        if (importedData[`${prefix}d_12`] === undefined) continue;
+        for (const [added, value] of Object.entries(addedDefaults)) {
+          if (importedData[`${prefix}${added}`] !== undefined) continue;
+          this.stateManager.setValue(`${prefix}${added}`, value, "imported");
+          if (prefix === onScreen) {
+            this.fieldManager.updateFieldDisplay(
+              added,
+              value,
+              this.fieldManager.getField(added)
+            );
           }
         }
       }
 
-      // The opening rows after the first (added 2026-11-20, Openings.js): a file without them has none -
-      // their areas 0, never the previous project's - and the rows shown are the file's own
-      for (const o of window.TEUI.Openings.SLOTS) {
-        for (const prefix of ["", "ref_"]) {
-          if (importedData[`${prefix}d_${o.s10}`] === undefined) {
-            this.stateManager.setValue(`${prefix}d_${o.s10}`, "0", "imported");
-          }
-        }
-      }
-      window.TEUI.Openings.resetShown();
+      // A project file: the opening rows shown are its own (those with an area), not those + showed
+      // before. "Set Values" (no d_12) leaves the rows as they are.
+      if (importedData.d_12 !== undefined) window.TEUI.Openings.resetShown();
 
       const allEntries = Object.entries(importedData);
 
@@ -1077,7 +1112,9 @@
           throw new Error(`Failed to fetch ${project.file}: ${response.status}`);
         }
         const csvContent = await response.text();
-        this.processImportedCSV(csvContent);
+        // Most bundled samples have no notes column; the confirm above said
+        // all current data is replaced, so the notes go with it.
+        this.processImportedCSV(csvContent, { replaceNotes: true });
         this.showStatus(`Sample project "${plainName}" loaded successfully.`, "success");
       } catch (error) {
         console.error("[FileHandler] Error loading sample project:", error);

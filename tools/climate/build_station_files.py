@@ -29,6 +29,16 @@ month's spread.
 
     python3 -I tools/climate/build_station_files.py
     npx prettier --write src/core/ClimateStations.js   # the repo's format
+
+Inputs (Mark's #123 review: the files could not be rebuilt from a clean checkout):
+    data/climate/*.json        IN THE REPO (1.3 MB): c2-geocode, c2-station-match, cwec2020-monthly,
+                               power-monthly - the outputs of c2_geocode.py, c2_station_match.py,
+                               cwec_monthly.py and power_monthly.py, whose headers say how to rerun them
+    <climate data>/cwec2020/epw   NOT in the repo: ECCC's CWEC 2020 EPW set (564 stations, ~1 GB), to
+                               download; <climate data> is $OBJECTIVE_CLIMATE_DATA, or
+                               ~/Documents/OpenBuilding/climate-data
+    <climate data>/power       NASA POWER hourly years, fetched and cached by power_monthly.fetch_year
+                               on first use (network)
 """
 import json
 import os
@@ -43,7 +53,7 @@ import power_monthly as pm  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA = os.path.join(REPO, "data/climate")
-CLIMATE = os.path.expanduser("~/Documents/OpenBuilding/climate-data")
+CLIMATE = os.path.expanduser(os.environ.get("OBJECTIVE_CLIMATE_DATA", "~/Documents/OpenBuilding/climate-data"))
 OUT = os.path.join(REPO, "climate/stations")
 
 
@@ -91,6 +101,9 @@ def main():
     cwec = {s["id"]: s for s in json.load(open(os.path.join(DATA, "cwec2020-monthly.json")))["stations"]}
     power = {s["id"]: s for s in json.load(open(os.path.join(DATA, "power-monthly.json")))["stations"]}
     epw = {os.path.basename(p): p for p in cm.epw_files(os.path.join(CLIMATE, "cwec2020/epw"))}
+    if not epw:
+        sys.exit(f"no CWEC 2020 EPW files under {os.path.join(CLIMATE, 'cwec2020/epw')}: download ECCC's "
+                 "CWEC 2020 set there, or set OBJECTIVE_CLIMATE_DATA to the folder that holds cwec2020/epw")
 
     files = {}
     for sid in sorted({r["station"] for r in match if r["station"]}):
