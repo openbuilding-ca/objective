@@ -2030,7 +2030,21 @@ window.TEUI.SectionModules.sect16 = (function () {
       const loss = sankeyData.nodes.push({ name: openingNodeName(o, true), color: o.kind === "door" ? "#8FAFA6" : "#F9DF4B" }) - 1;
       sankeyData.links.push({ source: 28, target: loss, value: value(`i_${o.s11}`), id: `TELToOpening${o.s11}` });
     });
+
+    // The opaque rows likewise (Andy 2026-11-20): one loss node per row, named by its type, number and a
+    // wall's facing ("B.5.2 Wall above grade · N"); B.4-B.10 keep the template's nodes, renamed
+    const prefix = window.TEUI.ReferenceToggle?.isReferenceMode() ? "ref_" : "";
+    O.OPAQUE.forEach(o => {
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[OPAQUE_LOSS_NODE[o.s11]].name = O.opaqueName(o, prefix);
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const loss = sankeyData.nodes.push({ name: O.opaqueName(o, prefix), color: "#8FAFA6" }) - 1;
+      sankeyData.links.push({ source: 28, target: loss, value: value(`i_${o.s11}`), id: `TELToOpaque${o.s11}` });
+    });
   }
+  const OPAQUE_LOSS_NODE = { 85: 12, 86: 13, 87: 14, 94: 20, 95: 21 };
 
   function getModeAwareValue(fieldId) {
     if (!window.TEUI?.StateManager) return null;

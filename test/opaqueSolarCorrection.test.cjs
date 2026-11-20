@@ -13,7 +13,7 @@
 const path = require("path");
 
 global.window = { TEUI: {} };
-require(path.join(__dirname, "..", "src/core/Openings.js")); // the opening rows, read by the node files
+require(path.join(__dirname, "..", "src/core/Openings.js")); // the envelope rows, read by the node files
 require(path.join(__dirname, "..", "src/core/F280Weather.js"));
 require(path.join(__dirname, "..", "src/sections/nodes/F280ComplianceNodes.js"));
 const nodes = [];
@@ -39,16 +39,16 @@ const F280_1 = {
   "climate.temperature.hottest": 30,
   "climate.cooling.setpoint": 24,
   "transmissionLoss.thermalBridgePenalty": 0,
-  "transmissionLoss.roof.area": 118.39, "transmissionLoss.roof.uValue": 1 / 9.05,
-  "transmissionLoss.walls.area": 229.11, "transmissionLoss.walls.uValue": 1 / 3.4432,
-  "transmissionLoss.exposedFloor.area": 25.08, "transmissionLoss.exposedFloor.uValue": 1 / 5.348,
+  "transmissionLoss.opaque85.area": 118.39, "transmissionLoss.opaque85.uValue": 1 / 9.05,
+  "transmissionLoss.opaque86.area": 229.11, "transmissionLoss.opaque86.uValue": 1 / 3.4432,
+  "transmissionLoss.opaque87.area": 25.08, "transmissionLoss.opaque87.uValue": 1 / 5.348,
   "transmissionLoss.doors.area": 5.67, "transmissionLoss.doors.uValue": 0.9091
 };
 const WALL_MEAN_LE14 = (-3.8 - 0.6 + 1.7 + 0.6 - 2.2 + 0.6 + 1.7 - 0.6) / 8; // -0.325
 const WALL_MEAN_GT14 = (-6.7 - 3.3 - 1.1 - 2.2 - 5.0 - 2.2 - 1.1 - 3.3) / 8; // -3.1125
 const ua = (id, i = F280_1) => i[`transmissionLoss.${id}.area`] * i[`transmissionLoss.${id}.uValue`];
 
-const byHand = ua("roof") * 15.0 + ua("walls") * WALL_MEAN_LE14 + ua("exposedFloor") * -3.3 + ua("doors") * WALL_MEAN_LE14;
+const byHand = ua("opaque85") * 15.0 + ua("opaque86") * WALL_MEAN_LE14 + ua("opaque87") * -3.3 + ua("doors") * WALL_MEAN_LE14;
 near("F280-1, Ottawa (Orleans), range 11 C: the first column, by hand", sc.compute(F280_1), byHand);
 
 // A thermal-bridge penalty scales U, as S15's g_101 does.
@@ -61,12 +61,20 @@ near("Banff, range 14 C: still the first column ('up to and including 14')",
   sc.compute({ ...F280_1, "climate.location.province": "AB", "climate.location.city": "Banff" }), byHand);
 const hot = { ...F280_1, "climate.location.province": wide[0], "climate.location.city": wide[1], "climate.temperature.hottest": 34 }; // DTDc 10
 near(`${wide[1]}, range ${window.TEUI.F280Weather.lookup(...wide).summerRange} C: the second column`, sc.compute(hot),
-  ua("roof") * 12.2 + ua("walls") * WALL_MEAN_GT14 + ua("exposedFloor") * -6.1 + ua("doors") * WALL_MEAN_GT14);
+  ua("opaque85") * 12.2 + ua("opaque86") * WALL_MEAN_GT14 + ua("opaque87") * -6.1 + ua("doors") * WALL_MEAN_GT14);
 
 // DTDc 2 with SC -3.3 on the floor: the floor's DTDc + SC stops at 0, so its correction is -2 x UA, not -3.3.
 const mild = { ...F280_1, "climate.temperature.hottest": 26 };
 near("DTDc 2: an assembly's DTDc + SC stops at 0 (no credit)", sc.compute(mild),
-  ua("roof") * 15.0 + ua("walls") * WALL_MEAN_LE14 + ua("exposedFloor") * -2 + ua("doors") * WALL_MEAN_LE14);
+  ua("opaque85") * 15.0 + ua("opaque86") * WALL_MEAN_LE14 + ua("opaque87") * -2 + ua("doors") * WALL_MEAN_LE14);
+
+// A wall by its FACING (Andy 2026-11-20, the opaque rows): B.5 facing North takes Table 3's North column,
+// not the compass mean; a wall row turned to Roof takes the roofs' (the type, not the row, picks the SC).
+near("B.5 facing North: Table 3's North (-3.8), not the mean", sc.compute({ ...F280_1, "transmissionLoss.opaque86.facing": "North" }),
+  ua("opaque85") * 15.0 + ua("opaque86") * -3.8 + ua("opaque87") * -3.3 + ua("doors") * WALL_MEAN_LE14);
+near("B.5 facing Average: the compass mean, as every wall before", sc.compute({ ...F280_1, "transmissionLoss.opaque86.facing": "Average" }), byHand);
+near("a wall row typed Roof takes the roofs' 15.0", sc.compute({ ...F280_1, "transmissionLoss.opaque86.type": "roof" }),
+  ua("opaque85") * 15.0 + ua("opaque86") * 15.0 + ua("opaque87") * -3.3 + ua("doors") * WALL_MEAN_LE14);
 
 // A city F280 has no row for: Unavailable, never a number.
 const none = sc.compute({ ...F280_1, "climate.location.city": "No Such Place" });

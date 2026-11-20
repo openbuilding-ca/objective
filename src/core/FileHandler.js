@@ -665,14 +665,14 @@
         e_118: "HRV",
         l_122: "0",
         i_122: "F280",
-        // The opening rows after the first (added 2026-11-20, Openings.js), every column at its row's
-        // own default: a file without them has none (area 0), and a row + shows later starts clean -
-        // its orientation, SHGC, shading and U-value never the previous project's
+        // The envelope rows' fields (added 2026-11-20, Openings.addedFields), every one at its own
+        // default: a file without them has no extra rows (area 0), its opaque rows their old types (B.5
+        // facing Average), no L or H - and a row + shows later starts clean, never the previous project's
         ...Object.fromEntries(
-          window.TEUI.Openings.SLOTS.flatMap(o => [
-            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
-            `g_${o.s11}`,
-          ]).map(id => [id, String(this.fieldManager.getField(id)?.defaultValue ?? "")])
+          window.TEUI.Openings.addedFields().map(id => [
+            id,
+            String(this.fieldManager.getField(id)?.defaultValue ?? ""),
+          ])
         ),
       };
       // The display follows in the model on screen, as an imported value's
@@ -1305,12 +1305,9 @@
           "d_96",
           "d_97",
 
-          // The opening rows after the first (Openings.js): S10's area, orientation, SHGC, shading;
-          // S11's U-value (its area is S10's)
-          ...window.TEUI.Openings.SLOTS.flatMap(o => [
-            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
-            `g_${o.s11}`,
-          ]),
+          // The envelope rows' fields (Openings.addedFields): the door / window rows after the first,
+          // every opaque row's type, facing, L and H, and the opaque rows after the first
+          ...window.TEUI.Openings.addedFields(),
 
           // Section 12: Volume Metrics
           "d_103",

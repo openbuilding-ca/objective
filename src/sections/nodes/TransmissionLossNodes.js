@@ -17,10 +17,21 @@
   // Component definitions - matches Section11.js legacy structure
   // NOTE: every heat GAIN (k column) is the component's share of the ISO 52016-1
   // monthly cooling need (cooling.iso52016); the heat losses are unchanged
+  // The opaque rows (Openings.js; Andy 2026-11-20): each its own component, its type (c_) and, above
+  // grade, its facing (cf_) chosen per row. The old component ids - roof, walls, exposedFloor,
+  // wallsBelowGrade, slabOnGrade - are now the per-TYPE sums (OPAQUE TYPE SUMS below), so every reader of
+  // the fixed rows (BASESIMP, S12, S21, Wombat's footprint, the reference RSIs) reads its type's total.
+  const O = window.TEUI.Openings;
+  const opaqueComponent = o => ({
+    row: o.s11,
+    id: o.id,
+    label: `Opaque ${O.s11RowId(o)}`,
+    input: "rsi",
+    opaque: o
+  });
+
   const AIR_FACING_COMPONENTS = [
-    { row: 85, id: "roof", label: "Roof/Ceiling", input: "rsi" },
-    { row: 86, id: "walls", label: "Walls Above Grade", input: "rsi" },
-    { row: 87, id: "exposedFloor", label: "Exposed Floor", input: "rsi" },
+    ...O.ABOVE.map(opaqueComponent),
     { row: 88, id: "doors", label: "Doors", input: "uvalue" },
     { row: 89, id: "windowNorth", label: "Window North", input: "uvalue" },
     { row: 90, id: "windowEast", label: "Window East", input: "uvalue" },
@@ -37,31 +48,30 @@
     }))
   ];
 
-  const GROUND_FACING_COMPONENTS = [
-    { row: 94, id: "wallsBelowGrade", label: "Walls Below Grade", input: "rsi" },
-    { row: 95, id: "slabOnGrade", label: "Slab on Grade", input: "rsi" }
-  ];
+  const GROUND_FACING_COMPONENTS = O.BELOW.map(opaqueComponent);
 
   const ALL_COMPONENTS = [...AIR_FACING_COMPONENTS, ...GROUND_FACING_COMPONENTS];
 
   // Interior surface film resistance by component (m²K/W), by direction of heat flow. Used for the
   // surface temperatures (o_85-o_95) and as each RSI row's floor: no assembly's total resistance can
   // fall below its own surface film, so an RSI of 0 (an uninsulated assembly) still loses heat.
+  // An opaque row's film is its TYPE's (Openings.TYPES: roof 0.10 up, walls 0.13, floors 0.17 down) -
+  // filmFor() below, which reads the row's type input.
   const R_SI_MAP = {
-    roof: 0.10,           // upward heat flow
-    walls: 0.13,          // horizontal
-    exposedFloor: 0.17,   // downward
     doors: 0.13,          // horizontal
     windowNorth: 0.13,    // horizontal
     windowEast: 0.13,     // horizontal
     windowSouth: 0.13,    // horizontal
     windowWest: 0.13,     // horizontal
     skylights: 0.10,      // upward
-    wallsBelowGrade: 0.13, // horizontal
-    slabOnGrade: 0.17,    // downward
     // the opening rows after the first: doors and windows in a wall, horizontal
     ...Object.fromEntries(window.TEUI.Openings.SLOTS.map(o => [o.id, 0.13]))
   };
+
+  // A component's type and film: an opaque row's type from its input (the Openings default when unset)
+  const typeIn = (c, inputs) => (O.TYPES[inputs[`transmissionLoss.${c.id}.type`]] ? inputs[`transmissionLoss.${c.id}.type`] : c.opaque.type);
+  const filmFor = (c, inputs) => (c.opaque ? O.TYPES[typeIn(c, inputs)].film : R_SI_MAP[c.id]);
+  const typeDeps = c => (c.opaque ? [`transmissionLoss.${c.id}.type`] : []);
 
   function parseNum(value, defaultVal = 0) {
     if (value === null || value === undefined || value === "N/A") return defaultVal;
@@ -84,7 +94,30 @@
     // ========================================================================
     // INPUTS - Component areas and thermal properties
     // ========================================================================
-    ALL_COMPONENTS.forEach(({ row, id, label, input }) => {
+    ALL_COMPONENTS.forEach(({ row, id, label, input, opaque }) => {
+      // An opaque row's type (c_, the label cell's dropdown) and, above grade, its facing (cf_): the
+      // first rows face Average (the compass mean every wall took before), a new row North
+      if (opaque) {
+        inputs.push({
+          id: `transmissionLoss.${id}.type`,
+          legacyId: `c_${row}`,
+          section: "S11",
+          classification: "C",
+          label: `${label} Element Type`,
+          defaultValue: opaque.type
+        });
+        if (opaque.group === "above") {
+          inputs.push({
+            id: `transmissionLoss.${id}.facing`,
+            legacyId: `cf_${row}`,
+            section: "S11",
+            classification: "C",
+            label: `${label} Wall Facing`,
+            defaultValue: O.isSlot(opaque) ? "North" : "Average"
+          });
+        }
+      }
+
       // Area: for rows with S10 bridge, register as computed node (not input)
       if (AREA_BRIDGE[row]) {
         const s10Row = AREA_BRIDGE[row];
@@ -164,7 +197,8 @@
     // ========================================================================
     // U-VALUE / RSI CONVERSIONS
     // ========================================================================
-    ALL_COMPONENTS.forEach(({ row, id, label, input }) => {
+    ALL_COMPONENTS.forEach((c) => {
+      const { row, id, label, input } = c;
       if (input === "rsi") {
         // RSI input -> compute U-value
         graph.registerNode({
@@ -172,13 +206,13 @@
           legacyId: `g_${row}`,
           section: "S11",
           classification: "C",
-          dependencies: [`transmissionLoss.${id}.rsi`],
+          dependencies: [`transmissionLoss.${id}.rsi`, ...typeDeps(c)],
           label: `${label} U-Value (W/m²K)`,
           compute: (inputs) => {
             const rsi = parseNum(inputs[`transmissionLoss.${id}.rsi`], 5);
             // Was `rsi > 0 ? 1 / rsi : 0`: an RSI of 0 read as U 0, zero heat loss on the row, the
             // opposite of an uninsulated assembly. The row's own surface film is the least it can be.
-            return 1 / Math.max(rsi, R_SI_MAP[id]);
+            return 1 / Math.max(rsi, filmFor(c, inputs));
           }
         });
       } else {
@@ -259,7 +293,8 @@
     // ========================================================================
     // HEAT LOSS CALCULATIONS - Ground-Facing Components
     // ========================================================================
-    GROUND_FACING_COMPONENTS.forEach(({ row, id, label }) => {
+    GROUND_FACING_COMPONENTS.forEach((c) => {
+      const { row, id, label } = c;
       graph.registerNode({
         id: `transmissionLoss.${id}.heatLoss`,
         legacyId: `i_${row}`,
@@ -268,6 +303,9 @@
         dependencies: [
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
+          ...typeDeps(c),
+          "transmissionLoss.wallsBelowGrade.area",
+          "transmissionLoss.slabOnGrade.area",
           "climate.groundFacing.hdd",
           "ground.methodInEffect",
           "ground.basesimp"
@@ -275,11 +313,19 @@
         label: `${label} Heat Loss (kWh/yr)`,
         compute: (inputs) => {
           // F280 Mode On (BASESIMP): the row's share of the foundation's heating-season loss
-          // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest)
+          // (ground.basesimp.annual: walls = above grade + their below-grade share, slab = the rest),
+          // split over the rows of its type by area (one row of a type takes it whole)
           if (inputs["ground.methodInEffect"] === "BASESIMP") {
             const bs = inputs["ground.basesimp"];
             if (!bs || bs.error) return "Unavailable";
-            return id === "slabOnGrade" ? bs.annual.slab : bs.annual.walls;
+            const type = typeIn(c, inputs);
+            const loss = type === "slabOnGrade" ? bs.annual.slab : bs.annual.walls;
+            const total = parseNum(inputs[`transmissionLoss.${type}.area`]);
+            const area = parseNum(inputs[`transmissionLoss.${id}.area`]);
+            // a type with no area keeps its loss on its first row (a slab's edge strip reaches B.9's
+            // walls figure with no below-grade wall, as it always did)
+            if (!(total > 0)) return O.TYPES[type].base === String(row) ? loss : 0;
+            return loss * (area / total);
           }
           const groundHdd = inputs["climate.groundFacing.hdd"];
           if (isUnavailable(groundHdd)) return "Unavailable";
@@ -303,6 +349,66 @@
         dependencies: ["cooling.iso52016"],
         label: `${label} Heat Gain (kWh/yr)`,
         compute: (inputs) => inputs["cooling.iso52016"]?.rows?.[id] ?? 0
+      });
+    });
+
+    // ========================================================================
+    // OPAQUE TYPE SUMS (Andy 2026-11-20): transmissionLoss.<type>.* over the rows of its grade that hold
+    // the type - the ids the fixed rows had, so BASESIMP, S12, S21, F280, Wombat and the reference RSIs
+    // read the type's total. area, heatLoss, heatGain: sums. uValue: UA / A. rsi: the AREA-WEIGHTED INPUT
+    // RSI (BASESIMP reads it as the added insulation, so a single uninsulated row stays 0, not its film).
+    // With no area, U and RSI are the first row of the type's: one row of a type reads exactly as it did.
+    // ========================================================================
+    Object.entries(O.TYPES).forEach(([type, t]) => {
+      const pool = (t.grade === "above" ? AIR_FACING_COMPONENTS : GROUND_FACING_COMPONENTS).filter(c => c.opaque);
+      const deps = suffixes => pool.flatMap(c => [`transmissionLoss.${c.id}.type`, ...suffixes.map(s => `transmissionLoss.${c.id}.${s}`)]);
+      const rowsOf = inputs => pool.filter(c => typeIn(c, inputs) === type);
+      const sum = (inputs, s) => rowsOf(inputs).reduce((total, c) => total + parseNum(inputs[`transmissionLoss.${c.id}.${s}`]), 0);
+      const weighted = (inputs, perRow) => {
+        const rows = rowsOf(inputs);
+        const area = rows.reduce((a, c) => a + parseNum(inputs[`transmissionLoss.${c.id}.area`]), 0);
+        if (area > 0) return rows.reduce((s, c) => s + parseNum(inputs[`transmissionLoss.${c.id}.area`]) * perRow(c), 0) / area;
+        return rows.length ? perRow(rows[0]) : 0;
+      };
+      graph.registerNode({
+        id: `transmissionLoss.${type}.area`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["area"]),
+        label: `${t.label}: Total Area (m²)`,
+        compute: (inputs) => sum(inputs, "area")
+      });
+      graph.registerNode({
+        id: `transmissionLoss.${type}.uValue`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["area", "uValue"]),
+        label: `${t.label}: U-Value, area-weighted (W/m²K)`,
+        compute: (inputs) => weighted(inputs, c => parseNum(inputs[`transmissionLoss.${c.id}.uValue`]))
+      });
+      graph.registerNode({
+        id: `transmissionLoss.${type}.rsi`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["area", "rsi"]),
+        label: `${t.label}: RSI, area-weighted input (m²K/W)`,
+        compute: (inputs) => weighted(inputs, c => parseNum(inputs[`transmissionLoss.${c.id}.rsi`]))
+      });
+      graph.registerNode({
+        id: `transmissionLoss.${type}.heatLoss`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["heatLoss"]),
+        label: `${t.label}: Total Heat Loss (kWh/yr)`,
+        compute: (inputs) => sum(inputs, "heatLoss")
+      });
+      graph.registerNode({
+        id: `transmissionLoss.${type}.heatGain`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["heatGain"]),
+        label: `${t.label}: Total Heat Gain (kWh/yr)`,
+        compute: (inputs) => sum(inputs, "heatGain")
       });
     });
 
@@ -731,7 +837,8 @@
     // R_si varies by component type (R_SI_MAP, top of file); exterior temp varies air vs ground
     // ========================================================================
 
-    AIR_FACING_COMPONENTS.forEach(({ row, id, label }) => {
+    AIR_FACING_COMPONENTS.forEach((c) => {
+      const { row, id, label } = c;
       graph.registerNode({
         id: `transmissionLoss.${id}.surfaceTemp`,
         legacyId: `o_${row}`,
@@ -740,6 +847,7 @@
         dependencies: [
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
+          ...typeDeps(c),
           "climate.heating.setpoint",
           "climate.temperature.winterAverage"
         ],
@@ -751,14 +859,15 @@
           const tInterior = parseNum(inputs["climate.heating.setpoint"], 21);
           const tExterior = parseNum(inputs["climate.temperature.winterAverage"], -5);
           const deltaT = tInterior - tExterior;
-          const rSi = R_SI_MAP[id] || 0.13;
+          const rSi = filmFor(c, inputs) || 0.13;
           const tSi = tInterior - (uValue * deltaT * rSi);
           return Math.round(tSi * 100) / 100;
         }
       });
     });
 
-    GROUND_FACING_COMPONENTS.forEach(({ row, id, label }) => {
+    GROUND_FACING_COMPONENTS.forEach((c) => {
+      const { row, id, label } = c;
       graph.registerNode({
         id: `transmissionLoss.${id}.surfaceTemp`,
         legacyId: `o_${row}`,
@@ -767,6 +876,7 @@
         dependencies: [
           `transmissionLoss.${id}.area`,
           `transmissionLoss.${id}.uValue`,
+          ...typeDeps(c),
           "climate.heating.setpoint"
         ],
         label: `${label} Surface Temperature (°C)`,
@@ -777,7 +887,7 @@
           const tInterior = parseNum(inputs["climate.heating.setpoint"], 21);
           const groundTemp = 10; // constant
           const deltaT = tInterior - groundTemp;
-          const rSi = R_SI_MAP[id] || 0.17;
+          const rSi = filmFor(c, inputs) || 0.17;
           const tSi = tInterior - (uValue * deltaT * rSi);
           return Math.round(tSi * 100) / 100;
         }

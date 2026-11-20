@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-20T14:38:47.777Z",
+  "timestamp": "2026-11-20T15:14:51.680Z",
   "summary": {
     "total": 13,
     "passed": 13,
@@ -15,7 +15,7 @@
   "byFile": [
     {
       "file": "01-ThreeFeathersTerrace.csv",
-      "matches": 873,
+      "matches": 1016,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -73,7 +73,7 @@
         "populateDebug": {
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -83,7 +83,7 @@
     },
     {
       "file": "02-SolarQ.csv",
-      "matches": 868,
+      "matches": 1011,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -141,7 +141,7 @@
         "populateDebug": {
           "standardName": "OBC SB12 3.1.1.2.C1",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -151,7 +151,7 @@
     },
     {
       "file": "03-Meadow.csv",
-      "matches": 873,
+      "matches": 1016,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -209,7 +209,7 @@
         "populateDebug": {
           "standardName": "PH Classic",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -219,7 +219,7 @@
     },
     {
       "file": "04-OttawaApartments.csv",
-      "matches": 869,
+      "matches": 1012,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -277,7 +277,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -287,7 +287,7 @@
     },
     {
       "file": "05-TheOaksPhase01Apartments.csv",
-      "matches": 871,
+      "matches": 1014,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -345,7 +345,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -355,7 +355,7 @@
     },
     {
       "file": "06-BlossomParkApartments.csv",
-      "matches": 869,
+      "matches": 1012,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -413,7 +413,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -423,7 +423,7 @@
     },
     {
       "file": "07-DogwoodMURB.csv",
-      "matches": 869,
+      "matches": 1012,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -481,7 +481,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -491,7 +491,7 @@
     },
     {
       "file": "08-EmbassyCommonsMURB.csv",
-      "matches": 869,
+      "matches": 1012,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -549,7 +549,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -559,7 +559,7 @@
     },
     {
       "file": "09-RowingCentre.csv",
-      "matches": 871,
+      "matches": 1014,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -617,7 +617,7 @@
         "populateDebug": {
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -627,7 +627,7 @@
     },
     {
       "file": "10-TheGreenwayResidence.csv",
-      "matches": 874,
+      "matches": 1017,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -685,7 +685,7 @@
         "populateDebug": {
           "standardName": "OBC SB12 3.1.1.2.C4",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -695,7 +695,7 @@
     },
     {
       "file": "11-CommunityCentre.csv",
-      "matches": 871,
+      "matches": 1014,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -753,7 +753,7 @@
         "populateDebug": {
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -763,7 +763,7 @@
     },
     {
       "file": "12-AberdeenHouse.csv",
-      "matches": 871,
+      "matches": 1014,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -821,7 +821,7 @@
         "populateDebug": {
           "standardName": "PH Low Energy",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="
@@ -831,7 +831,7 @@
     },
     {
       "file": "F280-1-Archetype1-2010s-Ottawa.csv",
-      "matches": 876,
+      "matches": 1019,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
@@ -889,7 +889,7 @@
         "populateDebug": {
           "standardName": "NBC T1",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 254,
+          "cFieldsFromStateManager": 310,
           "cFieldsCopiedFromTarget": 1,
           "cFieldsCopiedFromTargetList": [
             "l_63="

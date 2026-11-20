@@ -172,8 +172,9 @@
 
   // The opening rows after the first (Openings.js) format as their group's first row: S10's j/l, S11's
   // g/h/j/l/m/n/o
-  window.TEUI.Openings.SLOTS.forEach(o => {
-    FORMAT[`j_${o.s10}`] = FORMAT[`l_${o.s10}`] = "percent-2dp";
+  // (an opaque row after the first, S11's only, as B.5)
+  [...window.TEUI.Openings.SLOTS, ...window.TEUI.Openings.OPAQUE_SLOTS].forEach(o => {
+    if (o.s10) FORMAT[`j_${o.s10}`] = FORMAT[`l_${o.s10}`] = "percent-2dp";
     Object.assign(FORMAT, {
       [`g_${o.s11}`]: "number-3dp",
       [`h_${o.s11}`]: "percent-2dp",
@@ -204,7 +205,7 @@
     "o_85", "o_86", "o_87", "o_88", "o_89",
     "o_90", "o_91", "o_92", "o_93", "o_94", "o_95",
     "o_101", "o_102",
-    ...window.TEUI.Openings.SLOTS.map(o => `o_${o.s11}`),
+    ...[...window.TEUI.Openings.SLOTS, ...window.TEUI.Openings.OPAQUE_SLOTS].map(o => `o_${o.s11}`),
   ];
 
   // ==========================================================================
@@ -525,7 +526,7 @@
     }
 
     // S11: Transmission Losses (rows 85-95, 97, and the openings' twins after the first)
-    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, ...window.TEUI.Openings.SLOTS.map(o => o.s11)]) {
+    for (const row of [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, ...window.TEUI.Openings.SLOTS.map(o => o.s11), ...window.TEUI.Openings.OPAQUE_SLOTS.map(o => o.s11)]) {
       const jPct = readPct(`j_${row}`);
       const lPct = readPct(`l_${row}`);
       setIndicator(`j_${row}`, lossContribClass(jPct), "loss-indicator");

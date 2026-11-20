@@ -384,7 +384,8 @@
     // of its S11 components' shares, opaque solar included; the j column is
     // that per m².
     const OPENINGS = window.TEUI.Openings;
-    const AIR_KEYS = ["roof", "walls", "exposedFloor", "doors", "windowNorth", "windowEast",
+    // the cooling calculation's rows: every opaque row above grade (Openings.js) and every opening
+    const AIR_KEYS = [...OPENINGS.ABOVE.map(o => o.id), "doors", "windowNorth", "windowEast",
       "windowSouth", "windowWest", "skylights", ...OPENINGS.SLOTS.map(o => o.id)];
 
     // The openings in the WALLS (d_107 WWR, g_107 wall area, i_107 window & door loss): every door and
@@ -398,7 +399,7 @@
       OPENINGS.isSlot(o) && inputs[`radiantGains.row${o.s10}.orientation`] === "Skylight"
         ? sum
         : sum + parseNum(inputs[`transmissionLoss.${o.id}.${suffix}`]), 0);
-    const GROUND_KEYS = ["wallsBelowGrade", "slabOnGrade"];
+    const GROUND_KEYS = OPENINGS.BELOW.map(o => o.id);
     const share = (inputs, keys) =>
       keys.reduce((s, k) => s + (inputs["cooling.iso52016"]?.rows?.[k] ?? 0), 0);
 
