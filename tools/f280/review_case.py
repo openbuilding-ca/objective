@@ -3,10 +3,13 @@
 
     python3 tools/f280/review_case.py            # writes all four, checks the untouched cases are unchanged
 
-Each review case is its case study, copied, with the TARGET run as an F280 annual model: S21 F280 Mode On
-(BASESIMP + AIM-2 in the annual stream) and the house's foundation and AIM-2 facts (Andy's, 2026-11-19,
-ABCD.EARTH ABCD-OBJECTIVE-PRO.md §0). The REFERENCE is the case's own, pinned to F280 Mode Off. Every F280
-column is written on both rows, so nothing is inherited from the project loaded before it.
+Each review case is ONE house read two ways (Andy 2026-11-20: "Target uses OBJECTIVE values, Reference uses
+F280 values"): the TARGET is the case study's own Target, F280 Mode Off (OBJECTIVE's methods); the REFERENCE
+is the IDENTICAL building - the Target row, copied - with F280 Mode On (BASESIMP + AIM-2 in the annual
+stream, F280's internal gains). Both rows carry the house's foundation and AIM-2 facts (Andy's, 2026-11-19,
+ABCD.EARTH ABCD-OBJECTIVE-PRO.md §0), so S21 reads F280's way in either model, and every column is written
+on both rows, so nothing is inherited from the project loaded before it. (Until 2026-11-20 the Target ran
+F280 and the Reference was the case's code-minimum Reference: the 296 TEUI on Hemmingford's Reference.)
 
 Inputs left blank (0) on purpose, each taking the house's own figure:
   G.4.6 h_26  exposed perimeter      -> Wombat's footprint perimeter (S19 19.2b)
@@ -83,19 +86,27 @@ def review_name(case):
 def build(case, settings):
     text = (CASES / case).read_text(encoding="utf-8")
     rows = list(csv.reader(io.StringIO(text)))
-    header, target, reference = rows[0], rows[1], rows[2]
+    header, target = rows[0], rows[1]
     ids = [h.split(":")[0] for h in header]
-    width = len(header)
-    target += [""] * (width - len(target))
-    reference += [""] * (width - len(reference))
+    target += [""] * (len(header) - len(target))
     for fid, (label, default) in COLUMNS.items():
         if fid in ids:
             raise SystemExit(f"{case}: already has {fid}; edit the case, not this script")
         header.append(f"{fid}: {label}")
-        target.append("On" if fid == "f280_mode" else settings.get(fid, default))
-        reference.append(default)
+        target.append(settings.get(fid, default))  # f280_mode: "Off", OBJECTIVE's methods
     name = ids.index("h_14")
-    target[name] = reference[name] = f"{target[name]} (CSA F280 Review Format)"
+    target[name] = f"{target[name]} (CSA F280 Review Format)"
+    reference = list(target)  # the identical building
+    reference[header.index("f280_mode: F280 Mode")] = "On"
+    # The identical MACHINE too, as Mirror All Inputs makes it (ReferenceToggle): the Target's heat pump
+    # cools at M.1.3, computed from its HSPF; the Reference's at its own M.3.3, the standard's minimum when
+    # blank (Andy 2026-10-31 / 11-19). So the Reference's M.3.3 is the Target's COPc, by MechanicalNodes'
+    # formulas (copHeat = HSPF / 3.412; copCoolDerived = max(1, copHeat - 1), each to 4 places).
+    # f280ReviewCases.spec.cjs holds it: the Reference turned Off reads the Target's TEUI.
+    heating, cooling = target[ids.index("d_113")], target[ids.index("d_116")]
+    if heating == "Heatpump" and cooling not in ("No Cooling", "Separate Cooling"):
+        cop_heat = round(float(target[ids.index("f_113")]) / 3.412, 4)
+        reference[ids.index("j_116")] = f"{max(1.0, round(cop_heat - 1, 4)):.4f}"
     out = io.StringIO()
     csv.writer(out, lineterminator="\n").writerows([header, target, reference])
     return out.getvalue()
