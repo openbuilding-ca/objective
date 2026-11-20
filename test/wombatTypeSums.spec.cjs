@@ -182,3 +182,46 @@ test("S19's table mirrors S12, 19.3 is the ridge, the legend gives L x H per fac
   expect(got.walls, "Wombat's walls: a quarter short of S11's").toBeCloseTo(176.1, 1);
   expect(got.legend).toContain(`Walls: ${got.walls.toFixed(2)} m² (S11: 248.82 m²)`);
 });
+
+/**
+ * Wombat's own settings in a file (2026-11-20): a case that carries them is drawn with them (Port Credit,
+ * 19.1 -0.1); a file without them takes Wombat's defaults (aspect -2.0, gable), never the previous
+ * project's - the aspect sets BASESIMP's perimeter when G.4.6 is blank. 19.FP follows S12's storeys
+ * (Andy: "a half storey ~= Mezzanine"), locked: Hemmingford's 1.5 a mezzanine, Port Credit's 2 equal.
+ */
+test("Wombat's settings come from the file or the defaults; 19.FP follows S12's storeys", async ({ page }) => {
+  test.setTimeout(180000);
+  await page.addInitScript(() => localStorage.setItem("disclaimerSeen", "true"));
+  const auto = page.waitForEvent("console", { predicate: (m) => /\[init\.js\] Auto-load/.test(m.text()), timeout: 30000 });
+  await page.goto(URL);
+  await auto;
+  const wombat = () =>
+    page.evaluate(() => {
+      const SM = window.TEUI.StateManager, st = window.TEUI.ComputationIntegration.getState();
+      const fp = document.querySelector('#wombat select[data-field-id="d_158"]');
+      return {
+        aspect: [SM.getValue("d_154"), SM.getValue("ref_d_154")].map(Number),
+        roof: [SM.getValue("d_159"), SM.getValue("ref_d_159")],
+        perimeter: st.getValueForModel(st.getActiveModelId(), "wombat.footprint.perimeter"),
+        floorplate: fp?.value,
+        locked: fp?.disabled,
+      };
+    });
+
+  await load(page, "src/template/case-studies/10-residence-sb12-duplex.csv");
+  const portCredit = await wombat();
+  expect(portCredit.aspect, "Port Credit's file: 19.1 -0.1 in both models").toEqual([-0.1, -0.1]);
+  expect(portCredit.roof).toEqual(["biplanar", "biplanar"]);
+  expect(portCredit.floorplate, "2 storeys: equal floorplates").toBe("equal");
+  expect(portCredit.locked).toBe(true);
+
+  await load(page, "src/template/case-studies/02-residence-sb12-net-zero.csv");
+  const collingwood = await wombat();
+  expect(collingwood.aspect, "no Wombat columns: the default, not Port Credit's").toEqual([-2, -2]);
+  expect(collingwood.roof).toEqual(["biplanar", "biplanar"]);
+
+  await load(page, "src/template/case-studies/03-residence-phi-classic.csv");
+  const hemmingford = await wombat();
+  expect(hemmingford.aspect).toEqual([-1.1, -1.1]);
+  expect(hemmingford.floorplate, "1.5 storeys: a mezzanine").toBe("mezzanine");
+});

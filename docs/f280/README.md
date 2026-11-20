@@ -175,15 +175,18 @@ analysis"*. Measured on the four Part 9 houses (the "CSA F280 Review Format" row
 
 | House (TEUI, kWh/m²·yr) | Off (OBJECTIVE) | On, BASESIMP + AIM-2 only | On, + F280's gains | Bills |
 |---|---|---|---|---|
-| 03 Hemmingford | 57.1 | 57.9* | 57.0 | 56.3 |
+| 03 Hemmingford | 57.1 | 57.9* | 57.3 | 56.3 |
 | 02 Collingwood | 103.4 | 99.6 | 84.7 | 103.5 |
 | 12 Hawkesbury | 63.4 | 64.0 | 46.6 | 57.8 |
-| 10 Port Credit | 13.2 | 13.3 | −12.1 (net of on-site PV) | 14.8 |
+| 10 Port Credit | 13.2 | 13.3* | −11.8 (net of on-site PV) | 14.8 |
 
 \* Measured with B.19.4 blank (AIM-2 at storeys × F2F, 4.05 m). Since 2026-11-20 Hemmingford types B.19.4 = 4.69 m:
 a 1.5-storey house with pony walls under a cathedral ceiling, so its highest ceiling is the ridge (Wombat's, eave 3.82 +
 rise 0.87, until the drawings give it). That moved the "+ F280's gains" figure 56.7 → 57.0 (infiltration 498 → 541 kWh);
-this column was not re-measured.
+this column was not re-measured. Since the same day Hemmingford and Port Credit also carry Wombat's footprint
+from Andy's screenshots (S19 19.1 aspect −1.10 and −0.10, gable roofs): G.4.6 is blank in both, so BASESIMP takes
+Wombat's perimeter, 47.65 → 44.14 m and 58.21 → 50.47 m, and its ground loss rises (1002 → 1064 kWh; 4129 → 4427 kWh).
+The "+ F280's gains" figures moved 57.0 → 57.3 and −12.1 → −11.8; the starred column was not re-measured.
 
 The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation, air leakage): they move TEUI by
 −3.8 to +0.8. The gains move it by −1.2 to −25.4. For Annex J none of this matters: Annex J compares design W
@@ -202,10 +205,10 @@ AVERAGE solar. F280's figures (S21) are full design loads.
 
 | House | OBJECTIVE enclosure (Off) | F280 enclosure (On) | F280 air: leakage + ventilation | F280 total design loss |
 |---|---|---|---|---|
-| 03 Hemmingford | 3.13 | 3.23 | 0.73 | **3.97** |
+| 03 Hemmingford | 3.13 | 3.24 | 0.73 | **3.97** |
 | 02 Collingwood | 6.97 | 6.82 | 0.57 | **7.38** |
 | 12 Hawkesbury | 2.87 | 2.97 | 0.57 | **3.54** |
-| 10 Port Credit | 8.69 | 8.53 | 3.97 | **12.50** |
+| 10 Port Credit | 8.69 | 8.62 | 3.97 | **12.58** |
 
 The envelopes agree within ±4 % (OBJECTIVE's ground at 10 °C vs F280's BASESIMP). The whole difference is AIR, which
 OBJECTIVE's S15 heating peak does not carry: small in the tight PH houses (~0.6 kW), but 4 kW at Port Credit, 32 % of the

@@ -449,7 +449,7 @@
   /** The sections' postStamp hooks (display mirrors, key values, the rules that ghost or lock an input). */
   function runPostStamp() {
     const modules = window.TEUI.SectionModules || {};
-    for (const key of ["sect01", "sect03", "sect10", "sect11", "sect12", "sect13", "sect16", "sect21"]) {
+    for (const key of ["sect01", "sect03", "sect10", "sect11", "sect12", "sect13", "sect16", "sect19", "sect21"]) {
       if (modules[key]?.postStamp) modules[key].postStamp();
     }
   }

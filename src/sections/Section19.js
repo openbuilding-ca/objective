@@ -301,7 +301,8 @@ window.TEUI.SectionModules.sect19 = (function () {
           value: "mezzanine",
           section: "wombat",
           tooltip: true,
-          label: "Geometry interpretation for fractional stories",
+          label:
+            "Follows S12's storeys: a fractional count is a mezzanine (read-only)",
           options: [
             { value: "mezzanine", name: "Mezzanine" },
             { value: "equal", name: "Equal Floorplates" },
@@ -1639,11 +1640,39 @@ window.TEUI.SectionModules.sect19 = (function () {
   }
 
   /**
-   * S19's display rows for the model on screen: 19.Ae / 19.Ag and their U-values mirror S12's B.16 / B.17
+   * 19.FP follows S12's storeys (Andy 2026-11-20: "Floorplate option should read from S12, where a half
+   * storey ~= Mezzanine"): a fractional count is a mezzanine / partial floor, a whole one equal
+   * floorplates. Locked by rule, so ghosted; nothing in the solve or the drawing reads it.
+   */
+  function stampFloorplate(isReference) {
+    const stories = parseFloat(getModeAwareValue("d_103", isReference));
+    const select = document.querySelector(
+      '#wombat select[data-field-id="d_158"]'
+    );
+    if (select && Number.isFinite(stories)) {
+      select.value = stories % 1 === 0 ? "equal" : "mezzanine";
+    }
+    window.TEUI.DOMBridge?.ghostField("d_158", true);
+  }
+
+  /**
+   * S19's display rows for the model on screen (19.3 from this solve, the rest via stampS12Rows): 19.Ae / 19.Ag and their U-values mirror S12's B.16 / B.17
    * (they held the template's numbers before 2026-11-20: Ag 1100.93 on a 106.45 m2 slab), and 19.3 shows
    * this solve's building height, grade to ridge (a cathedral ceiling's highest point: S12 B.19.4).
    */
   function stampTableRows(geometry, isReference) {
+    stampS12Rows(isReference);
+    const el = document.querySelector('#wombat [data-field-id="h_156"]');
+    if (el && Number.isFinite(geometry.totalHeight)) {
+      el.textContent = window.TEUI.formatNumber(
+        geometry.totalHeight,
+        "number-2dp"
+      );
+    }
+  }
+
+  /** The rows that read S12 (19.Ae / 19.Ag, their U-values, 19.FP): after every stamp, activated or not. */
+  function stampS12Rows(isReference) {
     const sm = window.TEUI.StateManager;
     const pre = isReference ? "ref_" : "";
     const cell = id =>
@@ -1662,7 +1691,12 @@ window.TEUI.SectionModules.sect19 = (function () {
     ].forEach(([own, s12, format]) =>
       show(own, sm?.getValue(`${pre}${s12}`), format)
     );
-    show("h_156", geometry.totalHeight, "number-2dp");
+    stampFloorplate(isReference);
+  }
+
+  /** DOMBridge.runPostStamp: after an import or a recalculation, in the model on screen. */
+  function postStamp() {
+    stampS12Rows(!!window.TEUI.ReferenceToggle?.isReferenceMode?.());
   }
 
   function updateVisualization(mode = "target") {
@@ -2253,6 +2287,8 @@ window.TEUI.SectionModules.sect19 = (function () {
       `[WOMBAT calculateAll] Called - Current mode: ${mode}, isActivated: ${isActivated}`
     );
 
+    stampFloorplate(mode === "reference");
+
     // DUAL-ENGINE: ALWAYS run both Target and Reference calculations
     const targetGeometry = calculateTargetModel();
     const referenceGeometry = calculateReferenceModel();
@@ -2272,6 +2308,7 @@ window.TEUI.SectionModules.sect19 = (function () {
    * Called by ReferenceToggle when mode switches.
    */
   function onModeSwitch(mode) {
+    stampFloorplate(mode === "reference");
     if (isActivated) {
       updateVisualization(mode);
     }
@@ -2288,6 +2325,7 @@ window.TEUI.SectionModules.sect19 = (function () {
     initializeEventHandlers,
     onSectionRendered,
     onModeSwitch,
+    postStamp,
 
     // WOMBAT-specific exports
     solveGeometry,
