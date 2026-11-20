@@ -13,9 +13,12 @@ test.describe("Case Study Validation", () => {
       localStorage.setItem("disclaimerSeen", "true");
     });
 
-    // Load the calculator
-    const indexPath = path.join(__dirname, "..", "index.html");
-    await page.goto(`file://${indexPath}`);
+    // Load the calculator - over http (playwright.config.cjs's webServer), so
+    // the climate station loads. init.js fetches a sample project 1.5 s after
+    // start-up, which over http would land on top of the imports below - keep
+    // it out, as file:// did.
+    await page.route("**/src/template/case-studies/**", (route) => route.abort());
+    await page.goto("/index.html");
 
     // Wait for calculator to initialize
     await page.waitForFunction(
@@ -51,8 +54,20 @@ test.describe("Case Study Validation", () => {
             // Import CSV
             window.TEUI.FileHandler.processImportedCSV(csv);
 
-            // Wait for calculations
-            setTimeout(() => {
+            // Wait for calculations - and for each model's climate station,
+            // which is fetched and recalculates the page when it lands
+            const CS = window.TEUI.ClimateStation;
+            const stations = () => {
+              const st = window.TEUI.ComputationIntegration.getState();
+              return (st.getAllModels ? st.getAllModels() : [])
+                .map((m) => st.getValueForModel(m.id, "climate.station"))
+                .filter(Boolean);
+            };
+            const validate = () => {
+              if (stations().some((id) => !CS.get(id) && !CS.failure(id))) {
+                setTimeout(validate, 100);
+                return;
+              }
               try {
               // Run validation
               const graph = window.TEUI.ComputationIntegration.getGraph();
@@ -439,11 +454,14 @@ test.describe("Case Study Validation", () => {
                 }
               }
 
+              result.stations = stations().map((id) => ({ id, loaded: !!CS.get(id) }));
+
               resolve(result);
               } catch (innerErr) {
                 resolve({ error: `Inner error: ${innerErr.message}`, mismatches: 0, mismatchDetails: [] });
               }
-            }, 500);
+            };
+            setTimeout(validate, 500);
           } catch (err) {
             resolve({ error: err.message, mismatches: 0, mismatchDetails: [] });
           }
@@ -738,6 +756,13 @@ test.describe("Case Study Validation", () => {
     // Assert e_8 (Reference Annual Carbon) matches
     const e8Mismatches = allResults.filter(r => r.e8 && !r.e8.match).length;
     expect(e8Mismatches).toBe(0);
+
+    // Assert every case's climate station loaded, so its ISO 52016-1 cooling
+    // ran - without it the cooling rows read 0 and the parity above still holds
+    const stationNotLoaded = allResults
+      .filter(r => !r.error && !(r.stations.length && r.stations.every(s => s.loaded)))
+      .map(r => r.file);
+    expect(stationNotLoaded).toEqual([]);
   });
 });
 
