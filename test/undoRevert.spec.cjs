@@ -11,8 +11,11 @@ test.describe("Undo / Revert to Import", () => {
       localStorage.setItem("disclaimerSeen", "true");
     });
 
-    const indexPath = path.join(__dirname, "..", "index.html");
-    await page.goto(`file://${indexPath}`);
+    // Over http (playwright.config.cjs's webServer), so the climate station
+    // loads. init.js fetches a sample project 1.5 s after start-up, which over
+    // http would land on top of the import below - keep it out, as file:// did.
+    await page.route("**/src/template/case-studies/**", (route) => route.abort());
+    await page.goto("/index.html");
 
     await page.waitForFunction(
       () =>
