@@ -1597,6 +1597,11 @@ window.TEUI.SectionModules.sect03 = (function () {
     const configSelect = getElement(['[data-dropdown-id="dd_l_25"]']);
     if (configSelect && configSelect.value !== config) configSelect.value = config;
 
+    // G.4.5 does not apply to a slab on grade: BASESIMP's slab method takes its own 0.05 m
+    // (TransmissionLossNodes basesimpFor), so the depth is ghosted rather than shown as if read
+    const known = !!window.TEUI.BasesimpData?.configs?.[Number(config)];
+    window.TEUI.DOMBridge?.ghostField("d_26", known && window.TEUI.Basesimp.isSlab(Number(config)));
+
     const cell = document.querySelector('td[data-field-id="l_26b"]');
     const state = window.TEUI.ComputationIntegration?.getState?.();
     if (cell && state) {

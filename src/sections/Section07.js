@@ -528,20 +528,7 @@ window.TEUI.SectionModules.sect07 = (function () {
   }
 
   function setFieldGhosted(fieldId, shouldBeGhosted) {
-    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
-    if (valueCell) {
-      valueCell.classList.toggle("disabled-input", shouldBeGhosted);
-      const input = valueCell.querySelector(
-        'input, select, [contenteditable="true"]'
-      );
-      if (input) {
-        if (input.hasAttribute("contenteditable"))
-          input.contentEditable = !shouldBeGhosted;
-        else input.disabled = shouldBeGhosted;
-      }
-      if (valueCell.hasAttribute("contenteditable"))
-        valueCell.contentEditable = !shouldBeGhosted;
-    }
+    window.TEUI.DOMBridge?.ghostField(fieldId, shouldBeGhosted);
   }
 
   //==========================================================================

@@ -422,6 +422,19 @@
     }
 
     console.log(`[DOMBridge] Stamped ${stamped} inputs for ${isRef ? "reference" : "target"} mode`);
+
+    // The sections' display rules run AFTER the stamp, as after a recompute: a mode switch stamped the
+    // model's stored inputs over them (2026-11-20: S09's lighting under the Reference's F280 Mode On
+    // showed the stored 1.5, not its 0 in effect; S03 G.4.5's ghosting followed the other model)
+    runPostStamp();
+  }
+
+  /** The sections' postStamp hooks (display mirrors, key values, the rules that ghost or lock an input). */
+  function runPostStamp() {
+    const modules = window.TEUI.SectionModules || {};
+    for (const key of ["sect01", "sect03", "sect12", "sect13", "sect16", "sect21"]) {
+      if (modules[key]?.postStamp) modules[key].postStamp();
+    }
   }
 
   // ==========================================================================
@@ -506,10 +519,32 @@
   }
 
   // ==========================================================================
+  // GHOSTING - an input that does not apply to this building (Andy: "greying out values that are not
+  // relevant for a given building type or standard"). One helper, read by every section: the value cell
+  // and its label take .disabled-input, the input stops taking edits (a select: styles.css :disabled).
+  // ==========================================================================
+
+  function ghostField(fieldId, ghosted) {
+    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
+    if (!valueCell) return;
+    valueCell.classList.toggle("disabled-input", ghosted);
+    const input = valueCell.querySelector('input, select, [contenteditable="true"]');
+    if (input) {
+      if (input.hasAttribute("contenteditable")) input.contentEditable = !ghosted;
+      else input.disabled = ghosted;
+    }
+    if (valueCell.hasAttribute("contenteditable")) valueCell.contentEditable = !ghosted;
+    const labelCell = valueCell.previousElementSibling;
+    if (labelCell && labelCell.tagName === "TD" && !labelCell.hasAttribute("data-field-id")) {
+      labelCell.classList.toggle("disabled-input", ghosted);
+    }
+  }
+
+  // ==========================================================================
   // EXPORT
   // ==========================================================================
 
-  window.TEUI.DOMBridge = { stampAll, stampInputsForMode };
+  window.TEUI.DOMBridge = { stampAll, stampInputsForMode, runPostStamp, ghostField };
 
   console.log("[DOMBridge] Module loaded");
 })();

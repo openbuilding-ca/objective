@@ -42,6 +42,9 @@ window.TEUI.CoolingSankey = (function () {
       { name: "Ventilation Free Cooling/Vent Capacity", color: "#B0E0E6" }, // [25] - Free cooling
       { name: "V.3.3 Ventilation Exhaust", color: "#B0E0E6" }, // [26] - Exhaust ventilation
       { name: "B.12 TB Penalty (Removal)", color: "#A5D3ED" }, // [27] - TB penalty removal
+
+      // Appended so the indices above keep their meaning (2026-11-20: k_87 had been sent into [2])
+      { name: "B.6 Floor Exposed", color: "#FFB6A3" }, // [28] - Exposed floor transmission gains
     ],
 
     links: [
@@ -143,11 +146,11 @@ window.TEUI.CoolingSankey = (function () {
         id: "WallsAeGain",
       }, // B.5 Walls Ae
       {
-        source: 2,
+        source: 28,
         target: 0,
         value: getStateValue("k_87"),
         id: "FloorAeGain",
-      }, // B.6 Floor Ae (added - was missing!)
+      }, // B.6 Floor Exposed, its own node
       {
         source: 3,
         target: 0,

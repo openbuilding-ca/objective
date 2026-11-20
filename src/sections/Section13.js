@@ -1683,33 +1683,7 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Helper to add/remove a ghosting class to a field's TD element.
    */
   function setFieldGhosted(fieldId, shouldBeGhosted) {
-    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
-
-    if (valueCell) {
-      valueCell.classList.toggle("disabled-input", shouldBeGhosted);
-
-      const input = valueCell.querySelector(
-        'input, select, [contenteditable="true"]'
-      );
-      if (input) {
-        if (input.hasAttribute("contenteditable")) {
-          input.contentEditable = !shouldBeGhosted;
-        } else {
-          input.disabled = shouldBeGhosted;
-        }
-      }
-      if (valueCell.hasAttribute("contenteditable"))
-        valueCell.contentEditable = !shouldBeGhosted;
-
-      const labelCell = valueCell.previousElementSibling;
-      if (
-        labelCell &&
-        labelCell.tagName === "TD" &&
-        !labelCell.hasAttribute("data-field-id")
-      ) {
-        labelCell.classList.toggle("disabled-input", shouldBeGhosted);
-      }
-    }
+    window.TEUI.DOMBridge?.ghostField(fieldId, shouldBeGhosted);
   }
 
   /**
