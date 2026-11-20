@@ -23,10 +23,13 @@
 > change; 3.0 ACH50 (8.3.7 b) 0.95 gain / 0.94 loss; exhaust-only (8.3.4 c) 0.98 gain / 1.04 loss; no external shading (8.3.6 b)
 > 1.21. Not modelled: 8.3.4 b and 8.3.3 (room tests), 8.3.5 b-c (no interior-shading input).
 >
-> **Open, for Kieran:** (1) the turns' last ~5 %: walls take Table 3's solar correction on the compass mean, so they do not turn;
-> by facing they would. Since 2026-11-20 S11's walls are ROWS, each with a facing (a row facing Average keeps the compass mean),
-> and Table 3 reads each wall's facing - so F280-1 can turn once its walls are entered as one row per facing (today one row,
-> Average, as before). (2) 8.3.6 b over by 35 W: Annex A's shading as summer shading per row.
+> **Open, for Kieran:** (1) the turns' last ~5 % (each turn 85-142 W short of Annex J's change). Since 2026-11-20 S11's walls
+> are ROWS with a facing each, and Table 3 reads every wall's facing; F280-1 still enters its walls as one row facing Average
+> (the compass mean), so they do not turn. **Walls by facing are NOT the gap** - estimated (`tools/f280/turns_walls_estimate.py`,
+> its assumptions in its header: G.1.8 a)'s page-1 facings and an even E/W split): the diagonal turns would gain +12 to +14 W,
+> a tenth of their shortfall, and the 90-degree turns would LOSE ~71 W, the wrong way (the large E/W walls turn to N/S and take
+> Table 3's negative columns). The remainder is elsewhere, likely the windows' design-hour solar or shading, the same in every
+> turn. (2) 8.3.6 b over by 35 W: Annex A's shading as summer shading per row.
 > (3) Vb with or without the joist spaces (+47.2 m3; we include them, NRCan's definition). (4) A suspected ERRATUM in F280-12:
 > 8.3.9 a)'s Vancouver 1960s Archetype 2 row repeats Vancouver 1980s Archetype 1 digit for digit. (5) The other 31 cases of
 > 8.3.9 are not built (F280-1 is Archetype 1 / 2010s / Ottawa).
