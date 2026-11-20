@@ -633,11 +633,22 @@
         l_122: "0",
         i_122: "F280",
       };
+      // The display follows in the model on screen, as an imported value's
+      // does below: stampAll leaves a dropdown and a "" as they were.
+      const onScreen = window.TEUI.ReferenceToggle?.isReferenceMode?.()
+        ? "ref_"
+        : "";
       for (const prefix of ["", "ref_"]) {
         if (importedData[`${prefix}d_12`] === undefined) continue;
         for (const [added, value] of Object.entries(addedDefaults)) {
-          if (importedData[`${prefix}${added}`] === undefined) {
-            this.stateManager.setValue(`${prefix}${added}`, value, "imported");
+          if (importedData[`${prefix}${added}`] !== undefined) continue;
+          this.stateManager.setValue(`${prefix}${added}`, value, "imported");
+          if (prefix === onScreen) {
+            this.fieldManager.updateFieldDisplay(
+              added,
+              value,
+              this.fieldManager.getField(added)
+            );
           }
         }
       }
