@@ -39,7 +39,9 @@
 > solar (Cl. 6.2.2.1), Table 3's opaque solar correction (Cl. 6.2.1), the gains of Cl. 6.2.4 / 6.2.5. An input a method cannot give
 > makes its readers Unavailable, never 0. The house CSV carries every F280 input (`test/csvRoundTripF280.spec.cjs`). Sample
 > Projects carries a "CSA F280 Review Format" row under each Part 9 house (`tools/f280/review_case.py`,
-> `test/f280ReviewCases.spec.cjs`): under Mode On every house reads below its bills, because F280's design-hour gains also become
+> `test/f280ReviewCases.spec.cjs`): ONE building, the Target OBJECTIVE's (F280 Mode Off, the case study's own) and the Reference
+> the identical house under F280 Mode On (Andy 2026-11-20; until then the Target ran F280 and the Reference was the case's
+> code-minimum one). Under Mode On every house reads below its bills, because F280's design-hour gains also become
 > the house's plug electricity for the year ("F280 Mode as an ANNUAL model", below).
 >
 > **AIM-2** (2026-11-19): `src/core/Aim2.js` is AIM2.xls's AIM_2_Calcs cell for cell (tables `src/core/Aim2Data.js`;
@@ -177,7 +179,8 @@ The "BASESIMP + AIM-2 only" column isolates F280's heat-loss methods (foundation
 
 ## Peak loads: OBJECTIVE vs F280 on the four Part 9 houses (measured 2026-11-19)
 
-Each house loaded as its case study (OBJECTIVE, F280 Mode Off) and as its "CSA F280 Review Format" case (Mode On), every
+Each house loaded as its case study (OBJECTIVE, F280 Mode Off) and as its "CSA F280 Review Format" case (Mode On; since
+2026-11-20 that case's Reference, the same figures), every
 figure read from the app (`main` at `04c72b4`). **No column is "reality":** the bills give annual energy only, so nothing
 measured says what these houses' peak loads are. Note the scopes: OBJECTIVE's S15 heating peak (T.6.4, `d_137`) is the
 ENCLOSURE ONLY (no leakage, no ventilation); its cooling peak (T.6.5, `d_139`) is SENSIBLE, with the cooling season's
