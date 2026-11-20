@@ -15,6 +15,7 @@
 const path = require("path");
 
 global.window = { TEUI: {} };
+require(path.join(__dirname, "..", "src/core/Openings.js")); // the opening rows, read by the node files
 for (const f of ["src/core/Aim2Data.js", "src/core/Aim2.js", "src/core/F280Weather.js", "src/sections/nodes/VolumeMetricsNodes.js"]) {
   require(path.join(__dirname, "..", f));
 }

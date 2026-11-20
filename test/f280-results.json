@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19T20:31:42.649Z",
+  "timestamp": "2026-11-20T03:47:54.285Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": "yes for Annex J pp. 171-183 (Andy's screenshots 2026-11-19): 8.3.2 c-f, every 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a) (W and Btuh), 8.3.10 c-d",
   "not_modelled": [
@@ -150,11 +150,21 @@
           "rows": {
             "internal": 349.5063766468211,
             "glazing73": 0,
+            "glazing73a": 0,
+            "glazing73b": 0,
+            "glazing73c": 0,
             "glazing74": 147.2111207466024,
             "glazing75": 42.648683829097365,
             "glazing76": 340.4767805926694,
             "glazing77": 29.74610110658881,
             "glazing78": 0,
+            "glazing78a": 0,
+            "glazing78b": 0,
+            "glazing78c": 0,
+            "glazing78d": 0,
+            "glazing78e": 0,
+            "glazing78f": 0,
+            "glazing78g": 0,
             "roof": 22.764892983222836,
             "walls": 63.39984976881904,
             "vent": 21.400882018390384,

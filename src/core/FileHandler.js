@@ -653,6 +653,17 @@
         }
       }
 
+      // The opening rows after the first (added 2026-11-20, Openings.js): a file without them has none -
+      // their areas 0, never the previous project's - and the rows shown are the file's own
+      for (const o of window.TEUI.Openings.SLOTS) {
+        for (const prefix of ["", "ref_"]) {
+          if (importedData[`${prefix}d_${o.s10}`] === undefined) {
+            this.stateManager.setValue(`${prefix}d_${o.s10}`, "0", "imported");
+          }
+        }
+      }
+      window.TEUI.Openings.resetShown();
+
       const allEntries = Object.entries(importedData);
 
       // PASS 1: Control fields
@@ -1257,6 +1268,13 @@
           "d_96",
           "d_97",
 
+          // The opening rows after the first (Openings.js): S10's area, orientation, SHGC, shading;
+          // S11's U-value (its area is S10's)
+          ...window.TEUI.Openings.SLOTS.flatMap(o => [
+            ...["d", "e", "f", "g", "h"].map(col => `${col}_${o.s10}`),
+            `g_${o.s11}`,
+          ]),
+
           // Section 12: Volume Metrics
           "d_103",
           "g_103",
@@ -1323,7 +1341,7 @@
 
         // ✅ FIELD PRECISION FORMATTING: Apply specific decimal precision during export
         // U-values (g_88-g_93): Minimum 3dp for thermal accuracy
-        const uValueFields = ["g_88", "g_89", "g_90", "g_91", "g_92", "g_93"];
+        const uValueFields = ["g_88", "g_89", "g_90", "g_91", "g_92", "g_93", ...window.TEUI.Openings.SLOTS.map(o => `g_${o.s11}`)];
 
         // Coefficient fields that need 2dp precision
         const coefficient2dpFields = ["j_115", "j_116"];

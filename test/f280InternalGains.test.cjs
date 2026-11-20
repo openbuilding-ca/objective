@@ -11,6 +11,7 @@
 const path = require("path");
 
 global.window = { TEUI: { ComputationNodes: {} } };
+require(path.join(__dirname, "..", "src/core/Openings.js")); // the opening rows, read by the node files
 require(path.join(__dirname, "..", "src/sections/nodes/F280ComplianceNodes.js")); // owns F280's figures
 require(path.join(__dirname, "..", "src/sections/nodes/InternalGainsNodes.js"));
 const nodes = {};

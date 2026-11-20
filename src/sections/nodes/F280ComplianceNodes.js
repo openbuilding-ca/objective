@@ -444,7 +444,7 @@
       if (solar0 === undefined) return undefined;
       return solar0 * (LATITUDE_CORRECTED.has(facing) ? lFactor : 1);
     };
-    const GLAZING_ROWS = [73, 74, 75, 76, 77, 78];
+    const GLAZING_ROWS = window.TEUI.Openings.ALL.map(o => o.s10); // every door and window row
 
     graph.registerNode({
       id: "f280.peakSolarHeatGain",
@@ -498,7 +498,9 @@
       roof: (col) => [15.0, 12.2][col], // roofs and top storey ceilings
       walls: scWallsAverage,
       doors: scWallsAverage,
-      exposedFloor: (col) => [-3.3, -6.1][col] // floors over non-conditioned rooms; fully shaded
+      exposedFloor: (col) => [-3.3, -6.1][col], // floors over non-conditioned rooms; fully shaded
+      // the door rows after the first (Openings.js), as the first: the compass mean
+      ...Object.fromEntries(window.TEUI.Openings.SLOTS.filter(o => o.kind === "door").map(o => [o.id, scWallsAverage]))
     };
 
     graph.registerNode({

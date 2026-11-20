@@ -13,6 +13,7 @@
 const path = require("path");
 
 global.window = { TEUI: {} };
+require(path.join(__dirname, "..", "src/core/Openings.js")); // the opening rows, read by the node files
 require(path.join(__dirname, "..", "src/core/F280Weather.js"));
 require(path.join(__dirname, "..", "src/sections/nodes/F280ComplianceNodes.js"));
 const nodes = [];

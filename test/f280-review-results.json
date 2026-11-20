@@ -1,11 +1,8 @@
 {
   "03-residence-phi-classic": {
     "off": {
-      "mode": "Off",
       "teui": 57.1,
-      "bills": 56.3,
       "tedi": 15.42,
-      "refTeui": 296,
       "groundMethod": "OBJECTIVE",
       "infiltrationMethod": "OBJECTIVE",
       "annualGround_kWh": 751.1112,
@@ -17,22 +14,13 @@
       "aim2Error": null,
       "aim2_LRairh": 0.04366395461568773,
       "aim2_LRairc": 0.012312280590004776,
-      "s09": {
-        "d_65": "2.1",
-        "d_66": "1.50 (editable)",
-        "d_67": "3.0",
-        "g_64": "117.23"
-      },
       "internalAnnual_kWh": 6277.892325000001,
       "loss_W": null,
       "sensibleGain_W": 8436.272790473939
     },
     "on": {
-      "mode": "On",
       "teui": 56.7,
-      "bills": 56.3,
       "tedi": 21.16,
-      "refTeui": 296,
       "groundMethod": "BASESIMP",
       "infiltrationMethod": "AIM2",
       "annualGround_kWh": 1002.4930333036008,
@@ -44,22 +32,21 @@
       "aim2Error": null,
       "aim2_LRairh": 0.04494976341048734,
       "aim2_LRairc": 0.012118293238077671,
-      "s09": {
-        "d_65": "5.3",
-        "d_66": "0.00",
-        "d_67": "0.0",
-        "g_64": "70.00"
-      },
       "internalAnnual_kWh": 4781.728125000001,
       "loss_W": 3934,
       "sensibleGain_W": 8436.097037933092
     },
-    "reviewOff": {
-      "teui": 57.1,
-      "refTeui": 296
+    "bills": 56.3,
+    "refOffTeui": 57.1,
+    "s09On": {
+      "d_65": "5.3",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
     },
     "after": {
       "mode": "Off",
+      "refMode": "Off",
       "teui": 57.1,
       "s09": {
         "d_65": "2.1",
@@ -71,11 +58,8 @@
   },
   "02-residence-sb12-net-zero": {
     "off": {
-      "mode": "Off",
       "teui": 103.4,
-      "bills": 103.5,
       "tedi": 44.78,
-      "refTeui": 179.5,
       "groundMethod": "OBJECTIVE",
       "infiltrationMethod": "OBJECTIVE",
       "annualGround_kWh": 4832.132393617021,
@@ -87,22 +71,13 @@
       "aim2Error": null,
       "aim2_LRairh": 0.03412926931851866,
       "aim2_LRairc": 0.011386700326045121,
-      "s09": {
-        "d_65": "5.0",
-        "d_66": "1.50 (editable)",
-        "d_67": "3.0",
-        "g_64": "117.23"
-      },
       "internalAnnual_kWh": 13674.0023,
       "loss_W": null,
       "sensibleGain_W": 3236.3589785066006
     },
     "on": {
-      "mode": "On",
       "teui": 84.7,
-      "bills": 103.5,
       "tedi": 53.12,
-      "refTeui": 179.5,
       "groundMethod": "BASESIMP",
       "infiltrationMethod": "AIM2",
       "annualGround_kWh": 3836.8533973824883,
@@ -114,22 +89,21 @@
       "aim2Error": null,
       "aim2_LRairh": 0.0341976685905792,
       "aim2_LRairc": 0.01083227429395188,
-      "s09": {
-        "d_65": "4.0",
-        "d_66": "0.00",
-        "d_67": "0.0",
-        "g_64": "70.00"
-      },
       "internalAnnual_kWh": 6181.421,
       "loss_W": 7383,
       "sensibleGain_W": 3235.5928541345866
     },
-    "reviewOff": {
-      "teui": 103.4,
-      "refTeui": 179.5
+    "bills": 103.5,
+    "refOffTeui": 103.4,
+    "s09On": {
+      "d_65": "4.0",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
     },
     "after": {
       "mode": "Off",
+      "refMode": "Off",
       "teui": 103.4,
       "s09": {
         "d_65": "5.0",
@@ -141,11 +115,8 @@
   },
   "12-residence-phi-low-energy": {
     "off": {
-      "mode": "Off",
       "teui": 63.4,
-      "bills": 57.8,
       "tedi": 20.58,
-      "refTeui": 181.3,
       "groundMethod": "OBJECTIVE",
       "infiltrationMethod": "OBJECTIVE",
       "annualGround_kWh": 670.675446,
@@ -157,22 +128,13 @@
       "aim2Error": null,
       "aim2_LRairh": 0.03282905089884919,
       "aim2_LRairc": 0.009373787508155318,
-      "s09": {
-        "d_65": "5.0",
-        "d_66": "1.50 (editable)",
-        "d_67": "3.0",
-        "g_64": "117.23"
-      },
       "internalAnnual_kWh": 6908.062999999999,
       "loss_W": null,
       "sensibleGain_W": 3348.3372868812635
     },
     "on": {
-      "mode": "On",
       "teui": 46.6,
-      "bills": 57.8,
       "tedi": 32.77,
-      "refTeui": 181.3,
       "groundMethod": "BASESIMP",
       "infiltrationMethod": "AIM2",
       "annualGround_kWh": 898.5984458463739,
@@ -184,22 +146,21 @@
       "aim2Error": null,
       "aim2_LRairh": 0.03373498226988253,
       "aim2_LRairc": 0.009660787421870987,
-      "s09": {
-        "d_65": "5.9",
-        "d_66": "0.00",
-        "d_67": "0.0",
-        "g_64": "70.00"
-      },
       "internalAnnual_kWh": 4376.8171999999995,
       "loss_W": 3540,
       "sensibleGain_W": 3348.557702814997
     },
-    "reviewOff": {
-      "teui": 63.4,
-      "refTeui": 181.3
+    "bills": 57.8,
+    "refOffTeui": 63.4,
+    "s09On": {
+      "d_65": "5.9",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
     },
     "after": {
       "mode": "Off",
+      "refMode": "Off",
       "teui": 63.4,
       "s09": {
         "d_65": "5.0",
@@ -211,11 +172,8 @@
   },
   "10-residence-sb12-duplex": {
     "off": {
-      "mode": "Off",
       "teui": 13.2,
-      "bills": 14.8,
       "tedi": 44.16,
-      "refTeui": 188.4,
       "groundMethod": "OBJECTIVE",
       "infiltrationMethod": "OBJECTIVE",
       "annualGround_kWh": 5598.636324324325,
@@ -227,22 +185,13 @@
       "aim2Error": null,
       "aim2_LRairh": 0.1833472263783143,
       "aim2_LRairc": 0.056094082089817476,
-      "s09": {
-        "d_65": "5.0",
-        "d_66": "1.50 (editable)",
-        "d_67": "3.0",
-        "g_64": "117.23"
-      },
       "internalAnnual_kWh": 21698.3667,
       "loss_W": 13017,
       "sensibleGain_W": 5235.076617303128
     },
     "on": {
-      "mode": "On",
       "teui": -12.1,
-      "bills": 14.8,
       "tedi": 51.41,
-      "refTeui": 188.4,
       "groundMethod": "BASESIMP",
       "infiltrationMethod": "AIM2",
       "annualGround_kWh": 4128.651981661265,
@@ -254,22 +203,21 @@
       "aim2Error": null,
       "aim2_LRairh": 0.18533209378732318,
       "aim2_LRairc": 0.05639546084919317,
-      "s09": {
-        "d_65": "4.0",
-        "d_66": "0.00",
-        "d_67": "0.0",
-        "g_64": "70.00"
-      },
       "internalAnnual_kWh": 9497.7672,
       "loss_W": 12501,
       "sensibleGain_W": 5235.817893522668
     },
-    "reviewOff": {
-      "teui": 13.2,
-      "refTeui": 188.4
+    "bills": 14.8,
+    "refOffTeui": 13.2,
+    "s09On": {
+      "d_65": "4.0",
+      "d_66": "0.00",
+      "d_67": "0.0",
+      "g_64": "70.00"
     },
     "after": {
       "mode": "Off",
+      "refMode": "Off",
       "teui": 13.2,
       "s09": {
         "d_65": "5.0",

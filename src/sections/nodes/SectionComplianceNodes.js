@@ -59,6 +59,11 @@
     { id: "reference.transmissionLoss.windowSouth.uValue", legacyId: "ref_g_91", defaultValue: 2, classification: "C", section: "S11", label: "Reference Window South U-Value" },
     { id: "reference.transmissionLoss.windowWest.uValue", legacyId: "ref_g_92", defaultValue: 2, classification: "C", section: "S11", label: "Reference Window West U-Value" },
     { id: "reference.transmissionLoss.skylights.uValue", legacyId: "ref_g_93", defaultValue: 2, classification: "C", section: "S11", label: "Reference Skylights U-Value" },
+    // the opening rows after the first (Openings.js)
+    ...window.TEUI.Openings.SLOTS.map(o => ({
+      id: `reference.transmissionLoss.${o.id}.uValue`, legacyId: `ref_g_${o.s11}`, defaultValue: 2, classification: "C", section: "S11",
+      label: `Reference ${window.TEUI.Openings.s11RowId(o)} U-Value`
+    })),
 
     // S11: Thermal bridge penalty reference
     { id: "reference.transmissionLoss.thermalBridgePenalty", legacyId: "ref_d_97", defaultValue: 20, classification: "C", section: "S11", label: "Reference Thermal Bridge Penalty (%)" },
@@ -287,6 +292,7 @@
       { row: 91, id: "windowSouth" },
       { row: 92, id: "windowWest" },
       { row: 93, id: "skylights" },
+      ...window.TEUI.Openings.SLOTS.map(o => ({ row: o.s11, id: o.id })),
     ].flatMap(({ row, id }) => [
       {
         id: `compliance.envelope.${id}.ratio`,
@@ -527,6 +533,9 @@
     "transmissionLoss.windowSouth.uValue": "reference.transmissionLoss.windowSouth.uValue",
     "transmissionLoss.windowWest.uValue":  "reference.transmissionLoss.windowWest.uValue",
     "transmissionLoss.skylights.uValue":   "reference.transmissionLoss.skylights.uValue",
+    ...Object.fromEntries(window.TEUI.Openings.SLOTS.map(o => [
+      `transmissionLoss.${o.id}.uValue`, `reference.transmissionLoss.${o.id}.uValue`
+    ])),
 
     // S11: Thermal bridge penalty
     "transmissionLoss.thermalBridgePenalty":"reference.transmissionLoss.thermalBridgePenalty",

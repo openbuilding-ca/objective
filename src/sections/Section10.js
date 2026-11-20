@@ -204,11 +204,11 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // Row 73: G.7 Doors
     73: {
-      id: "G.7",
-      rowId: "G.7",
-      label: "Doors",
+      id: "G.7.1",
+      rowId: "G.7.1",
+      label: "Door",
       cells: {
-        c: { label: "Doors" },
+        c: { label: "Door" },
         d: {
           fieldId: "d_73",
           semanticPath: "radiant.doors.area",
@@ -339,9 +339,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     74: {
       id: "G.8.1",
       rowId: "G.8.1",
-      label: "Window Area North",
+      label: "Window",
       cells: {
-        c: { label: "Window Area North" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_74",
           semanticPath: "radiant.windowNorth.area",
@@ -472,9 +472,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     75: {
       id: "G.8.2",
       rowId: "G.8.2",
-      label: "Window Area East",
+      label: "Window",
       cells: {
-        c: { label: "Window Area East" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_75",
           semanticPath: "radiant.windowEast.area",
@@ -601,9 +601,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     76: {
       id: "G.8.3",
       rowId: "G.8.3",
-      label: "Window Area South",
+      label: "Window",
       cells: {
-        c: { label: "Window Area South" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_76",
           semanticPath: "radiant.windowSouth.area",
@@ -730,9 +730,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     77: {
       id: "G.8.4",
       rowId: "G.8.4",
-      label: "Window Area West",
+      label: "Window",
       cells: {
-        c: { label: "Window Area West" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_77",
           semanticPath: "radiant.windowWest.area",
@@ -1197,6 +1197,34 @@ window.TEUI.SectionModules.sect10 = (function () {
     },
   };
 
+  // The opening rows after the first (Openings.js; Andy 2026-11-20): door rows G.7.2-G.7.4 take row
+  // 73's shape, window rows G.8.6-G.8.12 row 74's - each its own area, orientation (North for a window,
+  // as a new row 74), SHGC and shading. They wait hidden for S10's +.
+  const OPENINGS = window.TEUI.Openings;
+  OPENINGS.SLOTS.forEach(o => {
+    const door = o.kind === "door";
+    const base = door ? "73" : "74";
+    sectionRows[o.s10] = OPENINGS.cloneRow(sectionRows[base], base, o.s10, {
+      id: OPENINGS.s10RowId(o),
+      label: door ? "Door" : "Window",
+      pathFrom: door ? "doors" : "windowNorth",
+      pathTo: o.id,
+      textPattern: door ? /\bDoors?\b/g : /\bWindow( Area)? North\b/g,
+      textTo: door ? `Door ${OPENINGS.s10RowId(o)}` : `Window ${OPENINGS.s10RowId(o)}`,
+      orientation: door ? "Average" : "North",
+    });
+  });
+
+  // The rows in order: an opening's rows sit with their group (object keys put 73a after every number)
+  const ROW_ORDER = [
+    "header",
+    ...OPENINGS.DOORS.map(o => o.s10),
+    ...OPENINGS.WINDOWS.map(o => o.s10),
+    ...Object.keys(sectionRows).filter(
+      k => k !== "header" && !OPENINGS.ALL.some(o => o.s10 === k)
+    ),
+  ];
+
   //==========================================================================
   // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
   //==========================================================================
@@ -1284,16 +1312,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Start with an empty array for rows
       const layoutRows = [];
 
-      // First add the header row if it exists
-      if (sectionRows["header"]) {
-        layoutRows.push(createLayoutRow(sectionRows["header"]));
-      }
-
-      // Then add all other rows in their original order, excluding the header
-      Object.entries(sectionRows).forEach(([key, row]) => {
-        if (key !== "header") {
-          layoutRows.push(createLayoutRow(row));
-        }
+      // Header first, then the openings by group, then the subtotal and utilization rows (ROW_ORDER)
+      ROW_ORDER.forEach(key => {
+        if (sectionRows[key]) layoutRows.push(createLayoutRow(sectionRows[key]));
       });
 
       return { rows: layoutRows };
@@ -1515,6 +1536,10 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     registerWithStateManager();
 
+    // The opening rows' +/- (Openings.js), and their visibility on every change and stamp
+    OPENINGS.installControls("S10");
+    document.addEventListener("teui-openings-changed", () => OPENINGS.applyVisibility("S10"));
+
     // Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
       setTimeout(() => {
@@ -1541,5 +1566,7 @@ window.TEUI.SectionModules.sect10 = (function () {
     setupDropdownDefaults: setupDropdownDefaults,
     registerWithStateManager: registerWithStateManager,
 
+    // After each stamp (an import, a recompute, a mode switch): a row with an area shows
+    postStamp: () => OPENINGS.applyVisibility("S10"),
   };
 })();

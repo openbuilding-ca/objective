@@ -12,6 +12,7 @@ const fs = require("fs");
 const path = require("path");
 
 global.window = { TEUI: {} };
+require(path.join(__dirname, "..", "src/core/Openings.js")); // the opening rows, read by the node files
 require(path.join(__dirname, "..", "src/sections/nodes/VolumeMetricsNodes.js"));
 const nodes = [];
 window.TEUI.ComputationNodes.VolumeMetrics.register({ registerNode: n => nodes.push(n), registerInputs: () => {} });

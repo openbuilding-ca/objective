@@ -611,6 +611,18 @@ TEUI.ReferenceValues = {
   },
 };
 
+// The opening rows after the first (Openings.js, loaded before this file) take their group's first
+// row's reference: a door row the standard's door (SHGC f_73, U g_88), a window row its window (f_74, g_89)
+Object.values(TEUI.ReferenceValues).forEach(standard => {
+  window.TEUI.Openings.SLOTS.forEach(o => {
+    const door = o.kind === "door";
+    const shgc = standard[door ? "f_73" : "f_74"];
+    const u = standard[door ? "g_88" : "g_89"];
+    if (shgc !== undefined) standard[`f_${o.s10}`] = shgc;
+    if (u !== undefined) standard[`g_${o.s11}`] = u;
+  });
+});
+
 // Public API (original getter functions are no longer needed with the new simple structure)
 // However, keeping a way to get all standard names or a specific standard's data
 // might be useful for populating dropdowns or for StateManager.
