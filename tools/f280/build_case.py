@@ -234,6 +234,11 @@ def build():
     put("d_87", round(exposed, 3), "derived", "Table G.1.6 a): floors over the garage")
     put("f_87", RSI["exposed_floor"], "standard", "Table I.3 (2010s): exposed floors")
     put("d_94", round(bsmt_wall, 3), "derived", "Table G.1.5 a): (86.69 + 66.63) ft x 7.75 ft")
+    # B.9's L and H (S11's columns, 2026-11-20): BASESIMP's wall height is the below-grade wall's H, the
+    # table's 7.75 ft - not the area over the exposed perimeter (110.39 / 46.72 = 2.3628 m, a rounding off)
+    put("dl_94", round(sum(l for l, _, _ in BASEMENT_WALLS) * 0.3048, 4), "derived",
+        "Table G.1.5 a): the basement walls' run, (86.69 + 66.63) ft")
+    put("dh_94", round(BASEMENT_WALLS[0][1] * 0.3048, 4), "standard", "Table G.1.5 a): basement wall height 7.75 ft")
     put("f_94", RSI["basement_wall"], "standard",
         "Table I.3 (2010s): basement walls, insulated full height; F280 computes below grade by BASESIMP")
     put("d_95", round(slab, 3), "derived", "Table G.1.4 a): basement slab")
@@ -289,6 +294,8 @@ NEW_COLUMNS = {
     "g_112d": "Foundation Type",
     "d_112e": "Ventilation Balance",
     "g_112e": "Flue Diameter (mm)",
+    "dl_94": "B.9: Length m",
+    "dh_94": "B.9: Height m",
 }
 
 

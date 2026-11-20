@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-20T15:14:51.680Z",
+  "timestamp": "2026-11-20T15:57:34.156Z",
   "summary": {
     "total": 13,
     "passed": 13,
@@ -74,9 +74,23 @@
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -142,9 +156,23 @@
           "standardName": "OBC SB12 3.1.1.2.C1",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -210,9 +238,23 @@
           "standardName": "PH Classic",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -278,9 +320,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -346,9 +402,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -414,9 +484,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -482,9 +566,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -550,9 +648,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -618,9 +730,23 @@
           "standardName": "NECB T1 (Z6)",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -686,9 +812,23 @@
           "standardName": "OBC SB12 3.1.1.2.C4",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -754,9 +894,23 @@
           "standardName": "OBC SB10 5.5-6 Z6",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
@@ -822,21 +976,35 @@
           "standardName": "PH Low Energy",
           "cFieldsFromStandard": 0,
           "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsCopiedFromTarget": 19,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_94=",
+            "dh_95="
           ]
         }
       }
     },
     {
       "file": "F280-1-Archetype1-2010s-Ottawa.csv",
-      "matches": 1019,
+      "matches": 1020,
       "close": 0,
       "mismatches": 0,
       "refJ32": {
-        "legacy": 40074.3943,
-        "computed": 40074.3943,
+        "legacy": 40072.8008,
+        "computed": 40072.8008,
         "diff": 0,
         "match": true,
         "refIntermediates": {
@@ -850,14 +1018,14 @@
           "d_120_ventVolumetric": 51.90236111111111,
           "d_121_ventGross": 6782.600550000001,
           "d_118_hrvEff": "76",
-          "d_127_ted": 25255.0108,
-          "d_114_heatDemand": 25255.0108,
+          "d_127_ted": 25253.4173,
+          "d_114_heatDemand": 25253.4173,
           "d_117_coolDemand": 308.3526,
           "k_51_dhwElec": 9332.644444444446,
           "h_70_plugLoads": 5178.386399999999,
-          "d_136_totalEnergy": 40074.3943,
-          "j_32_targetTotal": 40074.3943,
-          "i_98_transLoss": 23070.294551636638,
+          "d_136_totalEnergy": 40072.8008,
+          "j_32_targetTotal": 40072.8008,
+          "i_98_transLoss": 23068.701073190565,
           "i_103_airLeak": 3112.397548391952,
           "m_121_ventLoss": 1627.8241319999997,
           "d_43_onsiteRenew": 0,
@@ -873,26 +1041,40 @@
           "ref_d_120": 51.90236111111111,
           "ref_d_121": 6782.600550000001,
           "ref_d_118": "76",
-          "ref_d_127": 25255.0108,
-          "ref_d_114": 25255.0108,
+          "ref_d_127": 25253.4173,
+          "ref_d_114": 25253.4173,
           "ref_d_117": 308.3526,
           "ref_k_51": 9332.644444444446,
           "ref_h_70": 5178.386399999999,
-          "ref_d_136": 40074.3943,
+          "ref_d_136": 40072.8008,
           "ref_d_43": 0,
           "ref_i_43": 0,
           "ref_m_43": 0,
-          "ref_i_98": 23070.294551636638,
+          "ref_i_98": 23068.701073190565,
           "ref_i_103": 3112.397548391952,
           "ref_m_121": 1627.8241319999997
         },
         "populateDebug": {
           "standardName": "NBC T1",
           "cFieldsFromStandard": 0,
-          "cFieldsFromStateManager": 310,
-          "cFieldsCopiedFromTarget": 1,
+          "cFieldsFromStateManager": 311,
+          "cFieldsCopiedFromTarget": 18,
           "cFieldsCopiedFromTargetList": [
-            "l_63="
+            "l_63=",
+            "dh_85=",
+            "dh_86=",
+            "dh_87=",
+            "dh_87a=",
+            "dh_87b=",
+            "dh_87c=",
+            "dh_87d=",
+            "dh_87e=",
+            "dh_87f=",
+            "dh_87g=",
+            "dh_87h=",
+            "dh_87i=",
+            "dh_95=",
+            "dh_95a="
           ]
         }
       }

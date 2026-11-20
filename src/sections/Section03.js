@@ -1626,7 +1626,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? `BASESIMP cannot run: ${r.error}`
         : r?.configuration
           ? `${r.configuration}; ${r.geometry.length.toFixed(2)} x ${r.geometry.width.toFixed(2)} m, ` +
-            `height ${r.geometry.height.toFixed(2)} m; F280 weather: ${r.weather.city}`
+            `height ${r.geometry.height.toFixed(2)} m (${r.geometry.heightFrom}); F280 weather: ${r.weather.city}`
           : "";
     }
   }
