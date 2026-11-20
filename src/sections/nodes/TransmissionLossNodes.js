@@ -437,6 +437,20 @@
           return rows.reduce((s, c) => s + parseNum(inputs[`transmissionLoss.${c.id}.area`]) * parseNum(inputs[`transmissionLoss.${c.id}.height`]), 0) / area;
         }
       });
+      // the type's TALLEST H (m) over its rows with an area: a wall row is a facade, its H the facade's
+      // full height, so the tallest above-grade wall is the house's height above its basement (S12 B.19.4,
+      // Andy 2026-11-20); 0 when no row gives one
+      graph.registerNode({
+        id: `transmissionLoss.${type}.maxHeight`,
+        section: "S11",
+        classification: "C",
+        dependencies: deps(["area", "height"]),
+        label: `${t.label}: Tallest H over the rows with an area (m)`,
+        compute: (inputs) =>
+          rowsOf(inputs)
+            .filter(c => parseNum(inputs[`transmissionLoss.${c.id}.area`]) > 0)
+            .reduce((m, c) => Math.max(m, parseNum(inputs[`transmissionLoss.${c.id}.height`])), 0)
+      });
     });
 
     // ========================================================================

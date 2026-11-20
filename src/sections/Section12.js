@@ -994,8 +994,14 @@ window.TEUI.SectionModules.sect12 = (function () {
         ? `AIM-2 cannot run: ${r.error}`
         : r?.design
           ? `n ${r.design.n.toFixed(3)}, ELA ${r.design.ela.toFixed(1)} cm2 @ 10 Pa; season mean ` +
-            (r.seasonal ? `${r.seasonal.rate.toFixed(4)} AC/H` : "(station loading)") + `; F280 weather: ${r.weather.city}`
+            (r.seasonal ? `${r.seasonal.rate.toFixed(4)} AC/H` : "(station loading)") + `; F280 weather: ${r.weather.city}` +
+            `; height ${r.inputs.ceilingHeight.toFixed(2)} m (${r.derived.ceilingHeightFrom})`
           : "";
+      // B.19.4 blank: the height AIM-2 took, and from where (S11's walls, or storeys x F2F)
+      const h = sectionElement.querySelector('td[data-field-id="g_112"]');
+      if (h) h.title = r?.inputs?.ceilingHeight > 0 && r.derived.ceilingHeight
+        ? `Blank: ${r.inputs.ceilingHeight.toFixed(2)} m from ${r.derived.ceilingHeightFrom}`
+        : "";
     }
   }
 

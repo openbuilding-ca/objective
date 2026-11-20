@@ -43,6 +43,17 @@ near("a slab's H is not a wall's", height.compute({ ...rows, "transmissionLoss.o
 near("a wall with no H does not count", height.compute({ ...rows, "transmissionLoss.opaque95a.height": 0 }), 2.36);
 near("no H at all: 0 (BASESIMP keeps area / perimeter)", height.compute({ ...rows, "transmissionLoss.opaque94.height": 0, "transmissionLoss.opaque95a.height": 0 }), 0);
 
+// The walls' TALLEST H (S12 B.19.4's, Andy 2026-11-20): over the above-grade wall rows with an area
+const maxHeight = nodes.find(n => n.id === "transmissionLoss.walls.maxHeight");
+const facades = {
+  "transmissionLoss.opaque86.type": "walls", "transmissionLoss.opaque86.area": 100, "transmissionLoss.opaque86.height": 5.23,
+  "transmissionLoss.opaque87a.type": "walls", "transmissionLoss.opaque87a.area": 20, "transmissionLoss.opaque87a.height": 2.77,
+  "transmissionLoss.opaque87b.type": "walls", "transmissionLoss.opaque87b.area": 0, "transmissionLoss.opaque87b.height": 9,
+  "transmissionLoss.opaque85.type": "roof", "transmissionLoss.opaque85.area": 80, "transmissionLoss.opaque85.height": 12,
+};
+near("the tallest wall with an area (5.23; not the arealess 9, not the roof's 12)", maxHeight.compute(facades), 5.23);
+near("no wall H: 0", maxHeight.compute({ ...facades, "transmissionLoss.opaque86.height": 0, "transmissionLoss.opaque87a.height": 0 }), 0);
+
 // BASESIMP on F280-1's basement: 110.39 m2 of wall; a typed perimeter 2 x 2 m short of the walls' own run, so
 // area / perimeter and the walls' H differ and the source is seen
 const FT = 0.3048;
