@@ -49,3 +49,36 @@ test("Reference mode: a ghosted cell cannot be typed in; a live one can", async 
   expect(await cell.textContent()).not.toContain("9");
   expect(await page.evaluate(() => String(window.TEUI.StateManager.getValue("ref_d_26")))).toBe(before);
 });
+
+test("Reference mode: M.3.3 stays live while the heat pump cools - an engineer's COPc, above or below the standard's", async ({ page }) => {
+  // Andy 2026-11-23: "Reference COPc can and should also be an over-ride if an engineer or someone that knows
+  // what they are doing wants to put in a lower or higher value in S13"
+  await page.addInitScript(() => localStorage.setItem("disclaimerSeen", "true"));
+  await page.goto("/index.html");
+  await page.waitForFunction(() => window.TEUI?.ComputationIntegration?.isInitialized?.(), { timeout: 60000 });
+  await page.waitForTimeout(3000);
+  await page.evaluate(() => {
+    const SM = window.TEUI.StateManager;
+    SM.setValue("ref_d_113", "Heatpump", "user-modified");
+    SM.setValue("ref_d_116", window.TEUI.CoolingSystem.HEATPUMP, "user-modified");
+    window.TEUI.ReferenceToggle.switchMode("reference");
+    window.TEUI.Calculator.calculateAll();
+  });
+  await page.waitForTimeout(1000);
+  const cell = page.locator('td[data-field-id="j_116"]');
+  expect(await cell.evaluate((td) => [td.classList.contains("disabled-input"), td.isContentEditable])).toEqual([false, true]);
+  const effective = () =>
+    page.evaluate(() => {
+      const CI = window.TEUI.ComputationIntegration;
+      return CI.getState().getValueForModel(CI.getRefModelId(), "mechanical.cooling.effectiveCop");
+    });
+  for (const typed of ["4.8", "2.1"]) { // above, then below, the standard's minimum
+    await cell.click();
+    await page.keyboard.press("Meta+A");
+    await page.keyboard.type(typed);
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(800);
+    expect(String(await page.evaluate(() => window.TEUI.StateManager.getValue("ref_j_116")))).toBe(typed);
+    expect(await effective(), `the Reference cools at its typed ${typed}`).toBeCloseTo(parseFloat(typed), 9);
+  }
+});
