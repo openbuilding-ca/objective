@@ -798,6 +798,38 @@ TEUI.ReferenceToggle = (function () {
   }
 
   /**
+   * The performance fields added since 2026-11-18, which the row patterns below (anchored to the
+   * original rows) do not match (Mark, #134: Mirror Geometry copied a Target window row's U 0.8 and
+   * SHGC 0.25 to the Reference, which then lost less heat than code minimum):
+   *   - every S10/S11 opening row's SHGC (f_<s10>) and U-value (g_<s11>), and every S11 opaque row's
+   *     RSI (f_<s11>), from Openings, so a row added there is covered here;
+   *   - F280 Mode, which is per model (Andy 2026-11-19): only Mirror All Inputs copies it;
+   *   - the code inputs added with it (FIELD_CLASSIFICATION "C"): S03 G.4.4's foundation insulation
+   *     (l_25), S12 B.19.2-B.19.3's air tightness and ELA (g_111, d_112), its ventilation balance and
+   *     flue (d_112e, g_112e), S13's ATRE (l_123), the ERV's latent recovery (l_122) and the latent
+   *     method (i_122). The house and site (G.4.5-G.4.8, B.19.4-B.19.11) are geometry and copy.
+   */
+  let addedPerformance = null;
+  function addedPerformanceFields() {
+    if (addedPerformance) return addedPerformance;
+    const O = window.TEUI.Openings;
+    addedPerformance = new Set([
+      ...O.ALL.flatMap(o => [`f_${o.s10}`, `g_${o.s11}`]),
+      ...O.OPAQUE.map(o => `f_${o.s11}`),
+      "f280_mode",
+      "l_25",
+      "g_111",
+      "d_112",
+      "d_112e",
+      "g_112e",
+      "l_123",
+      "l_122",
+      "i_122",
+    ]);
+    return addedPerformance;
+  }
+
+  /**
    * Helper: Determine if a field should be copied based on mirror mode
    * @param {string} fieldId - Field identifier (e.g., 'd_13', 'f_85')
    * @param {string} mode - Mirror mode: 'geometry', 'geometry-plus-code', 'all'
@@ -830,6 +862,7 @@ TEUI.ReferenceToggle = (function () {
         return false; // Exclude from geometry modes
       }
     }
+    if (addedPerformanceFields().has(fieldId)) return false;
 
     // Default: include in geometry modes
     return true;
