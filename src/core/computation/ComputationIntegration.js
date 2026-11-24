@@ -429,6 +429,16 @@
     return refModel?.id || null;
   }
 
+  /**
+   * The model the screen shows: the Reference in Reference mode, as DOMBridge stamps it, else the active
+   * (Target) model. A section's own display (a hover, a tooltip) reads this, never getActiveModelId(),
+   * which stays the Target in Reference mode (Mark, #134).
+   */
+  function getOnScreenModelId() {
+    if (!state) return null;
+    return window.TEUI.ReferenceToggle?.isReferenceMode?.() ? getRefModelId() : state.getActiveModelId();
+  }
+
   // ============================================================================
   // LEGACY ADAPTER
   // ============================================================================
@@ -1407,6 +1417,7 @@
 
     // Reference model support
     getRefModelId,
+    getOnScreenModelId,
     populateReferenceModel,
     syncReferenceToStateManager,
 

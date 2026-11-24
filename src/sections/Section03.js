@@ -1619,9 +1619,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     window.TEUI.DOMBridge?.ghostField("d_26", known && window.TEUI.Basesimp.isSlab(Number(config)));
 
     const cell = document.querySelector('td[data-field-id="l_26b"]');
-    const state = window.TEUI.ComputationIntegration?.getState?.();
+    const CI = window.TEUI.ComputationIntegration;
+    const state = CI?.getState?.();
     if (cell && state) {
-      const r = state.getValueForModel(state.getActiveModelId(), "ground.basesimp");
+      const r = state.getValueForModel(CI.getOnScreenModelId(), "ground.basesimp"); // the model on screen
       cell.title = r?.error
         ? `BASESIMP cannot run: ${r.error}`
         : r?.configuration

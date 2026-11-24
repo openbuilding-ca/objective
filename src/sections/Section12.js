@@ -987,9 +987,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       if (select && v !== undefined && v !== null && v !== "" && select.value !== String(v)) select.value = String(v);
     });
     const out = sectionElement.querySelector('td[data-field-id="d_112f"]');
-    const state = window.TEUI.ComputationIntegration?.getState?.();
+    const CI = window.TEUI.ComputationIntegration;
+    const state = CI?.getState?.();
     if (out && state) {
-      const r = state.getValueForModel(state.getActiveModelId(), "airTightness.aim2");
+      const r = state.getValueForModel(CI.getOnScreenModelId(), "airTightness.aim2"); // the model on screen
       out.title = r?.error
         ? `AIM-2 cannot run: ${r.error}`
         : r?.design
