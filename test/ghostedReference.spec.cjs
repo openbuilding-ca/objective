@@ -77,7 +77,7 @@ test("Reference mode: M.3.3 stays live while the heat pump cools - an engineer's
     });
   for (const typed of ["4.8", "2.1"]) { // above, then below, the standard's minimum
     await cell.click();
-    await page.keyboard.press("Meta+A");
+    await page.keyboard.press("ControlOrMeta+A");
     await page.keyboard.type(typed);
     await page.keyboard.press("Enter");
     await page.waitForTimeout(800);
