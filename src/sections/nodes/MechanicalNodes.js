@@ -62,20 +62,25 @@
   }
 
   // Choosing Separate Cooling fills M.3.3 with the standard's minimum COPc
-  // (Section 13) - unless M.3.3 already holds the unit's own, which it can
-  // only on the way back from No Cooling: a positive COPc that is not the
-  // field's untouched default stays, so what the user typed (or a file
-  // brought) survives a look at No Cooling. Leaving the heat pump option it
-  // is always filled: M.3.3 was M.1.3's to show, and what is stored may be a
-  // previous project's (the import skips it while the heat pump cools).
+  // (Section 13) - unless M.3.3 already holds the unit's own: a positive COPc
+  // that is not the field's untouched default stays, so what the user typed
+  // (or a file brought) survives. M.3.3 holds the unit's own on the way back
+  // from No Cooling, and in the Reference on leaving the heat pump too: there
+  // the heat pump cools at the Reference's own M.3.3 (a default, not a lock,
+  // Andy 2026-11-19), so a typed 4.2 must not become the standard's 3.3 on a
+  // move to Separate Cooling or Gas (Mark, #134). Leaving the Target's heat
+  // pump it is always filled: M.3.3 was M.1.3's to show, and what is stored
+  // may be a previous project's (the import skips it while the heat pump cools).
   //
-  // leaving: the choice being left. source: the state StateManager records
+  // leaving: the choice being left. isReference: the Reference model's M.3.3.
+  // source: the state StateManager records
   // for the stored M.3.3. Only "default" is read from it: a COPc filled here
   // is stored as "user-modified", like a typed one, and the Reference model's
   // inputs are synced back as "calculated" - so the state cannot say who
   // wrote the value, and the choice being left decides instead.
-  function seedsCopCool(leaving, copCool, source) {
-    if (leaving !== COOLING.NONE) return true;
+  function seedsCopCool(leaving, copCool, source, isReference = false) {
+    const holdsOwn = leaving === COOLING.NONE || (isReference && leaving === COOLING.HEATPUMP);
+    if (!holdsOwn) return true;
     if (source === "default") return true;
     return !(parseNum(copCool, 0) > 0);
   }

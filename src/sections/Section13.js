@@ -1567,7 +1567,9 @@ window.TEUI.SectionModules.sect13 = (function () {
    * The current mode becomes Separate Cooling - on a user's choice only (an
    * import carries its own M.3.3). M.3.3 is filled with the standard's
    * minimum unless it holds the unit's own COPc (CoolingSystem.seedsCopCool):
-   * - leaving the heat pump option: always filled (M.3.3 showed M.1.3);
+   * - leaving the Target's heat pump option: always filled (M.3.3 showed M.1.3);
+   * - leaving the Reference's: as back from No Cooling (its heat pump cools
+   *   at its own M.3.3);
    * - back from No Cooling: a positive COPc the user typed, a file brought or
    *   an earlier fill left stays; an untouched default, a blank or a zero is
    *   filled.
@@ -1587,7 +1589,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const source = window.TEUI.StateManager?.getDebugInfo?.(
       isRef ? "ref_j_116" : "j_116"
     )?.state;
-    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source)) {
+    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source, !!isRef)) {
       setModeValue("j_116", String(minimum), "user-modified");
     }
   }

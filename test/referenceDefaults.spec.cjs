@@ -89,3 +89,25 @@ test("Mirror Geometry: the added rows' areas copy, their U, SHGC and RSI and F28
   expect(after.d_87a, "the opaque row's area is geometry").toBe("12");
   for (const id of KEPT) expect(after[id], `the Reference's ${id} is its own`).toBe(before[id]);
 });
+
+test("Reference: a COPc typed while its heat pump cools survives a move to Separate Cooling", async ({ page }) => {
+  // Mark's #134 review (his #128 meeting the Reference's live M.3.3): leaving the heat pump refilled the
+  // standard's minimum, so a Reference typed at 4.2 became 3.3
+  await open(page);
+  await page.evaluate(() => {
+    const SM = window.TEUI.StateManager, CS = window.TEUI.CoolingSystem;
+    SM.setValue("ref_d_113", "Heatpump", "user-modified");
+    SM.setValue("ref_d_116", CS.HEATPUMP, "user-modified");
+    SM.setValue("ref_j_116", "4.2", "user-modified");
+    window.TEUI.ReferenceToggle.switchMode("reference");
+    window.TEUI.Calculator.calculateAll();
+  });
+  await page.waitForTimeout(800);
+  const select = page.locator('select[data-field-id="d_116"]');
+  await expect(select).toHaveValue(await page.evaluate(() => window.TEUI.CoolingSystem.HEATPUMP));
+  await select.selectOption(await page.evaluate(() => window.TEUI.CoolingSystem.SEPARATE));
+  await page.waitForTimeout(800);
+  const after = await page.evaluate(() => [window.TEUI.StateManager.getValue("ref_d_116"), String(window.TEUI.StateManager.getValue("ref_j_116"))]);
+  expect(after[0]).toBe(await page.evaluate(() => window.TEUI.CoolingSystem.SEPARATE));
+  expect(parseFloat(after[1]), "the Reference's typed COPc").toBe(4.2);
+});

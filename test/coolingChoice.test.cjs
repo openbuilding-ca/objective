@@ -75,6 +75,12 @@ check("back from No Cooling, an earlier fill: stays", CS.seedsCopCool(NONE, "3.3
 // the Reference model's inputs are synced back to ref_j_116 as "calculated"
 check("back from No Cooling, the Reference's own: stays", CS.seedsCopCool(NONE, 5.1, "calculated"), false);
 check("from No Cooling, the untouched default: filled", CS.seedsCopCool(NONE, "2.66", "default"), true);
+// The Reference's heat pump cools at its own M.3.3 (Mark, #134): leaving it keeps a typed COPc
+check("Reference, leaving the heat pump, typed 4.20: stays", CS.seedsCopCool(HP, "4.2", "user-modified", true), false);
+check("Reference, leaving the heat pump, the untouched default: filled", CS.seedsCopCool(HP, "3.3", "default", true), true);
+check("Reference, leaving the heat pump, a 0: filled", CS.seedsCopCool(HP, "0", "calculated", true), true);
+check("Reference, back from No Cooling, typed 4.20: stays", CS.seedsCopCool(NONE, "4.2", "user-modified", true), false);
+check("Target, leaving the heat pump, typed 4.20: still filled", CS.seedsCopCool(HP, "4.2", "user-modified", false), true);
 check("from No Cooling, a No Cooling file's 0.00: filled", CS.seedsCopCool(NONE, "0.00", "imported"), true);
 check("from No Cooling, blank: filled", CS.seedsCopCool(NONE, "", "imported"), true);
 check("from No Cooling, nothing stored: filled", CS.seedsCopCool(NONE, null, undefined), true);
