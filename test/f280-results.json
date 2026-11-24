@@ -1,15 +1,11 @@
 {
-  "timestamp": "2026-11-20T15:57:37.422Z",
+  "timestamp": "2026-11-24T04:59:18.624Z",
   "enforce_band": false,
   "fixture_verified_against_pdf": "yes for Annex J pp. 171-183 (Andy's screenshots 2026-11-19): 8.3.2 c-f, every 8.3.4-8.3.8 variant, all 32 rows of 8.3.9 a) (W and Btuh), 8.3.10 c-d",
   "not_modelled": [
     {
       "clause": "8.3.4 b",
       "reason": "a room test (Annex K); whole house unchanged"
-    },
-    {
-      "clause": "8.3.5 b, c",
-      "reason": "OBJECTIVE has no interior-shading input (blinds, reflective blinds)"
     }
   ],
   "records": [
@@ -242,6 +238,86 @@
         "ventilation": 2990,
         "nominalCooling": 6779,
         "latentLoadFactor": 1.2169276951459065,
+        "ground": {
+          "slabOnGrade.rsi": 0.216,
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": 90.311,
+          "slabOnGrade.heatLoss": 3977.8360718754934,
+          "wallsBelowGrade.rsi": 2.76,
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": 110.39,
+          "wallsBelowGrade.heatLoss": 1798.0313710968499
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.5 b",
+      "variant": "blinds or curtains on every window",
+      "note": "Table 4 SFactor 0.55 on each window row's summer shading: h' = 100 (1 - 0.55 (1 - h/100))",
+      "set": {
+        "h_74": "44.99999999999999",
+        "h_75": "44.99999999999999",
+        "h_76": "50.55499999999999",
+        "h_77": "45.594"
+      },
+      "change_W": {
+        "loss": 0,
+        "gain": -1483
+      },
+      "expected_change_W": {
+        "gain": 1489
+      },
+      "magnitude_ratio": {
+        "gain": 0.996
+      },
+      "parts_W": {
+        "loss": 11680,
+        "envelope": 9072,
+        "infiltration": 1891,
+        "ventilation": 717,
+        "nominalCooling": 5903,
+        "latentLoadFactor": 1.3086699198296845,
+        "ground": {
+          "slabOnGrade.rsi": 0.216,
+          "slabOnGrade.uValue": 4.62962962962963,
+          "slabOnGrade.area": 90.311,
+          "slabOnGrade.heatLoss": 3977.8360718754934,
+          "wallsBelowGrade.rsi": 2.76,
+          "wallsBelowGrade.uValue": 0.3623188405797102,
+          "wallsBelowGrade.area": 110.39,
+          "wallsBelowGrade.heatLoss": 1798.0313710968499
+        }
+      }
+    },
+    {
+      "case": "F280-1",
+      "clause": "8.3.5 c",
+      "variant": "reflective blinds on every window",
+      "note": "Table 4 SFactor 0.37 on each window row's summer shading: h' = 100 (1 - 0.37 (1 - h/100))",
+      "set": {
+        "h_74": "63",
+        "h_75": "63",
+        "h_76": "66.737",
+        "h_77": "63.3996"
+      },
+      "change_W": {
+        "loss": 0,
+        "gain": -2076
+      },
+      "expected_change_W": {
+        "gain": 2084
+      },
+      "magnitude_ratio": {
+        "gain": 0.996
+      },
+      "parts_W": {
+        "loss": 11680,
+        "envelope": 9072,
+        "infiltration": 1891,
+        "ventilation": 717,
+        "nominalCooling": 5447,
+        "latentLoadFactor": 1.3434122948440215,
         "ground": {
           "slabOnGrade.rsi": 0.216,
           "slabOnGrade.uValue": 4.62962962962963,

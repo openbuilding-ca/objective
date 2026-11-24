@@ -58,6 +58,14 @@ const VARIANTS = [
     note: "AIM-2 Custom: B.18.2's ACH50 + B.19.3's ELA, Annex J's pair" },
   { clause: "8.3.4 c", variant: "exhaust-only at the HRV's flow", set: { d_118: "0", d_112e: "Exhaust only" },
     note: "no recovery (SRE 0 %, Andy 2026-11-18) and AIM-2's ventilation balance Exhaust only" },
+  // Cl. 8.3.5 b, c: interior shading. Cl. 6.2.2.2 (p. 22) scales the incident solar, Solar = Solar0 x LFactor x
+  // SFactor, Table 4 (p. 32) giving SFactor for double glazing: 0.55 blinds or curtains, 0.37 reflective metallic
+  // blinds. OBJECTIVE's summer-shading % already scales each facade's solar, so each window row's h becomes
+  // h' = 100 x (1 - SFactor x (1 - h / 100)), from the case's own base h (Kieran, Rev. 7, item 1)
+  { clause: "8.3.5 b", variant: "blinds or curtains on every window", sFactor: 0.55,
+    note: "Table 4 SFactor 0.55 on each window row's summer shading: h' = 100 (1 - 0.55 (1 - h/100))" },
+  { clause: "8.3.5 c", variant: "reflective blinds on every window", sFactor: 0.37,
+    note: "Table 4 SFactor 0.37 on each window row's summer shading: h' = 100 (1 - 0.37 (1 - h/100))" },
   // Cl. 8.3.6 b: no external shading - the base case's G.1.11 overhangs are its Section 10 summer shading (Annex A,
   // tools/f280/build_case.py), so the variant sets them to 0
   { clause: "8.3.6 b", variant: "no external shading", set: { h_74: "0", h_75: "0", h_76: "0", h_77: "0" },
@@ -70,7 +78,6 @@ const VARIANTS = [
 ];
 const NOT_MODELLED = [
   { clause: "8.3.4 b", reason: "a room test (Annex K); whole house unchanged" },
-  { clause: "8.3.5 b, c", reason: "OBJECTIVE has no interior-shading input (blinds, reflective blinds)" },
 ];
 
 // The compass, clockwise. Turning the front door from S to SE (one eighth) turns every facade
@@ -83,6 +90,20 @@ function band(result, expected) {
   const lowOk = result >= b.low_fraction * expected || result >= expected - b.absolute_W;
   const highOk = result <= b.high_fraction * expected || result <= expected + b.absolute_W;
   return { lowOk, highOk, pass: lowOk && highOk, ratio: result / expected };
+}
+
+// The window rows' summer shading (S10 h_74-h_77, N E S W), Cl. 8.3.5's SFactor applied to each base value
+const SUMMER_SHADING = ["h_74", "h_75", "h_76", "h_77"];
+function interiorShading(csvText, sFactor) {
+  const lines = csvText.split(/\r?\n/);
+  const header = parseLine(lines[0]);
+  const target = parseLine(lines[1]);
+  return Object.fromEntries(SUMMER_SHADING.map((f) => {
+    const i = header.findIndex((h) => h.split(":")[0].trim() === f);
+    if (i < 0) throw new Error(`${f}: not a column`);
+    const h = parseFloat(target[i]) || 0;
+    return [f, String(100 * (1 - sFactor * (1 - h / 100)))];
+  }));
 }
 
 function withOverrides(csvText, set, turn) {
@@ -330,11 +351,13 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       expect(off.annualInfiltration_kWh, "F280 Mode Off left the annual leakage on AIM-2").not.toBe(base.annualInfiltration_kWh);
 
       for (const v of VARIANTS) {
-        const r = await run(page, withOverrides(csvText, v.set, v.turn));
+        const set = v.sFactor ? interiorShading(csvText, v.sFactor) : v.set;
+        const r = await run(page, withOverrides(csvText, set, v.turn));
         const exp = FIXTURE.variants_on_base_case.filter((x) => x.clause === v.clause && x.variant === v.variant);
         const change = { loss: r.loss - base.loss, gain: r.nominalAnnexJ - gain }; // S15 T.6.12, the app's own nominal
         records.push({
           case: name, clause: v.clause, variant: v.variant, note: v.note || "",
+          ...(v.sFactor ? { set } : {}),
           change_W: { loss: Math.round(change.loss), gain: Math.round(change.gain) },
           expected_change_W: Object.fromEntries(exp.map((x) => [x.quantity, x.expected_change_W])),
           // Annex J prints these changes with no consistent sign (the fixture's sign_convention): compare magnitudes

@@ -23,7 +23,9 @@
 >
 > **The variants (x 1.3, magnitudes - Annex J prints them with no consistent sign):** the eight turns 0.94-0.96 of Annex J's
 > change; 3.0 ACH50 (8.3.7 b) 0.95 gain / 0.94 loss; exhaust-only (8.3.4 c) 0.98 gain / 1.04 loss; no external shading (8.3.6 b)
-> 1.21. Not modelled: 8.3.4 b and 8.3.3 (room tests), 8.3.5 b-c (no interior-shading input).
+> 1.21; interior shading (8.3.5 b, c; Kieran, Rev. 7: Table 4's SFactor on each row's summer shading,
+> h' = 100 (1 - SFactor (1 - h/100)), no new input) 0.996 gain on both (-1483 / -2076 W vs -1489 / -2084).
+> Not modelled: 8.3.4 b and 8.3.3 (room tests).
 >
 > **Open, for Kieran:** (1) the turns' last ~5 % (each turn 85-142 W short of Annex J's change). Since 2026-11-20 S11's walls
 > are ROWS with a facing each, and Table 3 reads every wall's facing; F280-1 still enters its walls as one row facing Average
@@ -113,8 +115,9 @@ work already in this README and is there to make your requirements matrix concre
    basis in the matrix explicitly. The current results are loss 11 680 W against 11 787 (99.1 %) and nominal gain
    7347 W against 7321 (100.4 %).
 6. **Pre-declared exclusions, with reasons.** These are not modelled in a single-zone tool:
-   - 8.3.3 and 8.3.4 b (room-by-room tests);
-   - 8.3.5 b–c (no interior-shading input).
+   - 8.3.3 and 8.3.4 b (room-by-room tests).
+   - (8.3.5 b–c was listed here until Kieran's Rev. 7: Cl. 6.2.2.2's SFactor (Table 4) maps onto OBJECTIVE's
+     summer shading %, and both variants are now in the harness.)
 
    Also confirm whether 8.3.10 (foundation, c–d) is in scope: Annex J values for it exist in the fixture.
 7. **Known open items, to carry as "Investigation required":**
