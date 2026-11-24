@@ -1148,13 +1148,20 @@
     // days centred on the coldest day, at the ENERGY set-point, the above-grade strip against S03 L.3.3's
     // winter average (Andy 2026-11-19, "that is what drives the heating season split")
     const days = 365 - parseNum(inputs["climate.coolingDays"], 120);
+    const outdoorMean = parseNum(inputs["climate.temperature.winterAverage"], NaN);
+    if (!Number.isFinite(outdoorMean)) return { error: "no winter average temperature (S03 L.3.3)" };
     const annual = B.seasonLoss(result, {
       room: parseNum(inputs["climate.heating.setpoint"], 21),
-      outdoorMean: parseNum(inputs["climate.temperature.winterAverage"], NaN),
+      outdoorMean,
       deepGround: weather.deepGround,
       days
     });
-    if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
+    // Each input is checked above, so a result that is not a number is BASESIMP's own failure: say so,
+    // never name an input that is there (Mark, #134: a depth equal to the wall height read as "no
+    // winter average temperature")
+    if (!Number.isFinite(annual.total) || !Number.isFinite(result.heatingLoad)) {
+      return { error: "BASESIMP gave no number for these inputs" };
+    }
     return { ...result, geometry: { length, width, height, heightFrom, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
   }
 
