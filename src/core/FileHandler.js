@@ -465,18 +465,6 @@
           return;
         }
 
-        // S21 F280 Mode (Andy 2026-11-19, per model): a file without the column takes Off, unless that
-        // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
-        // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On. After the
-        // check above: a value this supplies is not the file's, so a file with no data still changes
-        // nothing (Mark's #127 witness, a notes-only file)
-        if (!("f280_mode" in importedData)) {
-          for (const p of ["", "ref_"]) {
-            const f280 = importedData[p + "h_25"] === "BASESIMP" || importedData[p + "d_111"] === "AIM2";
-            importedData[p + "f280_mode"] = f280 ? "On" : "Off";
-          }
-        }
-
         // A file with the column replaces the notes, an empty cell clearing
         // them as a new building clears the Capital Budget below. A file
         // without it was saved before notes travelled in the CSV and could
@@ -649,6 +637,17 @@
         }
       }
 
+      // S21 F280 Mode (Andy 2026-11-19, per model): a project file without the column takes Off, unless that
+      // model chose an F280 method in the selectors F280 Mode replaced (S03 G.4.3 BASESIMP, S12 B.19.1
+      // AIM-2, 2026-11-19 only; their columns are read here and nowhere else) - it opens On. Here, not in
+      // processImportedCSV, so an Excel workbook (no column) sets it too (Mark, #134), and keyed on d_12 as
+      // the added fields below: a notes-only file (Mark's #127 witness) or a standard's values change nothing
+      for (const p of ["", "ref_"]) {
+        if (importedData[`${p}d_12`] === undefined || `${p}f280_mode` in importedData) continue;
+        const f280 = importedData[`${p}h_25`] === "BASESIMP" || importedData[`${p}d_111`] === "AIM2";
+        importedData[`${p}f280_mode`] = f280 ? "On" : "Off";
+      }
+
       // Fields added 2026-11-18 that older files lack: the field's own default,
       // in either model, never the previous project's value. e_12, the 62.1
       // space type ("" - VentilationRates resolves the occupancy's); l_63 and
@@ -671,6 +670,17 @@
         d_154: "-2.0",
         d_159: "biplanar",
         d_160: "show",
+        // The F280 inputs (added 2026-11-19), at their field defaults: a file without them never keeps the
+        // previous house's foundation, perimeter, AIM-2 site and ELA or ATRE, which F280 Mode On would use
+        // and the next export would carry (Mark, #134). S03 G.4.4-G.4.8 (l_25 d_26 h_26 l_26 d_26b), S12
+        // B.19.2-B.19.12 (g_111 ... g_112e), S13 ATRE (l_123).
+        ...Object.fromEntries(
+          ["l_25", "d_26", "h_26", "l_26", "d_26b", "g_111", "d_112", "g_112", "d_112b", "g_112b",
+            "d_112c", "g_112c", "d_112d", "g_112d", "d_112e", "g_112e", "l_123"].map(id => [
+            id,
+            String(this.fieldManager.getField(id)?.defaultValue ?? ""),
+          ])
+        ),
         // The envelope rows' fields (added 2026-11-20, Openings.addedFields), every one at its own
         // default: a file without them has no extra rows (area 0), its opaque rows their old types (B.5
         // facing Average), no L or H - and a row + shows later starts clean, never the previous project's
