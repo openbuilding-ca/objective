@@ -111,3 +111,64 @@ test("Reference: a COPc typed while its heat pump cools survives a move to Separ
   expect(after[0]).toBe(await page.evaluate(() => window.TEUI.CoolingSystem.SEPARATE));
   expect(parseFloat(after[1]), "the Reference's typed COPc").toBe(4.2);
 });
+
+test("Reference: cooling turned on reads the standard's COPc, an engineer's value overrides it", async ({ page }) => {
+  // Andy 2026-11-23: "if the user HAS set cooling in Reference and NOT in Target, then COPc should read the
+  // standard, but allow an over-ride". Hemmingford's Review Format file: both models No Cooling, M.3.3 2.66 (a
+  // value that only sat under No Cooling); its standard (PH Classic) gives 3.3.
+  await open(page);
+  const csv = fs.readFileSync(path.join(__dirname, "..", "src/template/case-studies/03-residence-phi-classic-f280.csv"), "utf8");
+  await page.evaluate((text) => window.TEUI.FileHandler.processImportedCSV(text), csv);
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => {
+    window.TEUI.ReferenceToggle.switchMode("reference");
+    window.TEUI.Calculator.calculateAll();
+  });
+  await page.waitForTimeout(1000);
+  const CS = await page.evaluate(() => ({ ...window.TEUI.CoolingSystem }));
+  const state = () =>
+    page.evaluate(() => {
+      const SM = window.TEUI.StateManager, CI = window.TEUI.ComputationIntegration;
+      return {
+        target: SM.getValue("d_116"),
+        cop: parseFloat(SM.getValue("ref_j_116")),
+        effective: CI.getState().getValueForModel(CI.getRefModelId(), "mechanical.cooling.effectiveCop"),
+        standard: parseFloat((window.TEUI.ReferenceValues[SM.getValue("d_13")] || {}).j_116),
+      };
+    });
+  const choose = async (field, value) => {
+    await page.locator(`select[data-field-id="${field}"]`).selectOption(value);
+    await page.waitForTimeout(800);
+  };
+  const type = async (value) => {
+    await page.locator('td[data-field-id="j_116"]').click();
+    await page.keyboard.press("Meta+A");
+    await page.keyboard.type(value);
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(800);
+  };
+
+  const start = await state();
+  expect([start.target, start.cop, start.standard]).toEqual([CS.NONE, 2.66, 3.3]);
+
+  // Separate Cooling: the standard, then an override, which survives No Cooling and back
+  await choose("d_116", CS.SEPARATE);
+  expect((await state()).cop, "Separate Cooling reads the standard").toBe(3.3);
+  await type("4.0");
+  expect((await state()).effective).toBeCloseTo(4.0, 9);
+  await choose("d_116", CS.NONE);
+  await choose("d_116", CS.SEPARATE);
+  expect((await state()).cop, "the override back from No Cooling").toBe(4.0);
+
+  // The heat pump that heats and cools, from No Cooling with a file's leftover in M.3.3: the standard again,
+  // and an override of its own, below the standard
+  await choose("d_116", CS.NONE);
+  await page.evaluate(() => window.TEUI.StateManager.setValue("ref_j_116", "2.66", "imported")); // a file's leftover
+  await choose("d_113", "Heatpump");
+  await choose("d_116", CS.HEATPUMP);
+  const hp = await state();
+  expect([hp.cop, hp.effective], "the heat pump's cooling reads the standard").toEqual([3.3, 3.3]);
+  await type("2.9");
+  expect((await state()).effective, "an override below the standard").toBeCloseTo(2.9, 9);
+  expect((await state()).target, "the Target has no cooling throughout").toBe(CS.NONE);
+});
