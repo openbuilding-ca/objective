@@ -483,6 +483,13 @@
       "exposed_floor": 5.349,
       "floor_slab_added": 0.0
     },
+    "effective_rsi_annex_i_table_i3b": {
+      "above_grade_wall": 3.429,
+      "garage_wall": 3.364,
+      "above_grade_header": 3.587,
+      "garage_wall_header": 3.362
+    },
+    "effective_rsi_note": "Cl. 8.3.2 c) cites Annex I: report against Table I.3 b) (pp. 165-168), which differs from Annex J's copy above by 0.001 on three assemblies (Kieran, Rev. 7, I9). The build (tools/f280/build_case.py RSI) uses these.",
     "window_d": {
       "shgc": 0.47,
       "rsi": 0.511

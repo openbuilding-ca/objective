@@ -97,6 +97,12 @@ REPORT_REVIEW_8_3_2 = {
     "effective_rsi_c": {"above_grade_wall": 3.428, "garage_wall": 3.363, "above_grade_header": 3.587,
                         "garage_wall_header": 3.361, "below_grade_wall_added": 2.76, "ceiling": 9.05,
                         "exposed_floor": 5.349, "floor_slab_added": 0.0},
+    # Cl. 8.3.2 c) cites Annex I: the values to report against (Kieran, Rev. 7, I9; Table I.3 b), pp. 165-168)
+    "effective_rsi_annex_i_table_i3b": {"above_grade_wall": 3.429, "garage_wall": 3.364, "above_grade_header": 3.587,
+                                        "garage_wall_header": 3.362},
+    "effective_rsi_note": ("Cl. 8.3.2 c) cites Annex I: report against Table I.3 b) (pp. 165-168), which differs from Annex J's "
+                           "copy above by 0.001 on three assemblies (Kieran, Rev. 7, I9). The build (tools/f280/build_case.py "
+                           "RSI) uses these."),
     "window_d": {"shgc": 0.47, "rsi": 0.511},
     "door_rsi_e": 1.101,
     "hrv_f": {"ase": 0.76, "atre": 0},
