@@ -84,6 +84,15 @@
     return value === "Unavailable" || value === "N/A";
   }
 
+  /**
+   * A method node's guard (acceptsUnavailable): the first input that is "Unavailable", as the node's
+   * { error }, or null when none is. `handled` are inputs the method checks itself.
+   */
+  function unavailableAsError(inputs, handled = []) {
+    const missing = Object.keys(inputs).find(k => inputs[k] === "Unavailable" && !handled.includes(k));
+    return missing ? { error: `${missing} is Unavailable` } : null;
+  }
+
   // S10→S11 area bridge: every opening's S11 row mirrors its S10 row (88-93 ← 73-78, 88a ← 73a ...)
   const AREA_BRIDGE = Object.fromEntries(window.TEUI.Openings.ALL.map(o => [o.s11, o.s10]));
 
@@ -993,7 +1002,13 @@
         "climate.temperature.winterAverage"
       ],
       label: "BASESIMP foundation heat loss (F280 Cl. 5.2.2.1)",
-      compute: (inputs) => basesimpFor(inputs)
+      // A method's result, read with F280 Mode Off too (S12 h_102, S11 rows 94-95, S15 d_137 take their
+      // OBJECTIVE form then): an input it cannot have is its { error }, never "Unavailable", which would
+      // stop those readers before they reach their own method check (Mark, #134: a model with no slab and
+      // no exposed floor read Unavailable down to TEUI). Its F280 readers turn the error into Unavailable.
+      // Wombat's perimeter is Unavailable exactly when there is no footprint, which basesimpFor names.
+      acceptsUnavailable: true,
+      compute: (inputs) => unavailableAsError(inputs, ["wombat.footprint.perimeter"]) ?? basesimpFor(inputs)
     });
 
     graph.registerNode({
@@ -1133,13 +1148,20 @@
     // days centred on the coldest day, at the ENERGY set-point, the above-grade strip against S03 L.3.3's
     // winter average (Andy 2026-11-19, "that is what drives the heating season split")
     const days = 365 - parseNum(inputs["climate.coolingDays"], 120);
+    const outdoorMean = parseNum(inputs["climate.temperature.winterAverage"], NaN);
+    if (!Number.isFinite(outdoorMean)) return { error: "no winter average temperature (S03 L.3.3)" };
     const annual = B.seasonLoss(result, {
       room: parseNum(inputs["climate.heating.setpoint"], 21),
-      outdoorMean: parseNum(inputs["climate.temperature.winterAverage"], NaN),
+      outdoorMean,
       deepGround: weather.deepGround,
       days
     });
-    if (!Number.isFinite(annual.total)) return { error: "no winter average temperature (S03 L.3.3)" };
+    // Each input is checked above, so a result that is not a number is BASESIMP's own failure: say so,
+    // never name an input that is there (Mark, #134: a depth equal to the wall height read as "no
+    // winter average temperature")
+    if (!Number.isFinite(annual.total) || !Number.isFinite(result.heatingLoad)) {
+      return { error: "BASESIMP gave no number for these inputs" };
+    }
     return { ...result, geometry: { length, width, height, heightFrom, depth, perimeter, perimeterFromWombat: !(typedPerimeter > 0) }, weather, annual };
   }
 

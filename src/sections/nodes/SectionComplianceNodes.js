@@ -183,21 +183,21 @@
       }
     },
 
-    // m_66: Lighting density compliance (d_66 / ref_d_66) — lower is better
+    // m_66: Lighting density compliance (d_66 / ref_d_66) — lower is better. The two models' S09 densities
+    // as entered, whatever either's F280 Mode: under On a model's lighting in effect is 0 (Cl. 6.2.5 folds
+    // it into the plug load), so in-effect values compared a Target's 1.5 W/m2 with a Reference's 0 and
+    // showed "100%" beside a fail (Mark, #134). A Reference of 0 has no ratio: N/A, and no mark.
     {
       id: "compliance.lighting.ratio",
       legacyId: "m_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity.inEffect", "reference.internal.lightingDensity"],
+      dependencies: ["internal.lightingDensity", "reference.internal.lightingDensity"],
       label: "Lighting Compliance Ratio",
       compute: (inputs) => {
-        const target = parseNum(inputs["internal.lightingDensity.inEffect"]);
+        const target = parseNum(inputs["internal.lightingDensity"]);
         const ref = parseNum(inputs["reference.internal.lightingDensity"]);
-        if (ref > 0) {
-          return Math.round((target / ref) * 100) + "%";
-        }
-        return "100%";
+        return ref > 0 ? Math.round((target / ref) * 100) + "%" : "N/A";
       }
     },
     {
@@ -205,12 +205,13 @@
       legacyId: "n_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity.inEffect", "reference.internal.lightingDensity"],
+      dependencies: ["internal.lightingDensity", "reference.internal.lightingDensity"],
       label: "Lighting Compliance Status",
       compute: (inputs) => {
-        const target = parseNum(inputs["internal.lightingDensity.inEffect"]);
+        const target = parseNum(inputs["internal.lightingDensity"]);
         const ref = parseNum(inputs["reference.internal.lightingDensity"]);
-        return ref > 0 && target / ref <= 1.0 ? "✓" : "✗";
+        if (!(ref > 0)) return "";
+        return target / ref <= 1.0 ? "✓" : "✗";
       }
     },
 
@@ -524,7 +525,7 @@
 
     // S09: Internal Gains
     "internal.plugLoadDensity":  "reference.internal.plugLoadDensity",
-    "internal.lightingDensity.inEffect":  "reference.internal.lightingDensity",
+    "internal.lightingDensity":  "reference.internal.lightingDensity", // as entered: m_66 compares the specs
     "internal.equipmentDensity": "reference.internal.equipmentDensity",
 
     // S11: Envelope RSI (for RSI components)

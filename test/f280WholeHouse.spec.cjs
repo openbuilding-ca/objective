@@ -14,45 +14,32 @@
  *          "gain". f280.nominalCoolingCapacity is that x max(1, latent load factor) (Cl. 6.3).
  *
  * ENFORCE_BAND is false until the verification agent (Kieran) signs off that F280-1 is modelled as
- * the standard specifies (Cl. 8.3.1-8.3.2). Until then the harness RECORDS pass/fail and asserts
- * only that every figure is a finite, positive number. Known gaps on 2026-11-18, named in each
+ * the standard specifies (Cl. 8.3.1-8.3.2). Until then the harness RECORDS pass/fail against Cl. 8.4.1,
+ * and asserts that each result is the one recorded in test/f280-results.json (to the W it is recorded
+ * in): a change that moves F280-1's loss, gain or a variant's change fails the run (Mark, #134), never
+ * silently rewrites the record. A change meant to move them re-records: F280_RECORD=1. Known gaps on 2026-11-18, named in each
  * record: no AIM-2 (Cl. 5.2.3.1), no BASESIMP (slab RSI 0 counts as zero loss), the base case's
  * external shading (Annex A) not yet expressed, peak solar and internal gains approximated.
  */
 const { test, expect } = require("@playwright/test");
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require("child_process");
 
 // SERVED, never file://: the ISO 52016-1 cooling (cooling.iso52016, which carries every glazing
-// row's cooling gain) fetches the climate station's monthly data, and a file:// page cannot.
-// F280_URL points at a running server; otherwise the harness serves the repo on 127.0.0.1:8771.
-const PORT = 8771;
-const URL = process.env.F280_URL || `http://127.0.0.1:${PORT}/index.html`;
-let server = null;
-test.beforeAll(async () => {
-  if (process.env.F280_URL) return;
-  server = spawn("python3", ["-m", "http.server", String(PORT), "--bind", "127.0.0.1"], {
-    cwd: path.join(__dirname, ".."),
-    stdio: "ignore",
-  });
-  for (let i = 0; i < 50; i++) {
-    try {
-      const r = await fetch(URL);
-      if (r.ok) return;
-    } catch (_) {
-      /* not up yet */
-    }
-    await new Promise((res) => setTimeout(res, 100));
-  }
-  throw new Error(`no server at ${URL}`);
-});
-test.afterAll(() => server && server.kill());
+// row's cooling gain) fetches the climate station's monthly data, and a file:// page cannot. The
+// suite's own server (playwright.config.cjs's baseURL, test/static-server.cjs) serves it; F280_URL
+// points the harness at another running app instead. (It started its own python3 server on 8771 until
+// Mark's #134 review: under npm run test:e2e that port is the config's, the bind failed unseen, and the
+// harness passed on the config's server by luck.)
+const URL = process.env.F280_URL || "/index.html";
 
 const ENFORCE_BAND = false;
 const CASES_DIR = path.join(__dirname, "computation", "case-studies");
 const FIXTURE = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "f280-annex-j.json"), "utf8"));
 const RESULTS_FILE = path.join(__dirname, "f280-results.json");
+// The record each run is held to (F280_RECORD=1 writes a new one instead of checking)
+const RECORD = process.env.F280_RECORD ? null : JSON.parse(fs.readFileSync(RESULTS_FILE, "utf8"));
+const RECORD_TOLERANCE_W = 1; // the record is rounded to the W
 
 // Which Annex J model each case is (Cl. 8.3.9's grid). Add a row as each F280-n is built.
 const CASES = {
@@ -365,7 +352,23 @@ test.describe("CSA F280-12 whole house (sandbox)", () => {
       not_modelled: NOT_MODELLED,
       records,
     };
-    fs.writeFileSync(RESULTS_FILE, JSON.stringify(out, null, 2) + "\n");
+    if (RECORD) {
+      // Each result as recorded: same records, same order, each figure within the record's rounding
+      const key = (r) => `${r.case} ${r.clause} ${r.variant || ""}`;
+      expect(records.map(key), "the records, as recorded").toEqual(RECORD.records.map(key));
+      records.forEach((r, i) => {
+        const was = RECORD.records[i];
+        const pairs = r.clause === "8.3.9"
+          ? [["loss", r.loss.result_W, was.loss.result_W], ["gain", r.gain.result_W, was.gain.result_W]]
+          : [["loss change", r.change_W.loss, was.change_W.loss], ["gain change", r.change_W.gain, was.change_W.gain]];
+        for (const [what, now, then] of pairs) {
+          expect(Math.abs(now - then), `${key(r)}: ${what} ${now} W, recorded ${then} W (F280_RECORD=1 to re-record)`)
+            .toBeLessThanOrEqual(RECORD_TOLERANCE_W);
+        }
+      });
+    } else {
+      fs.writeFileSync(RESULTS_FILE, JSON.stringify(out, null, 2) + "\n");
+    }
     for (const r of records.filter((x) => x.clause === "8.3.9")) {
       console.log(
         `${r.case}: loss ${r.loss.result_W} W vs ${r.loss.expected_W} (${(100 * r.loss.ratio).toFixed(1)} %, ${r.loss.pass ? "PASS" : "FAIL"}) · ` +

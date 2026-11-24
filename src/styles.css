@@ -1696,7 +1696,9 @@ body.viewing-reference-inputs .reference-locked {
 
 /* Ensure user-input fields retain their blue color ONLY IF NOT locked - CHANGED TO viewing-reference-inputs */
 /* This also relates to the old .reference-locked style */
-body.viewing-reference-inputs .user-input:not(.reference-locked) {
+/* Nor ghosted (.disabled-input, DOMBridge.ghostField): WebKit takes -webkit-user-modify: read-write over
+   contenteditable="false", so a ghosted cell was typable in Reference mode (Mark, #123 / #134) */
+body.viewing-reference-inputs .user-input:not(.reference-locked):not(.disabled-input) {
   color: var(--user-input-color) !important;
   font-weight: 500 !important;
   font-style: normal !important;

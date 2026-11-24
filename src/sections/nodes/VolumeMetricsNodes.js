@@ -647,7 +647,13 @@
         "climate.temperature.coldest", "climate.temperature.hottest"
       ],
       label: "AIM-2 air leakage (F280 Cl. 5.2.3)",
-      compute: (inputs) => aim2For(inputs)
+      // Read with F280 Mode Off too (i_103 takes the N-factor then): an input it cannot have is its
+      // { error }, never "Unavailable", which would stop that reader before its method check (Mark, #134)
+      acceptsUnavailable: true,
+      compute: (inputs) => {
+        const missing = Object.keys(inputs).find(k => inputs[k] === "Unavailable");
+        return missing ? { error: `${missing} is Unavailable` } : aim2For(inputs);
+      }
     });
 
     graph.registerNode({

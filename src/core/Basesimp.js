@@ -240,9 +240,13 @@
     const perimeter = 2 * (g.length + g.width);
     const exposed = p.exposedPerimeter > 0 ? p.exposedPerimeter : perimeter;
     const exposedFraction = Math.min(1, Math.max(exposed / perimeter, 0));
-    // A slab has no above-grade foundation wall (SlabOnGradeHLR has no Abwag / K11): fraction 1
+    // A slab has no above-grade foundation wall (SlabOnGradeHLR has no Abwag / K11): fraction 1. Nor has
+    // a basement whose depth is its wall height, where K11 would divide by zero (BasementHLR's #DIV/0!;
+    // Mark, #134): its above-grade term is 0 whatever the fraction, so 1 as the slab's
     const aboveGradeWall = (g.height - g.depth) * perimeter;
-    const openingsFraction = slab ? 1 : (aboveGradeWall - (p.windowArea || 0) - (p.doorArea || 0)) / aboveGradeWall;
+    const openingsFraction = slab || !(aboveGradeWall > 0)
+      ? 1
+      : (aboveGradeWall - (p.windowArea || 0) - (p.doorArea || 0)) / aboveGradeWall;
 
     // RadFloor - the radiant slab's share of the mean below-grade loss
     const wallRsi = c.iFndFlag4 > 0 ? STRUCTURE_RSI.woodWall : STRUCTURE_RSI.concreteWall;

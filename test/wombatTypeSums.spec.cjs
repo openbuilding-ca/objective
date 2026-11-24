@@ -17,26 +17,10 @@
  */
 const { test, expect } = require("@playwright/test");
 const path = require("path");
-const { spawn } = require("child_process");
 
-let URL = process.env.F280_URL;
-let server = null;
-test.beforeAll(async ({}, testInfo) => {
-  if (process.env.F280_URL) return;
-  const PORT = 8792 + testInfo.parallelIndex;
-  URL = `http://127.0.0.1:${PORT}/index.html`;
-  server = spawn("python3", ["-m", "http.server", String(PORT), "--bind", "127.0.0.1"], { cwd: path.join(__dirname, ".."), stdio: "ignore" });
-  for (let i = 0; i < 50; i++) {
-    try {
-      if ((await fetch(URL)).ok) return;
-    } catch (_) {
-      /* not up yet */
-    }
-    await new Promise((res) => setTimeout(res, 100));
-  }
-  throw new Error(`no server at ${URL}`);
-});
-test.afterAll(() => server && server.kill());
+// The suite's own server (playwright.config.cjs's baseURL); F280_URL points at another running app.
+// (Each spec started its own python3 server until Mark's #134 review: three shared 8782.)
+const URL = process.env.F280_URL || "/index.html";
 
 const READ = () => {
   const CI = window.TEUI.ComputationIntegration, st = CI.getState();

@@ -82,5 +82,20 @@ const shallow = basesimpFor({ ...house, "transmissionLoss.wallsBelowGrade.height
 check(`a depth below grade deeper than the walls' H is an error, never a number (${shallow.error})`,
   typeof shallow.error === "string" && /at most the wall height 1\.50/.test(shallow.error));
 
+// A depth below grade EQUAL to the wall height (Mark, #134): no above-grade wall, so the openings'
+// fraction (K11) divided by zero and the NaN was reported as "no winter average temperature". Mark's
+// geometry: 96 m2 of wall on a 40 m perimeter (H = 2.4 m) at depth 2.4 m, against depth 2.39 m
+const flush = { ...house, "transmissionLoss.wallsBelowGrade.area": 96, "ground.basesimp.exposedPerimeter": 40,
+  "transmissionLoss.wallsBelowGrade.height": 0, "climate.temperature.winterAverage": -2 };
+const atGrade = basesimpFor({ ...flush, "ground.basesimp.depth": 2.4 });
+const nearGrade = basesimpFor({ ...flush, "ground.basesimp.depth": 2.39 });
+check(`depth = wall height: BASESIMP runs (${atGrade.error || "ok"})`, !atGrade.error && Number.isFinite(atGrade.heatingLoad));
+check("its openings' fraction is 1, as a slab's", atGrade.openingsFraction === 1);
+check(`and its load sits by the 2.39 m one's (${atGrade.heatingLoad?.toFixed?.(1)} W vs ${nearGrade.heatingLoad?.toFixed?.(1)} W)`,
+  Math.abs(atGrade.heatingLoad - nearGrade.heatingLoad) < 0.02 * nearGrade.heatingLoad);
+check(`and its annual figure is a number (${atGrade.annual?.total?.toFixed?.(1)})`, Number.isFinite(atGrade.annual?.total));
+const noWinter = basesimpFor({ ...flush, "ground.basesimp.depth": 2.39, "climate.temperature.winterAverage": undefined });
+check(`no winter average: that error, named (${noWinter.error})`, /winter average/.test(noWinter.error || ""));
+
 console.log(ok ? "\nall pass" : "\nFAILED");
 process.exit(ok ? 0 : 1);
