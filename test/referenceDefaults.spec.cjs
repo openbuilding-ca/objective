@@ -142,7 +142,7 @@ test("Reference: cooling turned on reads the standard's COPc, an engineer's valu
   };
   const type = async (value) => {
     await page.locator('td[data-field-id="j_116"]').click();
-    await page.keyboard.press("Meta+A");
+    await page.keyboard.press("ControlOrMeta+A");
     await page.keyboard.type(value);
     await page.keyboard.press("Enter");
     await page.waitForTimeout(800);
