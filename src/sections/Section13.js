@@ -1510,6 +1510,17 @@ window.TEUI.SectionModules.sect13 = (function () {
     ) {
       enterSeparateCooling(coolingBeforeChange);
     }
+    // The Reference's heat pump cools at its own M.3.3: the standard, or an override (seedCopCool)
+    if (
+      fieldId === "d_116" &&
+      newValue === window.TEUI.CoolingSystem?.HEATPUMP &&
+      window.TEUI.ReferenceToggle?.isReferenceMode?.()
+    ) {
+      seedCopCool(coolingBeforeChange);
+    }
+    if (fieldId === "d_116" && newValue === window.TEUI.CoolingSystem?.NONE) {
+      noteCoolingOff(coolingBeforeChange);
+    }
 
     // Special handling for cooling system (d_116) and recovery type (e_118) changes
     if (fieldId === "d_116" || fieldId === "e_118") {
@@ -1563,35 +1574,49 @@ window.TEUI.SectionModules.sect13 = (function () {
     }
   }
 
+  // M.3.3 as it stood when each model's cooling was turned off this session (Target "", Reference
+  // "ref_"): the Reference keeps it on the way back (CoolingSystem.seedsCopCool's offAt)
+  const copCoolAtCoolingOff = {};
+
+  /** On a user's choice of No Cooling with cooling on: what M.3.3 held. */
+  function noteCoolingOff(leaving) {
+    const CS = window.TEUI.CoolingSystem;
+    if (!CS || !leaving || leaving === CS.NONE) return;
+    const prefix = window.TEUI.ReferenceToggle?.isReferenceMode?.() ? "ref_" : "";
+    copCoolAtCoolingOff[prefix] = getModeValue("j_116");
+  }
+
   /**
-   * The current mode becomes Separate Cooling - on a user's choice only (an
-   * import carries its own M.3.3). M.3.3 is filled with the standard's
-   * minimum unless it holds the unit's own COPc (CoolingSystem.seedsCopCool):
-   * - leaving the Target's heat pump option: always filled (M.3.3 showed M.1.3);
-   * - leaving the Reference's: as back from No Cooling (its heat pump cools
-   *   at its own M.3.3);
-   * - back from No Cooling: a positive COPc the user typed, a file brought or
-   *   an earlier fill left stays; an untouched default, a blank or a zero is
-   *   filled.
-   * So a look at No Cooling and back leaves M.3.3, and the cooling
-   * electricity it sets, as they were.
+   * The current mode's M.3.3 on a user's choice of cooling (an import carries its own), by
+   * CoolingSystem.seedsCopCool: filled with the standard's minimum unless it holds the unit's own.
+   * - Target, Separate Cooling: leaving the heat pump always filled (M.3.3 showed M.1.3); back from
+   *   No Cooling a positive COPc the user typed, a file brought or an earlier fill left stays.
+   * - Reference, Separate Cooling or its heat pump cooling: the standard, an engineer's typed value
+   *   its override (Andy 2026-11-23) - kept from the heat pump or Separate Cooling, and back from No
+   *   Cooling only as it was when the cooling was turned off.
    * @param {string} [leaving] the cooling choice being left; unknown fills
    */
+  function seedCopCool(leaving) {
+    const CS = window.TEUI.CoolingSystem;
+    const minimum = standardMinimumCopCool();
+    if (!CS || minimum === null) return;
+    const isRef = !!window.TEUI.ReferenceToggle?.isReferenceMode?.();
+    const prefix = isRef ? "ref_" : "";
+    const source = window.TEUI.StateManager?.getDebugInfo?.(`${prefix}j_116`)?.state;
+    const offAt = copCoolAtCoolingOff[prefix] ?? null;
+    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source, isRef, offAt)) {
+      setModeValue("j_116", String(minimum), "user-modified");
+    }
+  }
+
+  /** The current mode becomes Separate Cooling, and its M.3.3 follows (seedCopCool). */
   function enterSeparateCooling(leaving) {
     const CS = window.TEUI.CoolingSystem;
     if (!CS) return;
     if (getModeValue("d_116") !== CS.SEPARATE) {
       setModeValue("d_116", CS.SEPARATE, "user-modified");
     }
-    const minimum = standardMinimumCopCool();
-    if (minimum === null) return;
-    const isRef = window.TEUI.ReferenceToggle?.isReferenceMode?.();
-    const source = window.TEUI.StateManager?.getDebugInfo?.(
-      isRef ? "ref_j_116" : "j_116"
-    )?.state;
-    if (CS.seedsCopCool(leaving, getModeValue("j_116"), source, !!isRef)) {
-      setModeValue("j_116", String(minimum), "user-modified");
-    }
+    seedCopCool(leaving);
   }
 
   /**

@@ -61,28 +61,43 @@
     return isHP ? COOLING.HEATPUMP : COOLING.SEPARATE;
   }
 
-  // Choosing Separate Cooling fills M.3.3 with the standard's minimum COPc
-  // (Section 13) - unless M.3.3 already holds the unit's own: a positive COPc
-  // that is not the field's untouched default stays, so what the user typed
-  // (or a file brought) survives. M.3.3 holds the unit's own on the way back
-  // from No Cooling, and in the Reference on leaving the heat pump too: there
-  // the heat pump cools at the Reference's own M.3.3 (a default, not a lock,
-  // Andy 2026-11-19), so a typed 4.2 must not become the standard's 3.3 on a
-  // move to Separate Cooling or Gas (Mark, #134). Leaving the Target's heat
-  // pump it is always filled: M.3.3 was M.1.3's to show, and what is stored
-  // may be a previous project's (the import skips it while the heat pump cools).
+  // Cooling chosen (Section 13) fills M.3.3 with the standard's minimum COPc -
+  // unless M.3.3 already holds the unit's own, which it then keeps.
   //
-  // leaving: the choice being left. isReference: the Reference model's M.3.3.
-  // source: the state StateManager records
-  // for the stored M.3.3. Only "default" is read from it: a COPc filled here
-  // is stored as "user-modified", like a typed one, and the Reference model's
-  // inputs are synced back as "calculated" - so the state cannot say who
-  // wrote the value, and the choice being left decides instead.
-  function seedsCopCool(leaving, copCool, source, isReference = false) {
-    const holdsOwn = leaving === COOLING.NONE || (isReference && leaving === COOLING.HEATPUMP);
-    if (!holdsOwn) return true;
+  // TARGET (Separate Cooling): back from No Cooling, a positive COPc that is
+  // not the field's untouched default stays, so what the user typed (or a
+  // file brought: the unit's nameplate) survives a look at No Cooling (Mark's
+  // #128). Leaving the heat pump it is always filled: M.3.3 was M.1.3's to
+  // show, and what is stored may be a previous project's (the import skips it
+  // while the heat pump cools).
+  //
+  // REFERENCE (Separate Cooling, or its heat pump cooling - both cool at its
+  // own M.3.3). Andy 2026-11-23: "if the user HAS set cooling in Reference and
+  // NOT in Target, then COPc should read the standard, but allow an
+  // over-ride". So M.3.3 reads the standard's minimum, and an engineer's typed
+  // value overrides it, above or below:
+  //   - from No Cooling: the standard - unless M.3.3 still holds the value it
+  //     had when this model's cooling was turned off (offAt), an override
+  //     typed while it cooled; a value that only sat under No Cooling (a
+  //     file's 2.66, ghosted and never chosen) is not one;
+  //   - from the heat pump or Separate Cooling (cooling was on): a positive
+  //     COPc that is not the untouched default stays (Mark, #134: a typed 4.2
+  //     became 3.3 on a move to Separate Cooling or Gas).
+  //
+  // leaving: the choice being left (unknown fills). source: the state
+  // StateManager records for M.3.3; only "default" is read from it - a fill is
+  // stored as "user-modified", like a typed value, and the Reference's inputs
+  // sync back as "calculated", so the state cannot say who wrote it.
+  function seedsCopCool(leaving, copCool, source, isReference = false, offAt = null) {
+    const cop = parseNum(copCool, 0);
+    if (isReference) {
+      if (leaving === COOLING.NONE) return !(cop > 0 && offAt !== null && cop === parseNum(offAt, NaN));
+      if (leaving === COOLING.HEATPUMP || leaving === COOLING.SEPARATE) return source === "default" || !(cop > 0);
+      return true;
+    }
+    if (leaving !== COOLING.NONE) return true;
     if (source === "default") return true;
-    return !(parseNum(copCool, 0) > 0);
+    return !(cop > 0);
   }
 
   window.TEUI.CoolingSystem = Object.freeze({

@@ -79,7 +79,13 @@ check("from No Cooling, the untouched default: filled", CS.seedsCopCool(NONE, "2
 check("Reference, leaving the heat pump, typed 4.20: stays", CS.seedsCopCool(HP, "4.2", "user-modified", true), false);
 check("Reference, leaving the heat pump, the untouched default: filled", CS.seedsCopCool(HP, "3.3", "default", true), true);
 check("Reference, leaving the heat pump, a 0: filled", CS.seedsCopCool(HP, "0", "calculated", true), true);
-check("Reference, back from No Cooling, typed 4.20: stays", CS.seedsCopCool(NONE, "4.2", "user-modified", true), false);
+check("Reference, back from No Cooling, as it was when cooling was turned off: stays", CS.seedsCopCool(NONE, "4.2", "user-modified", true, "4.2"), false);
+// Andy 2026-11-23: a Reference with cooling reads the standard, an override allowed - a value that only sat under
+// No Cooling (a file's 2.66, never chosen) is not an override
+check("Reference, from No Cooling, a file's 2.66 never chosen: the standard", CS.seedsCopCool(NONE, "2.66", "imported", true), true);
+check("Reference, from No Cooling, changed since cooling was turned off: the standard", CS.seedsCopCool(NONE, "2.66", "imported", true, "4.2"), true);
+check("Reference, from Separate Cooling to its heat pump, typed 4.20: stays", CS.seedsCopCool("Separate Cooling", "4.2", "user-modified", true), false);
+check("Target, back from No Cooling, a file's 2.66 (the nameplate): still stays", CS.seedsCopCool(NONE, "2.66", "imported", false), false);
 check("Target, leaving the heat pump, typed 4.20: still filled", CS.seedsCopCool(HP, "4.2", "user-modified", false), true);
 check("from No Cooling, a No Cooling file's 0.00: filled", CS.seedsCopCool(NONE, "0.00", "imported"), true);
 check("from No Cooling, blank: filled", CS.seedsCopCool(NONE, "", "imported"), true);

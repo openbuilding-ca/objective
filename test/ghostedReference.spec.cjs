@@ -36,6 +36,9 @@ test("Reference mode: a ghosted cell cannot be typed in; a live one can", async 
   );
   const ghosted = cells.filter((c) => c.ghosted);
   expect(ghosted.map((c) => c.id), "S03 G.4.5 is ghosted for the slab").toContain("d_26");
+  // The Reference truly has No Cooling (Hemmingford's S13 M.3.1): its M.3.3 COPc is greyed (Andy 2026-11-23)
+  expect(await page.evaluate(() => window.TEUI.StateManager.getValue("ref_d_116"))).toBe("No Cooling");
+  expect(ghosted.map((c) => c.id), "M.3.3 under No Cooling").toContain("j_116");
   expect(ghosted.filter((c) => c.editable).map((c) => c.id), "ghosted and still editable").toEqual([]);
   expect(cells.filter((c) => !c.ghosted && c.editable).length, "the live inputs stay editable").toBeGreaterThan(20);
 
