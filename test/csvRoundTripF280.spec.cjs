@@ -14,28 +14,10 @@
 const { test, expect } = require("@playwright/test");
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require("child_process");
 
-// One server per parallel worker (its own port): a shared port let the first worker to finish kill the
-// server under the others (8 of 8 failed at --repeat-each=8 --workers=4).
-let URL = process.env.F280_URL;
-let server = null;
-test.beforeAll(async ({}, testInfo) => {
-  if (process.env.F280_URL) return;
-  const PORT = 8772 + testInfo.parallelIndex;
-  URL = `http://127.0.0.1:${PORT}/index.html`;
-  server = spawn("python3", ["-m", "http.server", String(PORT), "--bind", "127.0.0.1"], { cwd: path.join(__dirname, ".."), stdio: "ignore" });
-  for (let i = 0; i < 50; i++) {
-    try {
-      if ((await fetch(URL)).ok) return;
-    } catch (_) {
-      /* not up yet */
-    }
-    await new Promise((res) => setTimeout(res, 100));
-  }
-  throw new Error(`no server at ${URL}`);
-});
-test.afterAll(() => server && server.kill());
+// The suite's own server (playwright.config.cjs's baseURL: one for the whole run, so no worker stops it under another); F280_URL points at another running app.
+// (Each spec started its own python3 server until Mark's #134 review: three shared 8782.)
+const URL = process.env.F280_URL || "/index.html";
 
 const SET = { // target value, reference value (null = same as target)
   f280_mode: ["On", "Off"], l_25: ["5", "7"], d_26: ["1.5", "1.25"], h_26: ["40", "41"], l_26: ["1.2", "1.3"], d_26b: ["5", "6"],
