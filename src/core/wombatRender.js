@@ -859,6 +859,46 @@ window.TEUI.WombatRender = (function () {
    * @param {Object} geometry - Geometry data
    * @param {String} mode - "target" or "reference"
    */
+  /**
+   * The solver's walls as S11 rows take them: L x H per facade. The prism's two long SIDES stand at the
+   * eave (a shed's high side at eave + rise); its two short ENDS carry the roof profile, given at their
+   * MEAN height (a gable end: eave + rise / 2), so L x H is the end's true area. Facings follow
+   * wombatWindows' facades: north / south span X (the footprint width), east / west span Y (its length).
+   * Hip and pyramid roofs have no gable: every wall stands at the eave.
+   * @returns {{lines: string[], total: number}}
+   */
+  function facadeWalls(geometry) {
+    const eave = geometry.wallHeight;
+    const rise = geometry.roofHeight || 0;
+    const { width, length } = geometry.footprint;
+    const endsOnX = width <= length; // the ends span the SHORT dimension
+    const ends = endsOnX ? "N, S" : "E, W";
+    const sides = endsOnX ? "E, W" : "N, S";
+    const shortL = Math.min(width, length);
+    const longL = Math.max(width, length);
+    const f = n => n.toFixed(2);
+    let endH = eave;
+    let sideLine = `${sides}: ${f(longL)} × ${f(eave)} m each`;
+    let total = 2 * longL * eave;
+    if (geometry.roofType === "gable") {
+      endH = eave + rise / 2;
+    } else if (geometry.roofType === "shed") {
+      endH = eave + rise / 2;
+      sideLine = `${sides}: ${f(longL)} × ${f(eave)} and × ${f(eave + rise)} m`;
+      total = longL * (2 * eave + rise);
+    }
+    total += 2 * shortL * endH;
+    const endNote = endH > eave ? " (mean H)" : "";
+    return {
+      lines: [
+        "Walls, L × H:",
+        `  ${sideLine}`,
+        `  ${ends}: ${f(shortL)} × ${f(endH)} m each${endNote}`,
+      ],
+      total,
+    };
+  }
+
   function renderLegend(svg, geometry, mode) {
     const isReference = mode === "reference";
     let yOffset = 50; // Start below title and dimensions (moved up to align with table)
@@ -902,7 +942,7 @@ window.TEUI.WombatRender = (function () {
     yOffset += lineHeight;
 
     // 2. Storey Height
-    const storeyHeight = getValue("h_156") || geometry.storyHeight.toFixed(2);
+    const storeyHeight = geometry.storyHeight;
     const storeyText = createText(
       xOffset,
       yOffset,
@@ -913,8 +953,11 @@ window.TEUI.WombatRender = (function () {
     svg.appendChild(storeyText);
     yOffset += lineHeight;
 
-    // 3. Floorplate Area (from d_95 or d_87)
-    const floorplateArea = getValue("d_95") || getValue("d_87") || "0.00";
+    // 3. Floorplate Area: the slabs' type sum, or the exposed floors' (every S11 row of the type)
+    const floorplateArea =
+      parseFloat(getValue("transmissionLoss.slabOnGrade.area")) ||
+      parseFloat(getValue("transmissionLoss.exposedFloor.area")) ||
+      "0.00";
     const floorplateText = createText(
       xOffset,
       yOffset,
@@ -925,8 +968,8 @@ window.TEUI.WombatRender = (function () {
     svg.appendChild(floorplateText);
     yOffset += lineHeight;
 
-    // 4. Roof Area (from d_85)
-    const roofArea = getValue("d_85") || "0.00";
+    // 4. Roof Area: the roofs' type sum
+    const roofArea = getValue("transmissionLoss.roof.area") || "0.00";
     const roofText = createText(
       xOffset,
       yOffset,
@@ -970,36 +1013,46 @@ window.TEUI.WombatRender = (function () {
       }
     }
 
-    // 6. End Wall Area (gable or shed specific)
-    if (geometry.roofType === "gable" || geometry.roofType === "shed") {
-      const endWallArea = geometry.profile2D?.endWallArea || 0;
-      const endWallLabel =
-        geometry.roofType === "gable"
-          ? "Gable End Wall Area"
-          : "Shed End Wall Area";
-      const endWallText = createText(
-        xOffset,
-        yOffset,
-        `${endWallLabel}: ${endWallArea.toFixed(2)} m²`,
-        labelColor,
-        11
-      );
-      svg.appendChild(endWallText);
-      yOffset += lineHeight;
-    }
-
-    // 7. Ae Wall Area (air-facing longitudinal walls - calculated from geometry)
-    // For prismatic geometry: 2 longitudinal walls × length × wall height
-    const longitudinalWallArea =
-      2 * geometry.footprint.length * geometry.height;
-    const aeWallText = createText(
+    // 6. Heights: the eave (every wall's top on the long sides) and the ridge
+    const eaveText = createText(
       xOffset,
       yOffset,
-      `Ae Wall Area: ${longitudinalWallArea.toFixed(2)} m²`,
+      `Eave Height: ${geometry.wallHeight.toFixed(2)} m`,
       labelColor,
       11
     );
-    svg.appendChild(aeWallText);
+    svg.appendChild(eaveText);
+    yOffset += lineHeight;
+    if ((geometry.roofHeight || 0) > 0) {
+      const ridgeText = createText(
+        xOffset,
+        yOffset,
+        `Ridge Height: ${(geometry.wallHeight + geometry.roofHeight).toFixed(2)} m`,
+        labelColor,
+        11
+      );
+      svg.appendChild(ridgeText);
+      yOffset += lineHeight;
+    }
+
+    // 7. The walls as S11 takes them, one L x H per facade (read-only: Wombat never writes S11).
+    // A gable or shed end is entered at its MEAN height, the rectangle of the same area; the ridge
+    // belongs in S12's B.19.4, not in a wall's H. Then Wombat's wall total beside S11's own.
+    const walls = facadeWalls(geometry);
+    walls.lines.forEach(line => {
+      const t = createText(xOffset, yOffset, line, labelColor, 11);
+      svg.appendChild(t);
+      yOffset += lineHeight;
+    });
+    const s11Walls = parseFloat(getValue("transmissionLoss.walls.area")) || 0;
+    const wallsText = createText(
+      xOffset,
+      yOffset,
+      `Walls: ${walls.total.toFixed(2)} m² (S11: ${s11Walls.toFixed(2)} m²)`,
+      labelColor,
+      11
+    );
+    svg.appendChild(wallsText);
     yOffset += lineHeight;
 
     // 7b. Ag (Area exposed to Ground) - if basement or slab present

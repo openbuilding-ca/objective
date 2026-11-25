@@ -80,6 +80,14 @@
       }
 
       const inputs = gatherInputs(node.dependencies, modelId);
+      // An input a method could not give (BASESIMP, AIM-2, a city without climate data) makes every node
+      // that reads it Unavailable too: never a 0 passed on as a figure (Andy 2026-11-19: Hemmingford's
+      // TEUI fell 53.8 -> 1.6 when BASESIMP could not run, read as zero ground loss by 24 nodes down to
+      // S01). A node that handles the state itself says so with acceptsUnavailable: the BASESIMP and AIM-2 method nodes,
+      // whose readers outside F280 Mode never look at them (Mark, #134), return an { error } instead.
+      if (!node.acceptsUnavailable && node.dependencies.some(d => inputs[d] === "Unavailable")) {
+        return "Unavailable";
+      }
       try {
         return node.compute(inputs);
       } catch (e) {

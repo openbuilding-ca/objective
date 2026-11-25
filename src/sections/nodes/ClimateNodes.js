@@ -36,6 +36,28 @@
   }
 
   /**
+   * A station's June-August mean of a monthly field, weighted by the months'
+   * days (30, 31, 31); null until the station has loaded (ClimateStation
+   * .request recalculates on arrival) or where the city has no station;
+   * "Unavailable" where the station's files did not load.
+   */
+  const SUMMER_MONTHS = [
+    [5, 30],
+    [6, 31],
+    [7, 31],
+  ];
+  function summerMean(stationId, field) {
+    const CS = window.TEUI?.ClimateStation;
+    const station = CS?.request(stationId);
+    if (!station && CS?.failure(stationId)) return "Unavailable";
+    const values = station?.months?.[field];
+    if (!values) return null;
+    const days = SUMMER_MONTHS.reduce((sum, [, d]) => sum + d, 0);
+    const total = SUMMER_MONTHS.reduce((sum, [m, d]) => sum + values[m] * d, 0);
+    return +(total / days).toFixed(2);
+  }
+
+  /**
    * Check if value is unavailable
    */
   function isUnavailable(value) {
@@ -120,6 +142,54 @@
       label: "Capacitance Percentage",
       unit: "%"
     },
+    // G.4.4-G.4.8: how a foundation in contact with soil loses heat (Andy 2026-11-19; F280 Mode picks the method). The OBJECTIVE
+    // method is U x A to a 10 C ground; BASESIMP is CSA F280-12 Cl. 5.2.2.1's BasementHLR.xls
+    // (src/core/Basesimp.js). Its inputs are Cl. 5.2.2.1's a)-d); the added insulation e)-f) is S11's
+    // below-grade RSI, the weather i)-k) F280's own table (F280Weather.js).
+    {
+      id: "ground.basesimp.configuration",
+      legacyId: "l_25",
+      defaultValue: 1, // BCIN_1: concrete, interior insulation over full height
+      classification: "C",
+      section: "S03",
+      label: "Foundation Configuration (BASESIMP)"
+    },
+    {
+      id: "ground.basesimp.depth",
+      legacyId: "d_26",
+      defaultValue: 2.06, // F280 Archetype 1, Table G.1.5
+      classification: "C",
+      section: "S03",
+      label: "Depth Below Grade",
+      unit: "m"
+    },
+    {
+      id: "ground.basesimp.exposedPerimeter",
+      legacyId: "h_26",
+      defaultValue: 0, // 0 = not given: BASESIMP reports it missing (ground.basesimp)
+      classification: "C",
+      section: "S03",
+      label: "Exposed Perimeter",
+      unit: "m"
+    },
+    {
+      id: "ground.basesimp.soilConductivity",
+      legacyId: "l_26",
+      defaultValue: 0.85, // BasementHLR's suggested value; F280 H.1-H.4 "Dry sand, loam, clay"
+      classification: "C",
+      section: "S03",
+      label: "Soil Conductivity",
+      unit: "W/mK"
+    },
+    {
+      id: "ground.basesimp.waterTable",
+      legacyId: "d_26b",
+      defaultValue: 8, // BasementHLR's suggested value; F280 H.1-H.4 "Normal (7-10 m)"
+      classification: "C",
+      section: "S03",
+      label: "Water Table Depth",
+      unit: "m"
+    },
     {
       id: "climate.coolingDays",
       legacyId: "m_19",
@@ -132,6 +202,9 @@
       id: "climate.cooling.override",
       legacyId: "l_24",
       defaultValue: 24,
+      // the Reference's own, 24 by default - never the Target's (Andy 2026-11-19: the code's 24 is the
+      // Reference's default, not a lock; a value set on the Reference, or mirrored, wins)
+      copyToReference: false,
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint Override",
@@ -139,9 +212,16 @@
     },
     // Editable-computed override: CDD is computed from climate lookup but
     // user can type a value (many Canadian cities have CDD24=666=unavailable).
-    // No legacyId — routing from d_21 is handled in recomputeForInput.
+    // Typing into d_21 routes here (recomputeForInput). Its own StateManager key
+    // d_21o (2026-11-19): with none, every full recompute (an import, a mirror)
+    // cleared the graph state and dropped the override, and the house CSV could
+    // not carry it; d_21 itself holds the COMPUTED CDD, so syncing that back
+    // would pin the city's value.
     {
       id: "climate.cooling.degreedays.userOverride",
+      legacyId: "d_21o",
+      // an empty Reference override is "none", never the Target's (populateReferenceModel)
+      copyToReference: false,
       defaultValue: null,
       classification: "C",
       section: "S03",
@@ -149,8 +229,8 @@
     },
     // d_12, d_13: canonical inputs live in BuildingInfoNodes
     // (building.majorOccupancy, building.referenceStandard)
-    // l_20, l_21: canonical inputs live in CoolingNodes
-    // (climate.cooling.nightTemp, climate.cooling.seasonMeanRH)
+    // l_20, l_21: computed from the climate station (below, after
+    // climate.station) - no longer inputs
   ];
 
   // ============================================================================
@@ -158,6 +238,56 @@
   // ============================================================================
 
   const ClimateNodes = [
+    // ========================================================================
+    // CLIMATE STATION - the CWEC 2020 (else NASA POWER) station the cooling
+    // reads (ClimateStation.js, ClimateStations.js). The id only; the station
+    // itself loads on demand and the cooling node reads it from the cache.
+    // ========================================================================
+    {
+      id: "climate.station",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Climate Station",
+      compute: (inputs) => {
+        const CS = window.TEUI?.ClimateStation;
+        const province = String(inputs["climate.location.province"] || "").trim().toUpperCase();
+        const city = String(inputs["climate.location.city"] || "").trim();
+        return CS ? CS.stationFor(province, city) : null;
+      }
+    },
+
+    // ========================================================================
+    // SUMMER NIGHT MEAN (l_20) + SUMMER MEAN RH (l_21) - the station's own
+    // June-August, day-weighted: the mean daily MINIMUM and the mean RH.
+    // Were user inputs defaulting to 20.43 °C / 55.85 % (a GTA summer, Andy
+    // 2026-10-30: "I did not have the resources to dig in to every single
+    // climate location"); Andy 2026-11-04: "allow the Summer Night Mean and
+    // Summer Mean RH fields to reflect the data ... They can cease to be
+    // user-editable". Shown in S03 only - the cooling reads the station's
+    // months itself (CoolingISO52016), so neither moves an energy number.
+    // ========================================================================
+    {
+      id: "climate.cooling.nightTemp",
+      legacyId: "l_20",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Night Mean (mean daily minimum, Jun-Aug)",
+      unit: "°C",
+      compute: (inputs) => summerMean(inputs["climate.station"], "t_min")
+    },
+    {
+      id: "climate.cooling.seasonMeanRH",
+      legacyId: "l_21",
+      dependencies: ["climate.station"],
+      classification: "G",
+      section: "S03",
+      label: "Summer Mean RH (Jun-Aug)",
+      unit: "%",
+      compute: (inputs) => summerMean(inputs["climate.station"], "rh_mean")
+    },
+
     // ========================================================================
     // CLIMATE DATA LOOKUP NODES
     // ========================================================================
@@ -189,6 +319,10 @@
         return hdd;
       }
     },
+    // Shown in S03 only (ghosted): no node reads CDD since the cooling need
+    // became ISO 52016-1 on the climate station (CoolingNodes
+    // ISO_DEPENDENCIES), so neither the future CDD nor the user override
+    // below moves an energy number.
     {
       id: "climate.cooling.degreedays",
       legacyId: "d_21",
@@ -273,6 +407,23 @@
         return data?.July_2_5_Tdb || 34;
       }
     },
+    // The wet bulb coincident with d_24 (NBC C-2's July 2.5 %) - F280's Ho
+    // for the design latent gain (cooling.latentLoadFactor)
+    {
+      id: "climate.temperature.hottestWetBulb",
+      dependencies: ["climate.location.province", "climate.location.city"],
+      classification: "G",
+      section: "S03",
+      label: "Hottest Day Coincident Wet Bulb",
+      unit: "°C",
+      compute: (inputs) => {
+        const data = getClimateData(
+          inputs["climate.location.province"],
+          inputs["climate.location.city"]
+        );
+        return data?.July_2_5_Twb ?? 23;
+      }
+    },
     {
       id: "climate.elevation",
       legacyId: "l_22",
@@ -340,29 +491,34 @@
       dependencies: ["building.majorOccupancy", "building.referenceStandard"],
       classification: "C",
       section: "S03",
-      label: "Heating Setpoint",
+      label: "Heating Setpoint (energy)",
       unit: "°C",
+      // The ENERGY set-point: what the annual model heats to. The DESIGN (sizing) set-point is
+      // climate.heating.obcSetpoint (m_23), used by S15's peaks and S21 / F280. Andy 2026-11-18: separate
+      // the two; critical occupancies keep the code's 22 °C ("We cannot over-ride that as it is a code
+      // requirement"); PH is 20 °C, PHPP's own (it was 18, which no source gives).
       compute: (inputs) => {
         const occupancy = inputs["building.majorOccupancy"] || "Other";
         const standard = inputs["building.referenceStandard"] || "OBC SB-10";
-
-        // Check if Passive House standard (case-insensitive)
         const isPH = standard && standard.toUpperCase().includes("PH");
+        const isCare = occupancy.includes("Care");
+        const isResidential = occupancy.includes("Residential");
+        // Part 9 houses on a performance path: NBC's tiers and OBC's SB-12.
+        const isPart9 = standard.startsWith("NBC T") || standard.startsWith("OBC SB12");
 
-        // PH standards use 18°C regardless of occupancy
-        if (isPH) {
-          return 18;
-        }
-
-        // Non-PH: Check for critical occupancy (Residential or Care)
-        // Use includes() to match values like "C-Residential", "D-Residential MURB", etc.
-        const isCriticalOccupancy =
-          occupancy.includes("Residential") || occupancy.includes("Care");
-
-        if (isCriticalOccupancy) {
-          return 22; // OBC requires 22°C for residential/care
-        }
-
+        // Care occupancies are critical under every standard: the code's 22 °C, never overridden.
+        if (isCare) return 22;
+        // Passive House: PHPP 9.6a's interior temperature winter, 20 °C (Verification sheet; its Check
+        // sheet warns above 20).
+        if (isPH) return 20;
+        // Part 9 houses: 20 °C. NBC 2025 Sentence 9.36.6.4.(5): 20 °C in living spaces (19 °C in
+        // basements). OBC SB-12's performance path uses EnerGuide's operating conditions (ERS v15.2
+        // §4.6.2.2, Table 2: 21 °C day / 18 °C night, "a constant weighted average of 20 degrees
+        // Celsius"; 19 °C basements). One zone here, so the living-space value. Not critical occupancy:
+        // a Part 9 house is residential (Andy 2026-11-18).
+        if (isResidential && isPart9) return 20;
+        // Residential under Part 3 (OBC SB10, NECB): critical occupancy, 22 °C.
+        if (isResidential) return 22;
         return 18; // Default for other occupancies
       }
     },
@@ -372,8 +528,11 @@
       dependencies: ["building.majorOccupancy"],
       classification: "C",
       section: "S03",
-      label: "OBC Heating Setpoint (Building Code Baseline)",
+      label: "OBC Heating Setpoint (Building Code Baseline; the DESIGN set-point)",
       unit: "°C",
+      // The DESIGN (sizing) set-point: what the heating must hold at the outdoor design temperature.
+      // NBC 2025 9.33.3.1.(1) and CSA F280-12 Cl. 4.2 both give 22 °C in living spaces. S15's peaks and
+      // S21 / F280 read this; the annual model reads climate.heating.setpoint.
       compute: (inputs) => {
         const occupancy = inputs["building.majorOccupancy"] || "Other";
 
@@ -391,16 +550,27 @@
     {
       id: "climate.cooling.setpoint",
       legacyId: "h_24",
-      dependencies: ["building.majorOccupancy", "climate.cooling.override"],
+      dependencies: [
+        "building.majorOccupancy",
+        "climate.cooling.override",
+      ],
       classification: "C",
       section: "S03",
       label: "Cooling Setpoint",
       unit: "°C",
+      // Andy 2026-11-04: "users ROUTINELY crank cooling down by dragging Tset
+      // for Cooling lower, resulting in higher ACTUAL cooling loads. The
+      // over-ride is the best way to model this 'bad user' behaviour. It
+      // should be allowed for the Target model, but the Reference model should
+      // still use the hard-coded code-established value. I think a lower bound
+      // of 18ºC is reasonable as that is what actual systems often cap at."
+      // Was Excel H24=IF(L24>24, L24, 24): an override could only raise it.
+      // Andy 2026-11-19 ("Yes"): the Reference's 24 is a DEFAULT, not a lock - the Reference reads its OWN
+      // override (climate.cooling.override, 24 unless set on the Reference or mirrored from the Target:
+      // copyToReference false). It returned 24 for the Reference whatever was set.
       compute: (inputs) => {
         const override = parseNum(inputs["climate.cooling.override"], 24);
-
-        // Excel Formula: H24=IF(L24>24, L24, 24)
-        return override > 24 ? override : 24;
+        return Math.max(18, override);
       }
     },
     {
@@ -420,13 +590,24 @@
     {
       id: "climate.heating.compliance",
       legacyId: "n_23",
-      dependencies: ["climate.heating.setpoint", "climate.heating.obcSetpoint"],
+      dependencies: [
+        "climate.heating.setpoint",
+        "climate.heating.obcSetpoint",
+        "building.majorOccupancy",
+        "building.referenceStandard"
+      ],
       classification: "C",
       section: "S03",
       label: "Heating Compliance",
       compute: (inputs) => {
         const actual = parseNum(inputs["climate.heating.setpoint"], 21);
-        const required = parseNum(inputs["climate.heating.obcSetpoint"], 22);
+        const occupancy = inputs["building.majorOccupancy"] || "Other";
+        const standard = inputs["building.referenceStandard"] || "";
+        // A Part 9 house (NBC tiers, OBC SB-12) is modelled at the code's own energy set-point, 20 °C
+        // (NBC 9.36.6.4.(5); SB-12 / EnerGuide); everything else is held to the design baseline.
+        const part9House =
+          occupancy.includes("Residential") && (standard.startsWith("NBC T") || standard.startsWith("OBC SB12"));
+        const required = part9House ? 20 : parseNum(inputs["climate.heating.obcSetpoint"], 22);
 
         // Pass if actual >= required
         return actual >= required ? "✓" : "✗";

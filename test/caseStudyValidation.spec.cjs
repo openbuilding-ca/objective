@@ -13,9 +13,12 @@ test.describe("Case Study Validation", () => {
       localStorage.setItem("disclaimerSeen", "true");
     });
 
-    // Load the calculator
-    const indexPath = path.join(__dirname, "..", "index.html");
-    await page.goto(`file://${indexPath}`);
+    // Load the calculator - over http (playwright.config.cjs's webServer), so
+    // the climate station loads. init.js fetches a sample project 1.5 s after
+    // start-up, which over http would land on top of the imports below - keep
+    // it out, as file:// did.
+    await page.route("**/src/template/case-studies/**", (route) => route.abort());
+    await page.goto("/index.html");
 
     // Wait for calculator to initialize
     await page.waitForFunction(
@@ -51,8 +54,20 @@ test.describe("Case Study Validation", () => {
             // Import CSV
             window.TEUI.FileHandler.processImportedCSV(csv);
 
-            // Wait for calculations
-            setTimeout(() => {
+            // Wait for calculations - and for each model's climate station,
+            // which is fetched and recalculates the page when it lands
+            const CS = window.TEUI.ClimateStation;
+            const stations = () => {
+              const st = window.TEUI.ComputationIntegration.getState();
+              return (st.getAllModels ? st.getAllModels() : [])
+                .map((m) => st.getValueForModel(m.id, "climate.station"))
+                .filter(Boolean);
+            };
+            const validate = () => {
+              if (stations().some((id) => !CS.get(id) && !CS.failure(id))) {
+                setTimeout(validate, 100);
+                return;
+              }
               try {
               // Run validation
               const graph = window.TEUI.ComputationIntegration.getGraph();
@@ -109,7 +124,8 @@ test.describe("Case Study Validation", () => {
               const refM124Debug = ridForM124 ? {
                 m_124: { old: parseFloat(SM.getValue("ref_m_124")) || 0, new: parseFloat(state.getValueForModel(ridForM124, "cooling.daysActiveCooling")) || 0 },
                 m_129: { old: parseFloat(SM.getValue("ref_m_129")) || 0, new: parseFloat(state.getValueForModel(ridForM124, "energy.ced.mitigated")) || 0 },
-                dailyFreeCooling: { new: parseFloat(state.getValueForModel(ridForM124, "cooling.dailyFreeCoolingPotential")) || 0 },
+                // the daily potential went with the ISO 52016-1 cooling (36b8062); its annual successor
+                freeCoolingPotential: { new: parseFloat(state.getValueForModel(ridForM124, "cooling.freeCoolingRaw")) || 0 },
                 d_21: { old: SM.getValue("ref_d_21") || SM.getValue("d_21"), new: state.getValueForModel(ridForM124, "climate.cooling.degreedays") },
                 m_19: { old: SM.getValue("ref_m_19") || SM.getValue("m_19"), new: state.getValueForModel(ridForM124, "climate.coolingDays") },
                 d_116: { old: SM.getValue("ref_d_116"), new: state.getValueForModel(ridForM124, "mechanical.cooling.systemType") },
@@ -439,11 +455,14 @@ test.describe("Case Study Validation", () => {
                 }
               }
 
+              result.stations = stations().map((id) => ({ id, loaded: !!CS.get(id) }));
+
               resolve(result);
               } catch (innerErr) {
                 resolve({ error: `Inner error: ${innerErr.message}`, mismatches: 0, mismatchDetails: [] });
               }
-            }, 500);
+            };
+            setTimeout(validate, 500);
           } catch (err) {
             resolve({ error: err.message, mismatches: 0, mismatchDetails: [] });
           }
@@ -582,7 +601,7 @@ test.describe("Case Study Validation", () => {
           console.log(`     [ref_m_124 Days Active Cooling Dependencies]`);
           console.log(`       m_124:       OLD=${d.m_124.old.toFixed(2)} NEW=${d.m_124.new.toFixed(2)} diff=${(d.m_124.new - d.m_124.old).toFixed(2)}`);
           console.log(`       m_129 (CED mitigated):  OLD=${d.m_129.old.toFixed(2)} NEW=${d.m_129.new.toFixed(2)} diff=${(d.m_129.new - d.m_129.old).toFixed(2)}`);
-          console.log(`       dailyFreeCooling:       NEW=${d.dailyFreeCooling.new.toFixed(4)}`);
+          console.log(`       freeCoolingPotential:   NEW=${d.freeCoolingPotential.new.toFixed(2)} kWh/yr`);
           console.log(`       d_21 CDD:    OLD=${d.d_21.old} NEW=${d.d_21.new}`);
           console.log(`       m_19 days:   OLD=${d.m_19.old} NEW=${d.m_19.new}`);
           console.log(`       d_116 cool:  OLD=${d.d_116.old} NEW=${d.d_116.new}`);
@@ -738,6 +757,13 @@ test.describe("Case Study Validation", () => {
     // Assert e_8 (Reference Annual Carbon) matches
     const e8Mismatches = allResults.filter(r => r.e8 && !r.e8.match).length;
     expect(e8Mismatches).toBe(0);
+
+    // Assert every case's climate station loaded, so its ISO 52016-1 cooling
+    // ran - without it the cooling rows read 0 and the parity above still holds
+    const stationNotLoaded = allResults
+      .filter(r => !r.error && !(r.stations.length && r.stations.every(s => s.loaded)))
+      .map(r => r.file);
+    expect(stationNotLoaded).toEqual([]);
   });
 });
 

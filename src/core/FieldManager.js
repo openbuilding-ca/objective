@@ -506,8 +506,22 @@ TEUI.FieldManager = (function () {
         const rowElement = document.createElement("tr");
         rowElement.setAttribute("data-id", rowDef.id);
 
+        // A cell with span N covers the next N-1 columns: they are not rendered
+        // (each section pads every column, so a covered one arrives empty).
+        let covered = 0;
+
         // Generate cells based on layout definition
         rowDef.cells.forEach((cellDef, index) => {
+          if (covered > 0) {
+            covered--;
+            if (cellDef.fieldId || cellDef.content || cellDef.label) {
+              console.error(
+                `[FieldManager] ${rowDef.id}: column ${String.fromCharCode(97 + index)} has content under a span - not rendered`
+              );
+            }
+            return;
+          }
+
           // Check if this is column C (description column) with content but no label
           if (
             index === 2 &&
@@ -780,6 +794,7 @@ TEUI.FieldManager = (function () {
             // Handle colSpan
             if (cellDef.span && cellDef.span > 1) {
               cellElement.colSpan = cellDef.span;
+              covered = cellDef.span - 1;
             }
 
             // Handle additional attributes

@@ -42,6 +42,9 @@ window.TEUI.CoolingSankey = (function () {
       { name: "Ventilation Free Cooling/Vent Capacity", color: "#B0E0E6" }, // [25] - Free cooling
       { name: "V.3.3 Ventilation Exhaust", color: "#B0E0E6" }, // [26] - Exhaust ventilation
       { name: "B.12 TB Penalty (Removal)", color: "#A5D3ED" }, // [27] - TB penalty removal
+
+      // Appended so the indices above keep their meaning (2026-11-20: k_87 had been sent into [2])
+      { name: "B.6 Floor Exposed", color: "#FFB6A3" }, // [28] - Exposed floor transmission gains
     ],
 
     links: [
@@ -143,11 +146,11 @@ window.TEUI.CoolingSankey = (function () {
         id: "WallsAeGain",
       }, // B.5 Walls Ae
       {
-        source: 2,
+        source: 28,
         target: 0,
         value: getStateValue("k_87"),
         id: "FloorAeGain",
-      }, // B.6 Floor Ae (added - was missing!)
+      }, // B.6 Floor Exposed, its own node
       {
         source: 3,
         target: 0,
@@ -361,6 +364,64 @@ window.TEUI.CoolingSankey = (function () {
         id: "BuildingToFreeCool",
       });
     }
+
+    // The openings, ONE NODE PER ROW, named with the row's orientation as set in S10 (Andy 2026-11-20;
+    // as the heating Sankey, Section16.js addOpeningNodes): the first rows rename the template's nodes
+    // (G.8.5's solar gets its own, off B.8.5's), a row after them that shows brings its solar node
+    // (k of its S10 row) and its transmission node (k of its S11 twin).
+    const O = window.TEUI.Openings;
+    const isRef = window.TEUI?.ReferenceToggle?.isReferenceMode();
+    const facingOf = o => {
+      const orientation = teuiState.getValue(`${isRef ? "ref_" : ""}e_${o.s10}`);
+      return O.SHORT[orientation] || orientation || "";
+    };
+    const openingName = (o, s11) => {
+      const id = s11 ? O.s11RowId(o) : O.s10RowId(o);
+      if (o.kind === "skylight") return `${id} Skylights`;
+      const facing = facingOf(o);
+      return `${id} ${o.kind === "door" ? "Door" : "Window"}${facing ? ` · ${facing}` : ""}`;
+    };
+    const SOLAR_NODE = { 73: 11, 74: 12, 75: 13, 76: 14, 77: 15 };
+    const TRANSMISSION_NODE = { 73: 3, 74: 4, 75: 5, 76: 6, 77: 7, 78: 8 };
+    const skylightSolar = sankeyData.nodes.push({ name: "", color: "#FFCC99" }) - 1;
+    energyGainedLinks.find(l => l.id === "SkylightsSolarGain").source = skylightSolar;
+    SOLAR_NODE[78] = skylightSolar;
+    O.ALL.forEach(o => {
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[SOLAR_NODE[o.s10]].name = openingName(o, false);
+        sankeyData.nodes[TRANSMISSION_NODE[o.s10]].name = openingName(o, true);
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const solar = sankeyData.nodes.push({ name: openingName(o, false), color: "#FFCC99" }) - 1;
+      energyGainedLinks.push({ source: solar, target: 0, value: getStateValue(`k_${o.s10}`), id: `OpeningSolar${o.s10}` });
+      const transmission = sankeyData.nodes.push({ name: openingName(o, true), color: o.kind === "door" ? "#FFB6A3" : "#FFCC99" }) - 1;
+      energyGainedLinks.push({ source: transmission, target: 0, value: getStateValue(`k_${o.s11}`), id: `OpeningGain${o.s11}` });
+    });
+
+    // The opaque rows likewise (Andy 2026-11-20): B.4-B.10 rename the template's nodes (B.9 / B.10 their
+    // removal nodes too); a row after them that shows brings its own - above grade a gain, below grade a
+    // gain when its k is positive, a removal when the ground takes heat (as B.9 / B.10 do above)
+    const opaquePrefix = isRef ? "ref_" : "";
+    const OPAQUE_GAIN_NODE = { 85: 1, 86: 2, 87: 28, 94: 9, 95: 10 };
+    const OPAQUE_REMOVAL_NODE = { 94: 23, 95: 24 };
+    O.OPAQUE.forEach(o => {
+      const name = O.opaqueName(o, opaquePrefix);
+      if (!O.isSlot(o)) {
+        sankeyData.nodes[OPAQUE_GAIN_NODE[o.s11]].name = name;
+        if (OPAQUE_REMOVAL_NODE[o.s11]) sankeyData.nodes[OPAQUE_REMOVAL_NODE[o.s11]].name = `${name} (Removal)`;
+        return;
+      }
+      if (!O.isShown(o)) return;
+      const k = getRawStateValue(`k_${o.s11}`);
+      if (o.group === "below" && k < 0) {
+        const removal = sankeyData.nodes.push({ name: `${name} (Removal)`, color: "#A5D3ED" }) - 1;
+        energyRemovedLinks.push({ source: 0, target: removal, value: Math.abs(k), id: `OpaqueRemoval${o.s11}` });
+      } else {
+        const gain = sankeyData.nodes.push({ name, color: "#FFB6A3" }) - 1;
+        energyGainedLinks.push({ source: gain, target: 0, value: Math.max(0, k), id: `OpaqueGain${o.s11}` });
+      }
+    });
 
     // Combine all links (DO NOT FILTER - show all values including zeros)
     const allLinks = [...energyGainedLinks, ...energyRemovedLinks];

@@ -429,6 +429,16 @@
     return refModel?.id || null;
   }
 
+  /**
+   * The model the screen shows: the Reference in Reference mode, as DOMBridge stamps it, else the active
+   * (Target) model. A section's own display (a hover, a tooltip) reads this, never getActiveModelId(),
+   * which stays the Target in Reference mode (Mark, #134).
+   */
+  function getOnScreenModelId() {
+    if (!state) return null;
+    return window.TEUI.ReferenceToggle?.isReferenceMode?.() ? getRefModelId() : state.getActiveModelId();
+  }
+
   // ============================================================================
   // LEGACY ADAPTER
   // ============================================================================
@@ -783,15 +793,17 @@
           // Priority 1: CSV-imported ref_ value from StateManager
           state.setValueForModel(refModelId, semanticPath, refValue);
           debug.cFieldsFromStateManager.push({ legacyId, semanticPath, value: refValue });
-        } else if (legacyId && standardValues && standardValues[legacyId] !== undefined) {
-          // Priority 2: Standard default from ReferenceValues.js
-          const stdValue = standardValues[legacyId];
+        } else if (legacyId && standardValues && standardValues[window.TEUI.Openings?.standardKeyFor(legacyId) ?? legacyId] !== undefined) {
+          // Priority 2: Standard default from ReferenceValues.js. An opaque row's RSI is the standard's
+          // for the type the row holds in the Reference (Openings.standardKeyFor: a row turned to Roof
+          // takes f_85's), whatever its own field
+          const stdValue = standardValues[window.TEUI.Openings?.standardKeyFor(legacyId) ?? legacyId];
           state.setValueForModel(refModelId, semanticPath, stdValue);
           cFieldsLoaded++;
           debug.cFieldsFromStandard.push({ legacyId, semanticPath, value: stdValue });
-        } else if (!legacyId && inputNode.defaultValue !== undefined) {
-          // No legacyId means no CSV/standard path — use declared default
-          // (e.g., CDD user override defaults to null, not Target's value)
+        } else if ((!legacyId || inputNode.copyToReference === false) && inputNode.defaultValue !== undefined) {
+          // No legacyId means no CSV/standard path — use declared default; nor for an input that
+          // must never take the Target's (copyToReference: false - the CDD user override, d_21o)
           state.setValueForModel(refModelId, semanticPath, inputNode.defaultValue);
         } else {
           // Priority 3: Copy from Target (shared input)
@@ -805,6 +817,12 @@
         }
       }
     }
+
+    // The Reference model knows it is one, and its standard's minimum COPc
+    // (MechanicalNodes: a reference heat pump cools at that minimum)
+    state.setValueForModel(refModelId, "model.isReference", true);
+    state.setValueForModel(targetId, "model.isReference", false);
+    state.setValueForModel(refModelId, "model.referenceCopCool", standardValues?.j_116 ?? null);
 
     log(`Reference model populated: ${gFieldsCopied} G-fields copied, ${cFieldsLoaded} C-fields from standard`);
     log(`  - C-fields from StateManager: ${debug.cFieldsFromStateManager.length}`);
@@ -1088,8 +1106,20 @@
         "climate.timeframe": ["climate.cooling.degreedays.userOverride"]
       };
 
+      // The overrides' own StateManager keys (d_21o), written past the adapter so they do not
+      // re-enter this handler
+      const setOverrideKey = (key, value) => {
+        if (SM?._original_setValue) SM._original_setValue.call(SM, key, value, "user-modified");
+        else SM?.setValue(key, value, "user-modified");
+      };
+      const OVERRIDE_KEYS = { "climate.cooling.degreedays.userOverride": "d_21o" };
+
       if (semanticPath && CLEARS_OVERRIDES[semanticPath]) {
         for (const path of CLEARS_OVERRIDES[semanticPath]) {
+          if (OVERRIDE_KEYS[path]) {
+            setOverrideKey(OVERRIDE_KEYS[path], "");
+            setOverrideKey("ref_" + OVERRIDE_KEYS[path], "");
+          }
           state.setValueForModel(targetId, path, null);
           if (refModelId) state.setValueForModel(refModelId, path, null);
         }
@@ -1107,6 +1137,7 @@
         if (editModelId) {
           state.setValueForModel(editModelId, overridePath, overrideValue);
         }
+        if (OVERRIDE_KEYS[overridePath]) setOverrideKey((isRef ? "ref_" : "") + OVERRIDE_KEYS[overridePath], overrideValue ?? "");
       }
 
       // Editable-computed overrides are C-class (per-model)
@@ -1152,7 +1183,7 @@
 
       // Section supplementary display stamps
       const modules = window.TEUI.SectionModules || {};
-      for (const key of ["sect01", "sect16", "sect21"]) {
+      for (const key of ["sect01", "sect03", "sect12", "sect13", "sect16", "sect21"]) {
         if (modules[key]?.postStamp) modules[key].postStamp();
       }
 
@@ -1386,6 +1417,7 @@
 
     // Reference model support
     getRefModelId,
+    getOnScreenModelId,
     populateReferenceModel,
     syncReferenceToStateManager,
 

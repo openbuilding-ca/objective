@@ -118,6 +118,17 @@
         label: "Major Occupancy",
         defaultValue: "A-Assembly",
       },
+      // The ASHRAE 62.1 space type within the Major Occupancy (S02 B.1, the
+      // dropdown beside it; VentilationRates.js) - its Rp and Ra set the outdoor air V.1.4 checks.
+      // Empty or not offered by the occupancy: the occupancy's default.
+      {
+        id: "building.ventilationSpaceType",
+        legacyId: "e_12",
+        section: "S02",
+        classification: "A",
+        label: "Space Type (ASHRAE 62.1)",
+        defaultValue: "",
+      },
       {
         id: "building.referenceStandard",
         legacyId: "d_13",

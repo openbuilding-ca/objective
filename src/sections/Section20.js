@@ -14,6 +14,7 @@ window.TEUI.SectionModules.sect20 = (function () {
   let qcEnabled = false;
   let lastReport = null;
   let userNotes = "";
+  const NOTES_PLACEHOLDER = "Enter project notes here...";
 
   /**
    * Initialize Section 18 with QC integration
@@ -915,8 +916,11 @@ ${formatViolationsByType(report.violations)}`;
           resize: vertical;
         "
         placeholder="Enter project notes, observations, and calculations here..."
-      >${userNotes || "Enter project notes here..."}</div>
+      ></div>
     `;
+    // textContent, not the template: notes now arrive from imported CSVs
+    notesSection.querySelector('[data-field-id="s18_notes"]').textContent =
+      userNotes || NOTES_PLACEHOLDER;
 
     // QC Output section (expandable)
     const qcSection = document.createElement("div");
@@ -1299,6 +1303,18 @@ ${formatViolationsByType(filteredReport.violations)}`;
     window.copyQCReportToClipboard = copyQCReportToClipboard;
   }
 
+  // Project notes travel in the CSV's last column (FileHandler export/import)
+  function getNotes() {
+    return userNotes === NOTES_PLACEHOLDER ? "" : userNotes;
+  }
+
+  function setNotes(value) {
+    userNotes = value || "";
+    localStorage.setItem("S19_USER_NOTES", userNotes);
+    const notesInput = document.querySelector('[data-field-id="s18_notes"]');
+    if (notesInput) notesInput.textContent = userNotes || NOTES_PLACEHOLDER;
+  }
+
   // Public API
   return {
     getFields,
@@ -1306,6 +1322,8 @@ ${formatViolationsByType(filteredReport.violations)}`;
     getLayout,
     initializeEventHandlers,
     onSectionRendered,
+    getNotes,
+    setNotes,
 
     // QC-specific methods
     generateQCReport: generateAndDisplayQCReport,

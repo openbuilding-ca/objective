@@ -36,8 +36,12 @@
     Hyperactive: 424.95,
   };
 
-  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²)
-  // From Section09.js equipmentLoadsTable
+  // Equipment loads by occupancy type, efficiency and elevator presence (W/m²): OBJECTIVE's
+  // "Occupancy-Based Equipment Loads by Specification Type" table, compiled from NREL building data
+  // (ComStock, comstock.nrel.gov), the Commercial and Residential Energy Consumption Surveys (CBECS,
+  // RECS), NRC's National Energy Code for Buildings (NECB), ASHRAE Standard 90.1, the ASHRAE
+  // Handbook and the Building Performance Institute (BPI). These reflect
+  // measured use; CSA F280's peak allowance (4 W/m², Cl. 6.2.5) is lower (Andy 2026-11-18).
   const EQUIPMENT_LOADS_TABLE = {
     "A-Assembly": {
       Regular: { Elevators: 9.0, "No Elevators": 7.0 },
@@ -87,6 +91,13 @@
 
   // Default equipment load if lookup fails
   const DEFAULT_EQUIPMENT_LOAD = 5.0;
+
+  // CSA F280-12's internal gains (window.TEUI.F280Gains, F280ComplianceNodes.js), which S21 F280 Mode On
+  // writes into S09 (Andy 2026-11-19: "as hardcodes (not user editable), so it is clear these are
+  // calculated"): S09's plug load carries Cl. 6.2.5's one figure for lights, appliances and plug loads, so
+  // lighting and equipment are 0; G.1.4 is Cl. 6.2.4's 70 W per person (the floor area: S02's conditioned area).
+  const F280_GAINS = () => window.TEUI.F280Gains;
+  const f280On = (inputs) => inputs["f280.mode"] === "On";
 
   /**
    * Format building type for lookup table key
@@ -179,9 +190,15 @@
       legacyId: "d_65",
       section: "S09",
       classification: "C",
-      dependencies: ["building.referenceStandard", "building.majorOccupancy"],
+      dependencies: ["building.referenceStandard", "building.majorOccupancy", "f280.mode", "building.conditionedFloorArea"],
       label: "Plug Load Density (W/m²)",
       compute: (inputs) => {
+        // F280 Mode On: Cl. 6.2.5's HGlae over the floor area, max(4 W/m2 x A, 800 W) / A
+        if (f280On(inputs)) {
+          const area = parseNum(inputs["building.conditionedFloorArea"]);
+          if (!(area > 0)) return "Unavailable";
+          return Math.max(F280_GAINS().laeWPerM2 * area, F280_GAINS().laeMinW) / area;
+        }
         const standard = inputs["building.referenceStandard"] || "";
         const buildingType = inputs["building.majorOccupancy"] || "";
 
@@ -202,6 +219,9 @@
           buildingType.includes("B2-Care") || buildingType.includes("B2 - Care") ||
           buildingType.includes("B3-Detention") || buildingType.includes("B3 - Detention");
 
+        // Residential 5 W/m²: NECB 2020 Table A-8.4.3.2.(2)-B, "Dwelling units – general", PEAK receptacle
+        // load on Operating Schedule G (10.6 full-load h/day, Table A-8.4.3.2.(1)-G). Per NECB it includes
+        // the dwelling's major appliances (Note A-8.4.3.2.(2)); not cited until 2026-11-18 (Andy).
         return isResidentialOrCare ? 5 : 7;
       },
     });
@@ -213,9 +233,10 @@
       legacyId: "d_67",
       section: "S09",
       classification: "C",
-      dependencies: ["building.majorOccupancy", "internal.efficiencySpec", "internal.elevators"],
+      dependencies: ["building.majorOccupancy", "internal.efficiencySpec", "internal.elevators", "f280.mode"],
       label: "Equipment Density (W/m²)",
       compute: (inputs) => {
+        if (f280On(inputs)) return 0; // F280 Cl. 6.2.5: in the plug load's HGlae
         const rawBuildingType = inputs["building.majorOccupancy"] || "A-Assembly";
         const efficiencyType = inputs["internal.efficiencySpec"] || "Regular";
         const elevatorStatus = inputs["internal.elevators"] || "No Elevators";
@@ -242,12 +263,24 @@
       legacyId: "g_64",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.activityLevel"],
+      dependencies: ["internal.activityLevel", "f280.mode"],
       label: "Occupant Watts per Person (S+L)",
       compute: (inputs) => {
+        if (f280On(inputs)) return F280_GAINS().personW; // F280 Cl. 6.2.4, sensible (its latent: Annex B)
         const level = inputs["internal.activityLevel"] || "Normal";
         return ACTIVITY_WATTS[level] || 117.23;
       },
+    });
+
+    // d_66 in effect: the user's lighting density, or 0 under F280 Mode On (Cl. 6.2.5: in the plug load's
+    // HGlae). The input keeps the user's value for Off; S09 shows this one, locked, under On (Section21.js).
+    graph.registerNode({
+      id: "internal.lightingDensity.inEffect",
+      section: "S09",
+      classification: "C",
+      dependencies: ["internal.lightingDensity", "f280.mode"],
+      label: "Lighting Density in Effect (W/m²)",
+      compute: (inputs) => (f280On(inputs) ? 0 : inputs["internal.lightingDensity"]),
     });
 
     // h_64: Occupant energy annual = (occupants × watts × annualHours) / 1000
@@ -259,7 +292,7 @@
       dependencies: ["internal.occupants.wattsPerPerson", "occupancy.occupants", "occupancy.occupiedHours"],
       label: "Occupant Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.occupants.wattsPerPerson"]) || 117.23;
+        const watts = parseNum(inputs["internal.occupants.wattsPerPerson"], 117.23); // a 0 stays 0 (|| took it for missing)
         const occupants = parseFloat(inputs["occupancy.occupants"]) || 4;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * occupants * hours) / 1000;
@@ -275,7 +308,7 @@
       dependencies: ["internal.plugLoadDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Plug Load Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.plugLoadDensity"]) || 7;
+        const watts = parseNum(inputs["internal.plugLoadDensity"], 7);
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
@@ -288,10 +321,10 @@
       legacyId: "h_66",
       section: "S09",
       classification: "C",
-      dependencies: ["internal.lightingDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
+      dependencies: ["internal.lightingDensity.inEffect", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Lighting Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.lightingDensity"]) || 1.5;
+        const watts = parseNum(inputs["internal.lightingDensity.inEffect"], 1.5);
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
@@ -307,7 +340,7 @@
       dependencies: ["internal.equipmentDensity", "building.conditionedFloorArea", "occupancy.occupiedHours"],
       label: "Equipment Internal Gains (kWh/yr)",
       compute: (inputs) => {
-        const watts = parseFloat(inputs["internal.equipmentDensity"]) || 3;
+        const watts = parseNum(inputs["internal.equipmentDensity"], 3); // F280 Mode On: 0, never 3
         const area = parseNum(inputs["building.conditionedFloorArea"]) || 0;
         const hours = parseFloat(inputs["occupancy.occupiedHours"]) || 4380;
         return (watts * area * hours) / 1000;
@@ -358,28 +391,17 @@
       },
     });
 
-    // k_71: Internal cooling load (cooling season fraction)
-    // = (h_70 + h_64 + d_54) × m_19 / 365
+    // k_71: Internal cooling load - the internal gains' share of the
+    // unmitigated ISO 52016-1 monthly need (cooling.iso52016, CoolingNodes.js);
+    // the gains run every month, annual x days / 365
     graph.registerNode({
       id: "internal.coolingLoad.occupants",
       legacyId: "k_71",
       section: "S09",
       classification: "C",
-      dependencies: [
-        "energy.plugLoads.subtotal",
-        "internal.occupants.annual",
-        "waterHeating.systemLosses",
-        "climate.coolingDays"
-      ],
+      dependencies: ["cooling.iso52016"],
       label: "Internal Gains - Cooling Season (kWh/yr)",
-      compute: (inputs) => {
-        const h70 = parseFloat(inputs["energy.plugLoads.subtotal"]) || 0;
-        const h64 = parseFloat(inputs["internal.occupants.annual"]) || 0;
-        const d54 = parseFloat(inputs["waterHeating.systemLosses"]) || 0;
-        const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-        const coolingFraction = coolingDays / 365;
-        return (h70 + h64 + d54) * coolingFraction;
-      },
+      compute: (inputs) => inputs["cooling.iso52016"]?.rows?.internal ?? 0,
     });
 
     // ========================================================================
@@ -443,18 +465,34 @@
         },
       });
 
-      // Cooling season split
+      // Cooling split: k_71's sensible part (the internal gains' share of the
+      // ISO 52016-1 need) in proportion to this row's annual gain - the
+      // internal total is h_70 + h_64 + d_54, and h_70 = h_65 + h_66 + h_67.
+      // The occupants' latent (F280 Annex B, in k_71 too) is theirs alone.
       graph.registerNode({
         id: `internal.${id}.coolingGain`,
         legacyId: `k_${legacySuffix}`,
         section: "S09",
         classification: "C",
-        dependencies: [annual, "climate.coolingDays"],
+        dependencies: [
+          annual,
+          "internal.coolingLoad.occupants",
+          "energy.plugLoads.subtotal",
+          "internal.occupants.annual",
+          "waterHeating.systemLosses",
+          "cooling.iso52016",
+        ],
         label: `${id} Cooling Gain (kWh/yr)`,
         compute: (inputs) => {
-          const annualVal = parseFloat(inputs[annual]) || 0;
-          const coolingDays = parseFloat(inputs["climate.coolingDays"]) || 0;
-          return annualVal * coolingDays / 365;
+          const total =
+            (parseFloat(inputs["energy.plugLoads.subtotal"]) || 0) +
+            (parseFloat(inputs["internal.occupants.annual"]) || 0) +
+            (parseFloat(inputs["waterHeating.systemLosses"]) || 0);
+          const latent = inputs["cooling.iso52016"]?.latent?.people ?? 0;
+          const own = id === "occupants" ? latent : 0;
+          if (total <= 0) return own;
+          const k71 = parseFloat(inputs["internal.coolingLoad.occupants"]) || 0;
+          return ((k71 - latent) * (parseFloat(inputs[annual]) || 0)) / total + own;
         },
       });
     });

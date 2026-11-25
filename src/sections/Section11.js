@@ -435,9 +435,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     88: {
       id: "B.7.0",
       rowId: "B.7.0",
-      label: "Doors",
+      label: "Door",
       cells: {
-        c: { label: "Doors" },
+        c: { label: "Door" },
         d: {
           fieldId: "d_88",
           semanticPath: "envelope.doors.area",
@@ -533,9 +533,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     89: {
       id: "B.8.1",
       rowId: "B.8.1",
-      label: "Window Area North",
+      label: "Window",
       cells: {
-        c: { label: "Window Area North" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_89",
           semanticPath: "envelope.windowNorth.area",
@@ -631,9 +631,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     90: {
       id: "B.8.2",
       rowId: "B.8.2",
-      label: "Window Area East",
+      label: "Window",
       cells: {
-        c: { label: "Window Area East" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_90",
           semanticPath: "envelope.windowEast.area",
@@ -729,9 +729,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     91: {
       id: "B.8.3",
       rowId: "B.8.3",
-      label: "Window Area South",
+      label: "Window",
       cells: {
-        c: { label: "Window Area South" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_91",
           semanticPath: "envelope.windowSouth.area",
@@ -827,9 +827,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     92: {
       id: "B.8.4",
       rowId: "B.8.4",
-      label: "Window Area West",
+      label: "Window",
       cells: {
-        c: { label: "Window Area West" },
+        c: { label: "Window" },
         d: {
           fieldId: "d_92",
           semanticPath: "envelope.windowWest.area",
@@ -1450,6 +1450,114 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
   };
 
+  // The openings' twins after the first (Openings.js; Andy 2026-11-20: "If a window row is created in
+  // S10, S11 needs to ape it"): door rows B.7.2-B.7.4 take row 88's shape, window rows B.8.6-B.8.12
+  // row 89's - the area S10's (calculated), the U-value their own. Shown and hidden with their S10 row.
+  const OPENINGS = window.TEUI.Openings;
+  OPENINGS.SLOTS.forEach(o => {
+    const door = o.kind === "door";
+    const base = door ? "88" : "89";
+    const row = OPENINGS.cloneRow(sectionRows[base], base, o.s11, {
+      id: OPENINGS.s11RowId(o),
+      label: door ? "Door" : "Window",
+      pathFrom: door ? "doors" : "windowNorth",
+      pathTo: o.id,
+      textPattern: door ? /\bDoors?\b/g : /\bWindow( Area)? North\b/g,
+      textTo: door ? `Door ${OPENINGS.s11RowId(o)}` : `Window ${OPENINGS.s11RowId(o)}`,
+    });
+    row.cells.d.dependencies = [`d_${o.s10}`]; // its area is its S10 row's
+    sectionRows[o.s11] = row;
+    areaSourceMap[`d_${o.s11}`] = `d_${o.s10}`;
+    editableFields.push(`g_${o.s11}`);
+  });
+
+  // ------------------------------------------------------------------------------------------------
+  // The OPAQUE rows (Openings.js; Andy 2026-11-20): above grade B.4-B.6 and 9 more, below grade B.9-B.10
+  // and 4 more. Each row's label cell is its TYPE (above: Roof / Wall / Exposed floor; below: Wall /
+  // Slab); an above-grade row also holds a FACING (cf_, shown beside the type for a wall); L and H (dl_,
+  // dh_) sit in two narrow columns left of the area: both given, the area is L x H; either blank, the area
+  // is typed, as every file before them did.
+  // ------------------------------------------------------------------------------------------------
+  const TYPE_NAMES = {
+    roof: "Roof",
+    walls: "Wall above grade (excl. openings)",
+    exposedFloor: "Exposed floor",
+    wallsBelowGrade: "Wall below grade (conditioned)",
+    slabOnGrade: "Slab (conditioned)",
+  };
+  const OPAQUE_PATHS = { 85: "roof", 86: "wallsAbove", 87: "floorExposed", 94: "wallsBelow", 95: "slab" };
+  const opaqueCells = (o, facing) => {
+    const types = o.group === "above" ? OPENINGS.ABOVE_TYPES : OPENINGS.BELOW_TYPES;
+    // c, the description cell, holds the type's name; FieldManager renders no field there, so the type
+    // (ct) and the facing (cf) are fields without a column, their dropdowns placed in it after render
+    // (installOpaqueControls)
+    const cells = {
+      c: { label: TYPE_NAMES[o.type] },
+      ct: {
+        fieldId: `c_${o.s11}`,
+        type: "dropdown",
+        dropdownId: `dd_c_${o.s11}`,
+        value: o.type,
+        options: types.map(t => ({ value: t, name: TYPE_NAMES[t] })),
+        classes: ["opaque-type"],
+        label: `${OPENINGS.s11RowId(o)}: Element Type`,
+      },
+      dl: { fieldId: `dl_${o.s11}`, type: "editable", value: "", classes: ["user-input", "opaque-lh"], label: `${OPENINGS.s11RowId(o)}: Length m` },
+      dh: { fieldId: `dh_${o.s11}`, type: "editable", value: "", classes: ["user-input", "opaque-lh"], label: `${OPENINGS.s11RowId(o)}: Height m` },
+    };
+    // not a column: S11 places it beside the type (installOpaqueControls); a field all the same
+    if (o.group === "above")
+      cells.cf = {
+        fieldId: `cf_${o.s11}`,
+        type: "dropdown",
+        dropdownId: `dd_cf_${o.s11}`,
+        value: facing,
+        options: OPENINGS.FACINGS.map(f => ({ value: f, name: f })),
+        label: `${OPENINGS.s11RowId(o)}: Wall Facing`,
+      };
+    return cells;
+  };
+  // the first rows: their own cells, plus the type, facing and L / H; B.5 faces Average (the compass
+  // mean every wall took before, so no file's result moves)
+  OPENINGS.OPAQUE.filter(o => !OPENINGS.isSlot(o)).forEach(o => {
+    Object.assign(sectionRows[o.s11].cells, opaqueCells(o, "Average"));
+  });
+  // the rows after them, cloned from B.5 (above) or B.9 (below): a new row is a wall, facing North
+  OPENINGS.OPAQUE_SLOTS.forEach(o => {
+    const base = o.group === "above" ? "86" : "94";
+    const row = OPENINGS.cloneRow(sectionRows[base], base, o.s11, {
+      id: OPENINGS.s11RowId(o),
+      label: TYPE_NAMES[o.type],
+      pathFrom: OPAQUE_PATHS[base],
+      pathTo: o.id,
+      textPattern: o.group === "above" ? /Walls Above Grade/g : /Walls Below Grade/g,
+      textTo: `Element ${OPENINGS.s11RowId(o)}`,
+    });
+    Object.assign(row.cells, opaqueCells(o, "North"));
+    sectionRows[o.s11] = row;
+    editableFields.push(`d_${o.s11}`, `f_${o.s11}`);
+  });
+  OPENINGS.OPAQUE.forEach(o => editableFields.push(`dl_${o.s11}`, `dh_${o.s11}`));
+
+  // L and H under the Areas heading, in the width B.12's slider already gives the column (Andy
+  // 2026-11-20: "that whitespace under 'Areas'"); the slider spans all three
+  Object.assign(sectionRows.header.cells, {
+    dl: { content: "L m", classes: ["section-subheader", "align-center"] },
+    dh: { content: "× H m", classes: ["section-subheader", "align-center"] },
+  });
+  sectionRows[97].cells.dl = { ...sectionRows[97].cells.d, span: 3 };
+  delete sectionRows[97].cells.d;
+
+  // The rows in order: each group's rows together (object keys put 87a after every number)
+  const ROW_ORDER = [
+    "header",
+    ...OPENINGS.ABOVE.map(o => o.s11),
+    ...OPENINGS.DOORS.map(o => o.s11),
+    ...OPENINGS.WINDOWS.map(o => o.s11),
+    ...OPENINGS.BELOW.map(o => o.s11),
+    ...Object.keys(sectionRows).filter(k => !isNaN(Number(k)) && Number(k) > 95),
+  ];
+
   //==========================================================================
   // ACCESSOR METHODS
   //==========================================================================
@@ -1479,10 +1587,8 @@ window.TEUI.SectionModules.sect11 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"])
-      layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.entries(sectionRows).forEach(([key, row]) => {
-      if (key !== "header") layoutRows.push(createLayoutRow(row));
+    ROW_ORDER.forEach(key => {
+      if (sectionRows[key]) layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
   }
@@ -1491,6 +1597,8 @@ window.TEUI.SectionModules.sect11 = (function () {
     const rowDef = { id: row.id, cells: [{}, {}] };
     const columns = [
       "c",
+      "dl", // L m, an opaque row's length (Andy 2026-11-20: L x H = Area)
+      "dh", // H m, its height
       "d",
       "e",
       "f",
@@ -1778,6 +1886,18 @@ window.TEUI.SectionModules.sect11 = (function () {
     const fieldElement = this;
     const currentFieldId = fieldElement.getAttribute("data-field-id");
     if (!currentFieldId) return;
+
+    // An opaque row's L or H: blank is "not given" (the area stays typed), never 0; both given, the
+    // area is their product
+    const lh = /^d[lh]_(\d+[a-z]?)$/.exec(currentFieldId);
+    if (lh) {
+      const v = numOrBlank(fieldElement.textContent.trim());
+      fieldElement.textContent = v ? formatNumber(v, "number") : "";
+      setModeValue(currentFieldId, v ? String(v) : "", "user-modified");
+      applyLengthHeight(lh[1]);
+      return;
+    }
+
     let valueStr = fieldElement.textContent.trim().replace(/,/g, "");
     let displayValue = "0.00";
     let rawValueToStore = "0";
@@ -1905,6 +2025,114 @@ window.TEUI.SectionModules.sect11 = (function () {
     setupS10AreaListeners();
   }
 
+  //==========================================================================
+  // THE OPAQUE ROWS' CONTROLS (type, facing, L x H) - see the block after sectionRows
+  //==========================================================================
+
+  const numOrBlank = v => {
+    const n = window.TEUI.parseNumeric(String(v ?? "").replace(/,/g, ""), NaN);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
+  /**
+   * Each opaque row's type dropdown, and an above-grade row's facing beside it, in its description cell
+   * (fields without a column: FieldManager renders none in column C). The selects carry their field IDs,
+   * so a stamp (FieldManager.updateFieldDisplay) finds them as it finds any dropdown.
+   */
+  function installOpaqueControls() {
+    const makeSelect = (fieldId, cls, title, options) => {
+      const select = document.createElement("select");
+      select.className = `form-select ${cls}`;
+      select.setAttribute("data-field-id", fieldId);
+      select.setAttribute("data-dropdown-id", `dd_${fieldId}`);
+      select.title = title;
+      options.forEach(([value, name]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+      return select;
+    };
+    OPENINGS.OPAQUE.forEach(o => {
+      const cell = document.querySelector(`tr[data-id="${OPENINGS.s11RowId(o)}"] td.description-cell`);
+      if (!cell || cell.querySelector("select")) return;
+      const types = o.group === "above" ? OPENINGS.ABOVE_TYPES : OPENINGS.BELOW_TYPES;
+      cell.textContent = "";
+      cell.classList.add("opaque-description");
+      cell.appendChild(
+        makeSelect(`c_${o.s11}`, "opaque-type", "Element type", types.map(t => [t, TYPE_NAMES[t]]))
+      );
+      if (o.group === "above")
+        cell.appendChild(
+          makeSelect(
+            `cf_${o.s11}`,
+            "opaque-facing",
+            "Wall facing (F280 Table 3, the cooling calculation's solar)",
+            OPENINGS.FACINGS.map(f => [f, OPENINGS.SHORT[f]])
+          )
+        );
+    });
+    const section = document.getElementById("envelopeTransmissionLosses");
+    if (section && !section.hasOpaqueListener) {
+      section.addEventListener("change", e => {
+        const id = e.target?.getAttribute?.("data-field-id") || "";
+        if (e.target.tagName !== "SELECT" || !/^(c|cf)_\d+[a-z]?$/.test(id)) return;
+        setModeValue(id, e.target.value, "user-modified");
+        refreshOpaqueRows();
+      });
+      section.hasOpaqueListener = true;
+    }
+    refreshOpaqueRows();
+  }
+
+  /** L and H given: the area is their product (in the model on screen). */
+  function applyLengthHeight(s11) {
+    const L = numOrBlank(getModeValue(`dl_${s11}`));
+    const H = numOrBlank(getModeValue(`dh_${s11}`));
+    if (L && H) setModeValue(`d_${s11}`, String(+(L * H).toFixed(4)), "user-modified");
+    refreshOpaqueRows();
+  }
+
+  /**
+   * The rows as the model on screen holds them: the type and facing chosen; the facing shown for a wall
+   * only; L and H stamped (they are not graph inputs, so no stamp reaches them); the area typed unless L
+   * and H give it; and each row numbered by its type, in table order (B.5, then B.5.2 ...).
+   */
+  function refreshOpaqueRows() {
+    const prefix = window.TEUI.ReferenceToggle?.isReferenceMode() ? "ref_" : "";
+    const ids = OPENINGS.opaqueIds(prefix);
+    OPENINGS.OPAQUE.forEach(o => {
+      const type = OPENINGS.typeOf(o, prefix);
+      const typeSelect = document.querySelector(`select[data-field-id="c_${o.s11}"]`);
+      if (typeSelect && typeSelect.value !== type) typeSelect.value = type;
+      const facing = document.querySelector(`select[data-field-id="cf_${o.s11}"]`);
+      if (facing) {
+        const value = getModeValue(`cf_${o.s11}`);
+        if (value && facing.value !== value) facing.value = value;
+        facing.style.display = type === "walls" ? "" : "none";
+      }
+      const L = numOrBlank(getModeValue(`dl_${o.s11}`));
+      const H = numOrBlank(getModeValue(`dh_${o.s11}`));
+      ["dl", "dh"].forEach(col => {
+        const td = document.querySelector(`td[data-field-id="${col}_${o.s11}"]`);
+        if (td && document.activeElement !== td) {
+          const v = col === "dl" ? L : H;
+          td.textContent = v ? formatNumber(v, "number") : "";
+        }
+      });
+      const area = document.querySelector(`td[data-field-id="d_${o.s11}"]`);
+      if (area) {
+        const fromLH = !!(L && H);
+        area.contentEditable = fromLH ? "false" : "true";
+        area.classList.toggle("opaque-area-from-lh", fromLH);
+        area.title = fromLH ? "L × H (clear L or H to type the area)" : "";
+      }
+      const idCell = document.querySelector(`tr[data-id="${OPENINGS.s11RowId(o)}"]`)?.children[1];
+      if (idCell && ids[o.s11]) idCell.textContent = ids[o.s11];
+    });
+  }
+
   function onSectionRendered() {
     console.log("S11: Section rendered.");
 
@@ -1919,6 +2147,14 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     // Graph handles initial calculations via dependency chain
     isInitializationPhase = false;
+
+    // The openings' twins show and hide with their S10 rows; S11's +/- do the same as S10's
+    OPENINGS.installControls("S11");
+    installOpaqueControls();
+    document.addEventListener("teui-openings-changed", () => {
+      OPENINGS.applyVisibility("S11");
+      refreshOpaqueRows();
+    });
 
     // Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
@@ -1939,6 +2175,11 @@ window.TEUI.SectionModules.sect11 = (function () {
     getLayout,
     initializeEventHandlers,
     onSectionRendered,
+    // After each stamp: an opening's twin shows when its S10 row does
+    postStamp: () => {
+      OPENINGS.applyVisibility("S11");
+      refreshOpaqueRows();
+    },
     // S10 area sync for FileHandler post-import call
     syncAreasFromS10: syncAreasFromS10,
 

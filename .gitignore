@@ -44,7 +44,10 @@ src/build-info.js
 # Old structure (to be removed after migration)
 OBJECTIVE 4011RF/
 gh-pages-local/
-data/
+data/*
+# the climate pipeline's intermediates (1.3 MB): tools/climate/build_station_files.py rebuilds the
+# station files from them and the CWEC EPWs (Mark's #123 review)
+!data/climate/
 deploy-to-gh-pages.sh
 OBJECTIVE WORKSPACE.code-workspace
 tooltip-object.js
